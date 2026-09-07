@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Sektor 1</title>
+    <link rel="icon" href="data:,">
+
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+
+        width: 100%;
+        height: 100%;
+
+        overflow: hidden;
+        background: black;
+      }
+
+      #gameCanvas {
+        display: block;
+        margin: 0 auto;
+        background: #202020;
+      }
+    </style>
+  </head>
+
+  <body>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Core -->
+    <script src="js/core/Graphics.js"></script>
+    <script src="js/core/Input.js"></script>
+    <script src="js/core/CollisionManager.js"></script>
+    <script src="js/core/Camera.js"></script>
+    <script src="js/core/DatabaseManager.js"></script>
+
+    <!-- Game Objects -->
+    <script src="js/objects/Game_Switches.js"></script>
+    <script src="js/objects/Game_Variables.js"></script>
+    <script src="js/objects/Game_System.js"></script>
+
+    <script src="js/objects/Game_Interpreter.js"></script>
+    <script src="js/objects/Game_Event.js"></script>
+    <script src="js/objects/Game_Map.js"></script>
+    <script src="js/objects/Game_Player.js"></script>
+
+    <!-- Windows -->
+    <script src="js/windows/Window_Message.js"></script>
+    <script src="js/windows/Window_Choice.js"></script>
+
+    <!-- Scenes -->
+    <script src="js/scenes/Scene_Base.js"></script>
+    <script src="js/scenes/Scene_Map.js"></script>
+
+    <!-- Managers -->
+    <script src="js/core/SceneManager.js"></script>
+
+    <!-- Game Loop -->
+    <script src="js/core/GameLoop.js"></script>
+
+    <!-- Entry Point -->
+    <script src="js/main.js"></script>
+  </body>
+</html>

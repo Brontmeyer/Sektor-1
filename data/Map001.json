@@ -1,0 +1,147 @@
+{
+  "id": 1,
+  "name": "Sektor 1 Test Zone",
+  "width": 2400,
+  "height": 1600,
+  "playerStart": {
+    "x": 300,
+    "y": 300
+  },
+  "obstacles": [
+    {
+      "x": 900,
+      "y": 500,
+      "width": 300,
+      "height": 100
+    },
+    {
+      "x": 1400,
+      "y": 800,
+      "width": 150,
+      "height": 400
+    },
+    {
+      "x": 500,
+      "y": 1000,
+      "width": 500,
+      "height": 80
+    }
+  ],
+  "transfers": [
+    {
+      "x": 600,
+      "y": 300,
+      "width": 100,
+      "height": 100,
+      "targetMapId": 2,
+      "targetX": 300,
+      "targetY": 300
+    }
+  ],
+  "events": [
+    {
+      "id": 1,
+      "name": "Test NPC",
+      "x": 450,
+      "y": 300,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "conditions": {},
+          "commands": [
+            {
+              "code": "choice",
+              "speaker": "Guard",
+              "prompt": "Do you want to enter the city?",
+
+              "choices": [
+                {
+                  "text": "Yes",
+
+                  "commands": [
+                    {
+                      "code": "text",
+                      "speaker": "Guard",
+                      "text": "Very well. You may enter."
+                    },
+
+                    {
+                      "code": "setSwitch",
+                      "id": "CityGateOpened",
+                      "value": true
+                    },
+
+                    {
+                      "code": "addVariable",
+                      "id": "GuardVisits",
+                      "value": 1
+                    },
+
+                    {
+                      "code": "text",
+                      "speaker": "Guard",
+                      "text": "Stay out of trouble."
+                    }
+                  ]
+                },
+
+                {
+                  "text": "No",
+
+                  "commands": [
+                    {
+                      "code": "text",
+                      "speaker": "Guard",
+                      "text": "Very well. Perhaps another time."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+
+        {
+          "conditions": {
+            "switches": [
+              {
+                "id": "CityGateOpened",
+                "value": true
+              }
+            ]
+          },
+
+          "commands": [
+            {
+              "code": "text",
+              "speaker": "Guard",
+              "text": "Welcome back. You already have permission to enter."
+            }
+          ]
+        },
+
+        {
+          "conditions": {
+            "variables": [
+              {
+                "id": "GuardVisits",
+                "operator": ">=",
+                "value": 1
+              }
+            ]
+          },
+
+          "commands": [
+            {
+              "code": "text",
+              "speaker": "Guard",
+              "text": "You have visited me many times. I trust you now."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
