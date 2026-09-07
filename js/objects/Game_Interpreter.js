@@ -7,13 +7,17 @@ class Game_Interpreter {
 
     this.commands = [];
 
+    this.event = null;
+
     this.index = 0;
 
     this.running = false;
   }
 
-  setup(commands) {
+  setup(commands, event = null) {
     this.commands = JSON.parse(JSON.stringify(commands || []));
+
+    this.event = event;
 
     this.index = 0;
 
@@ -69,6 +73,15 @@ class Game_Interpreter {
 
       case "ifSwitch":
         return this.commandIfSwitch(command);
+
+      case "setSelfSwitch":
+        return this.commandSetSelfSwitch(command);
+
+      case "gainItem":
+        return this.commandGainItem(command);
+
+      case "gainItemMessage":
+        return this.commandGainItemMessage(command);
 
       default:
         console.warn(`Unknown event command: ${command.code}`);
@@ -148,6 +161,67 @@ class Game_Interpreter {
     return true;
   }
 
+  commandSetSelfSwitch(command) {
+    if (!this.event) {
+      console.error("setSelfSwitch command requires an active event.");
+
+      return true;
+    }
+
+    $gameSelfSwitches.setValue(
+      this.event.mapId,
+      this.event.id,
+      command.letter,
+      command.value,
+    );
+
+    return true;
+  }
+
+  commandGainItem(command) {
+    $gameParty.gainItem(command.itemId, command.amount || 1);
+
+    return true;
+  }
+
+  commandGainItemMessage(command) {
+    if (this.messageWindow.isOpen()) {
+      return false;
+    }
+
+    const item = DatabaseManager.item(command.itemId);
+
+    if (!item) {
+      console.error(`Unknown item ID: ${command.itemId}`);
+
+      return true;
+    }
+
+    const amount = command.amount || 1;
+
+    $gameParty.gainItem(command.itemId, amount);
+
+    let message = "";
+
+    if (amount === 1) {
+      const article = item.article || "a";
+
+      message = `You found ${article} ${item.name}!`;
+    } else {
+      const pluralName = item.pluralName || `${item.name}s`;
+
+      message = `You found ${amount} ${pluralName}!`;
+    }
+
+    this.messageWindow.show(message, "Chest");
+
+    // Move to the next command,
+    // but PAUSE the interpreter here.
+    this.index++;
+
+    return false;
+  }
+
   commandSetVariable(command) {
     $gameVariables.setValue(command.id, command.value);
 
@@ -183,6 +257,8 @@ class Game_Interpreter {
     this.commands = [];
 
     this.index = 0;
+
+    this.event = null;
 
     console.log("Event finished.");
   }

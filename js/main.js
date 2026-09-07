@@ -11,9 +11,15 @@ async function startGame() {
 
   window.$gameSystem = new Game_System();
 
+  window.$gameActor = $gameSystem.actor;
+
+  window.$gameParty = $gameSystem.party;
+
   window.$gameSwitches = $gameSystem.switches;
 
   window.$gameVariables = $gameSystem.variables;
+
+  window.$gameSelfSwitches = $gameSystem.selfSwitches;
 
   await DatabaseManager.loadDatabase();
 

@@ -20,7 +20,7 @@ class Game_Map {
     this.transfers = mapData.transfers || [];
 
     this.events = (mapData.events || []).map(
-      (eventData) => new Game_Event(eventData),
+      (eventData) => new Game_Event(eventData, this.id),
     );
 
     console.log(`Map loaded: ${this.name}`);

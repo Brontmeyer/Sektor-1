@@ -1,9 +1,9 @@
 "use strict";
 
 class Game_Event {
-  constructor(eventData) {
+  constructor(eventData, mapId) {
+    this.mapId = mapId;
     this.id = eventData.id;
-
     this.name = eventData.name || "";
 
     this.x = eventData.x || 0;
@@ -106,6 +106,34 @@ class Game_Event {
       const currentValue = $gameSwitches.value(switchCondition.id);
 
       const expectedValue = switchCondition.value === true;
+
+      if (currentValue !== expectedValue) {
+        return false;
+      }
+    }
+
+    // =====================================
+    // SELF SWITCH CONDITIONS
+    // =====================================
+
+    const selfSwitchConditions = conditions.selfSwitches || [];
+
+    if (!Array.isArray(selfSwitchConditions)) {
+      console.error(
+        `Event "${this.name}" has invalid "selfSwitches". Expected an array.`,
+      );
+
+      return false;
+    }
+
+    for (const selfSwitchCondition of selfSwitchConditions) {
+      const currentValue = $gameSelfSwitches.value(
+        this.mapId,
+        this.id,
+        selfSwitchCondition.letter,
+      );
+
+      const expectedValue = selfSwitchCondition.value === true;
 
       if (currentValue !== expectedValue) {
         return false;

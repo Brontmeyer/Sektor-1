@@ -7,6 +7,7 @@
     "x": 300,
     "y": 300
   },
+
   "obstacles": [
     {
       "x": 900,
@@ -27,6 +28,7 @@
       "height": 80
     }
   ],
+
   "transfers": [
     {
       "x": 600,
@@ -38,18 +40,24 @@
       "targetY": 300
     }
   ],
+
   "events": [
     {
       "id": 1,
       "name": "Test NPC",
+
       "x": 450,
       "y": 300,
+
       "width": 32,
       "height": 32,
+
       "solid": true,
+
       "pages": [
         {
           "conditions": {},
+
           "commands": [
             {
               "code": "choice",
@@ -66,19 +74,16 @@
                       "speaker": "Guard",
                       "text": "Very well. You may enter."
                     },
-
                     {
                       "code": "setSwitch",
                       "id": "CityGateOpened",
                       "value": true
                     },
-
                     {
                       "code": "addVariable",
                       "id": "GuardVisits",
                       "value": 1
                     },
-
                     {
                       "code": "text",
                       "speaker": "Guard",
@@ -124,6 +129,13 @@
 
         {
           "conditions": {
+            "switches": [
+              {
+                "id": "CityGateOpened",
+                "value": true
+              }
+            ],
+
             "variables": [
               {
                 "id": "GuardVisits",
@@ -138,6 +150,62 @@
               "code": "text",
               "speaker": "Guard",
               "text": "You have visited me many times. I trust you now."
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": 2,
+      "name": "Test Chest",
+
+      "x": 750,
+      "y": 450,
+
+      "width": 32,
+      "height": 32,
+
+      "solid": true,
+
+      "pages": [
+        {
+          "conditions": {},
+
+          "commands": [
+            {
+              "code": "gainItemMessage",
+              "itemId": 2,
+              "amount": 15
+            },
+            {
+              "code": "gainItemMessage",
+              "itemId": 1,
+              "amount": 5
+            },
+            {
+              "code": "setSelfSwitch",
+              "letter": "A",
+              "value": true
+            }
+          ]
+        },
+
+        {
+          "conditions": {
+            "selfSwitches": [
+              {
+                "letter": "A",
+                "value": true
+              }
+            ]
+          },
+
+          "commands": [
+            {
+              "code": "text",
+              "speaker": "Chest",
+              "text": "The chest is empty."
             }
           ]
         }

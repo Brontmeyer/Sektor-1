@@ -1,81 +1,55 @@
 "use strict";
 
 class DatabaseManager {
+  static async loadJSON(filename) {
+    const response = await fetch(filename);
 
-    static async loadJSON(filename) {
-
-        const response =
-            await fetch(filename);
-
-        if (!response.ok) {
-
-            throw new Error(
-                `Failed to load ${filename}`
-            );
-        }
-
-        return await response.json();
+    if (!response.ok) {
+      throw new Error(`Failed to load ${filename}`);
     }
 
+    return await response.json();
+  }
 
-    static async loadDatabase() {
+  static async loadDatabase() {
+    console.log("Loading database...");
 
-        console.log(
-            "Loading database..."
-        );
+    this.system = await this.loadJSON("data/System.json");
 
+    this.mapInfos = await this.loadJSON("data/MapInfos.json");
 
-        this.system =
-            await this.loadJSON(
-                "data/System.json"
-            );
+    this.items = await this.loadJSON("data/Items.json");
 
+    console.log("Database loaded.");
+  }
 
-        this.mapInfos =
-            await this.loadJSON(
-                "data/MapInfos.json"
-            );
+  static async loadMap(mapId) {
+    const mapInfo = this.mapInfos.find((info) => info.id === mapId);
 
-
-        console.log(
-            "Database loaded."
-        );
+    if (!mapInfo) {
+      throw new Error(`Map ID ${mapId} does not exist.`);
     }
 
+    console.log(`Loading map ${mapId}: ${mapInfo.name}`);
 
-    static async loadMap(mapId) {
+    const mapData = await this.loadJSON(`data/${mapInfo.file}`);
 
-        const mapInfo =
-            this.mapInfos.find(
-                info =>
-                    info.id === mapId
-            );
+    console.log(`Map ${mapId} loaded.`);
 
+    return mapData;
+  }
 
-        if (!mapInfo) {
+  static item(itemId) {
+    return this.items[itemId] || null;
+  }
 
-            throw new Error(
-                `Map ID ${mapId} does not exist.`
-            );
-        }
+  static itemName(itemId) {
+    const item = this.item(itemId);
 
-
-        console.log(
-            `Loading map ${mapId}: ${mapInfo.name}`
-        );
-
-
-        const mapData =
-            await this.loadJSON(
-                `data/${mapInfo.file}`
-            );
-
-
-        console.log(
-            `Map ${mapId} loaded.`
-        );
-
-
-        return mapData;
+    if (!item) {
+      return `Unknown Item ${itemId}`;
     }
+
+    return item.name;
+  }
 }
