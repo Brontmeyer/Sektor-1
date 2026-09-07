@@ -2,12 +2,11 @@
   null,
   {
     "id": 1,
+    "type": "item",
     "name": "Potion",
     "pluralName": "Potions",
     "article": "a",
     "description": "Restores a small amount of HP.",
-
-    "type": "item",
     "price": 50,
     "consumable": true,
     "effect": {
@@ -17,12 +16,11 @@
   },
   {
     "id": 2,
+    "type": "item",
     "name": "Hi-Potion",
     "pluralName": "Hi-Potions",
     "article": "a",
     "description": "Restores a moderate amount of HP.",
-
-    "type": "item",
     "price": 200,
     "consumable": true,
     "effect": {
@@ -32,12 +30,11 @@
   },
   {
     "id": 3,
+    "type": "item",
     "name": "Ether",
     "pluralName": "Ethers",
     "article": "an",
     "description": "Restores a small amount of MP.",
-
-    "type": "item",
     "price": 100,
     "consumable": true,
     "effect": {
@@ -47,12 +44,11 @@
   },
   {
     "id": 4,
+    "type": "item",
     "name": "Hi-Ether",
     "pluralName": "Hi-Ethers",
     "article": "a",
     "description": "Restores a moderate amount of MP.",
-
-    "type": "item",
     "price": 400,
     "consumable": true,
     "effect": {
@@ -62,12 +58,11 @@
   },
   {
     "id": 5,
+    "type": "item",
     "name": "Elixir",
     "pluralName": "Elixirs",
     "article": "an",
     "description": "Fully restores HP and MP.",
-
-    "type": "item",
     "price": 1000,
     "consumable": true,
     "effect": {
@@ -77,12 +72,11 @@
   },
   {
     "id": 6,
+    "type": "item",
     "name": "Phoenix Down",
     "pluralName": "Phoenix Downs",
     "article": "a",
     "description": "Revives a fallen ally with a small amount of HP.",
-
-    "type": "item",
     "price": 500,
     "consumable": true,
     "effect": {

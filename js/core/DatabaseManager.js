@@ -15,10 +15,12 @@ class DatabaseManager {
     console.log("Loading database...");
 
     this.system = await this.loadJSON("data/System.json");
-
     this.mapInfos = await this.loadJSON("data/MapInfos.json");
-
     this.items = await this.loadJSON("data/Items.json");
+    this.actors = await this.loadJSON("data/Actors.json");
+
+    this.weapons = await this.loadJSON("data/Weapons.json");
+    this.armors = await this.loadJSON("data/Armors.json");
 
     console.log("Database loaded.");
   }
@@ -51,5 +53,47 @@ class DatabaseManager {
     }
 
     return item.name;
+  }
+
+  static actor(actorId) {
+    return this.actors[actorId] || null;
+  }
+
+  static actorName(actorId) {
+    const actor = this.actor(actorId);
+
+    if (!actor) {
+      return `Unknown Actor ${actorId}`;
+    }
+
+    return actor.name;
+  }
+
+  static weapon(weaponId) {
+    return this.weapons[weaponId] || null;
+  }
+
+  static weaponName(weaponId) {
+    const weapon = this.weapon(weaponId);
+
+    if (!weapon) {
+      return `Unknown Weapon ${weaponId}`;
+    }
+
+    return weapon.name;
+  }
+
+  static armor(armorId) {
+    return this.armors[armorId] || null;
+  }
+
+  static armorName(armorId) {
+    const armor = this.armor(armorId);
+
+    if (!armor) {
+      return `Unknown Armor ${armorId}`;
+    }
+
+    return armor.name;
   }
 }

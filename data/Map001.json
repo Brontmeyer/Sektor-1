@@ -125,33 +125,6 @@
               "text": "Welcome back. You already have permission to enter."
             }
           ]
-        },
-
-        {
-          "conditions": {
-            "switches": [
-              {
-                "id": "CityGateOpened",
-                "value": true
-              }
-            ],
-
-            "variables": [
-              {
-                "id": "GuardVisits",
-                "operator": ">=",
-                "value": 1
-              }
-            ]
-          },
-
-          "commands": [
-            {
-              "code": "text",
-              "speaker": "Guard",
-              "text": "You have visited me many times. I trust you now."
-            }
-          ]
         }
       ]
     },
@@ -182,6 +155,18 @@
               "code": "gainItemMessage",
               "itemId": 1,
               "amount": 5
+            },
+            {
+              "code": "gainWeaponMessage",
+              "weaponId": 2,
+              "amount": 1,
+              "source": "Chest"
+            },
+            {
+              "code": "gainArmorMessage",
+              "armorId": 2,
+              "amount": 1,
+              "source": "Chest"
             },
             {
               "code": "setSelfSwitch",

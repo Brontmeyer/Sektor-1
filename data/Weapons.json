@@ -1,0 +1,17 @@
+[
+    null,
+    {
+        "id": 1,
+        "name": "Iron Sword",
+        "description": "A simple iron sword.",
+        "price": 100,
+        "attack": 5
+    },
+    {
+        "id": 2,
+        "name": "Steel Sword",
+        "description": "A stronger sword forged from steel.",
+        "price": 250,
+        "attack": 10
+    }
+]

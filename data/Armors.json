@@ -1,0 +1,17 @@
+[
+    null,
+    {
+        "id": 1,
+        "name": "Leather Armor",
+        "description": "Light protective armor.",
+        "price": 100,
+        "defense": 4
+    },
+    {
+        "id": 2,
+        "name": "Iron Armor",
+        "description": "Heavy armor made from iron.",
+        "price": 300,
+        "defense": 8
+    }
+]

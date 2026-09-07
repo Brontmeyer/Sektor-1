@@ -1,0 +1,18 @@
+[
+    null,
+    {
+        "id": 1,
+        "name": "Player",
+        "level": 1,
+        "exp": 0,
+        "maxHp": 100,
+        "attack": 10,
+        "defense": 8,
+
+        "growth": {
+            "maxHp": 10,
+            "attack": 2,
+            "defense": 2
+        }
+    }
+]

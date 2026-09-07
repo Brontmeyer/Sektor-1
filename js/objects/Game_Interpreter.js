@@ -62,26 +62,37 @@ class Game_Interpreter {
       case "choice":
         return this.commandChoice(command);
 
-      case "setSwitch":
-        return this.commandSetSwitch(command);
-
-      case "setVariable":
-        return this.commandSetVariable(command);
-
-      case "addVariable":
-        return this.commandAddVariable(command);
-
       case "ifSwitch":
         return this.commandIfSwitch(command);
-
+      case "setSwitch":
+        return this.commandSetSwitch(command);
       case "setSelfSwitch":
         return this.commandSetSelfSwitch(command);
 
+      case "setVariable":
+        return this.commandSetVariable(command);
+      case "addVariable":
+        return this.commandAddVariable(command);
+
+      case "gainExp":
+        return this.commandGainExp(command);
+      case "gainExpMessage":
+        return this.commandGainExpMessage(command);
+
       case "gainItem":
         return this.commandGainItem(command);
-
       case "gainItemMessage":
         return this.commandGainItemMessage(command);
+
+      case "gainWeapon":
+        return this.commandGainWeapon(command);
+      case "gainWeaponMessage":
+        return this.commandGainWeaponMessage(command);
+
+      case "gainArmor":
+        return this.commandGainArmor(command);
+      case "gainArmorMessage":
+        return this.commandGainArmorMessage(command);
 
       default:
         console.warn(`Unknown event command: ${command.code}`);
@@ -155,6 +166,23 @@ class Game_Interpreter {
     return false;
   }
 
+  commandIfSwitch(command) {
+    const currentValue = $gameSwitches.value(command.id);
+
+    const expectedValue = command.value === true;
+
+    const branch =
+      currentValue === expectedValue
+        ? command.trueCommands
+        : command.falseCommands;
+
+    const branchCommands = branch || [];
+
+    this.commands.splice(this.index, 1, ...branchCommands);
+
+    return false;
+  }
+
   commandSetSwitch(command) {
     $gameSwitches.setValue(command.id, command.value);
 
@@ -176,6 +204,62 @@ class Game_Interpreter {
     );
 
     return true;
+  }
+
+  commandSetVariable(command) {
+    $gameVariables.setValue(command.id, command.value);
+
+    return true;
+  }
+
+  commandAddVariable(command) {
+    $gameVariables.addValue(command.id, command.value);
+
+    return true;
+  }
+
+  commandGainExp(command) {
+    const amount = Number(command.amount);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid EXP amount: ${command.amount}`);
+
+      return true;
+    }
+
+    $gameActor.gainExp(amount);
+
+    return true;
+  }
+
+  commandGainExpMessage(command) {
+    if (this.messageWindow.isOpen()) {
+      return false;
+    }
+
+    const amount = Number(command.amount);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid EXP amount: ${command.amount}`);
+
+      return true;
+    }
+
+    const levelsGained = $gameActor.gainExp(amount);
+
+    let message = `You gained ${amount} EXP!`;
+
+    if (levelsGained === 1) {
+      message += `\n${$gameActor.name} reached Level ${$gameActor.level}!`;
+    } else if (levelsGained > 1) {
+      message += `\n${$gameActor.name} gained ${levelsGained} levels and reached Level ${$gameActor.level}!`;
+    }
+
+    this.messageWindow.show(message, "System");
+
+    this.index++;
+
+    return false;
   }
 
   commandGainItem(command) {
@@ -222,31 +306,126 @@ class Game_Interpreter {
     return false;
   }
 
-  commandSetVariable(command) {
-    $gameVariables.setValue(command.id, command.value);
+  commandGainWeapon(command) {
+    const amount = Number(command.amount ?? 1);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid weapon amount: ${command.amount}`);
+
+      return true;
+    }
+
+    $gameParty.gainWeapon(command.weaponId, amount);
 
     return true;
   }
 
-  commandAddVariable(command) {
-    $gameVariables.addValue(command.id, command.value);
+  commandGainWeaponMessage(command) {
+    if (this.messageWindow.isOpen()) {
+      return false;
+    }
+
+    const weapon = DatabaseManager.weapon(command.weaponId);
+
+    if (!weapon) {
+      console.error(`Unknown weapon ID: ${command.weaponId}`);
+
+      return true;
+    }
+
+    const amount = Number(command.amount ?? 1);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid weapon amount: ${command.amount}`);
+
+      return true;
+    }
+
+    $gameParty.gainWeapon(command.weaponId, amount);
+
+    const source = command.source || "System";
+
+    let message = "";
+
+    if (amount === 1) {
+      if (source === "Chest") {
+        message = `You found a ${weapon.name}!`;
+      } else {
+        message = `You obtained a ${weapon.name}!`;
+      }
+    } else {
+      if (source === "Chest") {
+        message = `You found ${amount} ${weapon.name}s!`;
+      } else {
+        message = `You obtained ${amount} ${weapon.name}s!`;
+      }
+    }
+
+    this.messageWindow.show(message, source);
+
+    this.index++;
+
+    return false;
+  }
+
+  commandGainArmor(command) {
+    const amount = Number(command.amount ?? 1);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid armor amount: ${command.amount}`);
+
+      return true;
+    }
+
+    $gameParty.gainArmor(command.armorId, amount);
 
     return true;
   }
 
-  commandIfSwitch(command) {
-    const currentValue = $gameSwitches.value(command.id);
+  commandGainArmorMessage(command) {
+    if (this.messageWindow.isOpen()) {
+      return false;
+    }
 
-    const expectedValue = command.value === true;
+    const armor = DatabaseManager.armor(command.armorId);
 
-    const branch =
-      currentValue === expectedValue
-        ? command.trueCommands
-        : command.falseCommands;
+    if (!armor) {
+      console.error(`Unknown armor ID: ${command.armorId}`);
 
-    const branchCommands = branch || [];
+      return true;
+    }
 
-    this.commands.splice(this.index, 1, ...branchCommands);
+    const amount = Number(command.amount ?? 1);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid armor amount: ${command.amount}`);
+
+      return true;
+    }
+
+    $gameParty.gainArmor(command.armorId, amount);
+
+    const source = command.source || "System";
+
+    let message = "";
+
+    if (amount === 1) {
+      if (source === "Chest") {
+        message = `You found ${armor.name}!`;
+      } else {
+        message = `You obtained ${armor.name}!`;
+      }
+    } else {
+      if (source === "Chest") {
+        message = `You found ${amount} ${armor.name}s!`;
+      } else {
+        message = `You obtained ${amount} ${armor.name}s!`;
+      }
+    }
+
+    this.messageWindow.show(message, source);
+
+    this.index++;
 
     return false;
   }

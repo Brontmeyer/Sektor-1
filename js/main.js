@@ -1,19 +1,23 @@
 "use strict";
 
 async function startGame() {
-  console.log("Sektor 1 Engine starting...");
+  console.log("Maggot Corpse Engine starting...");
 
   Graphics.initialize();
-
   Input.initialize();
-
   SceneManager.initialize();
 
+  // =====================================
+  // LOAD DATABASE FIRST
+  // =====================================
+
+  await DatabaseManager.loadDatabase();
+
+  // =====================================
+  // CREATE GAME OBJECTS
+  // =====================================
+
   window.$gameSystem = new Game_System();
-
-  window.$gameActor = $gameSystem.actor;
-
-  window.$gameParty = $gameSystem.party;
 
   window.$gameSwitches = $gameSystem.switches;
 
@@ -21,7 +25,13 @@ async function startGame() {
 
   window.$gameSelfSwitches = $gameSystem.selfSwitches;
 
-  await DatabaseManager.loadDatabase();
+  window.$gameActor = $gameSystem.actor;
+
+  window.$gameParty = $gameSystem.party;
+
+  // =====================================
+  // START GAME
+  // =====================================
 
   SceneManager.goto(Scene_Map);
 

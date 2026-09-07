@@ -13,7 +13,6 @@ class Scene_Map extends Scene_Base {
 
     this.messageWindow = new Window_Message();
     this.choiceWindow = new Window_Choice();
-    this.inventoryWindow = new Window_Inventory();
 
     this.interpreter = new Game_Interpreter(
       this.messageWindow,
@@ -49,33 +48,16 @@ class Scene_Map extends Scene_Base {
     }
 
     // =====================================
-    // INVENTORY
+    // MAIN MENU
     // =====================================
 
-    // If inventory is already open,
-    // only update the inventory.
-
-    if (this.inventoryWindow.isOpen()) {
-      this.inventoryWindow.update();
-
-      this.camera.follow(this.player);
-
-      return;
-    }
-
-    // Open inventory with I,
-    // but only while no event/dialogue
-    // is currently running.
-
     if (
-      Input.isTriggered("KeyI") &&
+      Input.isTriggered("Escape") &&
       !this.messageWindow.isOpen() &&
       !this.choiceWindow.isOpen() &&
       !this.interpreter.isRunning()
     ) {
-      this.inventoryWindow.show();
-
-      this.camera.follow(this.player);
+      SceneManager.push(Scene_Menu);
 
       return;
     }
@@ -215,8 +197,6 @@ class Scene_Map extends Scene_Base {
     this.messageWindow.draw();
 
     this.choiceWindow.draw();
-
-    this.inventoryWindow.draw();
   }
 
   drawLoadingScreen() {
