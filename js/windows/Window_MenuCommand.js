@@ -6,6 +6,7 @@ class Window_MenuCommand {
 
     this.commands = [
       "Items",
+      "Magic",
       "Status",
       "Equipment",
       "Save",
@@ -13,14 +14,14 @@ class Window_MenuCommand {
       "Options",
       "Exit",
     ];
-    
+
     this.index = 0;
 
     this.width = 300;
-    this.height = 410;
-
+    
     this.padding = 24;
     this.lineHeight = 45;
+    this.height = 90 + this.commands.length * this.lineHeight;
 
     this.x = 60;
     this.y = 100;

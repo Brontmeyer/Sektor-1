@@ -2,13 +2,15 @@
   null,
   {
     "id": 1,
-    "type": "item",
+    "article": "a",
     "name": "Potion",
     "pluralName": "Potions",
-    "article": "a",
     "description": "Restores a small amount of HP.",
-    "price": 50,
+
+    "type": "item",
     "consumable": true,
+
+    "price": 50,
     "effect": {
       "type": "healHp",
       "value": 50
@@ -16,13 +18,15 @@
   },
   {
     "id": 2,
-    "type": "item",
+    "article": "a",
     "name": "Hi-Potion",
     "pluralName": "Hi-Potions",
-    "article": "a",
     "description": "Restores a moderate amount of HP.",
-    "price": 200,
+
+    "type": "item",
     "consumable": true,
+
+    "price": 200,
     "effect": {
       "type": "healHp",
       "value": 200
@@ -30,13 +34,15 @@
   },
   {
     "id": 3,
-    "type": "item",
+    "article": "an",
     "name": "Ether",
     "pluralName": "Ethers",
-    "article": "an",
     "description": "Restores a small amount of MP.",
-    "price": 100,
+    
+    "type": "item",
     "consumable": true,
+    
+    "price": 100,
     "effect": {
       "type": "healMp",
       "value": 20
@@ -44,13 +50,15 @@
   },
   {
     "id": 4,
-    "type": "item",
+    "article": "a",
     "name": "Hi-Ether",
     "pluralName": "Hi-Ethers",
-    "article": "a",
     "description": "Restores a moderate amount of MP.",
-    "price": 400,
+    
+    "type": "item",
     "consumable": true,
+    
+    "price": 400,
     "effect": {
       "type": "healMp",
       "value": 40
@@ -58,13 +66,15 @@
   },
   {
     "id": 5,
-    "type": "item",
+    "article": "an",
     "name": "Elixir",
     "pluralName": "Elixirs",
-    "article": "an",
     "description": "Fully restores HP and MP.",
-    "price": 1000,
+    
+    "type": "item",
     "consumable": true,
+    
+    "price": 1000,
     "effect": {
       "type": "healHpMp",
       "value": "full"
@@ -72,13 +82,15 @@
   },
   {
     "id": 6,
-    "type": "item",
+    "article": "a",
     "name": "Phoenix Down",
     "pluralName": "Phoenix Downs",
-    "article": "a",
     "description": "Revives a fallen ally with a small amount of HP.",
-    "price": 500,
+    
+    "type": "item",
     "consumable": true,
+    
+    "price": 500,
     "effect": {
       "type": "revive",
       "value": "small"

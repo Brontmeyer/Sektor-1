@@ -11,6 +11,9 @@ class Scene_Menu extends Scene_Base {
     this.equipmentWindow = new Window_Equipment();
     this.saveSlotsWindow = new Window_SaveSlots();
 
+    this.magicWindow = new Window_Magic();
+    this.magicWindow.active = false;
+
     this.saveMessage = "";
     this.saveMessageTimer = 0;
   }
@@ -78,6 +81,20 @@ class Scene_Menu extends Scene_Base {
       return;
     }
 
+    // ================================
+    // MAGIC WINDOW
+    // ================================
+
+    if (this.magicWindow.isOpen()) {
+      if (Input.isTriggered("Escape")) {
+        this.magicWindow.hide();
+        return;
+      }
+
+      this.magicWindow.update();
+      return;
+    }
+
     // =====================================
     // STATUS OPEN
     // =====================================
@@ -124,6 +141,11 @@ class Scene_Menu extends Scene_Base {
       switch (command) {
         case "Items":
           this.inventoryWindow.show();
+
+          break;
+
+        case "Magic":
+          this.magicWindow.show();
 
           break;
 
@@ -188,6 +210,8 @@ class Scene_Menu extends Scene_Base {
       this.saveSlotsWindow.draw();
     } else if (this.inventoryWindow.isOpen()) {
       this.inventoryWindow.draw();
+    } else if (this.magicWindow.isOpen()) {
+      this.magicWindow.draw();
     } else if (this.statusWindow.isOpen()) {
       this.statusWindow.draw();
     } else if (this.equipmentWindow.isOpen()) {

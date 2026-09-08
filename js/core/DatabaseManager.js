@@ -6,11 +6,14 @@ class DatabaseManager {
 
     this.system = await this.loadJSON("data/System.json");
     this.mapInfos = await this.loadJSON("data/MapInfos.json");
+
     this.items = await this.loadJSON("data/Items.json");
     this.actors = await this.loadJSON("data/Actors.json");
 
     this.weapons = await this.loadJSON("data/Weapons.json");
     this.armors = await this.loadJSON("data/Armors.json");
+    this.skills = await this.loadJSON("data/Skills.json");
+    this.enemies = await this.loadJSON("data/Enemies.json");
 
     console.log("Database loaded.");
   }
@@ -55,20 +58,6 @@ class DatabaseManager {
     return actor.name;
   }
 
-  static armor(armorId) {
-    return this.armors[armorId] || null;
-  }
-
-  static armorName(armorId) {
-    const armor = this.armor(armorId);
-
-    if (!armor) {
-      return `Unknown Armor ${armorId}`;
-    }
-
-    return armor.name;
-  }
-
   static item(itemId) {
     return this.items[itemId] || null;
   }
@@ -95,5 +84,39 @@ class DatabaseManager {
     }
 
     return weapon.name;
+  }
+
+  static armor(armorId) {
+    return this.armors[armorId] || null;
+  }
+
+  static armorName(armorId) {
+    const armor = this.armor(armorId);
+
+    if (!armor) {
+      return `Unknown Armor ${armorId}`;
+    }
+
+    return armor.name;
+  }
+
+  static skill(id) {
+    return this.skills?.[id] || null;
+  }
+
+  static skillName(id) {
+    const skill = this.skill(id);
+
+    return skill ? skill.name : "Unknown Skill";
+  }
+
+  static enemy(id) {
+    return this.enemies?.[id] || null;
+  }
+
+  static enemyName(id) {
+    const enemy = this.enemy(id);
+
+    return enemy ? enemy.name : "Unknown Enemy";
   }
 }

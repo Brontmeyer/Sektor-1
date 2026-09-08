@@ -20,20 +20,43 @@ class SaveManager {
 
     const actorData = saveData.actor;
 
-    if (actorData) {
-      $gameActor.actorId = actorData.actorId;
-      $gameActor.name = actorData.name;
-      $gameActor.level = actorData.level;
-      $gameActor.exp = actorData.exp;
+    $gameActor.actorId = actorData.actorId ?? $gameActor.actorId;
+    $gameActor.name = actorData.name ?? $gameActor.name;
+    $gameActor.level = actorData.level ?? $gameActor.level;
+    $gameActor.exp = actorData.exp ?? $gameActor.exp;
 
-      $gameActor.hp = actorData.hp;
-      $gameActor.maxHp = actorData.maxHp;
-      $gameActor.attack = actorData.attack;
-      $gameActor.defense = actorData.defense;
+    $gameActor.maxHp = actorData.maxHp ?? $gameActor.maxHp;
+    $gameActor.hp = actorData.hp ?? $gameActor.hp;
+    $gameActor.maxMp = actorData.maxMp ?? $gameActor.maxMp;
+    $gameActor.mp = actorData.mp ?? $gameActor.mp;
 
-      $gameActor.weaponId = actorData.weaponId;
-      $gameActor.armorId = actorData.armorId;
-    }
+    $gameActor.strength = actorData.strength ?? $gameActor.strength;
+    $gameActor.vitality = actorData.vitality ?? $gameActor.vitality;
+    $gameActor.dexterity = actorData.dexterity ?? $gameActor.dexterity;
+    $gameActor.agility = actorData.agility ?? $gameActor.agility;
+    $gameActor.magic = actorData.magic ?? $gameActor.magic;
+    $gameActor.spirit = actorData.spirit ?? $gameActor.spirit;
+    $gameActor.luck = actorData.luck ?? $gameActor.luck;
+
+    $gameActor.attack = actorData.attack ?? $gameActor.attack;
+    $gameActor.attackPercent =
+      actorData.attackPercent ?? $gameActor.attackPercent;
+
+    $gameActor.defense = actorData.defense ?? $gameActor.defense;
+    $gameActor.defensePercent =
+      actorData.defensePercent ?? $gameActor.defensePercent;
+
+    $gameActor.magicAttack = actorData.magicAttack ?? $gameActor.magicAttack;
+    $gameActor.magicDefense = actorData.magicDefense ?? $gameActor.magicDefense;
+    $gameActor.magicDefensePercent =
+      actorData.magicDefensePercent ?? $gameActor.magicDefensePercent;
+
+    $gameActor.weaponId = actorData.weaponId ?? $gameActor.weaponId;
+    $gameActor.armorId = actorData.armorId ?? $gameActor.armorId;
+
+    $gameActor.skills = Array.isArray(actorData.skills)
+      ? [...actorData.skills]
+      : $gameActor.skills;
 
     // =========================
     // RESTORE PARTY
@@ -201,11 +224,29 @@ class SaveManager {
         hp: $gameActor.hp,
         maxHp: $gameActor.maxHp,
 
+        mp: $gameActor.mp,
+        maxMp: $gameActor.maxMp,
+
+        strength: $gameActor.strength,
+        vitality: $gameActor.vitality,
+        dexterity: $gameActor.dexterity,
+        agility: $gameActor.agility,
+        magic: $gameActor.magic,
+        spirit: $gameActor.spirit,
+        luck: $gameActor.luck,
+
         attack: $gameActor.attack,
+        attackPercent: $gameActor.attackPercent,
         defense: $gameActor.defense,
+        defensePercent: $gameActor.defensePercent,
+        magicAttack: $gameActor.magicAttack,
+        magicDefense: $gameActor.magicDefense,
+        magicDefensePercent: $gameActor.magicDefensePercent,
 
         weaponId: $gameActor.weaponId,
         armorId: $gameActor.armorId,
+
+        skills: [...$gameActor.skills],
       },
 
       party: {

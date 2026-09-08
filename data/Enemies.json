@@ -1,0 +1,30 @@
+[
+  null,
+  {
+    "id": 1,
+    "name": "Test Slime",
+
+    "level": 1,
+
+    "maxHp": 60,
+    "maxMp": 0,
+
+    "strength": 6,
+    "vitality": 6,
+    "dexterity": 5,
+    "agility": 4,
+    "magic": 4,
+    "spirit": 5,
+    "luck": 3,
+
+    "attack": 6,
+    "attackPercent": 90,
+
+    "defense": 4,
+    "defensePercent": 2,
+
+    "magicAttack": 4,
+    "magicDefense": 5,
+    "magicDefensePercent": 0
+  }
+]
