@@ -135,9 +135,7 @@ class Window_Equipment {
     // =====================================
 
     context.strokeStyle = "#ffffff";
-
     context.lineWidth = 2;
-
     context.strokeRect(this.x, this.y, this.width, this.height);
 
     // =====================================

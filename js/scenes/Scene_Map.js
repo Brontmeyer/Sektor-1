@@ -28,14 +28,11 @@ class Scene_Map extends Scene_Base {
 
   async loadMap() {
     const mapId = DatabaseManager.system.startMapId;
-
     const mapData = await DatabaseManager.loadMap(mapId);
-
     this.map = new Game_Map(mapData);
+    this.camera = new Camera(this.map);
 
     this.player = new Game_Player(this.map);
-
-    this.camera = new Camera(this.map);
 
     this.loading = false;
 
@@ -97,7 +94,6 @@ class Scene_Map extends Scene_Base {
 
       this.player.update(deltaTime);
     }
-
     this.camera.follow(this.player);
   }
 
@@ -110,15 +106,12 @@ class Scene_Map extends Scene_Base {
 
     for (const event of this.map.events) {
       const playerCenterX = this.player.x + this.player.width / 2;
-
       const playerCenterY = this.player.y + this.player.height / 2;
 
       const eventCenterX = event.x + event.width / 2;
-
       const eventCenterY = event.y + event.height / 2;
 
       const dx = eventCenterX - playerCenterX;
-
       const dy = eventCenterY - playerCenterY;
 
       const distance = Math.sqrt(dx * dx + dy * dy);
@@ -135,10 +128,10 @@ class Scene_Map extends Scene_Base {
     if (this.interpreter.isRunning()) {
       return;
     }
+  
+    this.interpreter.setup(event.commands, event);
 
     console.log(`Activated event: ${event.name}`);
-
-    this.interpreter.setup(event.commands, event);
   }
 
   checkTransfers() {
@@ -165,18 +158,13 @@ class Scene_Map extends Scene_Base {
     console.log(`Transferring to map ${transfer.targetMapId}...`);
 
     const mapData = await DatabaseManager.loadMap(transfer.targetMapId);
-
     this.map = new Game_Map(mapData);
+    this.camera = new Camera(this.map);
+    this.camera.follow(this.player);
 
     this.player = new Game_Player(this.map);
-
     this.player.x = transfer.targetX;
-
     this.player.y = transfer.targetY;
-
-    this.camera = new Camera(this.map);
-
-    this.camera.follow(this.player);
 
     this.transferring = false;
 
@@ -191,19 +179,14 @@ class Scene_Map extends Scene_Base {
     }
 
     this.map.draw(this.camera.x, this.camera.y);
-
     this.player.draw(this.camera.x, this.camera.y);
-
     this.messageWindow.draw();
-
     this.choiceWindow.draw();
   }
 
   drawLoadingScreen() {
     Graphics.context.fillStyle = "white";
-
     Graphics.context.font = "28px Arial";
-
     Graphics.context.textAlign = "center";
 
     Graphics.context.fillText(

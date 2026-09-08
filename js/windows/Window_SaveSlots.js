@@ -5,31 +5,26 @@ class Window_SaveSlots {
     this.visible = false;
 
     this.mode = "save";
-
     this.index = 0;
-
     this.result = null;
-
     this.slots = [1, 2, 3];
 
     this.width = 520;
     this.height = 300;
 
     this.padding = 30;
-    this.lineHeight = 50;
+    this.lineHeight = 65;
 
     this.x = (Graphics.width - this.width) / 2;
     this.y = (Graphics.height - this.height) / 2;
   }
 
   show(mode = "save") {
-    this.mode = mode;
-
-    this.index = 0;
-
-    this.result = null;
-
     this.visible = true;
+
+    this.mode = mode;
+    this.index = 0;
+    this.result = null;
   }
 
   hide() {
@@ -101,21 +96,16 @@ class Window_SaveSlots {
 
     // Background
     context.fillStyle = "#000000";
-
     context.fillRect(this.x, this.y, this.width, this.height);
 
     // Border
     context.strokeStyle = "#ffffff";
-
     context.lineWidth = 2;
-
     context.strokeRect(this.x, this.y, this.width, this.height);
 
     // Title
     context.fillStyle = "#ffffff";
-
     context.font = "28px sans-serif";
-
     context.textAlign = "left";
 
     const title = this.mode === "load" ? "Load Game" : "Save Game";
@@ -124,11 +114,8 @@ class Window_SaveSlots {
 
     // Divider
     context.beginPath();
-
     context.moveTo(this.x + this.padding, this.y + 65);
-
     context.lineTo(this.x + this.width - this.padding, this.y + 65);
-
     context.stroke();
 
     // Slots
@@ -141,15 +128,50 @@ class Window_SaveSlots {
 
       const exists = SaveManager.exists(slotId);
 
-      const status = exists ? "Save Data" : "Empty";
+      let status = "Empty";
 
-      const text = `${prefix}Slot ${slotId}    ${status}`;
+      let dateText = "";
+
+      if (exists) {
+        const saveData = SaveManager.read(slotId);
+
+        if (saveData) {
+          const level =
+            saveData.metadata?.level ?? saveData.actor?.level ?? "?";
+
+          const mapName =
+            saveData.metadata?.mapName ??
+            (saveData.location?.mapId
+              ? `Map ${saveData.location.mapId}`
+              : "Unknown Map");
+
+          status = `Lv ${level}    ${mapName}`;
+
+          const timestamp = saveData.metadata?.timestamp;
+
+          if (timestamp) {
+            const date = new Date(timestamp);
+
+            dateText = date.toLocaleString();
+          }
+        }
+      }
+
+      const slotY = this.y + 110 + i * this.lineHeight;
+
+      context.font = "22px sans-serif";
 
       context.fillText(
-        text,
+        `${prefix}Slot ${slotId}    ${status}`,
         this.x + this.padding,
-        this.y + 115 + i * this.lineHeight,
+        slotY,
       );
+
+      if (exists && dateText) {
+        context.font = "16px sans-serif";
+
+        context.fillText(dateText, this.x + this.padding + 30, slotY + 24);
+      }
     }
 
     context.restore();

@@ -11,6 +11,15 @@ class GameLoop {
     console.log("Game loop started.");
   }
 
+  static update(deltaTime) {
+    Graphics.clear();
+
+    SceneManager.update(deltaTime);
+
+    SceneManager.draw();
+    Input.endFrame();
+  }
+
   static loop(currentTime) {
     if (!this.running) {
       return;
@@ -25,15 +34,6 @@ class GameLoop {
     this.update(deltaTime);
 
     requestAnimationFrame(this.loop.bind(this));
-  }
-
-  static update(deltaTime) {
-    Graphics.clear();
-
-    SceneManager.update(deltaTime);
-
-    SceneManager.draw();
-    Input.endFrame();
   }
 
   static stop() {

@@ -13,6 +13,18 @@ class Input {
     console.log("Input initialized.");
   }
 
+  static endFrame() {
+    this.triggeredKeys = {};
+  }
+
+  static isPressed(code) {
+    return this.keys[code] === true;
+  }
+  
+  static isTriggered(code) {
+    return this.triggeredKeys[code] === true;
+  }
+
   static onKeyDown(event) {
     if (!this.keys[event.code]) {
       this.triggeredKeys[event.code] = true;
@@ -23,17 +35,5 @@ class Input {
 
   static onKeyUp(event) {
     this.keys[event.code] = false;
-  }
-
-  static isTriggered(code) {
-    return this.triggeredKeys[code] === true;
-  }
-
-  static endFrame() {
-    this.triggeredKeys = {};
-  }
-
-  static isPressed(code) {
-    return this.keys[code] === true;
   }
 }

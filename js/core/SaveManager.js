@@ -1,102 +1,8 @@
 "use strict";
 
 class SaveManager {
-  static saveKey(slotId) {
-    return `Sektor1_Save_${slotId}`;
-  }
-
-  static save(slotId = 1) {
-    let scene = SceneManager.currentScene;
-
-    // If the current scene is the menu,
-    // look backward through the scene stack
-    // for the active map scene.
-    if (!scene?.map || !scene?.player) {
-      scene =
-        [...SceneManager.sceneStack]
-          .reverse()
-          .find((stackedScene) => stackedScene?.map && stackedScene?.player) ||
-        null;
-    }
-
-    // No valid map scene was found.
-    if (!scene || !scene.map || !scene.player) {
-      console.warn("Cannot save: no active map scene.");
-
-      return false;
-    }
-
-    const saveData = {
-      version: 1,
-
-      actor: {
-        actorId: $gameActor.actorId,
-        name: $gameActor.name,
-        level: $gameActor.level,
-        exp: $gameActor.exp,
-
-        hp: $gameActor.hp,
-        maxHp: $gameActor.maxHp,
-
-        attack: $gameActor.attack,
-        defense: $gameActor.defense,
-
-        weaponId: $gameActor.weaponId,
-        armorId: $gameActor.armorId,
-      },
-
-      party: {
-        items: { ...$gameParty.items },
-        weapons: { ...$gameParty.weapons },
-        armors: { ...$gameParty.armors },
-      },
-
-      switches: {
-        data: { ...$gameSwitches.data },
-      },
-
-      variables: {
-        data: { ...$gameVariables.data },
-      },
-
-      selfSwitches: {
-        data: { ...$gameSelfSwitches.data },
-      },
-
-      location: {
-        mapId: scene.map.id,
-        x: scene.player.x,
-        y: scene.player.y,
-      },
-    };
-
-    const json = JSON.stringify(saveData);
-
-    localStorage.setItem(this.saveKey(slotId), json);
-
-    console.log(`Game saved to slot ${slotId}.`);
-
-    return true;
-  }
-
   static exists(slotId = 1) {
     return localStorage.getItem(this.saveKey(slotId)) !== null;
-  }
-
-  static read(slotId = 1) {
-    const json = localStorage.getItem(this.saveKey(slotId));
-
-    if (!json) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(json);
-    } catch (error) {
-      console.error("Could not read save data:", error);
-
-      return null;
-    }
   }
 
   static async load(slotId = 1) {
@@ -116,23 +22,16 @@ class SaveManager {
 
     if (actorData) {
       $gameActor.actorId = actorData.actorId;
-
       $gameActor.name = actorData.name;
-
       $gameActor.level = actorData.level;
-
       $gameActor.exp = actorData.exp;
 
       $gameActor.hp = actorData.hp;
-
       $gameActor.maxHp = actorData.maxHp;
-
       $gameActor.attack = actorData.attack;
-
       $gameActor.defense = actorData.defense;
 
       $gameActor.weaponId = actorData.weaponId;
-
       $gameActor.armorId = actorData.armorId;
     }
 
@@ -144,9 +43,7 @@ class SaveManager {
 
     if (partyData) {
       $gameParty.items = { ...(partyData.items || {}) };
-
       $gameParty.weapons = { ...(partyData.weapons || {}) };
-
       $gameParty.armors = { ...(partyData.armors || {}) };
     }
 
@@ -242,9 +139,110 @@ class SaveManager {
         }
       }
     }
-
     console.log(`Game loaded from slot ${slotId}.`);
+    return true;
+  }
+
+  static read(slotId = 1) {
+    const json = localStorage.getItem(this.saveKey(slotId));
+
+    if (!json) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(json);
+    } catch (error) {
+      console.error("Could not read save data:", error);
+
+      return null;
+    }
+  }
+
+  static save(slotId = 1) {
+    let scene = SceneManager.currentScene;
+
+    // If the current scene is the menu,
+    // look backward through the scene stack
+    // for the active map scene.
+    if (!scene?.map || !scene?.player) {
+      scene =
+        [...SceneManager.sceneStack]
+          .reverse()
+          .find((stackedScene) => stackedScene?.map && stackedScene?.player) ||
+        null;
+    }
+
+    // No valid map scene was found.
+    if (!scene || !scene.map || !scene.player) {
+      console.warn("Cannot save: no active map scene.");
+
+      return false;
+    }
+
+    const saveData = {
+      version: 1,
+
+      metadata: {
+        actorName: $gameActor.name,
+        level: $gameActor.level,
+
+        mapId: scene.map.id,
+        mapName: scene.map.name || `Map ${scene.map.id}`,
+        timestamp: Date.now(),
+      },
+
+      actor: {
+        actorId: $gameActor.actorId,
+        name: $gameActor.name,
+        level: $gameActor.level,
+        exp: $gameActor.exp,
+
+        hp: $gameActor.hp,
+        maxHp: $gameActor.maxHp,
+
+        attack: $gameActor.attack,
+        defense: $gameActor.defense,
+
+        weaponId: $gameActor.weaponId,
+        armorId: $gameActor.armorId,
+      },
+
+      party: {
+        items: { ...$gameParty.items },
+        weapons: { ...$gameParty.weapons },
+        armors: { ...$gameParty.armors },
+      },
+
+      switches: {
+        data: { ...$gameSwitches.data },
+      },
+
+      variables: {
+        data: { ...$gameVariables.data },
+      },
+
+      selfSwitches: {
+        data: { ...$gameSelfSwitches.data },
+      },
+
+      location: {
+        mapId: scene.map.id,
+        x: scene.player.x,
+        y: scene.player.y,
+      },
+    };
+
+    const json = JSON.stringify(saveData);
+
+    localStorage.setItem(this.saveKey(slotId), json);
+
+    console.log(`Game saved to slot ${slotId}.`);
 
     return true;
+  }
+
+  static saveKey(slotId) {
+    return `Sektor1_Save_${slotId}`;
   }
 }

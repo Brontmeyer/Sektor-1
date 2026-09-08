@@ -16,9 +16,7 @@ class Scene_Menu extends Scene_Base {
   }
 
   update(deltaTime) {
-    // =====================================
     // SAVE MESSAGE TIMER
-    // =====================================
 
     if (this.saveMessageTimer > 0) {
       this.saveMessageTimer--;
@@ -181,6 +179,10 @@ class Scene_Menu extends Scene_Base {
     context.fillText(DatabaseManager.system.gameTitle || "Sektor 1", 60, 60);
 
     context.restore();
+
+    // =====================================
+    // DRAW ACTIVE WINDOW
+    // =====================================
 
     if (this.saveSlotsWindow.isOpen()) {
       this.saveSlotsWindow.draw();

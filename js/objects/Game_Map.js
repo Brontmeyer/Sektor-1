@@ -30,7 +30,6 @@ class Game_Map {
     const context = Graphics.context;
 
     context.fillStyle = "#2f2f2f";
-
     context.fillRect(-cameraX, -cameraY, this.width, this.height);
 
     // Temporary grid so we can see movement
@@ -39,26 +38,19 @@ class Game_Map {
     const gridSize = 64;
 
     context.strokeStyle = "#444444";
-
     context.lineWidth = 1;
 
     for (let x = 0; x <= this.width; x += gridSize) {
       context.beginPath();
-
       context.moveTo(x - cameraX, -cameraY);
-
       context.lineTo(x - cameraX, this.height - cameraY);
-
       context.stroke();
     }
 
     for (let y = 0; y <= this.height; y += gridSize) {
       context.beginPath();
-
       context.moveTo(-cameraX, y - cameraY);
-
       context.lineTo(this.width - cameraX, y - cameraY);
-
       context.stroke();
     }
 

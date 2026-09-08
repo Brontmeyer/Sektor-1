@@ -41,8 +41,19 @@ class Game_Player {
     }
 
     this.updateVelocity(inputX, inputY, deltaTime);
-
     this.updatePosition(deltaTime);
+  }
+
+  updatePosition(deltaTime) {
+    const moveX = this.velocityX * deltaTime;
+
+    const moveY = this.velocityY * deltaTime;
+
+    CollisionManager.moveX(this, moveX, this.map.obstacles);
+
+    CollisionManager.moveY(this, moveY, this.map.obstacles);
+
+    this.keepInsideMap();
   }
 
   updateVelocity(inputX, inputY, deltaTime) {
@@ -53,7 +64,6 @@ class Game_Player {
       inputY /= length;
 
       this.velocityX += inputX * this.acceleration * deltaTime;
-
       this.velocityY += inputY * this.acceleration * deltaTime;
 
       const speed = Math.sqrt(
@@ -95,21 +105,8 @@ class Game_Player {
     this.velocityY *= scale;
   }
 
-  updatePosition(deltaTime) {
-    const moveX = this.velocityX * deltaTime;
-
-    const moveY = this.velocityY * deltaTime;
-
-    CollisionManager.moveX(this, moveX, this.map.obstacles);
-
-    CollisionManager.moveY(this, moveY, this.map.obstacles);
-
-    this.keepInsideMap();
-  }
-
   keepInsideMap() {
     const maxX = this.map.width - this.width;
-
     const maxY = this.map.height - this.height;
 
     if (this.x < 0) {

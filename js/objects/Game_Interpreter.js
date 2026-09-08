@@ -58,7 +58,6 @@ class Game_Interpreter {
     switch (command.code) {
       case "text":
         return this.commandText(command);
-
       case "choice":
         return this.commandChoice(command);
 
@@ -74,25 +73,25 @@ class Game_Interpreter {
       case "addVariable":
         return this.commandAddVariable(command);
 
-      case "gainExp":
-        return this.commandGainExp(command);
-      case "gainExpMessage":
-        return this.commandGainExpMessage(command);
-
       case "gainItem":
         return this.commandGainItem(command);
       case "gainItemMessage":
         return this.commandGainItemMessage(command);
+
+      case "gainArmor":
+        return this.commandGainArmor(command);
+      case "gainArmorMessage":
+        return this.commandGainArmorMessage(command);
 
       case "gainWeapon":
         return this.commandGainWeapon(command);
       case "gainWeaponMessage":
         return this.commandGainWeaponMessage(command);
 
-      case "gainArmor":
-        return this.commandGainArmor(command);
-      case "gainArmorMessage":
-        return this.commandGainArmorMessage(command);
+      case "gainExp":
+        return this.commandGainExp(command);
+      case "gainExpMessage":
+        return this.commandGainExpMessage(command);
 
       default:
         console.warn(`Unknown event command: ${command.code}`);
@@ -218,50 +217,6 @@ class Game_Interpreter {
     return true;
   }
 
-  commandGainExp(command) {
-    const amount = Number(command.amount);
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-      console.error(`Invalid EXP amount: ${command.amount}`);
-
-      return true;
-    }
-
-    $gameActor.gainExp(amount);
-
-    return true;
-  }
-
-  commandGainExpMessage(command) {
-    if (this.messageWindow.isOpen()) {
-      return false;
-    }
-
-    const amount = Number(command.amount);
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-      console.error(`Invalid EXP amount: ${command.amount}`);
-
-      return true;
-    }
-
-    const levelsGained = $gameActor.gainExp(amount);
-
-    let message = `You gained ${amount} EXP!`;
-
-    if (levelsGained === 1) {
-      message += `\n${$gameActor.name} reached Level ${$gameActor.level}!`;
-    } else if (levelsGained > 1) {
-      message += `\n${$gameActor.name} gained ${levelsGained} levels and reached Level ${$gameActor.level}!`;
-    }
-
-    this.messageWindow.show(message, "System");
-
-    this.index++;
-
-    return false;
-  }
-
   commandGainItem(command) {
     $gameParty.gainItem(command.itemId, command.amount || 1);
 
@@ -301,6 +256,68 @@ class Game_Interpreter {
 
     // Move to the next command,
     // but PAUSE the interpreter here.
+    this.index++;
+
+    return false;
+  }
+
+  commandGainArmor(command) {
+    const amount = Number(command.amount ?? 1);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid armor amount: ${command.amount}`);
+
+      return true;
+    }
+
+    $gameParty.gainArmor(command.armorId, amount);
+
+    return true;
+  }
+
+  commandGainArmorMessage(command) {
+    if (this.messageWindow.isOpen()) {
+      return false;
+    }
+
+    const armor = DatabaseManager.armor(command.armorId);
+
+    if (!armor) {
+      console.error(`Unknown armor ID: ${command.armorId}`);
+
+      return true;
+    }
+
+    const amount = Number(command.amount ?? 1);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid armor amount: ${command.amount}`);
+
+      return true;
+    }
+
+    $gameParty.gainArmor(command.armorId, amount);
+
+    const source = command.source || "System";
+
+    let message = "";
+
+    if (amount === 1) {
+      if (source === "Chest") {
+        message = `You found ${armor.name}!`;
+      } else {
+        message = `You obtained ${armor.name}!`;
+      }
+    } else {
+      if (source === "Chest") {
+        message = `You found ${amount} ${armor.name}s!`;
+      } else {
+        message = `You obtained ${amount} ${armor.name}s!`;
+      }
+    }
+
+    this.messageWindow.show(message, source);
+
     this.index++;
 
     return false;
@@ -368,62 +385,44 @@ class Game_Interpreter {
     return false;
   }
 
-  commandGainArmor(command) {
-    const amount = Number(command.amount ?? 1);
+  commandGainExp(command) {
+    const amount = Number(command.amount);
 
     if (!Number.isFinite(amount) || amount <= 0) {
-      console.error(`Invalid armor amount: ${command.amount}`);
+      console.error(`Invalid EXP amount: ${command.amount}`);
 
       return true;
     }
 
-    $gameParty.gainArmor(command.armorId, amount);
+    $gameActor.gainExp(amount);
 
     return true;
   }
 
-  commandGainArmorMessage(command) {
+  commandGainExpMessage(command) {
     if (this.messageWindow.isOpen()) {
       return false;
     }
 
-    const armor = DatabaseManager.armor(command.armorId);
-
-    if (!armor) {
-      console.error(`Unknown armor ID: ${command.armorId}`);
-
-      return true;
-    }
-
-    const amount = Number(command.amount ?? 1);
+    const amount = Number(command.amount);
 
     if (!Number.isFinite(amount) || amount <= 0) {
-      console.error(`Invalid armor amount: ${command.amount}`);
+      console.error(`Invalid EXP amount: ${command.amount}`);
 
       return true;
     }
 
-    $gameParty.gainArmor(command.armorId, amount);
+    const levelsGained = $gameActor.gainExp(amount);
 
-    const source = command.source || "System";
+    let message = `You gained ${amount} EXP!`;
 
-    let message = "";
-
-    if (amount === 1) {
-      if (source === "Chest") {
-        message = `You found ${armor.name}!`;
-      } else {
-        message = `You obtained ${armor.name}!`;
-      }
-    } else {
-      if (source === "Chest") {
-        message = `You found ${amount} ${armor.name}s!`;
-      } else {
-        message = `You obtained ${amount} ${armor.name}s!`;
-      }
+    if (levelsGained === 1) {
+      message += `\n${$gameActor.name} reached Level ${$gameActor.level}!`;
+    } else if (levelsGained > 1) {
+      message += `\n${$gameActor.name} gained ${levelsGained} levels and reached Level ${$gameActor.level}!`;
     }
 
-    this.messageWindow.show(message, source);
+    this.messageWindow.show(message, "System");
 
     this.index++;
 

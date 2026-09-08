@@ -4,8 +4,16 @@ class Window_MenuCommand {
   constructor() {
     this.visible = true;
 
-    this.commands = ["Items", "Status", "Equipment", "Save", "Load","Options", "Exit"];
-
+    this.commands = [
+      "Items",
+      "Status",
+      "Equipment",
+      "Save",
+      "Load",
+      "Options",
+      "Exit",
+    ];
+    
     this.index = 0;
 
     this.width = 300;
@@ -59,33 +67,25 @@ class Window_MenuCommand {
     // Background
 
     context.fillStyle = "rgba(0, 0, 0, 0.95)";
-
     context.fillRect(this.x, this.y, this.width, this.height);
 
     // Border
 
     context.strokeStyle = "#ffffff";
-
     context.lineWidth = 2;
-
     context.strokeRect(this.x, this.y, this.width, this.height);
 
     // Title
 
     context.fillStyle = "#ffffff";
-
     context.font = "26px sans-serif";
-
     context.fillText("Menu", this.x + this.padding, this.y + 42);
 
     // Divider
 
     context.beginPath();
-
     context.moveTo(this.x + this.padding, this.y + 60);
-
     context.lineTo(this.x + this.width - this.padding, this.y + 60);
-
     context.stroke();
 
     // Commands

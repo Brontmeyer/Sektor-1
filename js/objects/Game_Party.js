@@ -93,42 +93,6 @@ class Game_Party {
   }
 
   // =====================================
-  // WEAPONS
-  // =====================================
-
-  weaponCount(weaponId) {
-    return this.weapons[weaponId] || 0;
-  }
-
-  gainWeapon(weaponId, amount = 1) {
-    const weapon = DatabaseManager.weapon(weaponId);
-
-    if (!weapon) {
-      console.error(`Unknown weapon ID: ${weaponId}`);
-
-      return;
-    }
-
-    const newAmount = this.weaponCount(weaponId) + Number(amount);
-
-    if (newAmount <= 0) {
-      delete this.weapons[weaponId];
-    } else {
-      this.weapons[weaponId] = newAmount;
-    }
-
-    console.log(`${weapon.name}: ${this.weaponCount(weaponId)}`);
-  }
-
-  loseWeapon(weaponId, amount = 1) {
-    this.gainWeapon(weaponId, -amount);
-  }
-
-  hasWeapon(weaponId) {
-    return this.weaponCount(weaponId) > 0;
-  }
-
-  // =====================================
   // ARMORS
   // =====================================
 
@@ -162,6 +126,42 @@ class Game_Party {
 
   hasArmor(armorId) {
     return this.armorCount(armorId) > 0;
+  }
+  
+  // =====================================
+  // WEAPONS
+  // =====================================
+
+  weaponCount(weaponId) {
+    return this.weapons[weaponId] || 0;
+  }
+
+  gainWeapon(weaponId, amount = 1) {
+    const weapon = DatabaseManager.weapon(weaponId);
+
+    if (!weapon) {
+      console.error(`Unknown weapon ID: ${weaponId}`);
+
+      return;
+    }
+
+    const newAmount = this.weaponCount(weaponId) + Number(amount);
+
+    if (newAmount <= 0) {
+      delete this.weapons[weaponId];
+    } else {
+      this.weapons[weaponId] = newAmount;
+    }
+
+    console.log(`${weapon.name}: ${this.weaponCount(weaponId)}`);
+  }
+
+  loseWeapon(weaponId, amount = 1) {
+    this.gainWeapon(weaponId, -amount);
+  }
+
+  hasWeapon(weaponId) {
+    return this.weaponCount(weaponId) > 0;
   }
 
   clear() {

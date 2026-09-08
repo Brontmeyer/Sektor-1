@@ -18,11 +18,10 @@ class Window_EquipSelect {
   }
 
   show(type) {
+    this.visible = true;
     this.type = type;
 
     this.result = null;
-
-    this.visible = true;
 
     const entries = this.entries();
 
@@ -45,7 +44,6 @@ class Window_EquipSelect {
 
   hide() {
     this.visible = false;
-
     this.type = null;
   }
 
@@ -106,7 +104,6 @@ class Window_EquipSelect {
         }
       }
     }
-
     return result;
   }
 
@@ -160,7 +157,6 @@ class Window_EquipSelect {
     }
 
     const context = Graphics.context;
-
     const entries = this.entries();
 
     context.save();
@@ -264,7 +260,9 @@ class Window_EquipSelect {
   }
 
   previewStat() {
-    const entry = this.currentEntry();
+    const entries = this.entries();
+
+    const entry = entries[this.index];
 
     if (!entry) {
       return null;
@@ -273,13 +271,9 @@ class Window_EquipSelect {
     if (this.type === "weapon") {
       const current = $gameActor.totalAttack();
 
-      const equipped = $gameActor.weapon();
+      const weapon = entry.id === 0 ? null : DatabaseManager.weapon(entry.id);
 
-      const equippedBonus = equipped ? Number(equipped.attack || 0) : 0;
-
-      const newBonus = entry.id === 0 ? 0 : Number(entry.bonus || 0);
-
-      const preview = current - equippedBonus + newBonus;
+      const preview = $gameActor.attackWithWeapon(weapon);
 
       return {
         name: "Attack",
@@ -291,13 +285,9 @@ class Window_EquipSelect {
     if (this.type === "armor") {
       const current = $gameActor.totalDefense();
 
-      const equipped = $gameActor.armor();
+      const armor = entry.id === 0 ? null : DatabaseManager.armor(entry.id);
 
-      const equippedBonus = equipped ? Number(equipped.defense || 0) : 0;
-
-      const newBonus = entry.id === 0 ? 0 : Number(entry.bonus || 0);
-
-      const preview = current - equippedBonus + newBonus;
+      const preview = $gameActor.defenseWithArmor(armor);
 
       return {
         name: "Defense",
@@ -305,7 +295,6 @@ class Window_EquipSelect {
         preview: preview,
       };
     }
-
     return null;
   }
 }

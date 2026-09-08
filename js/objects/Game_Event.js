@@ -7,13 +7,10 @@ class Game_Event {
     this.name = eventData.name || "";
 
     this.x = eventData.x || 0;
-
     this.y = eventData.y || 0;
 
     this.width = eventData.width || 32;
-
     this.height = eventData.height || 32;
-
     this.solid = eventData.solid || false;
 
     // New event-page system.
@@ -34,11 +31,8 @@ class Game_Event {
     }
 
     this.activePageIndex = -1;
-
     this.activePage = null;
-
     this.commands = [];
-
     this.refreshPage();
   }
 
@@ -209,6 +203,7 @@ class Game_Event {
 
     return true;
   }
+
   draw(cameraX, cameraY) {
     if (!this.activePage) {
       return;

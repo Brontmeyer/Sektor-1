@@ -9,6 +9,22 @@ class SceneManager {
     console.log("SceneManager initialized.");
   }
 
+  static update(deltaTime) {
+    if (!this.currentScene) {
+      return;
+    }
+
+    this.currentScene.update(deltaTime);
+  }
+
+  static draw() {
+    if (!this.currentScene) {
+      return;
+    }
+
+    this.currentScene.draw();
+  }
+
   static goto(sceneClass) {
     if (this.currentScene) {
       this.currentScene.terminate();
@@ -41,21 +57,5 @@ class SceneManager {
     this.currentScene = this.sceneStack.pop();
 
     console.log(`Returned to scene: ${this.currentScene.constructor.name}`);
-  }
-
-  static update(deltaTime) {
-    if (!this.currentScene) {
-      return;
-    }
-
-    this.currentScene.update(deltaTime);
-  }
-
-  static draw() {
-    if (!this.currentScene) {
-      return;
-    }
-
-    this.currentScene.draw();
   }
 }

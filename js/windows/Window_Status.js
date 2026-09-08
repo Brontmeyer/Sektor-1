@@ -4,8 +4,8 @@ class Window_Status {
   constructor() {
     this.visible = false;
 
-    this.width = 600;
-    this.height = 420;
+    this.width = 700;
+    this.height = 470;
 
     this.padding = 30;
 
@@ -36,138 +36,138 @@ class Window_Status {
   }
 
   draw() {
-    if (!this.visible) {
-      return;
-    }
+    // =========================
+    // STATUS WINDOW
+    // =========================
+
+    if (!this.visible) return;
 
     const context = Graphics.context;
 
     context.save();
 
-    context.textAlign = "left";
-    context.textBaseline = "alphabetic";
-
-    // =====================================
-    // BACKGROUND
-    // =====================================
-
-    context.fillStyle = "rgba(0, 0, 0, 0.95)";
+    // Window background
+    context.fillStyle = "#000000";
     context.fillRect(this.x, this.y, this.width, this.height);
 
-    // =====================================
-    // BORDER
-    // =====================================
-
+    // Window border
     context.strokeStyle = "#ffffff";
     context.lineWidth = 2;
     context.strokeRect(this.x, this.y, this.width, this.height);
 
-    // =====================================
-    // TITLE
-    // =====================================
-
+    // Text settings
     context.fillStyle = "#ffffff";
-    context.font = "28px sans-serif";
-    context.fillText("Status", this.x + this.padding, this.y + 45);
+    context.textAlign = "left";
 
-    // Divider
+    const actor = $gameActor;
+    const leftX = this.x + 40;
+    const rightX = this.x + 330;
+
+    // =========================
+    // NAME
+    // =========================
+
+    context.font = "30px sans-serif";
+    context.fillText(actor.name, leftX, this.y + 50);
+
+    // =========================
+    // LEVEL / EXP
+    // =========================
+
+    context.font = "20px sans-serif";
+    context.fillText(`Level: ${actor.level}`, leftX, this.y + 85);
+
+    const expNeeded = actor.expForNextLevel ? actor.expForNextLevel() : "?";
+
+    context.fillText(`EXP: ${actor.exp} / ${expNeeded}`, rightX, this.y + 85);
+
+    // =========================
+    // HP / MP
+    // =========================
+
+    context.font = "22px sans-serif";
+    context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, leftX, this.y + 125);
+    context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, rightX, this.y + 125);
+
+    // =========================
+    // DIVIDER
+    // =========================
 
     context.beginPath();
-    context.moveTo(this.x + this.padding, this.y + 65);
-    context.lineTo(this.x + this.width - this.padding, this.y + 65);
+    context.moveTo(this.x + 30, this.y + 150);
+    context.lineTo(this.x + this.width - 30, this.y + 150);
     context.stroke();
 
-    // =====================================
-    // CHARACTER
-    // =====================================
-
-    context.font = "24px sans-serif";
-    context.fillText($gameActor.name, this.x + this.padding, this.y + 115);
-
-    // =====================================
-    // HP
-    // =====================================
-
-    const hp = $gameActor.hp;
-    const maxHp = $gameActor.maxHp;
+    // =========================
+    // PRIMARY STATS
+    // =========================
 
     context.font = "20px sans-serif";
+
+    let leftY = this.y + 190;
+
+    const statSpacing = 34;
+
+    context.fillText(`Strength: ${actor.strength}`, leftX, leftY);
+    leftY += statSpacing;
+
+    context.fillText(`Vitality: ${actor.vitality}`, leftX, leftY);
+    leftY += statSpacing;
+
+    context.fillText(`Dexterity: ${actor.dexterity}`, leftX, leftY);
+    leftY += statSpacing;
+
+    context.fillText(`Agility: ${actor.agility}`, leftX, leftY);
+    leftY += statSpacing;
+
+    context.fillText(`Magic: ${actor.magic}`, leftX, leftY);
+    leftY += statSpacing;
+
+    context.fillText(`Spirit: ${actor.spirit}`, leftX, leftY);
+    leftY += statSpacing;
+
+    context.fillText(`Luck: ${actor.luck}`, leftX, leftY);
+
+    // =========================
+    // DERIVED STATS
+    // =========================
+
+    let rightY = this.y + 190;
+
+    context.fillText(`Attack: ${actor.totalAttack()}`, rightX, rightY);
+    rightY += statSpacing;
+
+    context.fillText(`Defense: ${actor.totalDefense()}`, rightX, rightY);
+    rightY += statSpacing;
+
+    context.fillText(`Attack %: ${actor.totalAttackPercent()}`, rightX, rightY);
+    rightY += statSpacing;
+
     context.fillText(
-      `HP    ${hp} / ${maxHp}`,
-      this.x + this.padding,
-      this.y + 165,
+      `Defense %: ${actor.totalDefensePercent()}`,
+      rightX,
+      rightY,
     );
-
-    // =====================================
-    // HP BAR
-    // =====================================
-
-    const hpRatio = Math.max(0, Math.min(1, hp / maxHp));
-
-    const barX = this.x + this.padding;
-    const barY = this.y + 185;
-    const barWidth = 350;
-    const barHeight = 20;
-
-    context.fillStyle = "#333333";
-    context.fillRect(barX, barY, barWidth, barHeight);
-
-    context.fillStyle = "#ffffff";
-    context.fillRect(barX, barY, barWidth * hpRatio, barHeight);
-
-    // =====================================
-    // LEVEL
-    // =====================================
-
-    context.fillStyle = "#ffffff";
-    context.font = "20px sans-serif";
+    rightY += statSpacing;
 
     context.fillText(
-      `Level    ${$gameActor.level}`,
-      this.x + this.padding,
-      this.y + 260,
+      `Magic Attack: ${actor.totalMagicAttack()}`,
+      rightX,
+      rightY,
     );
-
-    // =====================================
-    // EXP BAR
-    // =====================================
-
-    const currentExp = $gameActor.exp;
-    const requiredExp = $gameActor.expForNextLevel();
+    rightY += statSpacing;
 
     context.fillText(
-      `EXP      ${currentExp} / ${requiredExp}`,
-      this.x + this.padding,
-      this.y + 300,
+      `Magic Defense: ${actor.totalMagicDefense()}`,
+      rightX,
+      rightY,
     );
-
-    const expRatio = Math.max(0, Math.min(1, currentExp / requiredExp));
-    const expBarX = this.x + this.padding;
-    const expBarY = this.y + 320;
-
-    const expBarWidth = 220;
-    const expBarHeight = 12;
-
-    context.fillStyle = "#333333";
-    context.fillRect(expBarX, expBarY, expBarWidth, expBarHeight);
-
-    context.fillStyle = "#ffffff";
-    context.fillRect(expBarX, expBarY, expBarWidth * expRatio, expBarHeight);
-
-    // =====================================
-    // STATS
-    // =====================================
+    rightY += statSpacing;
 
     context.fillText(
-      `Attack   ${$gameActor.totalAttack()}`,
-      this.x + 300,
-      this.y + 260,
-    );
-
-    context.fillText(
-      `Defense  ${$gameActor.totalDefense()}`,
-      this.x + 300,
-      this.y + 300,
+      `Magic Defense %: ${actor.totalMagicDefensePercent()}`,
+      rightX,
+      rightY,
     );
 
     context.restore();

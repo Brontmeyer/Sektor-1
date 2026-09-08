@@ -13,7 +13,6 @@ class Window_Inventory {
     this.lineHeight = 40;
 
     this.x = (Graphics.width - this.width) / 2;
-
     this.y = (Graphics.height - this.height) / 2;
   }
 
@@ -102,7 +101,6 @@ class Window_Inventory {
     // -------------------------
 
     context.fillStyle = "rgba(0, 0, 0, 0.88)";
-
     context.fillRect(this.x, this.y, this.width, this.height);
 
     // -------------------------
@@ -110,9 +108,7 @@ class Window_Inventory {
     // -------------------------
 
     context.strokeStyle = "#ffffff";
-
     context.lineWidth = 2;
-
     context.strokeRect(this.x, this.y, this.width, this.height);
 
     // -------------------------
@@ -120,19 +116,14 @@ class Window_Inventory {
     // -------------------------
 
     context.fillStyle = "#ffffff";
-
     context.font = "28px sans-serif";
-
     context.fillText("Items", this.x + this.padding, this.y + 42);
 
     // Divider line
 
     context.beginPath();
-
     context.moveTo(this.x + this.padding, this.y + 60);
-
     context.lineTo(this.x + this.width - this.padding, this.y + 60);
-
     context.stroke();
 
     // -------------------------
@@ -149,7 +140,6 @@ class Window_Inventory {
 
     if (itemIds.length === 0) {
       context.fillText("(No items)", this.x + this.padding, this.y + 105);
-
       context.restore();
 
       return;
@@ -163,7 +153,6 @@ class Window_Inventory {
 
     for (let i = 0; i < itemIds.length; i++) {
       const itemId = itemIds[i];
-
       const item = DatabaseManager.item(itemId);
 
       if (!item) {
@@ -171,41 +160,31 @@ class Window_Inventory {
       }
 
       const amount = $gameParty.itemCount(itemId);
-
       const selected = i === this.index;
+      const amountText = `x${amount}`;
+      const amountWidth = context.measureText(amountText).width;
 
       const prefix = selected ? "▶ " : "  ";
-
       context.fillText(`${prefix}${item.name}`, this.x + this.padding, drawY);
-
-      const amountText = `x${amount}`;
-
-      const amountWidth = context.measureText(amountText).width;
 
       context.fillText(
         amountText,
         this.x + this.width - this.padding - amountWidth,
         drawY,
       );
-
       drawY += this.lineHeight;
     }
 
     const selectedItemId = itemIds[this.index];
-
     const selectedItem = DatabaseManager.item(selectedItemId);
 
     if (selectedItem) {
       const dividerY = this.y + this.height - 125;
 
       context.beginPath();
-
       context.moveTo(this.x + this.padding, dividerY);
-
       context.lineTo(this.x + this.width - this.padding, dividerY);
-
       context.stroke();
-
       context.font = "18px sans-serif";
 
       context.fillText(
@@ -220,7 +199,6 @@ class Window_Inventory {
     // =====================================
 
     const hp = $gameActor.hp;
-
     const maxHp = $gameActor.maxHp;
 
     // Keep the ratio between 0 and 1.
@@ -236,9 +214,7 @@ class Window_Inventory {
     // -------------------------
 
     context.font = "18px sans-serif";
-
     context.fillStyle = "#ffffff";
-
     context.fillText("HP", this.x + this.padding, hpY);
 
     // -------------------------
@@ -246,15 +222,12 @@ class Window_Inventory {
     // -------------------------
 
     const barX = this.x + 65;
-
     const barY = hpY - 16;
 
     const barWidth = 230;
-
     const barHeight = 18;
 
     context.fillStyle = "#333333";
-
     context.fillRect(barX, barY, barWidth, barHeight);
 
     // -------------------------
@@ -262,7 +235,6 @@ class Window_Inventory {
     // -------------------------
 
     context.fillStyle = "#ffffff";
-
     context.fillRect(barX, barY, barWidth * hpRatio, barHeight);
 
     // -------------------------
@@ -272,11 +244,8 @@ class Window_Inventory {
     const hpText = `${hp}/${maxHp}`;
 
     context.font = "18px sans-serif";
-
     context.fillStyle = "#ffffff";
-
     context.fillText(hpText, barX + barWidth + 15, hpY);
-    
     context.restore();
   }
 

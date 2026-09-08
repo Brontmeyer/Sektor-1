@@ -5,30 +5,23 @@ class Window_Choice {
     this.visible = false;
 
     this.choices = [];
-
     this.index = 0;
-
     this.result = null;
 
     this.width = 360;
-
     this.lineHeight = 42;
-
     this.padding = 20;
 
     this.x = Graphics.width - this.width - 60;
-
     this.y = 0;
   }
 
   show(choices) {
-    this.choices = choices || [];
-
-    this.index = 0;
-
-    this.result = null;
-
     this.visible = true;
+
+    this.choices = choices || [];
+    this.index = 0;
+    this.result = null;
 
     this.updatePosition();
   }
@@ -37,7 +30,6 @@ class Window_Choice {
     this.visible = false;
 
     this.choices = [];
-
     this.index = 0;
   }
 
@@ -49,7 +41,6 @@ class Window_Choice {
     const height = this.padding * 2 + this.choices.length * this.lineHeight;
 
     this.height = height;
-
     this.y = Graphics.height - 40 - 180 - this.height - 10;
   }
 
@@ -101,19 +92,13 @@ class Window_Choice {
     const context = Graphics.context;
 
     context.fillStyle = "rgba(0, 0, 0, 0.9)";
-
     context.fillRect(this.x, this.y, this.width, this.height);
-
     context.strokeStyle = "white";
-
     context.lineWidth = 2;
 
     context.strokeRect(this.x, this.y, this.width, this.height);
-
     context.font = "22px Arial";
-
     context.textAlign = "left";
-
     context.textBaseline = "middle";
 
     for (let i = 0; i < this.choices.length; i++) {

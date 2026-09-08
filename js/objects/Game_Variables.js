@@ -5,12 +5,10 @@ class Game_Variables {
     this.data = {};
   }
 
-  value(id) {
-    if (this.data[id] === undefined) {
-      return 0;
-    }
+  addValue(id, amount) {
+    const newValue = this.value(id) + amount;
 
-    return this.data[id];
+    this.setValue(id, newValue);
   }
 
   setValue(id, value) {
@@ -19,10 +17,12 @@ class Game_Variables {
     console.log(`Variable "${id}" = ${value}`);
   }
 
-  addValue(id, amount) {
-    const newValue = this.value(id) + amount;
+  value(id) {
+    if (this.data[id] === undefined) {
+      return 0;
+    }
 
-    this.setValue(id, newValue);
+    return this.data[id];
   }
 
   clear() {
