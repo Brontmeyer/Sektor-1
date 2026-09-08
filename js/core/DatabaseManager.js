@@ -1,14 +1,46 @@
 "use strict";
 
 class DatabaseManager {
-  static async loadJSON(filename) {
-    const response = await fetch(filename);
+  static actor(actorId) {
+    return this.actors[actorId] || null;
+  }
 
-    if (!response.ok) {
-      throw new Error(`Failed to load ${filename}`);
+  static actorName(actorId) {
+    const actor = this.actor(actorId);
+
+    if (!actor) {
+      return `Unknown Actor ${actorId}`;
     }
 
-    return await response.json();
+    return actor.name;
+  }
+
+  static armor(armorId) {
+    return this.armors[armorId] || null;
+  }
+
+  static armorName(armorId) {
+    const armor = this.armor(armorId);
+
+    if (!armor) {
+      return `Unknown Armor ${armorId}`;
+    }
+
+    return armor.name;
+  }
+
+  static item(itemId) {
+    return this.items[itemId] || null;
+  }
+
+  static itemName(itemId) {
+    const item = this.item(itemId);
+
+    if (!item) {
+      return `Unknown Item ${itemId}`;
+    }
+
+    return item.name;
   }
 
   static async loadDatabase() {
@@ -23,6 +55,16 @@ class DatabaseManager {
     this.armors = await this.loadJSON("data/Armors.json");
 
     console.log("Database loaded.");
+  }
+
+  static async loadJSON(filename) {
+    const response = await fetch(filename);
+
+    if (!response.ok) {
+      throw new Error(`Failed to load ${filename}`);
+    }
+
+    return await response.json();
   }
 
   static async loadMap(mapId) {
@@ -41,34 +83,6 @@ class DatabaseManager {
     return mapData;
   }
 
-  static item(itemId) {
-    return this.items[itemId] || null;
-  }
-
-  static itemName(itemId) {
-    const item = this.item(itemId);
-
-    if (!item) {
-      return `Unknown Item ${itemId}`;
-    }
-
-    return item.name;
-  }
-
-  static actor(actorId) {
-    return this.actors[actorId] || null;
-  }
-
-  static actorName(actorId) {
-    const actor = this.actor(actorId);
-
-    if (!actor) {
-      return `Unknown Actor ${actorId}`;
-    }
-
-    return actor.name;
-  }
-
   static weapon(weaponId) {
     return this.weapons[weaponId] || null;
   }
@@ -81,19 +95,5 @@ class DatabaseManager {
     }
 
     return weapon.name;
-  }
-
-  static armor(armorId) {
-    return this.armors[armorId] || null;
-  }
-
-  static armorName(armorId) {
-    const armor = this.armor(armorId);
-
-    if (!armor) {
-      return `Unknown Armor ${armorId}`;
-    }
-
-    return armor.name;
   }
 }

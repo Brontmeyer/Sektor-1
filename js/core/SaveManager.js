@@ -6,6 +6,26 @@ class SaveManager {
   }
 
   static save(slotId = 1) {
+    let scene = SceneManager.currentScene;
+
+    // If the current scene is the menu,
+    // look backward through the scene stack
+    // for the active map scene.
+    if (!scene?.map || !scene?.player) {
+      scene =
+        [...SceneManager.sceneStack]
+          .reverse()
+          .find((stackedScene) => stackedScene?.map && stackedScene?.player) ||
+        null;
+    }
+
+    // No valid map scene was found.
+    if (!scene || !scene.map || !scene.player) {
+      console.warn("Cannot save: no active map scene.");
+
+      return false;
+    }
+
     const saveData = {
       version: 1,
 
@@ -29,6 +49,24 @@ class SaveManager {
         items: { ...$gameParty.items },
         weapons: { ...$gameParty.weapons },
         armors: { ...$gameParty.armors },
+      },
+
+      switches: {
+        data: { ...$gameSwitches.data },
+      },
+
+      variables: {
+        data: { ...$gameVariables.data },
+      },
+
+      selfSwitches: {
+        data: { ...$gameSelfSwitches.data },
+      },
+
+      location: {
+        mapId: scene.map.id,
+        x: scene.player.x,
+        y: scene.player.y,
       },
     };
 
@@ -61,7 +99,7 @@ class SaveManager {
     }
   }
 
-  static load(slotId = 1) {
+  static async load(slotId = 1) {
     const saveData = this.read(slotId);
 
     if (!saveData) {
@@ -110,6 +148,99 @@ class SaveManager {
       $gameParty.weapons = { ...(partyData.weapons || {}) };
 
       $gameParty.armors = { ...(partyData.armors || {}) };
+    }
+
+    // =========================
+    // RESTORE SWITCHES
+    // =========================
+
+    if (saveData.switches) {
+      $gameSwitches.data = {
+        ...(saveData.switches.data || {}),
+      };
+    }
+
+    // =========================
+    // RESTORE VARIABLES
+    // =========================
+
+    if (saveData.variables) {
+      $gameVariables.data = {
+        ...(saveData.variables.data || {}),
+      };
+    }
+
+    // =========================
+    // RESTORE SELF SWITCHES
+    // =========================
+
+    if (saveData.selfSwitches) {
+      $gameSelfSwitches.data = {
+        ...(saveData.selfSwitches.data || {}),
+      };
+    }
+
+    // =========================
+    // RESTORE LOCATION
+    // =========================
+
+    const location = saveData.location;
+
+    if (location) {
+      let scene = SceneManager.currentScene;
+
+      if (!scene?.map || !scene?.player) {
+        scene =
+          [...SceneManager.sceneStack]
+            .reverse()
+            .find(
+              (stackedScene) => stackedScene?.map && stackedScene?.player,
+            ) || null;
+      }
+
+      if (scene && scene.map && scene.player) {
+        const savedMapId = Number(location.mapId);
+        const savedX = Number(location.x);
+        const savedY = Number(location.y);
+
+        // =========================
+        // SAME MAP
+        // =========================
+
+        if (scene.map.id === savedMapId) {
+          scene.player.x = savedX;
+
+          scene.player.y = savedY;
+
+          scene.player.velocityX = 0;
+          scene.player.velocityY = 0;
+
+          if (scene.camera && typeof scene.camera.follow === "function") {
+            scene.camera.follow(scene.player);
+          }
+
+          console.log(`Player position restored: (${savedX}, ${savedY})`);
+
+          // =========================
+          // DIFFERENT MAP
+          // =========================
+        } else {
+          console.log(`Loading saved map ${savedMapId}...`);
+
+          await scene.performTransfer({
+            targetMapId: savedMapId,
+            targetX: savedX,
+            targetY: savedY,
+          });
+
+          scene.player.velocityX = 0;
+          scene.player.velocityY = 0;
+
+          console.log(
+            `Saved location restored: Map ${savedMapId} (${savedX}, ${savedY})`,
+          );
+        }
+      }
     }
 
     console.log(`Game loaded from slot ${slotId}.`);

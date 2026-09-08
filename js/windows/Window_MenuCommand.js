@@ -4,12 +4,12 @@ class Window_MenuCommand {
   constructor() {
     this.visible = true;
 
-    this.commands = ["Items", "Status", "Equipment", "Save", "Options", "Exit"];
+    this.commands = ["Items", "Status", "Equipment", "Save", "Load","Options", "Exit"];
 
     this.index = 0;
 
     this.width = 300;
-    this.height = 360;
+    this.height = 410;
 
     this.padding = 24;
     this.lineHeight = 45;
