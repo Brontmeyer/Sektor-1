@@ -3,14 +3,16 @@
 class Window_Magic {
   constructor() {
     this.visible = false;
+    this.index = 0;
 
-    this.width = 600;
+    this.width = 500;
     this.height = 420;
+
+    this.padding = 24;
+    this.itemHeight = 40;
 
     this.x = (Graphics.width - this.width) / 2;
     this.y = (Graphics.height - this.height) / 2;
-
-    this.index = 0;
   }
 
   skills() {
@@ -23,8 +25,25 @@ class Window_Magic {
     return skills[this.index] || null;
   }
 
+  canUseFromField(skill) {
+    if (!skill) {
+      return false;
+    }
+
+    const canTargetPlayer =
+      Array.isArray(skill.target) &&
+      (skill.target.includes("ally") || skill.target.includes("self"));
+
+    if (!canTargetPlayer) {
+      return false;
+    }
+
+    return $gameActor.canUseSkill(skill.id);
+  }
+
   show() {
     this.visible = true;
+    this.index = 0;
   }
 
   hide() {
@@ -40,7 +59,7 @@ class Window_Magic {
       return;
     }
 
-    if (Input.isTriggered("Escape")) {
+    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
       this.hide();
       return;
     }
@@ -51,7 +70,7 @@ class Window_Magic {
       return;
     }
 
-    if (Input.isTriggered("KeyW")) {
+    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
       this.index--;
 
       if (this.index < 0) {
@@ -59,12 +78,34 @@ class Window_Magic {
       }
     }
 
-    if (Input.isTriggered("KeyS")) {
+    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
       this.index++;
 
       if (this.index >= skills.length) {
         this.index = 0;
       }
+    }
+
+    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+      const skill = this.currentSkill();
+
+      if (!skill) {
+        return;
+      }
+
+      // Field menu currently only supports
+      // magic that can target the player.
+      const canTargetPlayer =
+        Array.isArray(skill.target) &&
+        (skill.target.includes("ally") || skill.target.includes("self"));
+
+      if (!canTargetPlayer) {
+        console.log(`${skill.name} cannot be used from the field menu.`);
+
+        return;
+      }
+
+      $gameActor.useSkill(skill.id, $gameActor);
     }
   }
 
@@ -73,42 +114,46 @@ class Window_Magic {
       return;
     }
 
-    const ctx = Graphics.context;
+    const context = Graphics.context;
 
-    ctx.save();
+    context.save();
+
+    context.textAlign = "left";
+    context.textBaseline = "alphabetic";
 
     // Background
-    ctx.fillStyle = "rgba(0, 0, 0, 0.95)";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
+    context.fillStyle = "rgba(0, 0, 0, 0.95)";
+    context.fillRect(this.x, this.y, this.width, this.height);
 
     // Border
-    ctx.strokeStyle = "#ffffff";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(this.x, this.y, this.width, this.height);
+    context.strokeStyle = "#ffffff";
+    context.lineWidth = 2;
+    context.strokeRect(this.x, this.y, this.width, this.height);
 
     // Title
-    ctx.fillStyle = "#ffffff";
-    ctx.font = "26px sans-serif";
+    context.fillStyle = "#ffffff";
+    context.font = "26px sans-serif";
 
-    ctx.fillText("Magic", this.x + 24, this.y + 42);
+    context.fillText("Magic", this.x + this.padding, this.y + 42);
 
     // Divider
-    ctx.beginPath();
+    context.beginPath();
+    context.moveTo(this.x + this.padding, this.y + 60);
+    context.lineTo(this.x + this.width - this.padding, this.y + 60);
+    context.stroke();
 
-    ctx.moveTo(this.x + 24, this.y + 60);
-
-    ctx.lineTo(this.x + this.width - 24, this.y + 60);
-
-    ctx.stroke();
+    // =====================================
+    // SKILL LIST
+    // =====================================
 
     const skills = this.skills();
 
-    ctx.font = "22px sans-serif";
+    context.font = "22px sans-serif";
 
     if (skills.length === 0) {
-      ctx.fillText("(No magic)", this.x + 24, this.y + 105);
+      context.fillText("(No magic)", this.x + this.padding, this.y + 105);
 
-      ctx.restore();
+      context.restore();
       return;
     }
 
@@ -119,37 +164,50 @@ class Window_Magic {
 
       const prefix = i === this.index ? "▶ " : "   ";
 
-      ctx.fillText(`${prefix}${skill.name}`, this.x + 24, drawY);
+      const usable = this.canUseFromField(skill);
 
-      ctx.fillText(`${skill.mpCost || 0} MP`, this.x + this.width - 110, drawY);
+      context.globalAlpha = usable ? 1.0 : 0.4;
 
-      drawY += 40;
+      context.fillText(`${prefix}${skill.name}`, this.x + this.padding, drawY);
+
+      context.fillText(
+        `${skill.mpCost || 0} MP`,
+        this.x + this.width - 110,
+        drawY,
+      );
+
+      context.globalAlpha = 1.0;
+
+      drawY += this.itemHeight;
     }
+
+    // =====================================
+    // CURRENT SKILL DETAILS
+    // =====================================
 
     const skill = this.currentSkill();
 
     if (skill) {
-      ctx.font = "18px sans-serif";
+      context.font = "18px sans-serif";
 
-      ctx.fillText(
+      context.fillText(
         `MP: ${$gameActor.mp} / ${$gameActor.maxMp}`,
         this.x + 24,
         this.y + this.height - 95,
       );
 
-      ctx.fillText(
+      context.fillText(
         skill.description || "",
         this.x + 24,
         this.y + this.height - 60,
       );
 
-      ctx.fillText(
+      context.fillText(
         `Category: ${skill.category || "other"}`,
         this.x + 24,
         this.y + this.height - 30,
       );
     }
-
-    ctx.restore();
+    context.restore();
   }
 }

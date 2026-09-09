@@ -3,6 +3,9 @@
   {
     "id": 1,
     "name": "Player",
+    "sideBattleSprite": "Player_Battle.png",
+    "battleSpriteWidth": 96,
+    "battleSpriteHeight": 128,
 
     "level": 1,
     "exp": 0,

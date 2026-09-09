@@ -18,7 +18,6 @@ class Window_Message {
 
     this.text = text || "";
     this.speaker = speaker || "";
-
   }
 
   hide() {
@@ -48,6 +47,11 @@ class Window_Message {
     }
 
     const context = Graphics.context;
+
+    context.save();
+
+    context.textAlign = "left";
+    context.textBaseline = "top";
 
     // Window background.
 
@@ -99,9 +103,9 @@ class Window_Message {
     context.fillText(
       "E / Enter ▶",
       this.x + this.width - 20,
-
       this.y + this.height - 35,
     );
+    context.restore();
   }
 
   drawWrappedText(text, x, y, maxWidth, lineHeight) {

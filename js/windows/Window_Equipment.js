@@ -78,7 +78,7 @@ class Window_Equipment {
       return;
     }
 
-    if (Input.isTriggered("Escape")) {
+    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
       this.hide();
 
       return;

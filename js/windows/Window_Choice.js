@@ -91,6 +91,10 @@ class Window_Choice {
 
     const context = Graphics.context;
 
+    context.save();
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+
     context.fillStyle = "rgba(0, 0, 0, 0.9)";
     context.fillRect(this.x, this.y, this.width, this.height);
     context.strokeStyle = "white";
@@ -122,5 +126,6 @@ class Window_Choice {
 
       context.fillText(prefix + this.choices[i], this.x + 20, choiceY);
     }
+    context.restore();
   }
 }

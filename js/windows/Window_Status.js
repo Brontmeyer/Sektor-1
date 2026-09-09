@@ -4,8 +4,8 @@ class Window_Status {
   constructor() {
     this.visible = false;
 
-    this.width = 700;
-    this.height = 470;
+    this.width = 600;
+    this.height = 450;
 
     this.padding = 30;
 
@@ -30,7 +30,7 @@ class Window_Status {
       return;
     }
 
-    if (Input.isTriggered("Escape")) {
+    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
       this.hide();
     }
   }
@@ -58,6 +58,7 @@ class Window_Status {
     // Text settings
     context.fillStyle = "#ffffff";
     context.textAlign = "left";
+    context.textBaseline = "alphabetic";
 
     const actor = $gameActor;
     const leftX = this.x + 40;

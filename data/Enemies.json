@@ -3,6 +3,9 @@
   {
     "id": 1,
     "name": "Test Slime",
+    "battleSprite": "TestSlime.png",
+    "battleSpriteWidth": 128,
+    "battleSpriteHeight": 128,
 
     "level": 1,
 

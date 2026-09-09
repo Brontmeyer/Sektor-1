@@ -29,10 +29,12 @@ class Scene_Map extends Scene_Base {
   async loadMap() {
     const mapId = DatabaseManager.system.startMapId;
     const mapData = await DatabaseManager.loadMap(mapId);
-    this.map = new Game_Map(mapData);
-    this.camera = new Camera(this.map);
 
+    this.map = new Game_Map(mapData);
     this.player = new Game_Player(this.map);
+
+    this.camera = new Camera(this.map);
+    this.camera.follow(this.player);
 
     this.loading = false;
 
@@ -128,7 +130,7 @@ class Scene_Map extends Scene_Base {
     if (this.interpreter.isRunning()) {
       return;
     }
-  
+
     this.interpreter.setup(event.commands, event);
 
     console.log(`Activated event: ${event.name}`);
@@ -159,12 +161,16 @@ class Scene_Map extends Scene_Base {
 
     const mapData = await DatabaseManager.loadMap(transfer.targetMapId);
     this.map = new Game_Map(mapData);
-    this.camera = new Camera(this.map);
-    this.camera.follow(this.player);
 
     this.player = new Game_Player(this.map);
     this.player.x = transfer.targetX;
     this.player.y = transfer.targetY;
+
+    this.player.velocityX = 0;
+    this.player.velocityY = 0;
+
+    this.camera = new Camera(this.map);
+    this.camera.follow(this.player);
 
     this.transferring = false;
 

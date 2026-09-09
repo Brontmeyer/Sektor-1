@@ -240,19 +240,29 @@ class Game_Interpreter {
 
     $gameParty.gainItem(command.itemId, amount);
 
+    const source = command.source || "System";
+
     let message = "";
 
     if (amount === 1) {
       const article = item.article || "a";
 
-      message = `You found ${article} ${item.name}!`;
+      if (source === "Chest") {
+        message = `You found ${article} ${item.name}!`;
+      } else {
+        message = `You obtained ${article} ${item.name}!`;
+      }
     } else {
       const pluralName = item.pluralName || `${item.name}s`;
 
-      message = `You found ${amount} ${pluralName}!`;
+      if (source === "Chest") {
+        message = `You found ${amount} ${pluralName}!`;
+      } else {
+        message = `You obtained ${amount} ${pluralName}!`;
+      }
     }
 
-    this.messageWindow.show(message, "Chest");
+    this.messageWindow.show(message, source);
 
     // Move to the next command,
     // but PAUSE the interpreter here.

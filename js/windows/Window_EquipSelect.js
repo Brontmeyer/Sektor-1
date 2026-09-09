@@ -112,7 +112,7 @@ class Window_EquipSelect {
       return;
     }
 
-    if (Input.isTriggered("Escape")) {
+    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
       this.hide();
 
       return;
@@ -155,7 +155,7 @@ class Window_EquipSelect {
     if (!this.visible) {
       return;
     }
-
+    
     const context = Graphics.context;
     const entries = this.entries();
 
@@ -191,7 +191,9 @@ class Window_EquipSelect {
 
     context.stroke();
 
-    // Entries
+    // =====================================
+    // ITEM ENTRIES
+    // =====================================
 
     context.font = "20px sans-serif";
 
@@ -206,6 +208,10 @@ class Window_EquipSelect {
       if (entry.id !== 0 && entry.count > 1) {
         text += ` x${entry.count}`;
       }
+
+      // =====================================
+      // EQUIPPED STATUS
+      // =====================================
 
       let equippedId = 0;
 
@@ -230,6 +236,10 @@ class Window_EquipSelect {
       context.fillText(text, this.x + this.padding, drawY);
       drawY += this.lineHeight;
     }
+
+    // =====================================
+    // PREVIEW STAT
+    // =====================================
 
     const preview = this.previewStat();
 

@@ -20,14 +20,10 @@ class Window_Inventory {
     this.visible = true;
 
     this.index = 0;
-
-    console.log("Inventory opened.");
   }
 
   hide() {
     this.visible = false;
-
-    console.log("Inventory closed.");
   }
 
   isOpen() {
@@ -41,7 +37,7 @@ class Window_Inventory {
 
     const itemIds = this.itemIds();
 
-    if (Input.isTriggered("KeyI") || Input.isTriggered("Escape")) {
+    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
       this.hide();
 
       return;

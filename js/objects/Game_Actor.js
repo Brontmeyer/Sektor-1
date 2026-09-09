@@ -10,6 +10,10 @@ class Game_Actor {
       throw new Error(`Actor ID ${actorId} does not exist.`);
     }
     this.name = actorData.name;
+    this.sideBattleSprite = actorData.sideBattleSprite || null;
+    this.battleSpriteWidth = actorData.battleSpriteWidth || 96;
+    this.battleSpriteHeight = actorData.battleSpriteHeight || 128;
+
     this.level = actorData.level;
     this.exp = actorData.exp;
 

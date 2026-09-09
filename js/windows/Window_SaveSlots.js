@@ -56,7 +56,7 @@ class Window_SaveSlots {
       return;
     }
 
-    if (Input.isTriggered("Escape")) {
+    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
       this.hide();
 
       return;
@@ -107,6 +107,7 @@ class Window_SaveSlots {
     context.fillStyle = "#ffffff";
     context.font = "28px sans-serif";
     context.textAlign = "left";
+    context.textBaseline = "alphabetic";
 
     const title = this.mode === "load" ? "Load Game" : "Save Game";
 

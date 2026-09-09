@@ -10,6 +10,10 @@ class Game_Enemy {
 
     this.enemyId = enemyId;
     this.name = enemyData.name;
+    this.battleSprite = enemyData.battleSprite || null;
+    this.battleSpriteWidth = enemyData.battleSpriteWidth || 128;
+    this.battleSpriteHeight = enemyData.battleSpriteHeight || 128;
+
     this.level = enemyData.level;
 
     this.maxHp = enemyData.maxHp;

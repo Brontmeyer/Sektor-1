@@ -44,6 +44,8 @@ class SceneManager {
 
     this.currentScene = new sceneClass();
 
+    this.currentScene.start();
+
     console.log(`Scene pushed: ${sceneClass.name}`);
   }
 
@@ -52,6 +54,10 @@ class SceneManager {
       console.warn("SceneManager.pop(): scene stack is empty.");
 
       return;
+    }
+
+    if (this.currentScene) {
+      this.currentScene.terminate();
     }
 
     this.currentScene = this.sceneStack.pop();

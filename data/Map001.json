@@ -149,24 +149,26 @@
             {
               "code": "gainItemMessage",
               "itemId": 2,
-              "amount": 15
+              "amount": 15,
+              "source": "NPC"
             },
             {
               "code": "gainItemMessage",
               "itemId": 1,
-              "amount": 5
+              "amount": 5,
+              "source": "Chest"
             },
             {
               "code": "gainWeaponMessage",
               "weaponId": 2,
               "amount": 1,
-              "source": "Chest"
+              "source": "Battle"
             },
             {
               "code": "gainArmorMessage",
               "armorId": 2,
               "amount": 1,
-              "source": "Chest"
+              "source": "Quest Reward"
             },
             {
               "code": "setSelfSwitch",

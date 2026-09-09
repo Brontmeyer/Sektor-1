@@ -12,10 +12,6 @@ class Game_Party {
   // ITEMS
   // =====================================
 
-  itemCount(itemId) {
-    return this.items[itemId] || 0;
-  }
-
   gainItem(itemId, amount = 1) {
     const currentAmount = this.itemCount(itemId);
 
@@ -36,8 +32,18 @@ class Game_Party {
     this.gainItem(itemId, -amount);
   }
 
+  itemCount(itemId) {
+    return this.items[itemId] || 0;
+  }
+  
   hasItem(itemId) {
     return this.itemCount(itemId) > 0;
+  }
+
+  itemIds() {
+    return Object.keys(this.items)
+      .map(Number)
+      .filter((itemId) => this.itemCount(itemId) > 0);
   }
 
   useItem(itemId) {
@@ -127,7 +133,7 @@ class Game_Party {
   hasArmor(armorId) {
     return this.armorCount(armorId) > 0;
   }
-  
+
   // =====================================
   // WEAPONS
   // =====================================
@@ -166,5 +172,7 @@ class Game_Party {
 
   clear() {
     this.items = {};
+    this.weapons = {};
+    this.armors = {};
   }
 }

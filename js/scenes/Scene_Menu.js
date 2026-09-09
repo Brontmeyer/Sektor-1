@@ -12,7 +12,6 @@ class Scene_Menu extends Scene_Base {
     this.saveSlotsWindow = new Window_SaveSlots();
 
     this.magicWindow = new Window_Magic();
-    this.magicWindow.active = false;
 
     this.saveMessage = "";
     this.saveMessageTimer = 0;
@@ -86,12 +85,8 @@ class Scene_Menu extends Scene_Base {
     // ================================
 
     if (this.magicWindow.isOpen()) {
-      if (Input.isTriggered("Escape")) {
-        this.magicWindow.hide();
-        return;
-      }
-
       this.magicWindow.update();
+
       return;
     }
 
@@ -156,11 +151,6 @@ class Scene_Menu extends Scene_Base {
 
         case "Equipment":
           this.equipmentWindow.show();
-
-          break;
-
-        case "Save Slots":
-          this.saveSlotsWindow.show();
 
           break;
 
