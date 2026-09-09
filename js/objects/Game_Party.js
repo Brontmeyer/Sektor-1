@@ -35,7 +35,7 @@ class Game_Party {
   itemCount(itemId) {
     return this.items[itemId] || 0;
   }
-  
+
   hasItem(itemId) {
     return this.itemCount(itemId) > 0;
   }

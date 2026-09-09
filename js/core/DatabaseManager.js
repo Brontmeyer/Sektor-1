@@ -58,6 +58,16 @@ class DatabaseManager {
     return actor.name;
   }
 
+  static enemy(id) {
+    return this.enemies?.[id] || null;
+  }
+
+  static enemyName(id) {
+    const enemy = this.enemy(id);
+
+    return enemy ? enemy.name : "Unknown Enemy";
+  }
+
   static item(itemId) {
     return this.items[itemId] || null;
   }
@@ -108,15 +118,5 @@ class DatabaseManager {
     const skill = this.skill(id);
 
     return skill ? skill.name : "Unknown Skill";
-  }
-
-  static enemy(id) {
-    return this.enemies?.[id] || null;
-  }
-
-  static enemyName(id) {
-    const enemy = this.enemy(id);
-
-    return enemy ? enemy.name : "Unknown Enemy";
   }
 }

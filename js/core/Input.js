@@ -20,7 +20,7 @@ class Input {
   static isPressed(code) {
     return this.keys[code] === true;
   }
-  
+
   static isTriggered(code) {
     return this.triggeredKeys[code] === true;
   }

@@ -8,6 +8,11 @@ class Scene_Battle extends Scene_Base {
     this.actorImage = null;
     this.enemyImage = null;
 
+    this.actorVisualX = 0;
+    this.actorVisualY = 0;
+
+    this.enemyVisualX = 0;
+
     this.loadBattleSprites();
     this.commandWindow = new Window_BattleCommand();
     this.magicWindow = new Window_BattleMagic();
@@ -16,6 +21,14 @@ class Scene_Battle extends Scene_Base {
     this.battleMessages = [];
     this.victory = false;
     this.defeat = false;
+
+    // Battler animation states
+    this.actorState = "idle";
+    this.enemyState = "idle";
+
+    this.actorStateTimer = 0;
+    this.enemyStateTimer = 0;
+
     this.battleView = DatabaseManager.system.battleView || "side";
 
     this.pendingEnemyTurn = false;
@@ -26,6 +39,17 @@ class Scene_Battle extends Scene_Base {
     this.actionPhase = "none";
     this.actionPhaseTimer = 0;
     this.pendingAttackDamage = false;
+
+    // Pending magic action
+    this.pendingMagicSkill = null;
+    this.pendingMagicTarget = null;
+
+    // Magic effect state
+    this.magicEffectSkill = null;
+    this.magicEffectTarget = null;
+
+    // Pending item action
+    this.pendingItem = null;
   }
 
   start() {
@@ -114,21 +138,6 @@ class Scene_Battle extends Scene_Base {
     }
   }
 
-  setActorState(state, duration = 0) {
-    this.actorState = state;
-    this.actorStateTimer = duration;
-  }
-
-  setEnemyState(state, duration = 0) {
-    this.enemyState = state;
-    this.enemyStateTimer = duration;
-  }
-
-  setActionPhase(phase, duration = 0) {
-    this.actionPhase = phase;
-    this.actionPhaseTimer = duration;
-  }
-
   updateActionPhase(deltaTime) {
     if (this.actionPhase === "none") {
       return;
@@ -145,6 +154,9 @@ class Scene_Battle extends Scene_Base {
     this.actionPhaseTimer = 0;
 
     switch (this.actionPhase) {
+      // =====================================
+      // ATTACK SEQUENCE
+      // =====================================
       case "lunge":
         this.performAttackHit();
         this.setActionPhase("hit", 0.15);
@@ -174,44 +186,80 @@ class Scene_Battle extends Scene_Base {
         this.queueEnemyTurn(0.1);
         break;
 
+      // =====================================
+      // MAGIC SEQUENCE
+      // =====================================
+
+      case "magicCast":
+        this.performMagicEffect();
+        this.setActionPhase("magicEffect", 0.25);
+        break;
+
+      case "magicEffect":
+        this.magicEffectSkill = null;
+        this.magicEffectTarget = null;
+
+        this.setActionPhase("magicRecover", 0.25);
+        break;
+
+      case "magicRecover":
+        this.setActionPhase("magicWait", 0.25);
+        break;
+
+      case "magicWait":
+        this.setActionPhase("none");
+
+        if (this.enemy.isDead()) {
+          this.setEnemyState("defeat");
+          this.victory = true;
+          this.battleInputLocked = false;
+
+          this.addBattleMessage(`${this.enemy.name} is defeated! Victory!`);
+
+          return;
+        }
+
+        this.queueEnemyTurn(0.1);
+        break;
+
+      // =====================================
+      // ITEM SEQUENCE
+      // =====================================
+
+      case "itemUse":
+        this.performItemEffect();
+        this.setActionPhase("itemEffect", 0.25);
+        break;
+
+      case "itemEffect":
+        this.setActionPhase("itemRecover", 0.25);
+        break;
+
+      case "itemRecover":
+        this.setActionPhase("itemWait", 0.25);
+        break;
+
+      case "itemWait":
+        this.setActionPhase("none");
+
+        if (this.enemy.isDead()) {
+          this.setEnemyState("defeat");
+          this.victory = true;
+          this.battleInputLocked = false;
+          return;
+        }
+
+        this.queueEnemyTurn(0.1);
+        break;
+
+      // =====================================
+      // DEFAULT CASE
+      // =====================================
+
       default:
         this.setActionPhase("none");
         break;
     }
-  }
-
-  getActorTargetOffset() {
-    // Attack movement is controlled by action phases.
-    if (this.actionPhase === "lunge") {
-      return 45;
-    }
-
-    if (this.actionPhase === "hit") {
-      return 45;
-    }
-
-    if (this.actionPhase === "return") {
-      return 0;
-    }
-
-    // Player recoil when hurt.
-    if (this.actorState === "hurt") {
-      return -18;
-    }
-
-    return 0;
-  }
-
-  getEnemyTargetOffset() {
-    if (this.enemyState === "attack") {
-      return -35;
-    }
-
-    if (this.enemyState === "hurt") {
-      return 18;
-    }
-
-    return 0;
   }
 
   updateBattlerStates(deltaTime) {
@@ -260,22 +308,64 @@ class Scene_Battle extends Scene_Base {
 
   updateBattlerVisuals(deltaTime) {
     const actorTarget = this.getActorTargetOffset();
+    const actorTargetY = this.getActorTargetYOffset();
 
     const enemyTarget = this.getEnemyTargetOffset();
 
     const speed = 300;
 
+    // Update actor visual position toward its target offset.
     this.actorVisualX = this.moveToward(
       this.actorVisualX,
       actorTarget,
       speed * deltaTime,
     );
 
+    this.actorVisualY = this.moveToward(
+      this.actorVisualY,
+      actorTargetY,
+      80 * deltaTime,
+    );
+
+    // Update enemy visual position toward its target offset.
     this.enemyVisualX = this.moveToward(
       this.enemyVisualX,
       enemyTarget,
       speed * deltaTime,
     );
+  }
+
+  updatePendingEnemyTurn(deltaTime) {
+    if (!this.pendingEnemyTurn) {
+      return;
+    }
+
+    this.enemyTurnDelay -= deltaTime;
+
+    if (this.enemyTurnDelay > 0) {
+      return;
+    }
+
+    this.pendingEnemyTurn = false;
+    this.enemyTurnDelay = 0;
+
+    this.performEnemyTurn();
+  }
+
+  queueEnemyTurn(delay = 0.5) {
+    this.pendingEnemyTurn = true;
+    this.enemyTurnDelay = delay;
+    this.battleInputLocked = true;
+  }
+
+  addBattleMessage(message) {
+    this.battleMessages.push(message);
+
+    if (this.battleMessages.length > 2) {
+      this.battleMessages.shift();
+    }
+
+    console.log(message);
   }
 
   moveToward(current, target, amount) {
@@ -302,6 +392,133 @@ class Scene_Battle extends Scene_Base {
 
       this.enemyImage.src = `js/sprites/enemies/${this.enemy.battleSprite}`;
     }
+  }
+
+  setActorState(state, duration = 0) {
+    this.actorState = state;
+    this.actorStateTimer = duration;
+  }
+
+  setEnemyState(state, duration = 0) {
+    this.enemyState = state;
+    this.enemyStateTimer = duration;
+  }
+
+  setActionPhase(phase, duration = 0) {
+    this.actionPhase = phase;
+    this.actionPhaseTimer = duration;
+  }
+
+  getActorTargetOffset() {
+    // Attack movement is controlled by action phases.
+    if (this.actionPhase === "lunge") {
+      return 45;
+    }
+
+    if (this.actionPhase === "hit") {
+      return 45;
+    }
+
+    if (this.actionPhase === "return") {
+      return 0;
+    }
+
+    // Player recoil when hurt.
+    if (this.actorState === "hurt") {
+      return -18;
+    }
+
+    return 0;
+  }
+
+  getActorTargetYOffset() {
+    if (this.actionPhase === "magicCast") {
+      return -12;
+    }
+
+    if (this.actionPhase === "itemUse") {
+      return -6;
+    }
+
+    if (this.actionPhase === "itemEffect") {
+      return -6;
+    }
+    return 0;
+  }
+
+  getActorVisualScale() {
+    // ACTOR GROWS  WHILE CASTING MAGIC
+    if (this.actionPhase === "magicCast") {
+      const duration = 0.4;
+
+      const progress = 1 - this.actionPhaseTimer / duration;
+
+      return 1 + 0.06 * progress;
+    }
+
+    // ACTOR SHRINKS WHILE MAGIC EFFECT IS ACTIVE
+    if (this.actionPhase === "magicEffect") {
+      const duration = 0.25;
+
+      const progress = 1 - this.actionPhaseTimer / duration;
+
+      return 1.06 - 0.06 * progress;
+    }
+
+    // ACTOR GROWS WHILE USING ITEM
+    if (this.actionPhase === "itemUse") {
+      const duration = 0.35;
+
+      const progress = 1 - this.actionPhaseTimer / duration;
+
+      return 1 + 0.03 * progress;
+    }
+    // ACTOR SHRINKS WHILE ITEM EFFECT IS ACTIVE
+    if (this.actionPhase === "itemEffect") {
+      const duration = 0.25;
+
+      const progress = 1 - this.actionPhaseTimer / duration;
+
+      return 1.03 - 0.03 * progress;
+    }
+
+    return 1;
+  }
+
+  getActorVisualAlpha() {
+    if (
+      this.actionPhase === "magicEffect" &&
+      this.magicEffectSkill &&
+      this.magicEffectTarget === $gameActor
+    ) {
+      return 0.65;
+    }
+
+    return 1;
+  }
+
+  getEnemyTargetOffset() {
+    if (this.enemyState === "attack") {
+      return -35;
+    }
+
+    if (this.enemyState === "hurt") {
+      return 18;
+    }
+
+    return 0;
+  }
+
+  getEnemyVisualAlpha() {
+    if (
+      this.actionPhase === "magicEffect" &&
+      this.magicEffectSkill &&
+      this.magicEffectTarget === this.enemy
+    ) {
+      return 0.45;
+    }
+
+    return 1;
   }
 
   performAttack() {
@@ -347,6 +564,87 @@ class Scene_Battle extends Scene_Base {
     );
   }
 
+  performMagicEffect() {
+    const skill = this.pendingMagicSkill;
+    const target = this.pendingMagicTarget;
+
+    if (!skill || !target) {
+      return;
+    }
+
+    const enemyHpBefore = this.enemy.hp;
+    const playerHpBefore = $gameActor.hp;
+
+    const success = $gameActor.useSkill(skill.id, target);
+
+    if (!success) {
+      this.pendingMagicSkill = null;
+      this.pendingMagicTarget = null;
+
+      this.setActorState("idle");
+      return;
+    }
+
+    // Offensive spell
+    if (target === this.enemy) {
+      const damage = enemyHpBefore - this.enemy.hp;
+
+      if (this.enemy.isDead()) {
+        this.setEnemyState("defeat");
+      } else {
+        this.setEnemyState("hurt", 0.4);
+      }
+
+      this.addBattleMessage(
+        `${$gameActor.name} casts ${skill.name}! ` +
+          `${this.enemy.name} takes ${damage} damage!`,
+      );
+    }
+
+    // Healing spell
+    if (target === $gameActor) {
+      const healing = $gameActor.hp - playerHpBefore;
+
+      this.addBattleMessage(
+        `${$gameActor.name} casts ${skill.name}! ` +
+          `${$gameActor.name} recovers ${healing} HP!`,
+      );
+    }
+
+    this.magicEffectSkill = skill;
+    this.magicEffectTarget = target;
+
+    this.pendingMagicSkill = null;
+    this.pendingMagicTarget = null;
+  }
+
+  performItemEffect() {
+    const item = this.pendingItem;
+
+    if (!item) {
+      return;
+    }
+
+    const hpBefore = $gameActor.hp;
+
+    const success = $gameParty.useItem(item.id);
+
+    if (!success) {
+      this.pendingItem = null;
+      return;
+    }
+
+    const healing = $gameActor.hp - hpBefore;
+
+    this.addBattleMessage(
+      `${$gameActor.name} uses ${item.name}! ` +
+        `${$gameActor.name} recovers ${healing} HP!`,
+    );
+
+    // The pending item has now been used.
+    this.pendingItem = null;
+  }
+
   performEnemyTurn() {
     if (this.enemy.isDead()) {
       return;
@@ -376,39 +674,6 @@ class Scene_Battle extends Scene_Base {
     }
   }
 
-  queueEnemyTurn(delay = 0.5) {
-    this.pendingEnemyTurn = true;
-    this.enemyTurnDelay = delay;
-    this.battleInputLocked = true;
-  }
-
-  updatePendingEnemyTurn(deltaTime) {
-    if (!this.pendingEnemyTurn) {
-      return;
-    }
-
-    this.enemyTurnDelay -= deltaTime;
-
-    if (this.enemyTurnDelay > 0) {
-      return;
-    }
-
-    this.pendingEnemyTurn = false;
-    this.enemyTurnDelay = 0;
-
-    this.performEnemyTurn();
-  }
-
-  addBattleMessage(message) {
-    this.battleMessages.push(message);
-
-    if (this.battleMessages.length > 2) {
-      this.battleMessages.shift();
-    }
-
-    console.log(message);
-  }
-
   executeCommand() {
     const command = this.commandWindow.currentCommand();
 
@@ -428,6 +693,7 @@ class Scene_Battle extends Scene_Base {
   }
 
   executeMagic() {
+    // =====================================
     const skill = this.magicWindow.currentSkill();
 
     if (!skill) {
@@ -461,47 +727,20 @@ class Scene_Battle extends Scene_Base {
       return;
     }
 
-    const enemyHpBefore = this.enemy.hp;
-    const playerHpBefore = $gameActor.hp;
+    this.pendingMagicSkill = skill;
+    this.pendingMagicTarget = target;
+
+    this.battleInputLocked = true;
 
     this.setActorState("magic", 0.9);
+    this.setActionPhase("magicCast", 0.4);
 
-    const success = $gameActor.useSkill(skill.id, target);
-
-    if (!success) {
-      this.setActorState("idle");
-
-      return;
-    }
-
-    if (target === this.enemy) {
-      const damage = enemyHpBefore - this.enemy.hp;
-
-      if (this.enemy.isDead()) {
-        this.setEnemyState("defeat");
-      } else {
-        this.setEnemyState("hurt", 0.4);
-      }
-      this.addBattleMessage(
-        `${$gameActor.name} casts ${skill.name}! ` +
-          `${this.enemy.name} takes ${damage} damage!`,
-      );
-    }
-
-    if (target === $gameActor) {
-      const healing = $gameActor.hp - playerHpBefore;
-
-      this.addBattleMessage(
-        `${$gameActor.name} casts ${skill.name}! ` +
-          `${$gameActor.name} recovers ${healing} HP!`,
-      );
-    }
+    this.setActorState("magic", 0.9);
 
     this.magicWindow.hide();
 
     if (this.enemy.isDead()) {
       this.setEnemyState("defeat");
-
       this.victory = true;
 
       this.addBattleMessage(`${this.enemy.name} is defeated! Victory!`);
@@ -509,7 +748,7 @@ class Scene_Battle extends Scene_Base {
       return;
     }
 
-    this.queueEnemyTurn(1.1);
+    // this.queueEnemyTurn(1.1);
   }
 
   executeItem() {
@@ -519,30 +758,34 @@ class Scene_Battle extends Scene_Base {
       return;
     }
 
-    const hpBefore = $gameActor.hp;
+    // Store the item for the effect phase.
+    this.pendingItem = item;
 
-    const success = $gameParty.useItem(item.id);
-
-    if (!success) {
-      return;
-    }
-
-    const healing = $gameActor.hp - hpBefore;
-
-    this.addBattleMessage(
-      `${$gameActor.name} uses ${item.name}! ` +
-        `${$gameActor.name} recovers ${healing} HP!`,
-    );
-
+    // Close the item window now.
     this.itemWindow.hide();
 
-    this.performEnemyTurn();
+    // Lock commands while the action plays.
+    this.battleInputLocked = true;
+
+    // Begin the item action.
+    this.setActionPhase("itemUse", 0.35);
   }
 
   drawActorSprite(context, x, y) {
     const width = $gameActor.battleSpriteWidth;
-
     const height = $gameActor.battleSpriteHeight;
+
+    const scale = this.getActorVisualScale();
+    const alpha = this.getActorVisualAlpha();
+
+    context.save();
+    context.globalAlpha = alpha;
+
+    // Move drawing origin to the center
+    // of the actor sprite.
+    context.translate(x, y - height / 2);
+
+    context.scale(scale, scale);
 
     if (
       this.actorImage &&
@@ -551,24 +794,33 @@ class Scene_Battle extends Scene_Base {
     ) {
       context.drawImage(
         this.actorImage,
-        x - width / 2,
-        y - height,
+        -width / 2,
+        -height / 2,
         width,
         height,
       );
 
+      context.restore();
       return;
     }
 
+    // Fallback rectangle
     context.strokeStyle = "#ffffff";
     context.lineWidth = 3;
 
-    context.strokeRect(x - width / 2, y - height, width, height);
+    context.strokeRect(-width / 2, -height / 2, width, height);
+
+    context.restore();
   }
 
   drawEnemySprite(context, x, y) {
     const width = this.enemy.battleSpriteWidth;
     const height = this.enemy.battleSpriteHeight;
+
+    const alpha = this.getEnemyVisualAlpha();
+
+    context.save();
+    context.globalAlpha = alpha;
 
     if (
       this.enemyImage &&
@@ -582,7 +834,7 @@ class Scene_Battle extends Scene_Base {
         width,
         height,
       );
-
+      context.restore();
       return;
     }
 
@@ -590,10 +842,10 @@ class Scene_Battle extends Scene_Base {
     context.lineWidth = 3;
 
     context.beginPath();
-
     context.arc(x, y - height / 2, Math.min(width, height) / 2, 0, Math.PI * 2);
-
     context.stroke();
+
+    context.restore();
   }
 
   drawFrontView(context) {
@@ -636,12 +888,14 @@ class Scene_Battle extends Scene_Base {
     context.font = "24px Arial";
     context.fillStyle = "#ffffff";
 
-    this.drawActorSprite(context, playerX + this.actorVisualX, playerY + 100);
+    this.drawActorSprite(
+      context,
+      playerX + this.actorVisualX,
+      playerY + 100 + this.actorVisualY,
+    );
 
     context.font = "16px Arial";
     context.fillStyle = "#ffffff";
-
-    context.fillText(this.actorState, playerX, playerY + 125);
 
     // -----------------------------
     // Enemy battlefield position
@@ -658,8 +912,6 @@ class Scene_Battle extends Scene_Base {
     );
 
     this.drawEnemySprite(context, enemyX + this.enemyVisualX, enemyY + 110);
-
-    context.fillText(this.enemyState, enemyX, enemyY + 135);
   }
 
   drawBattleHud(context) {
@@ -724,14 +976,6 @@ class Scene_Battle extends Scene_Base {
     context.fillStyle = "#ffffff";
 
     context.fillText("Battle", 40, 50);
-
-    // temporary display of the current action phase
-    context.font = "16px Arial";
-    context.fillStyle = "#ffffff";
-    context.textAlign = "left";
-
-    context.fillText(`Phase: ${this.actionPhase}`, 40, 75);
-    // temporary display of the current action phase
 
     // -----------------------------
     // Battle presentation

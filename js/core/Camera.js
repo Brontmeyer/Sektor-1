@@ -8,13 +8,11 @@ class Camera {
     this.y = 0;
   }
 
-    clampToMap() {
+  clampToMap() {
     const maxX = Math.max(0, this.map.width - Graphics.width);
-
     const maxY = Math.max(0, this.map.height - Graphics.height);
 
     this.x = Math.max(0, Math.min(this.x, maxX));
-
     this.y = Math.max(0, Math.min(this.y, maxY));
   }
 
