@@ -13,6 +13,8 @@ class Game_Enemy {
     this.battleSprite = enemyData.battleSprite || null;
     this.battleSpriteWidth = enemyData.battleSpriteWidth || 128;
     this.battleSpriteHeight = enemyData.battleSpriteHeight || 128;
+    this.battleSpriteFrames = enemyData.battleSpriteFrames || 1;
+    this.battleSpriteRows = enemyData.battleSpriteRows || 1;
 
     this.level = enemyData.level;
 

@@ -13,6 +13,8 @@ class Game_Actor {
     this.sideBattleSprite = actorData.sideBattleSprite || null;
     this.battleSpriteWidth = actorData.battleSpriteWidth || 96;
     this.battleSpriteHeight = actorData.battleSpriteHeight || 128;
+    this.battleSpriteFrames = actorData.battleSpriteFrames || 1;
+    this.battleSpriteRows = actorData.battleSpriteRows || 1;
 
     this.level = actorData.level;
     this.exp = actorData.exp;
@@ -163,7 +165,7 @@ class Game_Actor {
     return true;
   }
 
-  useSkill(skillId, target = this) {
+  useSkill(skillId, target = this, payCost = true) {
     const skill = DatabaseManager.skill(skillId);
 
     if (!skill) {
@@ -172,7 +174,7 @@ class Game_Actor {
       return false;
     }
 
-    if (!this.canUseSkill(skillId)) {
+    if (payCost && !this.canUseSkill(skillId)) {
       console.warn(`${this.name} cannot use ${skill.name}.`);
 
       return false;
@@ -186,6 +188,7 @@ class Game_Actor {
       return false;
     }
 
+    // HEALING EFFECT
     if (skill.effect === "heal") {
       if (typeof target.isFullHp === "function" && target.isFullHp()) {
         console.log(`${target.name} is already at full HP.`);
@@ -194,10 +197,13 @@ class Game_Actor {
       }
 
       const healAmount = this.magicHealing(skill);
-      const paid = this.payMpCost(skill.mpCost || 0);
 
-      if (!paid) {
-        return false;
+      if (payCost) {
+        const paid = this.payMpCost(skill.mpCost || 0);
+
+        if (!paid) {
+          return false;
+        }
       }
 
       target.gainHp(healAmount);
@@ -207,6 +213,7 @@ class Game_Actor {
       return true;
     }
 
+    // DAMAGE EFFECT
     if (skill.effect === "damage") {
       if (!target || typeof target.loseHp !== "function") {
         console.warn(`${skill.name} has no valid damage target.`);
@@ -216,10 +223,12 @@ class Game_Actor {
 
       const damage = this.magicDamage(skill, target);
 
-      const paid = this.payMpCost(skill.mpCost || 0);
+      if (payCost) {
+        const paid = this.payMpCost(skill.mpCost || 0);
 
-      if (!paid) {
-        return false;
+        if (!paid) {
+          return false;
+        }
       }
 
       target.loseHp(damage);

@@ -5,7 +5,9 @@
     "name": "Test Slime",
     "battleSprite": "TestSlime.png",
     "battleSpriteWidth": 128,
-    "battleSpriteHeight": 128,
+    "battleSpriteHeight": 96,
+    "battleSpriteFrames": 1,
+    "battleSpriteRows": 1,
 
     "level": 1,
 

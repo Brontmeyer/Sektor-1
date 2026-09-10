@@ -159,22 +159,30 @@ class Scene_Map extends Scene_Base {
 
     console.log(`Transferring to map ${transfer.targetMapId}...`);
 
-    const mapData = await DatabaseManager.loadMap(transfer.targetMapId);
-    this.map = new Game_Map(mapData);
+    try {
+      const mapData = await DatabaseManager.loadMap(transfer.targetMapId);
 
-    this.player = new Game_Player(this.map);
-    this.player.x = transfer.targetX;
-    this.player.y = transfer.targetY;
+      this.map = new Game_Map(mapData);
 
-    this.player.velocityX = 0;
-    this.player.velocityY = 0;
+      this.player = new Game_Player(this.map);
 
-    this.camera = new Camera(this.map);
-    this.camera.follow(this.player);
+      this.player.x = transfer.targetX;
 
-    this.transferring = false;
+      this.player.y = transfer.targetY;
 
-    console.log(`Transfer complete: ${this.map.name}`);
+      this.player.velocityX = 0;
+      this.player.velocityY = 0;
+
+      this.camera = new Camera(this.map);
+
+      this.camera.follow(this.player);
+
+      console.log(`Transfer complete: ${this.map.name}`);
+    } catch (error) {
+      console.error("Map transfer failed:", error);
+    } finally {
+      this.transferring = false;
+    }
   }
 
   draw() {

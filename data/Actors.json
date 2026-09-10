@@ -4,8 +4,10 @@
     "id": 1,
     "name": "Player",
     "sideBattleSprite": "Player_Battle.png",
-    "battleSpriteWidth": 96,
-    "battleSpriteHeight": 128,
+    "battleSpriteWidth": 190,
+    "battleSpriteHeight": 166,
+    "battleSpriteFrames": 4,
+    "battleSpriteRows": 5,
 
     "level": 1,
     "exp": 0,
