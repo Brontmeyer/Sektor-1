@@ -6,7 +6,7 @@ class SceneManager {
 
     this.sceneStack = [];
 
-    console.log("SceneManager initialized.");
+    DebugManager.log("SceneManager initialized.");
   }
 
   static update(deltaTime) {
@@ -34,7 +34,7 @@ class SceneManager {
 
     this.currentScene.start();
 
-    console.log("Scene changed to:", sceneClass.name);
+    DebugManager.log("Scene changed to:", sceneClass.name);
   }
 
   static push(sceneClass) {
@@ -46,7 +46,7 @@ class SceneManager {
 
     this.currentScene.start();
 
-    console.log(`Scene pushed: ${sceneClass.name}`);
+    DebugManager.log(`Scene pushed: ${sceneClass.name}`);
   }
 
   static pop() {
@@ -62,6 +62,6 @@ class SceneManager {
 
     this.currentScene = this.sceneStack.pop();
 
-    console.log(`Returned to scene: ${this.currentScene.constructor.name}`);
+    DebugManager.log(`Returned to scene: ${this.currentScene.constructor.name}`);
   }
 }

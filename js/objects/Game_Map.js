@@ -23,7 +23,12 @@ class Game_Map {
       (eventData) => new Game_Event(eventData, this.id),
     );
 
-    console.log(`Map loaded: ${this.name}`);
+    DebugManager.log(`Map loaded: ${this.name}`);
+  }
+
+  getCollisionObstacles() {
+    const solidEvents = this.events.filter((event) => event.solid);
+    return [...this.obstacles, ...solidEvents];
   }
 
   draw(cameraX, cameraY) {

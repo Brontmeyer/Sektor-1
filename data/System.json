@@ -1,5 +1,6 @@
 {
-    "gameTitle": "Sektor 1",
-    "startMapId": 1,
-    "battleView": "side"
+  "gameTitle": "Sektor 1",
+  "startMapId": 1,
+  "battleView": "side",
+  "debugMode": true
 }

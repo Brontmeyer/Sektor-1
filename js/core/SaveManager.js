@@ -68,6 +68,10 @@ class SaveManager {
       $gameParty.items = { ...(partyData.items || {}) };
       $gameParty.weapons = { ...(partyData.weapons || {}) };
       $gameParty.armors = { ...(partyData.armors || {}) };
+
+      if (Array.isArray(partyData.battleActorIds)) {
+        $gameParty.setBattleActorIds(partyData.battleActorIds);
+      }
     }
 
     // =========================
@@ -139,13 +143,13 @@ class SaveManager {
             scene.camera.follow(scene.player);
           }
 
-          console.log(`Player position restored: (${savedX}, ${savedY})`);
+          DebugManager.log(`Player position restored: (${savedX}, ${savedY})`);
 
           // =========================
           // DIFFERENT MAP
           // =========================
         } else {
-          console.log(`Loading saved map ${savedMapId}...`);
+          DebugManager.log(`Loading saved map ${savedMapId}...`);
 
           await scene.performTransfer({
             targetMapId: savedMapId,
@@ -156,13 +160,13 @@ class SaveManager {
           scene.player.velocityX = 0;
           scene.player.velocityY = 0;
 
-          console.log(
+          DebugManager.log(
             `Saved location restored: Map ${savedMapId} (${savedX}, ${savedY})`,
           );
         }
       }
     }
-    console.log(`Game loaded from slot ${slotId}.`);
+    DebugManager.log(`Game loaded from slot ${slotId}.`);
     return true;
   }
 
@@ -253,6 +257,7 @@ class SaveManager {
         items: { ...$gameParty.items },
         weapons: { ...$gameParty.weapons },
         armors: { ...$gameParty.armors },
+        battleActorIds: $gameParty.battleActorIds(),
       },
 
       switches: {
@@ -278,7 +283,7 @@ class SaveManager {
 
     localStorage.setItem(this.saveKey(slotId), json);
 
-    console.log(`Game saved to slot ${slotId}.`);
+    DebugManager.log(`Game saved to slot ${slotId}.`);
 
     return true;
   }

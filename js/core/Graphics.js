@@ -13,7 +13,7 @@ class Graphics {
 
     this.canvas.height = this.height;
 
-    console.log("Graphics initialized.");
+    DebugManager.log("Graphics initialized.");
   }
 
   static clear() {

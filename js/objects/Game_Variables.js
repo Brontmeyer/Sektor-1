@@ -14,7 +14,7 @@ class Game_Variables {
   setValue(id, value) {
     this.data[id] = value;
 
-    console.log(`Variable "${id}" = ${value}`);
+    DebugManager.log(`Variable "${id}" = ${value}`);
   }
 
   value(id) {

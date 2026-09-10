@@ -21,7 +21,7 @@ class Scene_Menu extends Scene_Base {
     // SAVE MESSAGE TIMER
 
     if (this.saveMessageTimer > 0) {
-      this.saveMessageTimer--;
+      this.saveMessageTimer -= deltaTime;
 
       if (this.saveMessageTimer <= 0) {
         this.saveMessage = "";
@@ -43,19 +43,19 @@ class Scene_Menu extends Scene_Base {
         if (success) {
           this.saveMessage = `Game saved to Slot ${slotId}!`;
 
-          this.saveMessageTimer = 180;
+          this.saveMessageTimer = 3;
         }
       } else if (mode === "load") {
         if (!SaveManager.exists(slotId)) {
           this.saveMessage = `Slot ${slotId} is empty.`;
 
-          this.saveMessageTimer = 180;
+          this.saveMessageTimer = 3;
         } else {
           SaveManager.load(slotId).then((success) => {
             if (success) {
               SceneManager.pop();
 
-              console.log(`Loaded from slot ${slotId}.`);
+              DebugManager.log(`Loaded from slot ${slotId}.`);
             }
           });
         }
@@ -165,7 +165,7 @@ class Scene_Menu extends Scene_Base {
           break;
 
         default:
-          console.log(`${command} is not implemented yet.`);
+          DebugManager.log(`${command} is not implemented yet.`);
 
           break;
       }

@@ -120,7 +120,7 @@ class Game_Interpreter {
 
       const selectedChoice = command.choices[result];
 
-      console.log(`Choice selected: ${selectedChoice.text}`);
+      DebugManager.log(`Choice selected: ${selectedChoice.text}`);
 
       this.choiceWindow.clearResult();
 
@@ -448,7 +448,7 @@ class Game_Interpreter {
 
     this.event = null;
 
-    console.log("Event finished.");
+    DebugManager.log("Event finished.");
   }
 
   isRunning() {

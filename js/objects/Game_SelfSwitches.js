@@ -20,7 +20,7 @@ class Game_SelfSwitches {
 
     this.data[key] = Boolean(value);
 
-    console.log(`Self Switch ${key} = ${this.data[key]}`);
+    DebugManager.log(`Self Switch ${key} = ${this.data[key]}`);
   }
 
   clear() {

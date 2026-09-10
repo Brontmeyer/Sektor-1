@@ -10,7 +10,7 @@ class Input {
 
     window.addEventListener("keyup", this.onKeyUp.bind(this));
 
-    console.log("Input initialized.");
+    DebugManager.log("Input initialized.");
   }
 
   static endFrame() {

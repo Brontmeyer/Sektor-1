@@ -110,29 +110,30 @@ class Window_Message {
 
   drawWrappedText(text, x, y, maxWidth, lineHeight) {
     const context = Graphics.context;
-    const words = text.split(" ");
-
-    let line = "";
     let currentY = y;
 
-    for (const word of words) {
-      const testLine = line.length > 0 ? line + " " + word : word;
+    for (const paragraph of String(text).split("\n")) {
+      const words = paragraph.split(" ");
+      let line = "";
 
-      const testWidth = context.measureText(testLine).width;
+      for (const word of words) {
+        const testLine = line.length > 0 ? line + " " + word : word;
+        const testWidth = context.measureText(testLine).width;
 
-      if (testWidth > maxWidth && line.length > 0) {
-        context.fillText(line, x, currentY);
-
-        line = word;
-
-        currentY += lineHeight;
-      } else {
-        line = testLine;
+        if (testWidth > maxWidth && line.length > 0) {
+          context.fillText(line, x, currentY);
+          line = word;
+          currentY += lineHeight;
+        } else {
+          line = testLine;
+        }
       }
-    }
 
-    if (line.length > 0) {
-      context.fillText(line, x, currentY);
+      if (line.length > 0) {
+        context.fillText(line, x, currentY);
+      }
+
+      currentY += lineHeight;
     }
   }
 }

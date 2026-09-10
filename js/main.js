@@ -1,7 +1,7 @@
 "use strict";
 
 async function startGame() {
-  console.log("Maggot Corpse Engine starting...");
+  DebugManager.log("Maggot Corpse Engine starting...");
 
   Graphics.initialize();
   Input.initialize();
@@ -25,9 +25,11 @@ async function startGame() {
 
   window.$gameSelfSwitches = $gameSystem.selfSwitches;
 
-  window.$gameActor = $gameSystem.actor;
-
   window.$gameParty = $gameSystem.party;
+
+  // Backward-compatible leader alias. Existing systems can keep using
+  // $gameActor while party-aware systems use $gameParty.battleMembers().
+  window.$gameActor = $gameParty.leader() || $gameSystem.actor;
 
   // =====================================
   // START GAME

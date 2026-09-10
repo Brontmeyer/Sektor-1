@@ -100,7 +100,7 @@ class Window_Magic {
         (skill.target.includes("ally") || skill.target.includes("self"));
 
       if (!canTargetPlayer) {
-        console.log(`${skill.name} cannot be used from the field menu.`);
+        DebugManager.log(`${skill.name} cannot be used from the field menu.`);
 
         return;
       }

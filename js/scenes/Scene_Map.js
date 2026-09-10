@@ -38,7 +38,7 @@ class Scene_Map extends Scene_Base {
 
     this.loading = false;
 
-    console.log("Map scene ready.");
+    DebugManager.log("Map scene ready.");
   }
 
   update(deltaTime) {
@@ -133,7 +133,7 @@ class Scene_Map extends Scene_Base {
 
     this.interpreter.setup(event.commands, event);
 
-    console.log(`Activated event: ${event.name}`);
+    DebugManager.log(`Activated event: ${event.name}`);
   }
 
   checkTransfers() {
@@ -157,7 +157,7 @@ class Scene_Map extends Scene_Base {
   async performTransfer(transfer) {
     this.transferring = true;
 
-    console.log(`Transferring to map ${transfer.targetMapId}...`);
+    DebugManager.log(`Transferring to map ${transfer.targetMapId}...`);
 
     try {
       const mapData = await DatabaseManager.loadMap(transfer.targetMapId);
@@ -177,7 +177,7 @@ class Scene_Map extends Scene_Base {
 
       this.camera.follow(this.player);
 
-      console.log(`Transfer complete: ${this.map.name}`);
+      DebugManager.log(`Transfer complete: ${this.map.name}`);
     } catch (error) {
       console.error("Map transfer failed:", error);
     } finally {
@@ -213,6 +213,6 @@ class Scene_Map extends Scene_Base {
   terminate() {
     super.terminate();
 
-    console.log("Map scene terminated.");
+    DebugManager.log("Map scene terminated.");
   }
 }

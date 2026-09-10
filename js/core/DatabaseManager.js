@@ -2,9 +2,11 @@
 
 class DatabaseManager {
   static async loadDatabase() {
-    console.log("Loading database...");
+    DebugManager.log("Loading database...");
 
     this.system = await this.loadJSON("data/System.json");
+    DebugManager.setEnabled(this.system.debugMode !== false);
+
     this.mapInfos = await this.loadJSON("data/MapInfos.json");
 
     this.items = await this.loadJSON("data/Items.json");
@@ -15,7 +17,9 @@ class DatabaseManager {
     this.skills = await this.loadJSON("data/Skills.json");
     this.enemies = await this.loadJSON("data/Enemies.json");
 
-    console.log("Database loaded.");
+    DatabaseValidator.validate(this);
+
+    DebugManager.log("Database loaded.");
   }
 
   static async loadJSON(filename) {
@@ -35,11 +39,11 @@ class DatabaseManager {
       throw new Error(`Map ID ${mapId} does not exist.`);
     }
 
-    console.log(`Loading map ${mapId}: ${mapInfo.name}`);
+    DebugManager.log(`Loading map ${mapId}: ${mapInfo.name}`);
 
     const mapData = await this.loadJSON(`data/${mapInfo.file}`);
 
-    console.log(`Map ${mapId} loaded.`);
+    DebugManager.log(`Map ${mapId} loaded.`);
 
     return mapData;
   }

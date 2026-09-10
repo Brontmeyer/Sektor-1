@@ -1,54 +1,29 @@
 "use strict";
 
-class Game_Actor {
+class Game_Actor extends Game_Battler {
   constructor(actorId = 1) {
-    this.actorId = actorId;
-
     const actorData = DatabaseManager.actor(actorId);
 
     if (!actorData) {
       throw new Error(`Actor ID ${actorId} does not exist.`);
     }
-    this.name = actorData.name;
+
+    super(actorData);
+
+    this.actorId = actorId;
     this.sideBattleSprite = actorData.sideBattleSprite || null;
     this.battleSpriteWidth = actorData.battleSpriteWidth || 96;
     this.battleSpriteHeight = actorData.battleSpriteHeight || 128;
     this.battleSpriteFrames = actorData.battleSpriteFrames || 1;
     this.battleSpriteRows = actorData.battleSpriteRows || 1;
 
-    this.level = actorData.level;
     this.exp = actorData.exp;
-
-    this.maxHp = actorData.maxHp;
-    this.maxMp = actorData.maxMp;
-
-    this.strength = actorData.strength;
-    this.vitality = actorData.vitality;
-    this.dexterity = actorData.dexterity;
-    this.agility = actorData.agility;
-    this.magic = actorData.magic;
-    this.spirit = actorData.spirit;
-    this.luck = actorData.luck;
-
-    this.attack = actorData.attack;
-    this.attackPercent = actorData.attackPercent;
-
-    this.defense = actorData.defense;
-    this.defensePercent = actorData.defensePercent;
-
-    this.magicAttack = actorData.magicAttack;
-    this.magicDefense = actorData.magicDefense;
-    this.magicDefensePercent = actorData.magicDefensePercent;
-
     this.growth = actorData.growth;
 
     this.weaponId = 0;
     this.armorId = 0;
 
     this.skills = [];
-
-    this.hp = this.maxHp;
-    this.mp = this.maxMp;
   }
 
   // =====================================
@@ -80,7 +55,7 @@ class Game_Actor {
     }
     this.weaponId = weaponId;
 
-    console.log(`${this.name} equipped ${weapon.name}.`);
+    DebugManager.log(`${this.name} equipped ${weapon.name}.`);
 
     return true;
   }
@@ -95,7 +70,7 @@ class Game_Actor {
     }
     this.armorId = armorId;
 
-    console.log(`${this.name} equipped ${armor.name}.`);
+    DebugManager.log(`${this.name} equipped ${armor.name}.`);
 
     return true;
   }
@@ -116,7 +91,7 @@ class Game_Actor {
 
     this.skills.push(skillId);
 
-    console.log(`${this.name} learned ${DatabaseManager.skillName(skillId)}.`);
+    DebugManager.log(`${this.name} learned ${DatabaseManager.skillName(skillId)}.`);
 
     return true;
   }
@@ -130,7 +105,7 @@ class Game_Actor {
 
     this.skills.splice(index, 1);
 
-    console.log(`${this.name} forgot ${DatabaseManager.skillName(skillId)}.`);
+    DebugManager.log(`${this.name} forgot ${DatabaseManager.skillName(skillId)}.`);
 
     return true;
   }
@@ -191,7 +166,7 @@ class Game_Actor {
     // HEALING EFFECT
     if (skill.effect === "heal") {
       if (typeof target.isFullHp === "function" && target.isFullHp()) {
-        console.log(`${target.name} is already at full HP.`);
+        DebugManager.log(`${target.name} is already at full HP.`);
 
         return false;
       }
@@ -208,7 +183,7 @@ class Game_Actor {
 
       target.gainHp(healAmount);
 
-      console.log(`${this.name} used ${skill.name} on ${target.name}.`);
+      DebugManager.log(`${this.name} used ${skill.name} on ${target.name}.`);
 
       return true;
     }
@@ -233,7 +208,7 @@ class Game_Actor {
 
       target.loseHp(damage);
 
-      console.log(
+      DebugManager.log(
         `${this.name} used ${skill.name} on ${target.name} for ${damage} damage.`,
       );
 
@@ -311,86 +286,6 @@ class Game_Actor {
   }
 
   // =====================================
-  // HP MANAGEMENT
-  // =====================================
-
-  gainHp(amount) {
-    this.hp += amount;
-
-    this.hp = Math.min(this.hp, this.maxHp);
-
-    console.log(`${this.name} recovered ${amount} HP.`);
-  }
-
-  loseHp(amount) {
-    this.hp -= amount;
-
-    this.hp = Math.max(this.hp, 0);
-
-    console.log(`${this.name} lost ${amount} HP.`);
-  }
-
-  isDead() {
-    return this.hp <= 0;
-  }
-
-  recoverAllHp() {
-    this.hp = this.maxHp;
-
-    console.log(`${this.name}'s HP was fully restored.`);
-  }
-
-  isFullHp() {
-    return this.hp >= this.maxHp;
-  }
-
-  // =====================================
-  // MP MANAGEMENT
-  // =====================================
-
-  gainMp(amount) {
-    this.mp += amount;
-
-    this.mp = Math.min(this.mp, this.maxMp);
-
-    console.log(`${this.name} recovered ${amount} MP.`);
-  }
-
-  loseMp(amount) {
-    this.mp -= amount;
-
-    this.mp = Math.max(this.mp, 0);
-
-    console.log(`${this.name} lost ${amount} MP.`);
-  }
-
-  canPayMpCost(cost) {
-    return this.mp >= cost;
-  }
-
-  payMpCost(cost) {
-    if (!this.canPayMpCost(cost)) {
-      return false;
-    }
-
-    this.mp -= cost;
-
-    console.log(`${this.name} used ${cost} MP.`);
-
-    return true;
-  }
-
-  recoverAllMp() {
-    this.mp = this.maxMp;
-
-    console.log(`${this.name}'s MP was fully restored.`);
-  }
-
-  isFullMp() {
-    return this.mp >= this.maxMp;
-  }
-
-  // =====================================
   // EXPERIENCE AND LEVEL MANAGEMENT
   // =====================================
 
@@ -404,7 +299,7 @@ class Game_Actor {
     }
 
     this.exp += value;
-    console.log(`${this.name} gained ${value} EXP.`);
+    DebugManager.log(`${this.name} gained ${value} EXP.`);
     const oldLevel = this.level;
     this.checkLevelUp();
 
@@ -447,24 +342,24 @@ class Game_Actor {
     this.hp = this.maxHp;
     this.mp = this.maxMp;
 
-    console.log(`${this.name} reached Level ${this.level}!`);
+    DebugManager.log(`${this.name} reached Level ${this.level}!`);
 
-    console.log(`Max HP: ${this.maxHp}`);
-    console.log(`Max MP: ${this.maxMp}`);
+    DebugManager.log(`Max HP: ${this.maxHp}`);
+    DebugManager.log(`Max MP: ${this.maxMp}`);
 
-    console.log(`Strength: ${this.strength}`);
-    console.log(`Vitality: ${this.vitality}`);
-    console.log(`Dexterity: ${this.dexterity}`);
-    console.log(`Agility: ${this.agility}`);
-    console.log(`Magic: ${this.magic}`);
-    console.log(`Spirit: ${this.spirit}`);
-    console.log(`Luck: ${this.luck}`);
+    DebugManager.log(`Strength: ${this.strength}`);
+    DebugManager.log(`Vitality: ${this.vitality}`);
+    DebugManager.log(`Dexterity: ${this.dexterity}`);
+    DebugManager.log(`Agility: ${this.agility}`);
+    DebugManager.log(`Magic: ${this.magic}`);
+    DebugManager.log(`Spirit: ${this.spirit}`);
+    DebugManager.log(`Luck: ${this.luck}`);
 
-    console.log(`Attack: ${this.attack}`);
-    console.log(`Defense: ${this.defense}`);
+    DebugManager.log(`Attack: ${this.attack}`);
+    DebugManager.log(`Defense: ${this.defense}`);
 
-    console.log(`Magic Attack: ${this.magicAttack}`);
-    console.log(`Magic Defense: ${this.magicDefense}`);
+    DebugManager.log(`Magic Attack: ${this.magicAttack}`);
+    DebugManager.log(`Magic Defense: ${this.magicDefense}`);
   }
 
   // =====================================
@@ -491,23 +386,4 @@ class Game_Actor {
     return this.defenseWithArmor(this.armor());
   }
 
-  totalMagicAttack() {
-    return this.magicAttack + this.magic;
-  }
-
-  totalMagicDefense() {
-    return this.magicDefense + this.spirit;
-  }
-
-  totalAttackPercent() {
-    return this.attackPercent;
-  }
-
-  totalDefensePercent() {
-    return this.defensePercent;
-  }
-
-  totalMagicDefensePercent() {
-    return this.magicDefensePercent;
-  }
 }

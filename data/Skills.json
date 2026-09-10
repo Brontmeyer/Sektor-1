@@ -4,35 +4,31 @@
     "id": 1,
     "name": "Fire",
     "description": "Deals fire damage to one target.",
-
     "type": "magic",
     "category": "attack",
     "element": "fire",
     "effect": "damage",
-
     "mpCost": 4,
     "power": 8,
-
-
-    "target": ["ally", "enemy"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
     "scope": "single"
   },
-
   {
     "id": 2,
     "name": "Cure",
     "description": "Restores HP to one target.",
-
     "type": "magic",
     "category": "restore",
     "element": "restorative",
     "effect": "heal",
-
     "mpCost": 5,
     "power": 5,
-
-
-    "target": ["ally", "enemy"],
+    "target": [
+      "ally"
+    ],
     "scope": "single"
   }
 ]

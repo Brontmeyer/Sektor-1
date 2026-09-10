@@ -12,7 +12,7 @@ class Game_Switches {
   setValue(id, value) {
     this.data[id] = Boolean(value);
 
-    console.log(`Switch "${id}" = ${this.data[id]}`);
+    DebugManager.log(`Switch "${id}" = ${this.data[id]}`);
   }
 
   clear() {

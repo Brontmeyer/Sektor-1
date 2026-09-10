@@ -59,7 +59,7 @@ class Game_Event {
       this.commands = [];
     }
 
-    console.log(
+    DebugManager.log(
       `Event "${this.name}" changed to page ${this.activePageIndex + 1}`,
     );
   }

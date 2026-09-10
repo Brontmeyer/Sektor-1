@@ -1,11 +1,126 @@
 "use strict";
 
 class Game_Party {
-  constructor() {
+  constructor(initialActors = []) {
     this.items = {};
 
     this.weapons = {};
     this.armors = {};
+
+    // Party roster and active battle party are intentionally separate.
+    // This lets the project grow into a larger roster later while keeping
+    // a maximum of three active battle members.
+    this._actors = [];
+    this._battleActorIds = [];
+
+    for (const actor of initialActors) {
+      this.addActor(actor);
+    }
+
+    if (this._actors.length > 0 && this._battleActorIds.length === 0) {
+      this._battleActorIds = this._actors.slice(0, 3).map((actor) => actor.actorId);
+    }
+  }
+
+  // =====================================
+  // PARTY MEMBERS
+  // =====================================
+
+  members() {
+    return [...this._actors];
+  }
+
+  actorById(actorId) {
+    const id = Number(actorId);
+    return this._actors.find((actor) => actor.actorId === id) || null;
+  }
+
+  leader() {
+    return this._actors[0] || null;
+  }
+
+  addActor(actor) {
+    if (!(actor instanceof Game_Actor)) {
+      console.warn("Game_Party.addActor expects a Game_Actor instance.");
+      return false;
+    }
+
+    if (this.actorById(actor.actorId)) {
+      return false;
+    }
+
+    this._actors.push(actor);
+
+    if (this._battleActorIds.length < 3) {
+      this._battleActorIds.push(actor.actorId);
+    }
+
+    return true;
+  }
+
+  removeActor(actorId) {
+    const id = Number(actorId);
+    const index = this._actors.findIndex((actor) => actor.actorId === id);
+
+    if (index < 0) {
+      return false;
+    }
+
+    this._actors.splice(index, 1);
+    this._battleActorIds = this._battleActorIds.filter((memberId) => memberId !== id);
+
+    return true;
+  }
+
+  battleActorIds() {
+    return [...this._battleActorIds];
+  }
+
+  setBattleActorIds(actorIds) {
+    if (!Array.isArray(actorIds)) {
+      return false;
+    }
+
+    const validIds = [];
+
+    for (const actorId of actorIds) {
+      const id = Number(actorId);
+
+      if (!Number.isInteger(id) || !this.actorById(id) || validIds.includes(id)) {
+        continue;
+      }
+
+      validIds.push(id);
+
+      if (validIds.length >= 3) {
+        break;
+      }
+    }
+
+    if (validIds.length === 0 && this.leader()) {
+      validIds.push(this.leader().actorId);
+    }
+
+    this._battleActorIds = validIds;
+    return this._battleActorIds.length > 0;
+  }
+
+  battleMembers() {
+    return this._battleActorIds
+      .map((actorId) => this.actorById(actorId))
+      .filter((actor) => actor !== null);
+  }
+
+  livingBattleMembers() {
+    return this.battleMembers().filter((actor) => actor.isAlive());
+  }
+
+  battleLeader() {
+    return this.battleMembers()[0] || this.leader();
+  }
+
+  battleMemberIndex(actor) {
+    return this.battleMembers().indexOf(actor);
   }
 
   // =====================================
@@ -25,7 +140,7 @@ class Game_Party {
 
     const itemName = DatabaseManager.itemName(itemId);
 
-    console.log(`${itemName}: ${this.itemCount(itemId)}`);
+    DebugManager.log(`${itemName}: ${this.itemCount(itemId)}`);
   }
 
   loseItem(itemId, amount = 1) {
@@ -56,7 +171,7 @@ class Game_Party {
     }
 
     if (!item.effect) {
-      console.log(`${item.name} cannot be used.`);
+      DebugManager.log(`${item.name} cannot be used.`);
 
       return false;
     }
@@ -64,7 +179,7 @@ class Game_Party {
     switch (item.effect.type) {
       case "healHp":
         if ($gameActor.isFullHp()) {
-          console.log(`${item.name} was not used because HP is already full.`);
+          DebugManager.log(`${item.name} was not used because HP is already full.`);
 
           return false;
         }
@@ -93,7 +208,7 @@ class Game_Party {
       this.loseItem(itemId, 1);
     }
 
-    console.log(`Used ${item.name}.`);
+    DebugManager.log(`Used ${item.name}.`);
 
     return true;
   }
@@ -123,7 +238,7 @@ class Game_Party {
       this.armors[armorId] = newAmount;
     }
 
-    console.log(`${armor.name}: ${this.armorCount(armorId)}`);
+    DebugManager.log(`${armor.name}: ${this.armorCount(armorId)}`);
   }
 
   loseArmor(armorId, amount = 1) {
@@ -159,7 +274,7 @@ class Game_Party {
       this.weapons[weaponId] = newAmount;
     }
 
-    console.log(`${weapon.name}: ${this.weaponCount(weaponId)}`);
+    DebugManager.log(`${weapon.name}: ${this.weaponCount(weaponId)}`);
   }
 
   loseWeapon(weaponId, amount = 1) {

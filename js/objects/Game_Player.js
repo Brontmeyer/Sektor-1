@@ -49,9 +49,11 @@ class Game_Player {
 
     const moveY = this.velocityY * deltaTime;
 
-    CollisionManager.moveX(this, moveX, this.map.obstacles);
+    const obstacles = this.map.getCollisionObstacles();
 
-    CollisionManager.moveY(this, moveY, this.map.obstacles);
+    CollisionManager.moveX(this, moveX, obstacles);
+
+    CollisionManager.moveY(this, moveY, obstacles);
 
     this.keepInsideMap();
   }

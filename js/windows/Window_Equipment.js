@@ -54,7 +54,7 @@ class Window_Equipment {
           $gameActor.weaponId = 0;
 
           if (oldWeapon) {
-            console.log(`${$gameActor.name} unequipped ${oldWeapon.name}.`);
+            DebugManager.log(`${$gameActor.name} unequipped ${oldWeapon.name}.`);
           }
         } else {
           $gameActor.equipWeapon(result.id);
@@ -66,7 +66,7 @@ class Window_Equipment {
           $gameActor.armorId = 0;
 
           if (oldArmor) {
-            console.log(`${$gameActor.name} unequipped ${oldArmor.name}.`);
+            DebugManager.log(`${$gameActor.name} unequipped ${oldArmor.name}.`);
           }
         } else {
           $gameActor.equipArmor(result.id);

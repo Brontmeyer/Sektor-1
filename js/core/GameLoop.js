@@ -8,7 +8,7 @@ class GameLoop {
 
     requestAnimationFrame(this.loop.bind(this));
 
-    console.log("Game loop started.");
+    DebugManager.log("Game loop started.");
   }
 
   static update(deltaTime) {
