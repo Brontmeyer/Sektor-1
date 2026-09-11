@@ -5,12 +5,15 @@ class BattleRenderer {
     this.scene = scene;
   }
 
-  drawActorSprite(context, x, y) {
-    const width = $gameActor.battleSpriteWidth;
-    const height = $gameActor.battleSpriteHeight;
-    const scale = this.scene.getActorVisualScale();
+  drawActorSprite(context, x, y, actor = $gameActor) {
+    const width = actor.battleSpriteWidth;
+    const height = actor.battleSpriteHeight;
 
+    const scale = this.scene.getActorVisualScale();
     const alpha = this.scene.getActorVisualAlpha();
+
+    const battleData = this.scene.getPartyBattleData(actor);
+    const image = this.scene.getPartyBattleImage(actor);
 
     context.save();
 
@@ -20,31 +23,28 @@ class BattleRenderer {
 
     context.scale(scale, scale);
 
-    if (
-      this.scene.actorImage &&
-      this.scene.actorImage.complete &&
-      this.scene.actorImage.naturalWidth > 0
-    ) {
-      const animation = this.scene.getBattlerAnimationData(this.scene.actorState);
+    if (image && image.complete && image.naturalWidth > 0) {
+      const state = battleData?.state || "idle";
+      const animation = this.scene.getBattlerAnimationData(state);
 
-      const frameCount = $gameActor.battleSpriteFrames || 1;
-      const rowCount = $gameActor.battleSpriteRows || 1;
+      const frameCount = actor.battleSpriteFrames || 1;
+      const rowCount = actor.battleSpriteRows || 1;
 
-      const sourceFrameWidth = this.scene.actorImage.naturalWidth / frameCount;
-      const sourceFrameHeight = this.scene.actorImage.naturalHeight / rowCount;
+      const sourceFrameWidth = image.naturalWidth / frameCount;
+      const sourceFrameHeight = image.naturalHeight / rowCount;
 
-      const frame = Math.min(this.scene.actorAnimationFrame, frameCount - 1);
+      const frame = Math.min(battleData?.animationFrame || 0, frameCount - 1);
 
       const sourceX = frame * sourceFrameWidth;
 
-      const requestedRow = this.scene.getBattlerAnimationRow(this.scene.actorState);
+      const requestedRow = this.scene.getBattlerAnimationRow(state);
 
       const row = Math.min(requestedRow, rowCount - 1);
 
       const sourceY = row * sourceFrameHeight;
 
       context.drawImage(
-        this.scene.actorImage,
+        image,
 
         sourceX,
         sourceY,
@@ -190,12 +190,16 @@ class BattleRenderer {
     let y;
 
     if (this.scene.targetGroup === "ally") {
-      const position = this.scene.getAllyBattlePosition(this.scene.selectedAllyIndex);
+      const position = this.scene.getAllyBattlePosition(
+        this.scene.selectedAllyIndex,
+      );
 
       x = position.x;
       y = position.y - 160;
     } else {
-      const position = this.scene.getEnemyBattlePosition(this.scene.selectedEnemyIndex);
+      const position = this.scene.getEnemyBattlePosition(
+        this.scene.selectedEnemyIndex,
+      );
 
       x = position.x;
       y = position.y - 110;
@@ -233,10 +237,10 @@ class BattleRenderer {
   }
 
   drawSideView(context) {
-    const playerPosition = this.scene.getAllyBattlePosition(0);
+    const partyMembers = this.scene.getBattlePartyMembers();
 
     // -----------------------------
-    // Player battlefield position
+    // Party battlefield positions
     // -----------------------------
 
     context.textAlign = "center";
@@ -245,11 +249,18 @@ class BattleRenderer {
     context.font = "24px Arial";
     context.fillStyle = "#ffffff";
 
-    this.drawActorSprite(
-      context,
-      playerPosition.x + this.scene.actorVisualX,
-      playerPosition.y + this.scene.actorVisualY + this.scene.getActorStateYOffset(),
-    );
+    partyMembers.forEach((actor, index) => {
+      const position = this.scene.getAllyBattlePosition(index);
+
+      this.drawActorSprite(
+        context,
+        position.x + this.scene.actorVisualX,
+        position.y +
+          this.scene.actorVisualY +
+          this.scene.getActorStateYOffset(),
+        actor,
+      );
+    });
 
     context.font = "16px Arial";
     context.fillStyle = "#ffffff";
@@ -402,5 +413,4 @@ class BattleRenderer {
 
     context.restore();
   }
-
 }

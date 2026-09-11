@@ -7,6 +7,24 @@ class BattleAnimationController {
 
   updateBattlerStates(deltaTime) {
     const scene = this.scene;
+
+    const activeActor = scene.partyController.currentBattler();
+    const activeActorData = activeActor
+      ? scene.getPartyBattleData(activeActor)
+      : null;
+
+    if (activeActorData && activeActorData.stateTimer > 0) {
+      activeActorData.stateTimer -= deltaTime;
+
+      if (activeActorData.stateTimer <= 0) {
+        activeActorData.stateTimer = 0;
+
+        if (!activeActor.isDead()) {
+          activeActorData.state = "idle";
+        }
+      }
+    }
+
     if (scene.actorStateTimer > 0) {
       scene.actorStateTimer -= deltaTime;
 
@@ -119,7 +137,12 @@ class BattleAnimationController {
 
   updateActorAnimation(deltaTime) {
     const scene = this.scene;
-    const animation = scene.getBattlerAnimationData(scene.actorState);
+    
+    const actor = scene.partyController.currentBattler() || $gameActor;
+    const battleData = scene.getPartyBattleData(actor);
+    
+    const state = battleData?.state || scene.actorState;
+    const animation = scene.getBattlerAnimationData(state);
 
     scene.actorAnimationTimer += deltaTime;
 
@@ -133,6 +156,24 @@ class BattleAnimationController {
           scene.actorAnimationFrame = 0;
         } else {
           scene.actorAnimationFrame = animation.frames - 1;
+        }
+      }
+    }
+
+    if (battleData) {
+      battleData.animationTimer += deltaTime;
+
+      while (battleData.animationTimer >= animation.frameDuration) {
+        battleData.animationTimer -= animation.frameDuration;
+
+        battleData.animationFrame++;
+
+        if (battleData.animationFrame >= animation.frames) {
+          if (animation.loop) {
+            battleData.animationFrame = 0;
+          } else {
+            battleData.animationFrame = animation.frames - 1;
+          }
         }
       }
     }
@@ -182,6 +223,20 @@ class BattleAnimationController {
 
   setActorState(state, duration = 0) {
     const scene = this.scene;
+    const actor = scene.partyController.currentBattler() || $gameActor;
+    const battleData = scene.getPartyBattleData(actor);
+
+    if (battleData) {
+      if (battleData.state !== state) {
+        battleData.animationFrame = 0;
+        battleData.animationTimer = 0;
+      }
+
+      battleData.state = state;
+      battleData.stateTimer = duration;
+    }
+
+    // Temporary compatibility with the old single-actor system.
     if (scene.actorState !== state) {
       scene.actorAnimationFrame = 0;
       scene.actorAnimationTimer = 0;
@@ -204,6 +259,16 @@ class BattleAnimationController {
       battleData.state = state;
       battleData.stateTimer = duration;
     }
+  }
+
+  getActiveActorData() {
+    const actor = this.scene.partyController.currentBattler();
+
+    if (!actor) {
+      return null;
+    }
+
+    return this.scene.getPartyBattleData(actor);
   }
 
   getActorTargetOffset() {
@@ -373,5 +438,4 @@ class BattleAnimationController {
 
     return rows[state] ?? 0;
   }
-
 }

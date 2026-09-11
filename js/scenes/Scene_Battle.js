@@ -24,6 +24,13 @@ class Scene_Battle extends Scene_Base {
     this.actorVisualX = 0;
     this.actorVisualY = 0;
 
+    // =============================================================
+    // Pass 10 - Independent Party Battler Data
+    // =============================================================
+
+    this.partyBattleData = new Map();
+    this.partyImages = new Map();
+
     this.loadBattleSprites();
     this.commandWindow = new Window_BattleCommand();
     this.magicWindow = new Window_BattleMagic();
@@ -90,10 +97,12 @@ class Scene_Battle extends Scene_Base {
     // Pass 9 - Awakening
     // Initialize the party turn queue.
     // =============================================================
+
     this.partyController.initializePartyTurnQueue();
+    this.initializePartyBattleData();
 
     this.battleManager.setTurnState(BattleManager.TURN_COMMAND);
-    
+
     DebugManager.log(`Battle started against ${this.enemy.name}.`);
   }
 
@@ -327,6 +336,27 @@ class Scene_Battle extends Scene_Base {
       this.actorImage.src = `js/sprites/actors/${$gameActor.sideBattleSprite}`;
     }
 
+    // =====================================
+    // PARTY SPRITES
+    // =====================================
+
+    this.partyImages.clear();
+
+    for (const actor of $gameParty.battleMembers()) {
+      if (!actor.sideBattleSprite) {
+        continue;
+      }
+
+      const image = new Image();
+      image.src = `js/sprites/actors/${actor.sideBattleSprite}`;
+
+      this.partyImages.set(actor, image);
+    }
+
+    // =====================================
+    // ENEMY SPRITES
+    // =====================================
+
     this.enemyImages.clear();
 
     for (const enemy of this.enemies) {
@@ -337,6 +367,23 @@ class Scene_Battle extends Scene_Base {
       const image = new Image();
       image.src = `js/sprites/enemies/${enemy.battleSprite}`;
       this.enemyImages.set(enemy.battleSprite, image);
+    }
+  }
+
+  initializePartyBattleData() {
+    this.partyBattleData.clear();
+
+    for (const actor of $gameParty.battleMembers()) {
+      this.partyBattleData.set(actor, {
+        state: "idle",
+        stateTimer: 0,
+
+        animationFrame: 0,
+        animationTimer: 0,
+
+        visualX: 0,
+        visualY: 0,
+      });
     }
   }
 
@@ -452,6 +499,14 @@ class Scene_Battle extends Scene_Base {
 
   getBattlerAnimationRow(state) {
     return this.animationController.getBattlerAnimationRow(state);
+  }
+
+  getPartyBattleData(actor) {
+    return this.partyBattleData.get(actor) || null;
+  }
+
+  getPartyBattleImage(actor) {
+    return this.partyImages.get(actor) || null;
   }
 
   performAttack() {
