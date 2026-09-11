@@ -97,7 +97,7 @@ class BattleManager {
           return;
         }
 
-        battle.queueEnemyTurn(0.1);
+        this.finishPartyAction();
         break;
 
       // =====================================
@@ -137,7 +137,7 @@ class BattleManager {
           return;
         }
 
-        battle.queueEnemyTurn(0.1);
+        this.finishPartyAction();
         break;
 
       // =====================================
@@ -167,7 +167,7 @@ class BattleManager {
           return;
         }
 
-        battle.queueEnemyTurn(0.1);
+        this.finishPartyAction();
         break;
 
       // =====================================
@@ -208,6 +208,25 @@ class BattleManager {
     battle.pendingEnemyTurn = true;
     battle.enemyTurnDelay = delay;
     battle.battleInputLocked = true;
+  }
+
+  finishPartyAction() {
+    const battle = this.scene;
+    const party = this.party();
+
+    if (party.hasNextBattler()) {
+      party.nextBattler();
+
+      this.setTurnState(BattleManager.TURN_COMMAND);
+
+      battle.battleInputLocked = false;
+
+      return;
+    }
+
+    this.setTurnState(BattleManager.TURN_END);
+
+    battle.queueEnemyTurn(0.1);
   }
 
   performAttack() {
@@ -490,6 +509,11 @@ class BattleManager {
       } else {
         battle.enemyTurnIndex = 0;
         battle.pendingEnemyTurn = false;
+
+        this.party().resetPartyTurnQueue();
+        this.setTurnState(BattleManager.TURN_COMMAND);
+
+        battle.battleInputLocked = false;
       }
 
       return;
@@ -540,6 +564,11 @@ class BattleManager {
     } else {
       battle.enemyTurnIndex = 0;
       battle.pendingEnemyTurn = false;
+
+      this.party().resetPartyTurnQueue();
+      this.setTurnState(BattleManager.TURN_COMMAND);
+
+      battle.battleInputLocked = false;
     }
   }
 

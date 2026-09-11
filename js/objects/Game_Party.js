@@ -18,7 +18,9 @@ class Game_Party {
     }
 
     if (this._actors.length > 0 && this._battleActorIds.length === 0) {
-      this._battleActorIds = this._actors.slice(0, 3).map((actor) => actor.actorId);
+      this._battleActorIds = this._actors
+        .slice(0, 4)
+        .map((actor) => actor.actorId);
     }
   }
 
@@ -51,7 +53,7 @@ class Game_Party {
 
     this._actors.push(actor);
 
-    if (this._battleActorIds.length < 3) {
+    if (this._battleActorIds.length < 4) {
       this._battleActorIds.push(actor.actorId);
     }
 
@@ -67,7 +69,9 @@ class Game_Party {
     }
 
     this._actors.splice(index, 1);
-    this._battleActorIds = this._battleActorIds.filter((memberId) => memberId !== id);
+    this._battleActorIds = this._battleActorIds.filter(
+      (memberId) => memberId !== id,
+    );
 
     return true;
   }
@@ -86,13 +90,17 @@ class Game_Party {
     for (const actorId of actorIds) {
       const id = Number(actorId);
 
-      if (!Number.isInteger(id) || !this.actorById(id) || validIds.includes(id)) {
+      if (
+        !Number.isInteger(id) ||
+        !this.actorById(id) ||
+        validIds.includes(id)
+      ) {
         continue;
       }
 
       validIds.push(id);
 
-      if (validIds.length >= 3) {
+      if (validIds.length >= 4) {
         break;
       }
     }
@@ -179,7 +187,9 @@ class Game_Party {
     switch (item.effect.type) {
       case "healHp":
         if ($gameActor.isFullHp()) {
-          DebugManager.log(`${item.name} was not used because HP is already full.`);
+          DebugManager.log(
+            `${item.name} was not used because HP is already full.`,
+          );
 
           return false;
         }
