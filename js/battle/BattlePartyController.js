@@ -36,6 +36,38 @@ class BattlePartyController {
     return this.currentPartyTurn < this.partyTurnQueue.length - 1;
   }
 
+  // =============================================================
+  // Pass 10 - Party Battlefield Foundation
+  // =============================================================
+
+  formationPositions() {
+    const battlefieldBottom = Graphics.height - 190;
+
+    return [
+      { x: 230, y: battlefieldBottom - 50 },
+      { x: 165, y: battlefieldBottom - 135 },
+      { x: 300, y: battlefieldBottom - 135 },
+      { x: 230, y: battlefieldBottom - 220 },
+    ];
+  }
+
+  battlePosition(index) {
+    const positions = this.formationPositions();
+    const safeIndex = Math.max(0, Math.min(index, positions.length - 1));
+
+    return positions[safeIndex];
+  }
+
+  positionForBattler(battler) {
+    const index = $gameParty.battleMemberIndex(battler);
+
+    if (index < 0) {
+      return this.battlePosition(0);
+    }
+
+    return this.battlePosition(index);
+  }
+
   battleContext() {
     return {
       battler: this.currentBattler(),
