@@ -32,18 +32,6 @@ class BattleAnimationController {
       }
     }
 
-    if (scene.actorStateTimer > 0) {
-      scene.actorStateTimer -= deltaTime;
-
-      if (scene.actorStateTimer <= 0) {
-        scene.actorStateTimer = 0;
-
-        if (!$gameActor.isDead()) {
-          scene.actorState = "idle";
-        }
-      }
-    }
-
     for (let i = 0; i < scene.enemies.length; i++) {
       const enemy = scene.enemies[i];
       const battleData = scene.enemyBattleData[i];
@@ -70,7 +58,7 @@ class BattleAnimationController {
       scene.battleInputLocked &&
       !scene.pendingEnemyTurn &&
       scene.actionPhase === "none" &&
-      scene.actorState === "idle" &&
+      (!activeActorData || activeActorData.state === "idle") &&
       scene.enemies.every(
         (enemy, index) =>
           enemy.isDead() || scene.enemyBattleData[index].state === "idle",
@@ -151,29 +139,15 @@ class BattleAnimationController {
   updateActorAnimation(deltaTime) {
     const scene = this.scene;
 
-    const actor = scene.partyController.currentBattler() || $gameActor;
-    const battleData = scene.getPartyBattleData(actor);
+    for (const actor of $gameParty.battleMembers()) {
+      const battleData = scene.getPartyBattleData(actor);
 
-    const state = battleData?.state || scene.actorState;
-    const animation = scene.getBattlerAnimationData(state);
-
-    scene.actorAnimationTimer += deltaTime;
-
-    while (scene.actorAnimationTimer >= animation.frameDuration) {
-      scene.actorAnimationTimer -= animation.frameDuration;
-
-      scene.actorAnimationFrame++;
-
-      if (scene.actorAnimationFrame >= animation.frames) {
-        if (animation.loop) {
-          scene.actorAnimationFrame = 0;
-        } else {
-          scene.actorAnimationFrame = animation.frames - 1;
-        }
+      if (!battleData) {
+        continue;
       }
-    }
 
-    if (battleData) {
+      const animation = scene.getBattlerAnimationData(battleData.state);
+
       battleData.animationTimer += deltaTime;
 
       while (battleData.animationTimer >= animation.frameDuration) {
@@ -256,15 +230,6 @@ class BattleAnimationController {
       battleData.state = state;
       battleData.stateTimer = duration;
     }
-
-    // Temporary compatibility with the old single-actor system.
-    if (scene.actorState !== state) {
-      scene.actorAnimationFrame = 0;
-      scene.actorAnimationTimer = 0;
-    }
-
-    scene.actorState = state;
-    scene.actorStateTimer = duration;
   }
 
   setEnemyState(state, duration = 0, enemy = this.scene.enemy) {
@@ -294,6 +259,7 @@ class BattleAnimationController {
 
   getActorTargetOffset() {
     const scene = this.scene;
+
     // Attack movement is controlled by action phases.
     if (scene.actionPhase === "lunge") {
       return 45;
@@ -307,18 +273,24 @@ class BattleAnimationController {
       return 0;
     }
 
+    const activeActor = scene.partyController.currentBattler();
+    const activeActorData = activeActor
+      ? scene.getPartyBattleData(activeActor)
+      : null;
+
+    // Hurt recoil takes priority over command positioning.
+    if (activeActorData?.state === "hurt") {
+      return -18;
+    }
+
     // Active battler stands slightly forward while choosing a command.
     if (
       scene.battleManager.isTurnState(BattleManager.TURN_COMMAND) &&
       !scene.battleInputLocked &&
-      scene.actionPhase === "none"
+      scene.actionPhase === "none" &&
+      (!activeActorData || activeActorData.state === "idle")
     ) {
       return 18;
-    }
-
-    // Player recoil when hurt.
-    if (scene.actorState === "hurt") {
-      return -18;
     }
 
     return 0;
