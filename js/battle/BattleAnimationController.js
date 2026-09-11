@@ -13,14 +13,21 @@ class BattleAnimationController {
       ? scene.getPartyBattleData(activeActor)
       : null;
 
-    if (activeActorData && activeActorData.stateTimer > 0) {
-      activeActorData.stateTimer -= deltaTime;
+    // Update every party member's temporary battle state.
+    for (const actor of $gameParty.battleMembers()) {
+      const battleData = scene.getPartyBattleData(actor);
 
-      if (activeActorData.stateTimer <= 0) {
-        activeActorData.stateTimer = 0;
+      if (!battleData || battleData.stateTimer <= 0) {
+        continue;
+      }
 
-        if (!activeActor.isDead()) {
-          activeActorData.state = "idle";
+      battleData.stateTimer -= deltaTime;
+
+      if (battleData.stateTimer <= 0) {
+        battleData.stateTimer = 0;
+
+        if (!actor.isDead()) {
+          battleData.state = "idle";
         }
       }
     }
@@ -227,9 +234,17 @@ class BattleAnimationController {
     return target;
   }
 
-  setActorState(state, duration = 0) {
+  setActorState(
+    state,
+    duration = 0,
+    actor = this.scene.partyController.currentBattler(),
+  ) {
     const scene = this.scene;
-    const actor = scene.partyController.currentBattler() || $gameActor;
+
+    if (!actor) {
+      return;
+    }
+
     const battleData = scene.getPartyBattleData(actor);
 
     if (battleData) {
@@ -325,51 +340,53 @@ class BattleAnimationController {
     return 0;
   }
 
-  getActorStateYOffset() {
+  getActorStateYOffset(actor) {
     const scene = this.scene;
-    if (scene.actorState === "hurt") {
+    const battleData = scene.getPartyBattleData(actor);
+    const state = battleData?.state || "idle";
+
+    if (state === "hurt") {
       return 34;
     }
 
-    if (scene.actorState === "defeat") {
+    if (state === "defeat") {
       return 52;
     }
 
     return 0;
   }
 
-  getActorVisualScale() {
+  getActorVisualScale(actor) {
     const scene = this.scene;
-    // ACTOR GROWS  WHILE CASTING MAGIC
+    const activeActor = scene.partyController.currentBattler();
+
+    if (actor !== activeActor) {
+      return 1;
+    }
+
     if (scene.actionPhase === "magicCast") {
       const duration = 0.4;
-
       const progress = 1 - scene.actionPhaseTimer / duration;
 
       return 1 + 0.06 * progress;
     }
 
-    // ACTOR SHRINKS WHILE MAGIC EFFECT IS ACTIVE
     if (scene.actionPhase === "magicEffect") {
       const duration = 0.25;
-
       const progress = 1 - scene.actionPhaseTimer / duration;
 
       return 1.06 - 0.06 * progress;
     }
 
-    // ACTOR GROWS WHILE USING ITEM
     if (scene.actionPhase === "itemUse") {
       const duration = 0.35;
-
       const progress = 1 - scene.actionPhaseTimer / duration;
 
       return 1 + 0.03 * progress;
     }
-    // ACTOR SHRINKS WHILE ITEM EFFECT IS ACTIVE
+
     if (scene.actionPhase === "itemEffect") {
       const duration = 0.25;
-
       const progress = 1 - scene.actionPhaseTimer / duration;
 
       return 1.03 - 0.03 * progress;
@@ -378,12 +395,13 @@ class BattleAnimationController {
     return 1;
   }
 
-  getActorVisualAlpha() {
+  getActorVisualAlpha(actor) {
     const scene = this.scene;
+
     if (
       scene.actionPhase === "magicEffect" &&
       scene.magicEffectSkill &&
-      scene.magicEffectTarget === $gameActor
+      scene.magicEffectTarget === actor
     ) {
       return 0.65;
     }

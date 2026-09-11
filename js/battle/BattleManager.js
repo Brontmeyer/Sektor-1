@@ -668,10 +668,11 @@ class BattleManager {
     const damage = Math.max(1, attack - defense);
     target.loseHp(damage);
 
-    if (target === $gameActor) {
+    if ($gameParty.battleMembers().includes(target)) {
       battle.setActorState(
         target.isDead() ? "defeat" : "hurt",
         target.isDead() ? 0 : 0.3,
+        target,
       );
     }
 

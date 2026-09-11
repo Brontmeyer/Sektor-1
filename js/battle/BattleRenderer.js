@@ -9,8 +9,8 @@ class BattleRenderer {
     const width = actor.battleSpriteWidth;
     const height = actor.battleSpriteHeight;
 
-    const scale = this.scene.getActorVisualScale();
-    const alpha = this.scene.getActorVisualAlpha();
+    const scale = this.scene.getActorVisualScale(actor);
+    const alpha = this.scene.getActorVisualAlpha(actor);
 
     const battleData = this.scene.getPartyBattleData(actor);
     const image = this.scene.getPartyBattleImage(actor);
@@ -259,7 +259,7 @@ class BattleRenderer {
       this.drawActorSprite(
         context,
         position.x + visualX,
-        position.y + visualY + this.scene.getActorStateYOffset(),
+        position.y + visualY + this.scene.getActorStateYOffset(actor),
         actor,
       );
     });

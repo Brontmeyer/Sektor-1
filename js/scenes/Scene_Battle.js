@@ -405,8 +405,12 @@ class Scene_Battle extends Scene_Base {
     DebugManager.log(message);
   }
 
-  setActorState(state, duration = 0) {
-    return this.animationController.setActorState(state, duration);
+  setActorState(state, duration = 0, actor = null) {
+    return this.animationController.setActorState(
+      state,
+      duration,
+      actor || this.partyController.currentBattler(),
+    );
   }
 
   setEnemyState(state, duration = 0, enemy = this.enemy) {
@@ -426,16 +430,16 @@ class Scene_Battle extends Scene_Base {
     return this.animationController.getActorTargetYOffset();
   }
 
-  getActorStateYOffset() {
-    return this.animationController.getActorStateYOffset();
+  getActorStateYOffset(actor) {
+    return this.animationController.getActorStateYOffset(actor);
   }
 
-  getActorVisualScale() {
-    return this.animationController.getActorVisualScale();
+  getActorVisualScale(actor) {
+    return this.animationController.getActorVisualScale(actor);
   }
 
-  getActorVisualAlpha() {
-    return this.animationController.getActorVisualAlpha();
+  getActorVisualAlpha(actor) {
+    return this.animationController.getActorVisualAlpha(actor);
   }
 
   getEnemyVisualAlpha(enemy = this.enemy) {
