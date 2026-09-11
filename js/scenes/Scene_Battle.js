@@ -331,10 +331,6 @@ class Scene_Battle extends Scene_Base {
   }
 
   loadBattleSprites() {
-    if ($gameActor.sideBattleSprite) {
-      this.actorImage = new Image();
-      this.actorImage.src = `js/sprites/actors/${$gameActor.sideBattleSprite}`;
-    }
 
     // =====================================
     // PARTY SPRITES

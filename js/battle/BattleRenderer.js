@@ -5,7 +5,11 @@ class BattleRenderer {
     this.scene = scene;
   }
 
-  drawActorSprite(context, x, y, actor = $gameActor) {
+  drawActorSprite(context, x, y, actor) {
+    if (!actor) {
+      return;
+    }
+
     const width = actor.battleSpriteWidth;
     const height = actor.battleSpriteHeight;
 
@@ -293,7 +297,11 @@ class BattleRenderer {
     context.fillStyle = "#ffffff";
 
     if (members.length <= 1) {
-      const actor = members[0] || $gameActor;
+      const actor = members[0];
+
+      if (!actor) {
+        return;
+      }
       const statusX = Graphics.width - 320;
 
       context.font = "22px Arial";

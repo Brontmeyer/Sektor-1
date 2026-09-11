@@ -477,9 +477,11 @@ class BattleManager {
 
         // CHECK IF TARGET IS AN ALLY OR ENEMY
         if ($gameParty.battleMembers().includes(battler)) {
-          if (battler === $gameActor) {
-            battle.setActorState(battler.isDead() ? "defeat" : "hurt", 0.4);
-          }
+          battle.setActorState(
+            battler.isDead() ? "defeat" : "hurt",
+            battler.isDead() ? 0 : 0.4,
+            battler,
+          );
 
           if ($gameParty.livingBattleMembers().length === 0) {
             battle.defeat = true;

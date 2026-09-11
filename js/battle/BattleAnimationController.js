@@ -77,9 +77,10 @@ class BattleAnimationController {
 
   updateBattlerVisuals(deltaTime) {
     const scene = this.scene;
-    const actor = scene.partyController.currentBattler() || $gameActor;
-    const battleData = scene.getPartyBattleData(actor);
 
+    const actor = scene.partyController.currentBattler();
+    const battleData = actor ? scene.getPartyBattleData(actor) : null;
+    
     const actorTarget = scene.getActorTargetOffset();
     const actorTargetY = scene.getActorTargetYOffset();
 
@@ -109,6 +110,12 @@ class BattleAnimationController {
     }
   }
 
+  updateBattleAnimations(deltaTime) {
+    const scene = this.scene;
+    scene.updateActorAnimation(deltaTime);
+    scene.updateEnemyAnimation(deltaTime);
+  }
+
   updateEnemyVisual(enemy, battleData, deltaTime) {
     const scene = this.scene;
     if (!enemy || !battleData) {
@@ -128,12 +135,6 @@ class BattleAnimationController {
       targetX,
       300 * deltaTime,
     );
-  }
-
-  updateBattleAnimations(deltaTime) {
-    const scene = this.scene;
-    scene.updateActorAnimation(deltaTime);
-    scene.updateEnemyAnimation(deltaTime);
   }
 
   updateActorAnimation(deltaTime) {
