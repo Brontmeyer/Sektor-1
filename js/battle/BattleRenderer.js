@@ -251,13 +251,15 @@ class BattleRenderer {
 
     partyMembers.forEach((actor, index) => {
       const position = this.scene.getAllyBattlePosition(index);
+      const battleData = this.scene.getPartyBattleData(actor);
+
+      const visualX = battleData?.visualX || 0;
+      const visualY = battleData?.visualY || 0;
 
       this.drawActorSprite(
         context,
-        position.x + this.scene.actorVisualX,
-        position.y +
-          this.scene.actorVisualY +
-          this.scene.getActorStateYOffset(),
+        position.x + visualX,
+        position.y + visualY + this.scene.getActorStateYOffset(),
         actor,
       );
     });

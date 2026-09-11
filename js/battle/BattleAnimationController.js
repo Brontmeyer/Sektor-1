@@ -68,37 +68,43 @@ class BattleAnimationController {
         (enemy, index) =>
           enemy.isDead() || scene.enemyBattleData[index].state === "idle",
       ) &&
-      Math.abs(scene.actorVisualX) < 0.5 &&
+      (!activeActorData || Math.abs(activeActorData.visualX) < 0.5) &&
       scene.enemyBattleData.every((data) => Math.abs(data.visualX) < 0.5) &&
       !scene.victory &&
       !scene.defeat
     ) {
-      scene.actorVisualX = 0;
+      if (activeActorData) {
+        activeActorData.visualX = 0;
+      }
       scene.battleInputLocked = false;
     }
   }
 
   updateBattlerVisuals(deltaTime) {
     const scene = this.scene;
+    const actor = scene.partyController.currentBattler() || $gameActor;
+    const battleData = scene.getPartyBattleData(actor);
+
     const actorTarget = scene.getActorTargetOffset();
     const actorTargetY = scene.getActorTargetYOffset();
 
     const speed = 300;
 
-    // Update actor visual position toward its target offset.
-    scene.actorVisualX = scene.moveToward(
-      scene.actorVisualX,
-      actorTarget,
-      speed * deltaTime,
-    );
+    if (battleData) {
+      battleData.visualX = scene.moveToward(
+        battleData.visualX,
+        actorTarget,
+        speed * deltaTime,
+      );
 
-    scene.actorVisualY = scene.moveToward(
-      scene.actorVisualY,
-      actorTargetY,
-      80 * deltaTime,
-    );
+      battleData.visualY = scene.moveToward(
+        battleData.visualY,
+        actorTargetY,
+        80 * deltaTime,
+      );
+    }
 
-    // Update enemy visual position toward its target offset.
+    // Update enemy visual positions.
     for (let i = 0; i < scene.enemies.length; i++) {
       scene.updateEnemyVisual(
         scene.enemies[i],
@@ -137,10 +143,10 @@ class BattleAnimationController {
 
   updateActorAnimation(deltaTime) {
     const scene = this.scene;
-    
+
     const actor = scene.partyController.currentBattler() || $gameActor;
     const battleData = scene.getPartyBattleData(actor);
-    
+
     const state = battleData?.state || scene.actorState;
     const animation = scene.getBattlerAnimationData(state);
 
