@@ -3,6 +3,20 @@
 ## Battle
 
 // =====================================
+// RESTORE MAGIC
+// =====================================
+
+- [ ] Mend - Restores a small amount of HP
+- [ ] Greater Mend - Restores a moderate amount of HP
+- [ ] Grand Mend = Restores a large amount of HP
+- [ ] Purge Venom - Removes poison
+- [ ] Soul Cleanse - Removes most negative conditions
+- [ ] Unchaniging Will - Prevents status transformations
+- [ ] Rekindle - Revives an ally with low HP
+- [ ] Reawaken - Revives an ally with full HP
+- [ ] Lifebloom - Gradually restores HP
+
+// =====================================
 // ATTACK MAGIC
 // =====================================
 
@@ -53,7 +67,6 @@
 - [ ] Retreat - Allows the party to leave battle
 - [ ] Banish - Expels an enemy from battle
 - [ ] Twin Aegi - Creates physical and magical barriers
-- [ ] Regen - Gradually gain HP
 
 // =====================================
 // ADVANCED MAGIC
@@ -70,7 +83,7 @@
 - [ ] Genesis Nova - Supreme non-elemental attack against all enemies
 
 // =====================================
-// SUMMON MAGIC?
+// SUMMON MAGIC??
 // =====================================
 
 - [ ] 
@@ -78,7 +91,6 @@
 - [ ] 
 - [ ] 
 - [ ] 
-
 
 // =====================================
 // CHARACTERS
@@ -95,7 +107,6 @@
 - [ ] Dual Techs
 - [ ] Limit Skills
 
-
 // =====================================
 // WORLD
 // =====================================
@@ -104,7 +115,6 @@
 - [ ] Towns
 - [ ] Dungeons
 - [ ] Side Quests
-
 
 // =====================================
 // ENGINE
