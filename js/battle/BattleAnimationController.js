@@ -292,6 +292,15 @@ class BattleAnimationController {
       return 0;
     }
 
+    // Active battler stands slightly forward while choosing a command.
+    if (
+      scene.battleManager.isTurnState(BattleManager.TURN_COMMAND) &&
+      !scene.battleInputLocked &&
+      scene.actionPhase === "none"
+    ) {
+      return 18;
+    }
+
     // Player recoil when hurt.
     if (scene.actorState === "hurt") {
       return -18;
