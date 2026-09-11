@@ -2,7 +2,7 @@
 
 ---
 
-## Pass 9 - Party Turn System
+## Pass 9 - Awakening ***
 
 The battle engine now thinks in terms of an entire party
 instead of a single player.
@@ -12,7 +12,7 @@ characters and future turn queue mechanics.
 
 ---
 
-## Pass 8
+## Pass 8 - Foundation
 
 - Added Game_Party battle foundation
 - Added shared Game_Battler architecture
@@ -24,7 +24,7 @@ characters and future turn queue mechanics.
 
 ---
 
-## Pass 7
+## Pass 7 - Target
 
 - Completed Targeting System v1.0
 

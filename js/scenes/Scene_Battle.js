@@ -76,6 +76,7 @@ class Scene_Battle extends Scene_Base {
     this.battleEffects = new BattleEffects(this);
     this.animationController = new BattleAnimationController(this);
     this.battleManager = new BattleManager(this);
+    this.partyController = new BattlePartyController(this);
     this.renderer = new BattleRenderer(this);
 
     // PENDING ITEM ACTION
@@ -85,6 +86,14 @@ class Scene_Battle extends Scene_Base {
   start() {
     super.start();
 
+    // =============================================================
+    // Pass 9 - Awakening
+    // Initialize the party turn queue.
+    // =============================================================
+    this.partyController.initializePartyTurnQueue();
+
+    this.battleManager.setTurnState(BattleManager.TURN_COMMAND);
+    
     DebugManager.log(`Battle started against ${this.enemy.name}.`);
   }
 
@@ -117,10 +126,7 @@ class Scene_Battle extends Scene_Base {
     // -----------------------------
 
     if (this.selectingEnemyTarget) {
-      if (
-        this.enemyTargetAction === "magic" &&
-        Input.isTriggered("KeyR")
-      ) {
+      if (this.enemyTargetAction === "magic" && Input.isTriggered("KeyR")) {
         this.targetScope = this.targetScope === "single" ? "all" : "single";
       }
 
@@ -267,6 +273,10 @@ class Scene_Battle extends Scene_Base {
     }
   }
 
+  currentBattler() {
+    return this.battleManager.currentBattler();
+  }
+
   updateBattlerStates(deltaTime) {
     return this.animationController.updateBattlerStates(deltaTime);
   }
@@ -280,7 +290,11 @@ class Scene_Battle extends Scene_Base {
   }
 
   updateEnemyVisual(enemy, battleData, deltaTime) {
-    return this.animationController.updateEnemyVisual(enemy, battleData, deltaTime);
+    return this.animationController.updateEnemyVisual(
+      enemy,
+      battleData,
+      deltaTime,
+    );
   }
 
   updateBattleAnimations(deltaTime) {
