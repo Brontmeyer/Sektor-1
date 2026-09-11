@@ -33,7 +33,7 @@ class Scene_Battle extends Scene_Base {
 
     this.loadBattleSprites();
     this.commandWindow = new Window_BattleCommand();
-    this.magicWindow = new Window_BattleMagic();
+    this.magicWindow = new Window_BattleMagic(this);
     this.itemWindow = new Window_BattleItem();
 
     this.battleMessages = [];

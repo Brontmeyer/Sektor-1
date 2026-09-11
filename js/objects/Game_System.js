@@ -4,6 +4,11 @@ class Game_System {
   constructor() {
     this.actor = new Game_Actor(1);
     this.actor2 = new Game_Actor(2);
+    
+    // TEMP
+    this.actor2.learnSkill(1);
+    this.actor2.learnSkill(2);
+    // TEMP
 
     this.party = new Game_Party([this.actor, this.actor2]);
 

@@ -169,7 +169,7 @@ class Game_Party {
       .filter((itemId) => this.itemCount(itemId) > 0);
   }
 
-  useItem(itemId) {
+  useItem(itemId, target = $gameActor) {
     const item = DatabaseManager.item(itemId);
 
     if (!item) {
@@ -186,7 +186,7 @@ class Game_Party {
 
     switch (item.effect.type) {
       case "healHp":
-        if ($gameActor.isFullHp()) {
+        if (target.isFullHp()) {
           DebugManager.log(
             `${item.name} was not used because HP is already full.`,
           );
@@ -204,7 +204,7 @@ class Game_Party {
           return false;
         }
 
-        $gameActor.gainHp(healAmount);
+        target.gainHp(healAmount);
 
         break;
 

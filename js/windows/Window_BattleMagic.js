@@ -1,7 +1,8 @@
 "use strict";
 
 class Window_BattleMagic {
-  constructor() {
+  constructor(scene) {
+    this.scene = scene;
     this.visible = false;
     this.index = 0;
 
@@ -13,29 +14,6 @@ class Window_BattleMagic {
 
     this.x = 290;
     this.y = Graphics.height - this.height - 40;
-  }
-
-  skills() {
-    return $gameActor.knownSkills().filter((skill) => skill.type === "magic");
-  }
-
-  currentSkill() {
-    const skills = this.skills();
-
-    return skills[this.index] || null;
-  }
-
-  show() {
-    this.visible = true;
-    this.index = 0;
-  }
-
-  hide() {
-    this.visible = false;
-  }
-
-  isOpen() {
-    return this.visible;
   }
 
   update() {
@@ -64,6 +42,35 @@ class Window_BattleMagic {
         this.index = 0;
       }
     }
+  }
+
+  actor() {
+    return this.scene?.partyController?.currentBattler() || $gameActor;
+  }
+
+  skills() {
+    return this.actor()
+      .knownSkills()
+      .filter((skill) => skill.type === "magic");
+  }
+
+  currentSkill() {
+    const skills = this.skills();
+
+    return skills[this.index] || null;
+  }
+
+  show() {
+    this.visible = true;
+    this.index = 0;
+  }
+
+  hide() {
+    this.visible = false;
+  }
+
+  isOpen() {
+    return this.visible;
   }
 
   draw() {
@@ -105,8 +112,8 @@ class Window_BattleMagic {
       const prefix = i === this.index ? "▶ " : "   ";
       const drawY = this.y + 75 + i * this.lineHeight;
 
-      const usable = $gameActor.canUseSkill(skill.id);
-
+      const usable = this.actor().canUseSkill(skill.id);
+      
       context.globalAlpha = usable ? 1.0 : 0.4;
       context.fillText(`${prefix}${skill.name}`, this.x + this.padding, drawY);
       context.textAlign = "right";
@@ -116,7 +123,7 @@ class Window_BattleMagic {
         this.x + this.width - this.padding,
         drawY,
       );
-      
+
       context.textAlign = "left";
       context.globalAlpha = 1.0;
     }
