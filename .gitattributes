@@ -1,0 +1,37 @@
+# Automatically normalize text files
+* text=auto
+
+# JavaScript
+*.js text eol=lf
+
+# JSON
+*.json text eol=lf
+
+# HTML
+*.html text eol=lf
+
+# CSS
+*.css text eol=lf
+
+# Markdown
+*.md text eol=lf
+
+# Images
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+
+# Audio
+*.ogg binary
+*.wav binary
+*.mp3 binary
+
+# Fonts
+*.ttf binary
+*.otf binary
+
+# Movies
+*.webm binary
+*.mp4 binary
