@@ -71,15 +71,15 @@ class BattleEffects {
 
     if (isAlly) {
       const allyPosition = scene.getAllyPosition(effect.target);
-      const isLeader = effect.target === $gameActor;
+      const battleData = scene.getPartyBattleData(effect.target);
 
-      enemyX = allyPosition.x + (isLeader ? scene.actorVisualX : 0);
+      const visualX = battleData?.visualX || 0;
+      const visualY = battleData?.visualY || 0;
+
+      enemyX = allyPosition.x + visualX;
 
       enemyY =
-        allyPosition.y +
-        (isLeader ? scene.actorVisualY + scene.getActorStateYOffset() : 0) -
-        effect.target.battleSpriteHeight * 0.5 -
-        35;
+        allyPosition.y + visualY - effect.target.battleSpriteHeight * 0.5 - 35;
     } else {
       const enemyPosition = scene.getEnemyPosition(effect.target);
       const battleData = scene.getEnemyBattleData(effect.target);
@@ -200,11 +200,13 @@ class BattleEffects {
     const progress = 1 - effect.timer / effect.duration;
 
     const allyPosition = scene.getAllyPosition(effect.target);
-    const isLeader = effect.target === $gameActor;
-    const playerX = allyPosition.x + (isLeader ? scene.actorVisualX : 0);
-    const playerY =
-      allyPosition.y +
-      (isLeader ? scene.actorVisualY + scene.getActorStateYOffset() : 0) - 25;
+    const battleData = scene.getPartyBattleData(effect.target);
+
+    const visualX = battleData?.visualX || 0;
+    const visualY = battleData?.visualY || 0;
+
+    const playerX = allyPosition.x + visualX;
+    const playerY = allyPosition.y + visualY - 25;
 
     const rise = progress * 70;
 
@@ -282,5 +284,4 @@ class BattleEffects {
     context.stroke();
     context.restore();
   }
-
 }

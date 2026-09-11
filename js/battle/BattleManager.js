@@ -293,7 +293,7 @@ class BattleManager {
         Array.isArray(skill.target) &&
         (skill.target.includes("ally") || skill.target.includes("self"))
       ) {
-        target = battle.targetManager.selectFirstLivingAlly() || $gameActor;
+        target = battler;
       }
     }
 
