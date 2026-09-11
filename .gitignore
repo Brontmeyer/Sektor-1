@@ -15,12 +15,8 @@ desktop.ini
 .vscode/launch.json
 .history/
 
-# ============================
-# Node (if ever used later)
-# ============================
-
-node_modules/
-npm-debug.log*
+# Optional VS Code workspace files
+*.code-workspace
 
 # ============================
 # Logs
@@ -49,3 +45,10 @@ build/
 # ============================
 
 .cache/
+
+# ============================
+# Node (future-proof)
+# ============================
+
+node_modules/
+npm-debug.log*
