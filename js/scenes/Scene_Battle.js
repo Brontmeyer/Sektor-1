@@ -400,24 +400,11 @@ class Scene_Battle extends Scene_Base {
   }
 
   getAllyBattlePosition(index) {
-    const battlefieldBottom = Graphics.height - 190;
-    const positions = [
-      { x: 230, y: battlefieldBottom - 50 },
-      { x: 165, y: battlefieldBottom - 135 },
-      { x: 300, y: battlefieldBottom - 135 },
-    ];
-
-    return positions[index] || positions[positions.length - 1];
+    return this.partyController.battlePosition(index);
   }
 
   getAllyPosition(actor) {
-    const index = $gameParty.battleMemberIndex(actor);
-
-    if (index < 0) {
-      return this.getAllyBattlePosition(0);
-    }
-
-    return this.getAllyBattlePosition(index);
+    return this.partyController.positionForBattler(actor);
   }
 
   getEnemyBattlePosition(index) {
