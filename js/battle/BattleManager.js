@@ -404,24 +404,21 @@ class BattleManager {
 
     if ($gameParty.battleMembers().includes(target)) {
       if (target.isDead()) {
-        if (target === $gameActor) {
-          battle.setActorState("defeat");
-        }
+        battle.setActorState("defeat", 0, target);
+
         battle.defeat = $gameParty.livingBattleMembers().length === 0;
 
         battle.addBattleMessage(
-          `${$gameActor.name} attacks ${target.name}! ${target.name} takes ${damage} damage!`,
+          `${battler.name} attacks ${target.name}! ${target.name} takes ${damage} damage!`,
         );
 
         return;
       }
 
-      if (target === $gameActor) {
-        battle.setActorState("hurt", 0.3);
-      }
+      battle.setActorState("hurt", 0.3, target);
 
       battle.addBattleMessage(
-        `${$gameActor.name} attacks ${target.name}! ${target.name} takes ${damage} damage!`,
+        `${battler.name} attacks ${target.name}! ${target.name} takes ${damage} damage!`,
       );
 
       return;
@@ -526,7 +523,7 @@ class BattleManager {
       return;
     }
 
-    // Enemy target
+    // ENEMY TARGET
     if (battle.enemies.includes(target)) {
       if (skill.effect === "damage") {
         const damage = targetHpBefore - target.hp;
@@ -553,14 +550,16 @@ class BattleManager {
       }
     }
 
-    // Ally target
+    // ALLY TARGET
     if ($gameParty.battleMembers().includes(target)) {
       if (skill.effect === "damage") {
         const damage = targetHpBefore - target.hp;
 
-        if (target === $gameActor) {
-          battle.setActorState(target.isDead() ? "defeat" : "hurt", 0.4);
-        }
+        battle.setActorState(
+          target.isDead() ? "defeat" : "hurt",
+          target.isDead() ? 0 : 0.4,
+          target,
+        );
 
         if ($gameParty.livingBattleMembers().length === 0) {
           battle.defeat = true;
@@ -569,15 +568,6 @@ class BattleManager {
         battle.addBattleMessage(
           `${caster.name} casts ${skill.name}! ` +
             `${target.name} takes ${damage} damage!`,
-        );
-      }
-
-      if (skill.effect === "heal") {
-        const healing = target.hp - targetHpBefore;
-
-        battle.addBattleMessage(
-          `${caster.name} casts ${skill.name}! ` +
-            `${target.name} recovers ${healing} HP!`,
         );
       }
     }
