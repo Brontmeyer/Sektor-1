@@ -1,7 +1,7 @@
 "use strict";
 
 async function startGame() {
-  DebugManager.log("Maggot Corpse Engine starting...");
+  DebugManager.log("Corpse Engine starting...");
 
   Graphics.initialize();
   Input.initialize();

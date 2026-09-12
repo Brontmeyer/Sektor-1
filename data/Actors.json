@@ -2,7 +2,7 @@
   null,
   {
     "id": 1,
-    "name": "Player",
+    "name": "Tyler",
     "sideBattleSprite": "Player_Battle.png",
     "battleSpriteWidth": 190,
     "battleSpriteHeight": 166,
@@ -106,7 +106,59 @@
 
   {
     "id": 3,
-    "name": "Party Test",
+    "name": "Party Test 2",
+    "sideBattleSprite": "Player_Battle.png",
+    "battleSpriteWidth": 190,
+    "battleSpriteHeight": 166,
+    "battleSpriteFrames": 4,
+    "battleSpriteRows": 5,
+
+    "level": 1,
+    "exp": 0,
+
+    "maxHp": 100,
+    "maxMp": 30,
+
+    "strength": 10,
+    "vitality": 10,
+    "dexterity": 10,
+    "agility": 10,
+    "magic": 10,
+    "spirit": 10,
+    "luck": 10,
+
+    "attack": 10,
+    "attackPercent": 100,
+
+    "defense": 8,
+    "defensePercent": 0,
+
+    "magicAttack": 10,
+    "magicDefense": 8,
+    "magicDefensePercent": 0,
+
+    "growth": {
+      "maxHp": 10,
+      "maxMp": 3,
+
+      "strength": 2,
+      "vitality": 2,
+      "dexterity": 2,
+      "agility": 2,
+      "magic": 2,
+      "spirit": 2,
+      "luck": 1,
+
+      "attack": 2,
+      "defense": 2,
+      "magicAttack": 2,
+      "magicDefense": 2
+    }
+  },
+
+  {
+    "id": 4,
+    "name": "Party Test 3",
     "sideBattleSprite": "Player_Battle.png",
     "battleSpriteWidth": 190,
     "battleSpriteHeight": 166,
