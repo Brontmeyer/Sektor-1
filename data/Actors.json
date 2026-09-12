@@ -23,7 +23,7 @@
     "spirit": 10,
     "luck": 10,
 
-    "attack": 10,
+    "attack": 100,
     "attackPercent": 100,
 
     "defense": 8,
@@ -64,7 +64,7 @@
     "level": 1,
     "exp": 0,
 
-    "maxHp": 100,
+    "maxHp": 10,
     "maxMp": 30,
 
     "strength": 10,
@@ -116,7 +116,7 @@
     "level": 1,
     "exp": 0,
 
-    "maxHp": 100,
+    "maxHp": 10,
     "maxMp": 30,
 
     "strength": 10,
@@ -168,7 +168,7 @@
     "level": 1,
     "exp": 0,
 
-    "maxHp": 100,
+    "maxHp": 10,
     "maxMp": 30,
 
     "strength": 10,

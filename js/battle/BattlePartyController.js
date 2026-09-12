@@ -18,11 +18,18 @@ class BattlePartyController {
   }
 
   nextBattler() {
-    if (this.hasNextBattler()) {
+    while (this.hasNextBattler()) {
       this.currentPartyTurn++;
-      this.activeBattler = this.partyTurnQueue[this.currentPartyTurn] || null;
-      return this.activeBattler;
+
+      const battler = this.partyTurnQueue[this.currentPartyTurn] || null;
+
+      if (battler && !battler.isDead()) {
+        this.activeBattler = battler;
+        return battler;
+      }
     }
+
+    this.activeBattler = null;
     return null;
   }
 
@@ -33,7 +40,19 @@ class BattlePartyController {
   }
 
   hasNextBattler() {
-    return this.currentPartyTurn < this.partyTurnQueue.length - 1;
+    for (
+      let i = this.currentPartyTurn + 1;
+      i < this.partyTurnQueue.length;
+      i++
+    ) {
+      const battler = this.partyTurnQueue[i];
+
+      if (battler && !battler.isDead()) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   // =============================================================

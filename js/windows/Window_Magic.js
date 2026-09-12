@@ -34,7 +34,9 @@ class Window_Magic {
       Array.isArray(skill.target) &&
       (skill.target.includes("ally") || skill.target.includes("self"));
 
-    if (!canTargetPlayer) {
+    const isFieldEffect = skill.effect === "heal";
+
+    if (!canTargetPlayer || !isFieldEffect) {
       return false;
     }
 
@@ -95,13 +97,8 @@ class Window_Magic {
 
       // Field menu currently only supports
       // magic that can target the player.
-      const canTargetPlayer =
-        Array.isArray(skill.target) &&
-        (skill.target.includes("ally") || skill.target.includes("self"));
-
-      if (!canTargetPlayer) {
+      if (!this.canUseFromField(skill)) {
         DebugManager.log(`${skill.name} cannot be used from the field menu.`);
-
         return;
       }
 
