@@ -381,9 +381,14 @@ class BattleManager {
 
     let damage = Math.max(1, battler.totalAttack() - target.totalDefense());
 
-    const criticalChance = 0.25;
     const criticalMultiplier = 2;
 
+    const criticalChancePercent = Math.max(
+      0,
+      (battler.luck + battler.level - target.level) / 4,
+    );
+
+    const criticalChance = criticalChancePercent / 100;
     const isCritical = Math.random() < criticalChance;
 
     if (isCritical) {
