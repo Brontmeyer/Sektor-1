@@ -387,6 +387,8 @@ class BattleManager {
 
     target.loseHp(damage);
 
+    battle.addBattlePopup(target, `-${damage}`, "damage");
+
     // -----------------------------
     // Ally target
     // -----------------------------
@@ -472,7 +474,12 @@ class BattleManager {
 
         // Pay the MP cost only once, even though the spell
         // is being applied to multiple targets.
-        const success = caster.useSkill(skill.id, battler, !paidCost);
+        const success = caster.useSkill(
+          skill.id,
+          battler,
+          !paidCost,
+          battle.targetScope,
+        );
 
         if (!success) {
           continue;
@@ -487,6 +494,21 @@ class BattleManager {
 
         if (skill.effect === "damage") {
           const damage = Math.max(0, hpBefore - battler.hp);
+
+          battle.addBattlePopup(battler, `-${damage}`, "damage");
+
+          const elementRate =
+            typeof battler.elementRate === "function"
+              ? battler.elementRate(skill.element)
+              : 1;
+
+          if (elementRate > 1) {
+            battle.addBattlePopup(battler, "WEAK", "weak");
+          } else if (elementRate > 0 && elementRate < 1) {
+            battle.addBattlePopup(battler, "RESIST", "resist");
+          } else if (elementRate === 0) {
+            battle.addBattlePopup(battler, "IMMUNE", "immune");
+          }
 
           if ($gameParty.battleMembers().includes(battler)) {
             battle.setActorState(
@@ -519,6 +541,8 @@ class BattleManager {
         if (skill.effect === "heal") {
           const healing = Math.max(0, battler.hp - hpBefore);
 
+          battle.addBattlePopup(battler, `+${healing}`, "heal");
+
           battle.addBattleMessage(
             `${caster.name} casts ${skill.name}! ` +
               `${battler.name} recovers ${healing} HP!`,
@@ -546,14 +570,17 @@ class BattleManager {
       return;
     }
 
+    // =====================================
     // SINGLE TARGET MAGIC EFFECT
+    // =====================================
+
     if (!skill || !target) {
       return;
     }
 
     const targetHpBefore = target.hp;
 
-    const success = caster.useSkill(skill.id, target);
+    const success = caster.useSkill(skill.id, target, true, battle.targetScope);
 
     if (!success) {
       battle.pendingMagicSkill = null;
@@ -563,10 +590,28 @@ class BattleManager {
       return;
     }
 
+    // =====================================
     // ENEMY TARGET
+    // =====================================
+
     if (battle.enemies.includes(target)) {
       if (skill.effect === "damage") {
         const damage = targetHpBefore - target.hp;
+
+        battle.addBattlePopup(target, `-${damage}`, "damage");
+
+        const elementRate =
+          typeof target.elementRate === "function"
+            ? target.elementRate(skill.element)
+            : 1;
+
+        if (elementRate > 1) {
+          battle.addBattlePopup(target, "WEAK", "weak");
+        } else if (elementRate > 0 && elementRate < 1) {
+          battle.addBattlePopup(target, "RESIST", "resist");
+        } else if (elementRate === 0) {
+          battle.addBattlePopup(target, "IMMUNE", "immune");
+        }
 
         battle.setEnemyState(
           target.isDead() ? "defeat" : "hurt",
@@ -581,7 +626,7 @@ class BattleManager {
       }
 
       if (skill.effect === "heal") {
-        const healing = target.hp - targetHpBefore;
+        const healing = Math.max(0, target.hp - targetHpBefore);
 
         battle.addBattleMessage(
           `${caster.name} casts ${skill.name}! ` +
@@ -590,10 +635,15 @@ class BattleManager {
       }
     }
 
+    // =====================================
     // ALLY TARGET
+    // =====================================
+
     if ($gameParty.battleMembers().includes(target)) {
       if (skill.effect === "damage") {
         const damage = targetHpBefore - target.hp;
+
+        battle.addBattlePopup(target, `-${damage}`, "damage");
 
         battle.setActorState(
           target.isDead() ? "defeat" : "hurt",
@@ -608,6 +658,17 @@ class BattleManager {
         battle.addBattleMessage(
           `${caster.name} casts ${skill.name}! ` +
             `${target.name} takes ${damage} damage!`,
+        );
+      }
+
+      if (skill.effect === "heal") {
+        const healing = Math.max(0, target.hp - targetHpBefore);
+
+        battle.addBattlePopup(target, `+${healing}`, "heal");
+
+        battle.addBattleMessage(
+          `${caster.name} casts ${skill.name}! ` +
+            `${target.name} recovers ${healing} HP!`,
         );
       }
     }

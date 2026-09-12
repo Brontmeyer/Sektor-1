@@ -1,6 +1,6 @@
 [
   null,
-  { 
+  {
     "id": 1,
     "name": "Ember",
     "description": "Deals fire damage to one target.",
@@ -14,10 +14,15 @@
     "power": 8,
 
     "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
   },
 
-  { 
+  {
     "id": 2,
     "name": "Mend",
     "description": "Restores HP to one target.",
@@ -29,8 +34,13 @@
 
     "mpCost": 5,
     "power": 5,
-    
+
     "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
   }
 ]

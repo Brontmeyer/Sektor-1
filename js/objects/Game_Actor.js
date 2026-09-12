@@ -91,7 +91,9 @@ class Game_Actor extends Game_Battler {
 
     this.skills.push(skillId);
 
-    DebugManager.log(`${this.name} learned ${DatabaseManager.skillName(skillId)}.`);
+    DebugManager.log(
+      `${this.name} learned ${DatabaseManager.skillName(skillId)}.`,
+    );
 
     return true;
   }
@@ -105,7 +107,9 @@ class Game_Actor extends Game_Battler {
 
     this.skills.splice(index, 1);
 
-    DebugManager.log(`${this.name} forgot ${DatabaseManager.skillName(skillId)}.`);
+    DebugManager.log(
+      `${this.name} forgot ${DatabaseManager.skillName(skillId)}.`,
+    );
 
     return true;
   }
@@ -140,7 +144,7 @@ class Game_Actor extends Game_Battler {
     return true;
   }
 
-  useSkill(skillId, target = this, payCost = true) {
+  useSkill(skillId, target = this, payCost = true, scope = "single") {
     const skill = DatabaseManager.skill(skillId);
 
     if (!skill) {
@@ -171,7 +175,7 @@ class Game_Actor extends Game_Battler {
         return false;
       }
 
-      const healAmount = this.magicHealing(skill);
+      const healAmount = this.magicHealing(skill, scope);
 
       if (payCost) {
         const paid = this.payMpCost(skill.mpCost || 0);
@@ -196,7 +200,7 @@ class Game_Actor extends Game_Battler {
         return false;
       }
 
-      const damage = this.magicDamage(skill, target);
+      const damage = this.magicDamage(skill, target, scope);
 
       if (payCost) {
         const paid = this.payMpCost(skill.mpCost || 0);
@@ -221,7 +225,17 @@ class Game_Actor extends Game_Battler {
     return false;
   }
 
-  magicHealing(skill) {
+  skillScopeMultiplier(skill, scope = "single") {
+    if (!skill?.scopePower) {
+      return 1;
+    }
+
+    const multiplier = Number(skill.scopePower[scope]);
+
+    return Number.isFinite(multiplier) ? multiplier : 1;
+  }
+
+  magicHealing(skill, scope = "single") {
     if (!skill) {
       return 0;
     }
@@ -230,15 +244,17 @@ class Game_Actor extends Game_Battler {
     const level = this.level || 1;
     const magicAttack = this.totalMagicAttack();
 
-    return power + level + magicAttack;
+    // FF7 restorative magic formula:
+    // (Spell Power × 22) + [(Level + Magic Attack) × 6]
+    const rawHealing = power * 22 + (level + magicAttack) * 6;
+
+    const scopeMultiplier = this.skillScopeMultiplier(skill, scope);
+
+    return Math.max(1, Math.floor(rawHealing * scopeMultiplier));
   }
 
-  magicDamage(skill, target) {
-    if (!skill) {
-      return 0;
-    }
-
-    if (!target) {
+  magicDamage(skill, target, scope = "single") {
+    if (!skill || !target) {
       return 0;
     }
 
@@ -254,9 +270,26 @@ class Game_Actor extends Game_Battler {
       magicDefense = target.magicDefense;
     }
 
-    const rawDamage = power + level + magicAttack - magicDefense;
+    // CALCULATE MAGICAL DAMAGE BASED ON FF7 FORMULA
+    // 6 × (Magic Attack + Level)
+    const baseDamage = 6 * (magicAttack + level);
 
-    return Math.max(1, Math.floor(rawDamage));
+    // ABILITY POWER AND MAGIC DEFENSE BASED ON FF7 FORMULA
+    const defenseMultiplier = Math.max(0, 512 - magicDefense) / 512;
+
+    const rawDamage = (power / 16) * baseDamage * defenseMultiplier;
+
+    const elementMultiplier =
+      typeof target.elementRate === "function"
+        ? target.elementRate(skill.element)
+        : 1;
+
+    const scopeMultiplier = this.skillScopeMultiplier(skill, scope);
+
+    return Math.max(
+      1,
+      Math.floor(rawDamage * elementMultiplier * scopeMultiplier),
+    );
   }
 
   isValidSkillTarget(skill, target) {
@@ -385,5 +418,4 @@ class Game_Actor extends Game_Battler {
   totalDefense() {
     return this.defenseWithArmor(this.armor());
   }
-
 }

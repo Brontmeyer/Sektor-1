@@ -3,6 +3,10 @@
   {
     "id": 1,
     "name": "Test Slime",
+    "elementRates": {
+      "fire": 2.0
+    },
+
     "battleSprite": "TestSlime.png",
     "battleSpriteWidth": 128,
     "battleSpriteHeight": 96,
@@ -11,7 +15,7 @@
 
     "level": 1,
 
-    "maxHp": 60,
+    "maxHp": 250,
     "maxMp": 0,
 
     "strength": 16,

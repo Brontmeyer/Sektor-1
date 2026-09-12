@@ -37,6 +37,8 @@ class Scene_Battle extends Scene_Base {
     this.itemWindow = new Window_BattleItem();
 
     this.battleMessages = [];
+    this.battlePopups = [];
+
     this.victory = false;
     this.defeat = false;
 
@@ -112,6 +114,7 @@ class Scene_Battle extends Scene_Base {
     this.updateBattlerVisuals(deltaTime);
     this.updateBattleAnimations(deltaTime);
     this.updateBattleEffect(deltaTime);
+    this.updateBattlePopups(deltaTime);
     this.updatePendingEnemyTurn(deltaTime);
 
     // -----------------------------
@@ -147,7 +150,11 @@ class Scene_Battle extends Scene_Base {
         if (Input.isTriggered("KeyA") || Input.isTriggered("ArrowLeft")) {
           const skill = this.pendingMagicSkill;
 
-          if (skill && this.targetManager.canTargetGroup(skill, "ally")) {
+          const canSwitchToAlly =
+            this.enemyTargetAction === "attack" ||
+            (skill && this.targetManager.canTargetGroup(skill, "ally"));
+
+          if (canSwitchToAlly) {
             this.targetGroup = "ally";
             this.targetManager.selectFrontLivingAlly();
           }
@@ -193,7 +200,11 @@ class Scene_Battle extends Scene_Base {
           if (!moved) {
             const skill = this.pendingMagicSkill;
 
-            if (skill && this.targetManager.canTargetGroup(skill, "enemy")) {
+            const canSwitchToEnemy =
+              this.enemyTargetAction === "attack" ||
+              (skill && this.targetManager.canTargetGroup(skill, "enemy"));
+
+            if (canSwitchToEnemy) {
               this.targetGroup = "enemy";
               this.targetManager.selectFrontLivingEnemy();
             }
@@ -348,6 +359,17 @@ class Scene_Battle extends Scene_Base {
     this.battleEffects.update(deltaTime);
   }
 
+  updateBattlePopups(deltaTime) {
+    for (const popup of this.battlePopups) {
+      popup.age += deltaTime;
+      popup.rise += 40 * deltaTime;
+    }
+
+    this.battlePopups = this.battlePopups.filter(
+      (popup) => popup.age < popup.duration,
+    );
+  }
+
   startBattleEffect(type, target, duration = 0.4) {
     this.battleEffects.start(type, target, duration);
   }
@@ -420,6 +442,26 @@ class Scene_Battle extends Scene_Base {
     }
 
     DebugManager.log(message);
+  }
+
+  addBattlePopup(target, text, type = "damage") {
+    if (!target) {
+      return;
+    }
+
+    const activeForTarget = this.battlePopups.filter(
+      (popup) => popup.target === target && popup.age < popup.duration,
+    ).length;
+
+    this.battlePopups.push({
+      target,
+      text: String(text),
+      type,
+      age: 0,
+      duration: 0.9,
+      rise: 0,
+      stackIndex: activeForTarget,
+    });
   }
 
   setActorState(state, duration = 0, actor = null) {

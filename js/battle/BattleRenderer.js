@@ -332,6 +332,67 @@ class BattleRenderer {
     this.scene.battleEffects.draw(context);
   }
 
+  drawBattlePopups(context) {
+    for (const popup of this.scene.battlePopups) {
+      const target = popup.target;
+
+      if (!target) {
+        continue;
+      }
+
+      let position = null;
+      let offsetY = 0;
+
+      if ($gameParty.battleMembers().includes(target)) {
+        position = this.scene.getAllyPosition(target);
+        offsetY = -120;
+      } else if (this.scene.enemies.includes(target)) {
+        position = this.scene.getEnemyPosition(target);
+        offsetY = -80;
+      }
+
+      if (!position) {
+        continue;
+      }
+
+      const progress = popup.age / popup.duration;
+      const alpha = Math.max(0, 1 - progress);
+
+      const x = position.x;
+      const stackOffset = (popup.stackIndex || 0) * 30;
+
+      const y = position.y + offsetY - popup.rise - stackOffset;
+      context.save();
+
+      context.globalAlpha = alpha;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.font = "bold 28px Arial";
+
+      if (popup.type === "heal") {
+        context.fillStyle = "#66ff88";
+      } else if (popup.type === "damage") {
+        context.fillStyle = "#ff5555";
+      } else if (popup.type === "weak") {
+        context.fillStyle = "#ffcc55";
+      } else if (popup.type === "resist") {
+        context.fillStyle = "#66ccff";
+      } else if (popup.type === "immune") {
+        context.fillStyle = "#cccccc";
+      } else {
+        context.fillStyle = "#ffffff";
+      }
+
+      context.strokeStyle = "#000000";
+      context.lineWidth = 4;
+
+      context.strokeText(popup.text, x, y);
+      context.fillText(popup.text, x, y);
+
+      context.restore();
+    }
+  }
+
   draw() {
     const context = Graphics.context;
 
@@ -367,6 +428,7 @@ class BattleRenderer {
     }
     this.drawBattleHud(context);
     this.drawBattleEffect(context);
+    this.drawBattlePopups(context);
 
     // -----------------------------
     // Battle messages

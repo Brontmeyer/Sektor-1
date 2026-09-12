@@ -37,6 +37,10 @@ class Game_Battler {
     this.magicDefense = data.magicDefense ?? 0;
     this.magicDefensePercent = data.magicDefensePercent ?? 0;
 
+    this.elementRates = {
+      ...(data.elementRates || {}),
+    };
+
     this.defending = false;
   }
 
@@ -82,6 +86,20 @@ class Game_Battler {
 
   totalMagicDefensePercent() {
     return this.magicDefensePercent;
+  }
+
+  elementRate(element) {
+    if (!element) {
+      return 1;
+    }
+
+    const rate = Number(this.elementRates[element]);
+
+    if (!Number.isFinite(rate)) {
+      return 1;
+    }
+
+    return Math.max(0, rate);
   }
 
   // =====================================
