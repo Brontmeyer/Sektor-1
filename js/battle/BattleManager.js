@@ -398,7 +398,11 @@ class BattleManager {
       return;
     }
 
-    const damage = Math.max(1, battler.totalAttack() - target.totalDefense());
+    let damage = Math.max(1, battler.totalAttack() - target.totalDefense());
+
+    if (target.isDefending()) {
+      damage = Math.max(1, Math.floor(damage * 0.5));
+    }
 
     target.loseHp(damage);
 
