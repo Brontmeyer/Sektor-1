@@ -331,7 +331,6 @@ class Scene_Battle extends Scene_Base {
   }
 
   loadBattleSprites() {
-
     // =====================================
     // PARTY SPRITES
     // =====================================
@@ -457,16 +456,16 @@ class Scene_Battle extends Scene_Base {
   getEnemyBattlePosition(index) {
     const positions = [
       {
-        x: Graphics.width * 0.82,
+        x: Graphics.width * 0.9,
         y: 400,
       },
       {
-        x: Graphics.width * 0.68,
-        y: 300,
+        x: Graphics.width * 0.8,
+        y: 290,
       },
       {
-        x: Graphics.width * 0.88,
-        y: 250,
+        x: Graphics.width * 0.92,
+        y: 220,
       },
     ];
 

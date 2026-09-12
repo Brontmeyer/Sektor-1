@@ -44,10 +44,17 @@ class BattlePartyController {
     const battlefieldBottom = Graphics.height - 190;
 
     return [
-      { x: 230, y: battlefieldBottom - 50 },
-      { x: 165, y: battlefieldBottom - 135 },
-      { x: 300, y: battlefieldBottom - 135 },
-      { x: 230, y: battlefieldBottom - 220 },
+      // Tyler - upper left
+      { x: 400, y: battlefieldBottom - 180 },
+
+      // Party Test - middle left
+      { x: 140, y: battlefieldBottom - 180 },
+
+      // Party Test 2 - middle right
+      { x: 260, y: battlefieldBottom - 310 },
+
+      // Party Test 3 - lower left/center
+      { x: 260, y: battlefieldBottom - 50 },
     ];
   }
 
