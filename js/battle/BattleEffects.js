@@ -193,20 +193,67 @@ class BattleEffects {
   drawCureEffect(context, effect) {
     const scene = this.scene;
 
-    if (!$gameParty.battleMembers().includes(effect.target)) {
+    // ---------------------------------
+    // MULTI-TARGET SUPPORT
+    // ---------------------------------
+
+    if (Array.isArray(effect.target)) {
+      for (const target of effect.target) {
+        this.drawCureEffect(context, {
+          ...effect,
+          target,
+        });
+      }
+
+      return;
+    }
+
+    // ---------------------------------
+    // DETERMINE TARGET SIDE
+    // ---------------------------------
+
+    const isAlly = $gameParty.battleMembers().includes(effect.target);
+    const isEnemy = scene.enemies.includes(effect.target);
+
+    if (!isAlly && !isEnemy) {
       return;
     }
 
     const progress = 1 - effect.timer / effect.duration;
 
-    const allyPosition = scene.getAllyPosition(effect.target);
-    const battleData = scene.getPartyBattleData(effect.target);
+    let playerX;
+    let playerY;
 
-    const visualX = battleData?.visualX || 0;
-    const visualY = battleData?.visualY || 0;
+    // ---------------------------------
+    // ALLY POSITION
+    // ---------------------------------
 
-    const playerX = allyPosition.x + visualX;
-    const playerY = allyPosition.y + visualY - 25;
+    if (isAlly) {
+      const allyPosition = scene.getAllyPosition(effect.target);
+      const battleData = scene.getPartyBattleData(effect.target);
+
+      const visualX = battleData?.visualX || 0;
+      const visualY = battleData?.visualY || 0;
+
+      playerX = allyPosition.x + visualX;
+      playerY = allyPosition.y + visualY - 25;
+    }
+
+    // ---------------------------------
+    // ENEMY POSITION
+    // ---------------------------------
+
+    if (isEnemy) {
+      const enemyPosition = scene.getEnemyPosition(effect.target);
+      const battleData = scene.getEnemyBattleData(effect.target);
+
+      const visualX = battleData?.visualX || 0;
+      const visualY = battleData?.visualY || 0;
+
+      playerX = enemyPosition.x + visualX;
+      playerY =
+        enemyPosition.y + visualY - effect.target.battleSpriteHeight * 0.5;
+    }
 
     const rise = progress * 70;
 

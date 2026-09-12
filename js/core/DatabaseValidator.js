@@ -142,8 +142,16 @@ class DatabaseValidator {
         }
       }
 
-      if (!validScopes.has(skill.scope)) {
-        errors.push(`Skill ${index} has unsupported scope "${skill.scope}".`);
+      const scopes = Array.isArray(skill.scope) ? skill.scope : [skill.scope];
+
+      if (scopes.length === 0) {
+        errors.push(`Skill ${index} must define at least one scope.`);
+      } else {
+        for (const scope of scopes) {
+          if (!validScopes.has(scope)) {
+            errors.push(`Skill ${index} has unsupported scope "${scope}".`);
+          }
+        }
       }
 
       if (!Number.isFinite(skill.mpCost) || skill.mpCost < 0) {

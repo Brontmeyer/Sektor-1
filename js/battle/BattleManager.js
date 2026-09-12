@@ -273,60 +273,41 @@ class BattleManager {
       return;
     }
 
-    let target = null;
+    const targetGroups = battle.targetManager.allowedTargetGroups(skill);
+    const scopes = battle.targetManager.allowedScopes(skill);
 
-    if (skill.effect === "damage") {
-      if (Array.isArray(skill.target) && skill.target.includes("enemy")) {
-        battle.pendingMagicSkill = skill;
-
-        battle.targetGroup = "enemy";
-        battle.targetScope = "single";
-
-        battle.targetManager.selectFirstLivingEnemy();
-        battle.enemyTargetAction = "magic";
-        battle.selectingEnemyTarget = true;
-
-        battle.magicWindow.hide();
-
-        return;
-      }
-    }
-
-    if (skill.effect === "heal") {
-      if (
-        Array.isArray(skill.target) &&
-        (skill.target.includes("ally") || skill.target.includes("self"))
-      ) {
-        target = battler;
-      }
-    }
-
-    if (!target) {
-      console.warn(`No valid battle target for ${skill.name}.`);
-
+    if (targetGroups.length === 0) {
+      console.warn(`Skill ${skill.name} has no valid target groups.`);
       return;
     }
 
+    // Store the selected skill before entering target selection.
     battle.pendingMagicSkill = skill;
-    battle.pendingMagicTarget = target;
 
-    battle.battleInputLocked = true;
+    // Start on the first allowed target group.
+    // Prefer enemies when both groups are available so offensive-style
+    // targeting still feels natural without depending on skill.effect.
+    if (targetGroups.includes("enemy")) {
+      battle.targetGroup = "enemy";
+      battle.targetManager.selectFirstLivingEnemy();
+    } else if (targetGroups.includes("ally")) {
+      battle.targetGroup = "ally";
+      battle.targetManager.selectFirstLivingAlly();
+    } else {
+      console.warn(`Skill ${skill.name} has no supported battle target group.`);
+      battle.pendingMagicSkill = null;
+      return;
+    }
 
-    battle.setActorState("magic", 0.9);
-    battle.setActionPhase("magicCast", 0.4);
+    // Start on the first valid scope defined by the skill.
+    battle.targetScope = scopes.includes("single")
+      ? "single"
+      : scopes[0] || "single";
+
+    battle.enemyTargetAction = "magic";
+    battle.selectingEnemyTarget = true;
 
     battle.magicWindow.hide();
-
-    if (battle.enemies.every((enemy) => enemy.isDead())) {
-      battle.victory = true;
-      battle.battleInputLocked = false;
-
-      battle.addBattleMessage("Victory!");
-
-      return;
-    }
-
-    // battle.queueEnemyTurn(1.1);
   }
 
   executeItem() {
@@ -464,15 +445,33 @@ class BattleManager {
       return;
     }
 
-    // MULTI-TARGET MAGIC EFFECT FOR ENEMIES
-    if (battle.targetScope === "all" && skill?.effect === "damage") {
+    // =====================================
+    // MULTI-TARGET MAGIC EFFECT
+    // =====================================
+
+    if (battle.targetScope === "all") {
+      if (!skill) {
+        return;
+      }
+
       const targets = battle.targetManager.getCurrentTargets();
 
+      if (!targets || targets.length === 0) {
+        return;
+      }
+
       let paidCost = false;
+      const affectedTargets = [];
 
       for (const battler of targets) {
+        if (!battler) {
+          continue;
+        }
+
         const hpBefore = battler.hp;
 
+        // Pay the MP cost only once, even though the spell
+        // is being applied to multiple targets.
         const success = caster.useSkill(skill.id, battler, !paidCost);
 
         if (!success) {
@@ -480,34 +479,65 @@ class BattleManager {
         }
 
         paidCost = true;
+        affectedTargets.push(battler);
 
-        const damage = hpBefore - battler.hp;
+        // -----------------------------
+        // DAMAGE
+        // -----------------------------
 
-        // CHECK IF TARGET IS AN ALLY OR ENEMY
-        if ($gameParty.battleMembers().includes(battler)) {
-          battle.setActorState(
-            battler.isDead() ? "defeat" : "hurt",
-            battler.isDead() ? 0 : 0.4,
-            battler,
-          );
+        if (skill.effect === "damage") {
+          const damage = Math.max(0, hpBefore - battler.hp);
 
-          if ($gameParty.livingBattleMembers().length === 0) {
-            battle.defeat = true;
+          if ($gameParty.battleMembers().includes(battler)) {
+            battle.setActorState(
+              battler.isDead() ? "defeat" : "hurt",
+              battler.isDead() ? 0 : 0.4,
+              battler,
+            );
+
+            if ($gameParty.livingBattleMembers().length === 0) {
+              battle.defeat = true;
+            }
+          } else if (battle.enemies.includes(battler)) {
+            battle.setEnemyState(
+              battler.isDead() ? "defeat" : "hurt",
+              battler.isDead() ? 0 : 0.4,
+              battler,
+            );
           }
-        } else if (battler.isDead()) {
-          battle.setEnemyState("defeat", 0, battler);
-        } else {
-          battle.setEnemyState("hurt", 0.4, battler);
+
+          battle.addBattleMessage(
+            `${caster.name} casts ${skill.name}! ` +
+              `${battler.name} takes ${damage} damage!`,
+          );
         }
 
-        battle.addBattleMessage(
-          `${caster.name} casts ${skill.name}! ` +
-            `${battler.name} takes ${damage} damage!`,
-        );
+        // -----------------------------
+        // HEALING
+        // -----------------------------
+
+        if (skill.effect === "heal") {
+          const healing = Math.max(0, battler.hp - hpBefore);
+
+          battle.addBattleMessage(
+            `${caster.name} casts ${skill.name}! ` +
+              `${battler.name} recovers ${healing} HP!`,
+          );
+        }
       }
 
-      if (skill.name === "Fire") {
-        battle.startBattleEffect("fire", targets, 0.4);
+      // -----------------------------
+      // VISUAL EFFECTS
+      // -----------------------------
+
+      if (affectedTargets.length > 0) {
+        if (skill.element === "fire") {
+          battle.startBattleEffect("fire", affectedTargets, 0.4);
+        }
+
+        if (skill.effect === "heal") {
+          battle.startBattleEffect("cure", affectedTargets, 0.5);
+        }
       }
 
       battle.pendingMagicSkill = null;
@@ -585,11 +615,11 @@ class BattleManager {
     battle.magicEffectSkill = skill;
     battle.magicEffectTarget = target;
 
-    if (skill.name === "Fire") {
+    if (skill.element === "fire") {
       battle.startBattleEffect("fire", target, 0.4);
     }
 
-    if (skill.name === "Cure") {
+    if (skill.effect === "heal") {
       battle.startBattleEffect("cure", target, 0.5);
     }
 

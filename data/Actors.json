@@ -64,7 +64,7 @@
     "level": 1,
     "exp": 0,
 
-    "maxHp": 10,
+    "maxHp": 100,
     "maxMp": 30,
 
     "strength": 10,
@@ -116,7 +116,7 @@
     "level": 1,
     "exp": 0,
 
-    "maxHp": 10,
+    "maxHp": 100,
     "maxMp": 30,
 
     "strength": 10,
@@ -168,7 +168,7 @@
     "level": 1,
     "exp": 0,
 
-    "maxHp": 10,
+    "maxHp": 100,
     "maxMp": 30,
 
     "strength": 10,
