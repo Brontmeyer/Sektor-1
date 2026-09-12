@@ -362,7 +362,7 @@ class BattleRenderer {
       const stackOffset = (popup.stackIndex || 0) * 30;
 
       const y = position.y + offsetY - popup.rise - stackOffset;
-      
+
       context.save();
 
       context.globalAlpha = alpha;
@@ -380,6 +380,8 @@ class BattleRenderer {
         context.fillStyle = "#66ccff";
       } else if (popup.type === "immune") {
         context.fillStyle = "#cccccc";
+      } else if (popup.type === "critical") {
+        context.fillStyle = "#ffff66";
       } else {
         context.fillStyle = "#ffffff";
       }

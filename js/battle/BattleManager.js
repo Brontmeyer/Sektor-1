@@ -381,6 +381,15 @@ class BattleManager {
 
     let damage = Math.max(1, battler.totalAttack() - target.totalDefense());
 
+    const criticalChance = 0.25;
+    const criticalMultiplier = 2;
+
+    const isCritical = Math.random() < criticalChance;
+
+    if (isCritical) {
+      damage = Math.max(1, Math.floor(damage * criticalMultiplier));
+    }
+
     if (target.isDefending()) {
       damage = Math.max(1, Math.floor(damage * 0.5));
     }
@@ -388,6 +397,10 @@ class BattleManager {
     target.loseHp(damage);
 
     battle.addBattlePopup(target, `-${damage}`, "damage");
+
+    if (isCritical) {
+      battle.addBattlePopup(target, "CRITICAL", "critical");
+    }
 
     // -----------------------------
     // Ally target
