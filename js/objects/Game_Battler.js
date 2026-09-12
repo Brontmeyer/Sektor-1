@@ -36,11 +36,25 @@ class Game_Battler {
     this.magicAttack = data.magicAttack ?? 0;
     this.magicDefense = data.magicDefense ?? 0;
     this.magicDefensePercent = data.magicDefensePercent ?? 0;
+
+    this.defending = false;
   }
 
   // =====================================
   // CORE COMBAT STATS
   // =====================================
+
+  startDefending() {
+    this.defending = true;
+  }
+
+  stopDefending() {
+    this.defending = false;
+  }
+
+  isDefending() {
+    return this.defending;
+  }
 
   totalAttack() {
     return this.attack + this.strength;

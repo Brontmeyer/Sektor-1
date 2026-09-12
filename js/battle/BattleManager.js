@@ -253,6 +253,10 @@ class BattleManager {
       case "Item":
         battle.itemWindow.show();
         break;
+
+      case "Defend":
+        this.performDefend();
+        break;
     }
   }
 
@@ -622,6 +626,21 @@ class BattleManager {
     battle.pendingItem = null;
   }
 
+  performDefend() {
+    const battle = this.scene;
+    const battler = this.party().currentBattler();
+
+    if (!battler || battler.isDead()) {
+      return;
+    }
+
+    battler.startDefending();
+
+    battle.addBattleMessage(`${battler.name} defends!`);
+
+    this.finishPartyAction();
+  }
+
   performEnemyTurn(enemy = this.scene.enemies[this.scene.enemyTurnIndex]) {
     const battle = this.scene;
     if (!enemy || enemy.isDead()) {
@@ -657,7 +676,12 @@ class BattleManager {
     const attack = enemy.totalAttack();
     const defense = target.totalDefense();
 
-    const damage = Math.max(1, attack - defense);
+    let damage = Math.max(1, attack - defense);
+
+    if (target.isDefending()) {
+      damage = Math.max(1, Math.floor(damage * 0.5));
+    }
+
     target.loseHp(damage);
 
     if ($gameParty.battleMembers().includes(target)) {

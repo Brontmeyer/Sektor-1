@@ -34,6 +34,10 @@ class BattlePartyController {
   }
 
   resetPartyTurnQueue() {
+    for (const battler of $gameParty.battleMembers()) {
+      battler.stopDefending();
+    }
+    
     this.partyTurnQueue = $gameParty.livingBattleMembers();
     this.currentPartyTurn = 0;
     this.activeBattler = this.partyTurnQueue[0] || null;

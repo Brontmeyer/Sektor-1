@@ -2,8 +2,8 @@
 
 class Window_BattleCommand {
   constructor() {
-    this.commands = ["Attack", "Magic", "Item"];
-
+    this.commands = ["Attack", "Magic", "Item", "Defend"];
+    
     this.index = 0;
     this.visible = true;
 
