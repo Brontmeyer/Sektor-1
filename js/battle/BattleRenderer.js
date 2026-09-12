@@ -362,6 +362,7 @@ class BattleRenderer {
       const stackOffset = (popup.stackIndex || 0) * 30;
 
       const y = position.y + offsetY - popup.rise - stackOffset;
+      
       context.save();
 
       context.globalAlpha = alpha;

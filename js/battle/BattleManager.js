@@ -495,19 +495,21 @@ class BattleManager {
         if (skill.effect === "damage") {
           const damage = Math.max(0, hpBefore - battler.hp);
 
-          battle.addBattlePopup(battler, `-${damage}`, "damage");
-
           const elementRate =
             typeof battler.elementRate === "function"
               ? battler.elementRate(skill.element)
               : 1;
 
-          if (elementRate > 1) {
-            battle.addBattlePopup(battler, "WEAK", "weak");
-          } else if (elementRate > 0 && elementRate < 1) {
-            battle.addBattlePopup(battler, "RESIST", "resist");
-          } else if (elementRate === 0) {
+          if (elementRate === 0) {
             battle.addBattlePopup(battler, "IMMUNE", "immune");
+          } else {
+            battle.addBattlePopup(battler, `-${damage}`, "damage");
+
+            if (elementRate > 1) {
+              battle.addBattlePopup(battler, "WEAK", "weak");
+            } else if (elementRate < 1) {
+              battle.addBattlePopup(battler, "RESIST", "resist");
+            }
           }
 
           if ($gameParty.battleMembers().includes(battler)) {
@@ -528,10 +530,17 @@ class BattleManager {
             );
           }
 
-          battle.addBattleMessage(
-            `${caster.name} casts ${skill.name}! ` +
-              `${battler.name} takes ${damage} damage!`,
-          );
+          if (elementRate === 0) {
+            battle.addBattleMessage(
+              `${caster.name} casts ${skill.name}! ` +
+                `${battler.name} is immune!`,
+            );
+          } else {
+            battle.addBattleMessage(
+              `${caster.name} casts ${skill.name}! ` +
+                `${battler.name} takes ${damage} damage!`,
+            );
+          }
         }
 
         // -----------------------------
@@ -596,42 +605,40 @@ class BattleManager {
 
     if (battle.enemies.includes(target)) {
       if (skill.effect === "damage") {
-        const damage = targetHpBefore - target.hp;
-
-        battle.addBattlePopup(target, `-${damage}`, "damage");
+        const damage = Math.max(0, targetHpBefore - target.hp);
 
         const elementRate =
           typeof target.elementRate === "function"
             ? target.elementRate(skill.element)
             : 1;
 
-        if (elementRate > 1) {
-          battle.addBattlePopup(target, "WEAK", "weak");
-        } else if (elementRate > 0 && elementRate < 1) {
-          battle.addBattlePopup(target, "RESIST", "resist");
-        } else if (elementRate === 0) {
+        if (elementRate === 0) {
           battle.addBattlePopup(target, "IMMUNE", "immune");
+        } else {
+          battle.addBattlePopup(target, `-${damage}`, "damage");
+
+          if (elementRate > 1) {
+            battle.addBattlePopup(target, "WEAK", "weak");
+          } else if (elementRate < 1) {
+            battle.addBattlePopup(target, "RESIST", "resist");
+          }
         }
 
-        battle.setEnemyState(
-          target.isDead() ? "defeat" : "hurt",
-          target.isDead() ? 0 : 0.4,
-          target,
-        );
+        if (target.isDead()) {
+          battle.setEnemyState("defeat", 0, target);
+        } else if (elementRate !== 0) {
+          battle.setEnemyState("hurt", 0.4, target);
+        }
 
-        battle.addBattleMessage(
-          `${caster.name} casts ${skill.name}! ` +
-            `${target.name} takes ${damage} damage!`,
-        );
-      }
-
-      if (skill.effect === "heal") {
-        const healing = Math.max(0, target.hp - targetHpBefore);
-
-        battle.addBattleMessage(
-          `${caster.name} casts ${skill.name}! ` +
-            `${target.name} recovers ${healing} HP!`,
-        );
+        if (elementRate === 0) {
+          battle.addBattleMessage(
+            `${caster.name} casts ${skill.name}! ${target.name} is immune!`,
+          );
+        } else {
+          battle.addBattleMessage(
+            `${caster.name} casts ${skill.name}! ${target.name} takes ${damage} damage!`,
+          );
+        }
       }
     }
 

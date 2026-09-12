@@ -287,7 +287,7 @@ class Game_Actor extends Game_Battler {
     const scopeMultiplier = this.skillScopeMultiplier(skill, scope);
 
     return Math.max(
-      1,
+      0,
       Math.floor(rawDamage * elementMultiplier * scopeMultiplier),
     );
   }
