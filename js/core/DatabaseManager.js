@@ -15,6 +15,7 @@ class DatabaseManager {
     this.weapons = await this.loadJSON("data/Weapons.json");
     this.armors = await this.loadJSON("data/Armors.json");
     this.skills = await this.loadJSON("data/Skills.json");
+    this.essences = await this.loadJSON("data/Essences.json");
     this.enemies = await this.loadJSON("data/Enemies.json");
 
     DatabaseValidator.validate(this);
@@ -122,5 +123,15 @@ class DatabaseManager {
     const skill = this.skill(id);
 
     return skill ? skill.name : "Unknown Skill";
+  }
+
+  static essence(id) {
+    return this.essences?.[id] || null;
+  }
+
+  static essenceName(id) {
+    const essence = this.essence(id);
+
+    return essence ? essence.name : "Unknown Essence";
   }
 }

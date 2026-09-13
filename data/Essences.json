@@ -1,0 +1,40 @@
+[
+  null,
+  {
+    "id": 1,
+    "name": "Flame Essence",
+    "description": "An Essence infused with elemental fire.",
+    "type": "magic",
+    "element": "fire",
+
+    "abilities": [
+      {
+        "skillId": 1,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 2,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 3,
+        "unlockLevel": 3
+      }
+    ],
+
+    "levels": [
+      {
+        "level": 1,
+        "apRequired": 0
+      },
+      {
+        "level": 2,
+        "apRequired": 100
+      },
+      {
+        "level": 3,
+        "apRequired": 300
+      }
+    ]
+  }
+]
