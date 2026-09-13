@@ -64,6 +64,16 @@ class Game_Battler {
     return this.attack + this.strength;
   }
 
+  attackPercentWithWeapon(weapon) {
+    const weaponAttackPercent = weapon ? weapon.attackPercent || 0 : 0;
+
+    return this.attackPercent + weaponAttackPercent;
+  }
+
+  totalAttackPercent() {
+    return this.attackPercentWithWeapon(this.weapon());
+  }
+
   totalDefense() {
     return this.defense + this.vitality;
   }

@@ -409,6 +409,26 @@ class Game_Actor extends Game_Battler {
     return this.attackWithWeapon(this.weapon());
   }
 
+  attackPercentWithWeapon(weapon) {
+    const weaponAttackPercent = weapon ? (weapon.attackPercent ?? 100) : 100;
+
+    return (this.attackPercent * weaponAttackPercent) / 100;
+  }
+
+  totalAttackPercent() {
+    return this.attackPercentWithWeapon(this.weapon());
+  }
+
+  magicAttackWithWeapon(weapon) {
+    const weaponMagicAttack = weapon ? weapon.magicAttack || 0 : 0;
+
+    return this.magicAttack + this.magic + weaponMagicAttack;
+  }
+
+  totalMagicAttack() {
+    return this.magicAttackWithWeapon(this.weapon());
+  }
+
   criticalWithWeapon(weapon) {
     const weaponCritical = weapon ? weapon.criticalBonus || 0 : 0;
 

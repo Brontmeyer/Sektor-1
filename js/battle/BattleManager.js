@@ -381,6 +381,20 @@ class BattleManager {
 
     let damage = Math.max(1, battler.totalAttack() - target.totalDefense());
 
+    const hitChance = Math.max(0, Math.min(100, battler.totalAttackPercent()));
+
+    const hitRoll = Math.random() * 100;
+
+    if (hitRoll >= hitChance) {
+      battle.addBattlePopup(target, "MISS", "miss");
+
+      battle.addBattleMessage(
+        `${battler.name} attacks! ${battler.name} misses ${target.name}!`,
+      );
+
+      return;
+    }
+
     const criticalMultiplier = 2;
 
     const criticalChancePercent = Math.max(
@@ -838,7 +852,8 @@ class BattleManager {
       this.party().resetPartyTurnQueue();
       this.setTurnState(BattleManager.TURN_COMMAND);
 
-      battle.battleInputLocked = false;
+      // Keep input locked until BattleAnimationController confirms
+      // that all battlers are idle and visually back at home.
     }
   }
 }
