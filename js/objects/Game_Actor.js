@@ -409,6 +409,16 @@ class Game_Actor extends Game_Battler {
     return this.attackWithWeapon(this.weapon());
   }
 
+  criticalWithWeapon(weapon) {
+    const weaponCritical = weapon ? weapon.criticalBonus || 0 : 0;
+
+    return weaponCritical;
+  }
+
+  totalCritical() {
+    return this.criticalWithWeapon(this.weapon());
+  }
+
   defenseWithArmor(armor) {
     const armorDefense = armor ? armor.defense || 0 : 0;
 

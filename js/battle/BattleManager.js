@@ -385,7 +385,8 @@ class BattleManager {
 
     const criticalChancePercent = Math.max(
       0,
-      (battler.luck + battler.level - target.level) / 4,
+      (battler.luck + battler.level - target.level) / 4 +
+        battler.totalCritical(),
     );
 
     const criticalChance = criticalChancePercent / 100;
