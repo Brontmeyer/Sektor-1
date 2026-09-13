@@ -6,7 +6,7 @@
 // RESTORE MAGIC
 // =====================================
 
-- [ ] Mend - Restores a small amount of HP
+- [X] Mend - Restores a small amount of HP
 - [ ] Greater Mend - Restores a moderate amount of HP
 - [ ] Grand Mend = Restores a large amount of HP
 - [ ] Purge Venom - Removes poison
@@ -21,7 +21,7 @@
 // =====================================
 
 // Fire - 3 levels
-- [X] Ember <--- have to rename 'Fire'>
+- [X] Ember
 - [ ] Blaze
 - [ ] Inferno
 
