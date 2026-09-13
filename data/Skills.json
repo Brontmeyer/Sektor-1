@@ -3,7 +3,7 @@
   {
     "id": 1,
     "name": "Ember",
-    "description": "Deals fire damage to one target.",
+    "description": "Deals minor fire damage to one target.",
 
     "type": "magic",
     "category": "attack",
@@ -21,9 +21,302 @@
       "all": 0.6666666667
     }
   },
-
   {
     "id": 2,
+    "name": "Blaze",
+    "description": "Deals moderate fire damage to one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "fire",
+    "effect": "damage",
+
+    "mpCost": 22,
+    "power": 20,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 3,
+    "name": "Inferno",
+    "description": "Deals heavy fire damage to one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "fire",
+    "effect": "damage",
+
+    "mpCost": 52,
+    "power": 64,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 4,
+    "name": "Frost",
+    "description": "Deals minor ice damage to one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "ice",
+    "effect": "damage",
+
+    "mpCost": 4,
+    "power": 8,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 5,
+    "name": "Glacial Lance",
+    "description": "Deals moderate ice damage to one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "ice",
+    "effect": "damage",
+
+    "mpCost": 22,
+    "power": 20,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 6,
+    "name": "Absolute Zero",
+    "description": "Deals heavy ice damage to one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "ice",
+    "effect": "damage",
+
+    "mpCost": 52,
+    "power": 64,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 7,
+    "name": "Spark",
+    "description": "Deals minor lightning damage to one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "bolt",
+    "effect": "damage",
+
+    "mpCost": 4,
+    "power": 8,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 8,
+    "name": "Thunderstrike",
+    "description": "Deals moderate bolt damage to one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "bolt",
+    "effect": "damage",
+
+    "mpCost": 22,
+    "power": 20,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 9,
+    "name": "Stormbreaker",
+    "description": "Deals heavy bolt damage to one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "bolt",
+    "effect": "damage",
+
+    "mpCost": 52,
+    "power": 64,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 10,
+    "name": "Stoneburst",
+    "description": "Deals minor earth damage to one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "earth",
+    "effect": "damage",
+
+    "mpCost": 6,
+    "power": 11,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 11,
+    "name": "Faultline",
+    "description": "Deals moderate earth damage to one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "earth",
+    "effect": "damage",
+
+    "mpCost": 28,
+    "power": 24,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 12,
+    "name": "Worldshatter",
+    "description": "Deals heavy earth damage to one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "earth",
+    "effect": "damage",
+
+    "mpCost": 68,
+    "power": 70,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 13,
+    "name": "Venom",
+    "description": "Deals poison damage and may inflict Poison on one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "poison",
+    "effect": "damage",
+
+    "mpCost": 8,
+    "power": 10,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 14,
+    "name": "Toxic Surge",
+    "description": "Deals moderate poison damage and may inflict Poison on one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "poison",
+    "effect": "damage",
+
+    "mpCost": 36,
+    "power": 21,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 15,
+    "name": "Plague Nova",
+    "description": "Deals heavy poison damage and may inflict Poison on one target.",
+
+    "type": "magic",
+    "category": "attack",
+    "element": "poison",
+    "effect": "damage",
+
+    "mpCost": 80,
+    "power": 68,
+
+    "target": ["ally", "enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
+  },
+  {
+    "id": 16,
     "name": "Mend",
     "description": "Restores HP to one target.",
 

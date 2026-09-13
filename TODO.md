@@ -45,6 +45,11 @@
 - [ ] Toxic SUrge
 - [ ] Plague Nova
 
+// Gravity - 3 Levels
+- [ ] Burden
+- [ ] Heavyfall
+- [ ] Worldcrush
+
 // =====================================
 // INDIRECT MAGIC
 // =====================================

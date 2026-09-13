@@ -25,15 +25,15 @@
     "levels": [
       {
         "level": 1,
-        "apRequired": 0
+        "resonanceRequired": 0
       },
       {
         "level": 2,
-        "apRequired": 100
+        "resonanceRequired": 100
       },
       {
         "level": 3,
-        "apRequired": 300
+        "resonanceRequired": 300
       }
     ]
   }
