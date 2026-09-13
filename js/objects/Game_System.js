@@ -9,13 +9,13 @@ class Game_System {
 
     // TEMP
     this.actor2.learnSkill(1);
-    this.actor2.learnSkill(16);
+    this.actor2.learnSkill(10);
 
     this.actor3.learnSkill(1);
-    this.actor3.learnSkill(16);
+    this.actor3.learnSkill(10);
 
     this.actor4.learnSkill(1);
-    this.actor4.learnSkill(16);
+    this.actor4.learnSkill(10);
     // TEMP
 
     this.party = new Game_Party([this.actor, this.actor2, this.actor3, this.actor4]);
