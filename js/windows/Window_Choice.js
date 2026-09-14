@@ -16,34 +16,6 @@ class Window_Choice {
     this.y = 0;
   }
 
-  show(choices) {
-    this.visible = true;
-
-    this.choices = choices || [];
-    this.index = 0;
-    this.result = null;
-
-    this.updatePosition();
-  }
-
-  hide() {
-    this.visible = false;
-
-    this.choices = [];
-    this.index = 0;
-  }
-
-  isOpen() {
-    return this.visible;
-  }
-
-  updatePosition() {
-    const height = this.padding * 2 + this.choices.length * this.lineHeight;
-
-    this.height = height;
-    this.y = Graphics.height - 40 - 180 - this.height - 10;
-  }
-
   update() {
     if (!this.visible) {
       return;
@@ -70,6 +42,34 @@ class Window_Choice {
 
       this.visible = false;
     }
+  }
+
+  updatePosition() {
+    const height = this.padding * 2 + this.choices.length * this.lineHeight;
+
+    this.height = height;
+    this.y = Graphics.height - 40 - 180 - this.height - 10;
+  }
+
+  show(choices) {
+    this.visible = true;
+
+    this.choices = choices || [];
+    this.index = 0;
+    this.result = null;
+
+    this.updatePosition();
+  }
+
+  hide() {
+    this.visible = false;
+
+    this.choices = [];
+    this.index = 0;
+  }
+
+  isOpen() {
+    return this.visible;
   }
 
   hasResult() {

@@ -82,10 +82,9 @@ class Game_Event {
   pageConditionsMet(page) {
     const conditions = page.conditions || {};
 
-    // =====================================
-    // SWITCH CONDITIONS
-    // =====================================
-
+    // =================================
+    // Switch Conditions
+    // =================================
     const switchConditions = conditions.switches || [];
 
     if (!Array.isArray(switchConditions)) {
@@ -106,9 +105,9 @@ class Game_Event {
       }
     }
 
-    // =====================================
-    // SELF SWITCH CONDITIONS
-    // =====================================
+    // =================================
+    // Self Switch Conditions
+    // =================================
 
     const selfSwitchConditions = conditions.selfSwitches || [];
 
@@ -134,9 +133,9 @@ class Game_Event {
       }
     }
 
-    // =====================================
-    // VARIABLE CONDITIONS
-    // =====================================
+    // =================================
+    // Variable Conditions
+    // =================================
 
     const variableConditions = conditions.variables || [];
 

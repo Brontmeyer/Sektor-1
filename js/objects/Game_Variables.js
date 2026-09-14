@@ -5,6 +5,14 @@ class Game_Variables {
     this.data = {};
   }
 
+  value(id) {
+    if (this.data[id] === undefined) {
+      return 0;
+    }
+
+    return this.data[id];
+  }
+
   addValue(id, amount) {
     const newValue = this.value(id) + amount;
 
@@ -15,14 +23,6 @@ class Game_Variables {
     this.data[id] = value;
 
     DebugManager.log(`Variable "${id}" = ${value}`);
-  }
-
-  value(id) {
-    if (this.data[id] === undefined) {
-      return 0;
-    }
-
-    return this.data[id];
   }
 
   clear() {

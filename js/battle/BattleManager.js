@@ -1,10 +1,6 @@
 "use strict";
 
 class BattleManager {
-  // =============================================================
-  // Turn States
-  // =============================================================
-
   static TURN_START = "turnStart";
   static TURN_COMMAND = "command";
   static TURN_ACTION = "action";
@@ -30,12 +26,31 @@ class BattleManager {
     this.turnState = BattleManager.TURN_START;
   }
 
+  // =================================
+  // Party Methods
+  // =================================
+
   party() {
     return this.scene.partyController;
   }
 
-  setTurnState(state) {
-    this.turnState = state;
+  finishPartyAction() {
+    const battle = this.scene;
+    const party = this.party();
+
+    if (party.hasNextBattler()) {
+      party.nextBattler();
+
+      this.setTurnState(BattleManager.TURN_COMMAND);
+
+      battle.battleInputLocked = false;
+
+      return;
+    }
+
+    this.setTurnState(BattleManager.TURN_END);
+
+    battle.queueEnemyTurn(0.1);
   }
 
   isTurnState(state) {
@@ -45,6 +60,17 @@ class BattleManager {
   currentTurnState() {
     return this.turnState;
   }
+
+  queueEnemyTurn(delay = 0.5) {
+    const battle = this.scene;
+    battle.pendingEnemyTurn = true;
+    battle.enemyTurnDelay = delay;
+    battle.battleInputLocked = true;
+  }
+
+  // =================================
+  // Updates
+  // =================================
 
   updateActionPhase(deltaTime) {
     const battle = this.scene;
@@ -203,31 +229,17 @@ class BattleManager {
     battle.performEnemyTurn();
   }
 
-  queueEnemyTurn(delay = 0.5) {
-    const battle = this.scene;
-    battle.pendingEnemyTurn = true;
-    battle.enemyTurnDelay = delay;
-    battle.battleInputLocked = true;
+  // =================================
+  // Setters and Getters
+  // =================================
+
+  setTurnState(state) {
+    this.turnState = state;
   }
 
-  finishPartyAction() {
-    const battle = this.scene;
-    const party = this.party();
-
-    if (party.hasNextBattler()) {
-      party.nextBattler();
-
-      this.setTurnState(BattleManager.TURN_COMMAND);
-
-      battle.battleInputLocked = false;
-
-      return;
-    }
-
-    this.setTurnState(BattleManager.TURN_END);
-
-    battle.queueEnemyTurn(0.1);
-  }
+  // =================================
+  // Execution Methods
+  // =================================
 
   executeCommand() {
     const battle = this.scene;
@@ -330,6 +342,10 @@ class BattleManager {
     // Begin the item action.
     battle.setActionPhase("itemUse", 0.35);
   }
+
+  // =================================
+  // Perform Methods
+  // =================================
 
   performAttack() {
     const battle = this.scene;

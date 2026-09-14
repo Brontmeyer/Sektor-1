@@ -1,12 +1,5 @@
 "use strict";
 
-/**
- * Fail-fast validation for the JSON database loaded at startup.
- *
- * The goal is to catch malformed IDs, missing records, invalid battle
- * settings, and unsupported skill targeting before they turn into harder
- * runtime bugs elsewhere in the engine.
- */
 class DatabaseValidator {
   static validate(database) {
     const errors = [];

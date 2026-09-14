@@ -90,7 +90,7 @@ for years without becoming difficult to maintain.
 
 ✔ Party Foundation
 
-⬜ Multi-Character Turns
+✔ Multi-Character Turns
 
 ⬜ Status Effects
 

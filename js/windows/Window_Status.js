@@ -13,6 +13,16 @@ class Window_Status {
     this.y = (Graphics.height - this.height) / 2;
   }
 
+  update() {
+    if (!this.visible) {
+      return;
+    }
+
+    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+      this.hide();
+    }
+  }
+
   show() {
     this.visible = true;
   }
@@ -23,16 +33,6 @@ class Window_Status {
 
   isOpen() {
     return this.visible;
-  }
-
-  update() {
-    if (!this.visible) {
-      return;
-    }
-
-    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
-      this.hide();
-    }
   }
 
   draw() {

@@ -13,6 +13,16 @@ class Window_Message {
     this.y = Graphics.height - this.height - 40;
   }
 
+  update() {
+    if (!this.visible) {
+      return;
+    }
+
+    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+      this.hide();
+    }
+  }
+
   show(text, speaker = "") {
     this.visible = true;
 
@@ -29,16 +39,6 @@ class Window_Message {
 
   isOpen() {
     return this.visible;
-  }
-
-  update() {
-    if (!this.visible) {
-      return;
-    }
-
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
-      this.hide();
-    }
   }
 
   draw() {

@@ -19,38 +19,6 @@ class Window_SaveSlots {
     this.y = (Graphics.height - this.height) / 2;
   }
 
-  show(mode = "save") {
-    this.visible = true;
-
-    this.mode = mode;
-    this.index = 0;
-    this.result = null;
-  }
-
-  hide() {
-    this.visible = false;
-  }
-
-  isOpen() {
-    return this.visible;
-  }
-
-  currentSlotId() {
-    return this.slots[this.index];
-  }
-
-  hasResult() {
-    return this.result !== null;
-  }
-
-  takeResult() {
-    const result = this.result;
-
-    this.result = null;
-
-    return result;
-  }
-
   update() {
     if (!this.visible) {
       return;
@@ -83,6 +51,38 @@ class Window_SaveSlots {
 
       this.visible = false;
     }
+  }
+
+  show(mode = "save") {
+    this.visible = true;
+
+    this.mode = mode;
+    this.index = 0;
+    this.result = null;
+  }
+
+  hide() {
+    this.visible = false;
+  }
+
+  isOpen() {
+    return this.visible;
+  }
+
+  currentSlotId() {
+    return this.slots[this.index];
+  }
+
+  hasResult() {
+    return this.result !== null;
+  }
+
+  takeResult() {
+    const result = this.result;
+
+    this.result = null;
+
+    return result;
   }
 
   draw() {

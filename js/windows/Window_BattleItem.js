@@ -15,32 +15,6 @@ class Window_BattleItem {
     this.y = Graphics.height - this.height - 40;
   }
 
-  items() {
-    return $gameParty
-      .itemIds()
-      .map((itemId) => DatabaseManager.item(itemId))
-      .filter((item) => item !== null);
-  }
-
-  currentItem() {
-    const items = this.items();
-
-    return items[this.index] || null;
-  }
-
-  show() {
-    this.visible = true;
-    this.index = 0;
-  }
-
-  hide() {
-    this.visible = false;
-  }
-
-  isOpen() {
-    return this.visible;
-  }
-
   update() {
     if (!this.visible) {
       return;
@@ -67,6 +41,32 @@ class Window_BattleItem {
         this.index = 0;
       }
     }
+  }
+
+  items() {
+    return $gameParty
+      .itemIds()
+      .map((itemId) => DatabaseManager.item(itemId))
+      .filter((item) => item !== null);
+  }
+
+  currentItem() {
+    const items = this.items();
+
+    return items[this.index] || null;
+  }
+
+  show() {
+    this.visible = true;
+    this.index = 0;
+  }
+
+  hide() {
+    this.visible = false;
+  }
+
+  isOpen() {
+    return this.visible;
   }
 
   draw() {

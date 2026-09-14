@@ -49,6 +49,10 @@ class DatabaseManager {
     return mapData;
   }
 
+  // =================================
+  // Actors
+  // =================================
+
   static actor(actorId) {
     return this.actors[actorId] || null;
   }
@@ -63,6 +67,10 @@ class DatabaseManager {
     return actor.name;
   }
 
+  // =================================
+  // Enemies
+  // =================================
+
   static enemy(id) {
     return this.enemies?.[id] || null;
   }
@@ -72,6 +80,10 @@ class DatabaseManager {
 
     return enemy ? enemy.name : "Unknown Enemy";
   }
+
+  // =================================
+  // Items
+  // =================================
 
   static item(itemId) {
     return this.items[itemId] || null;
@@ -87,6 +99,10 @@ class DatabaseManager {
     return item.name;
   }
 
+  // =================================
+  // Weapons
+  // =================================
+
   static weapon(weaponId) {
     return this.weapons[weaponId] || null;
   }
@@ -100,6 +116,10 @@ class DatabaseManager {
 
     return weapon.name;
   }
+
+  // =================================
+  // Armors
+  // =================================
 
   static armor(armorId) {
     return this.armors[armorId] || null;
@@ -115,6 +135,10 @@ class DatabaseManager {
     return armor.name;
   }
 
+  // =================================
+  // Skills
+  // =================================
+
   static skill(id) {
     return this.skills?.[id] || null;
   }
@@ -124,6 +148,10 @@ class DatabaseManager {
 
     return skill ? skill.name : "Unknown Skill";
   }
+
+  // =================================
+  // Essences
+  // =================================
 
   static essence(id) {
     return this.essences?.[id] || null;

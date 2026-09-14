@@ -16,20 +16,6 @@ class Window_Inventory {
     this.y = (Graphics.height - this.height) / 2;
   }
 
-  show() {
-    this.visible = true;
-
-    this.index = 0;
-  }
-
-  hide() {
-    this.visible = false;
-  }
-
-  isOpen() {
-    return this.visible;
-  }
-
   update() {
     if (!this.visible) {
       return;
@@ -78,6 +64,27 @@ class Window_Inventory {
         }
       }
     }
+  }
+
+  itemIds() {
+    return Object.keys($gameParty.items)
+      .map(Number)
+      .filter((itemId) => $gameParty.itemCount(itemId) > 0)
+      .sort((a, b) => a - b);
+  }
+
+  show() {
+    this.visible = true;
+
+    this.index = 0;
+  }
+
+  hide() {
+    this.visible = false;
+  }
+
+  isOpen() {
+    return this.visible;
   }
 
   draw() {
@@ -243,12 +250,5 @@ class Window_Inventory {
     context.fillStyle = "#ffffff";
     context.fillText(hpText, barX + barWidth + 15, hpY);
     context.restore();
-  }
-
-  itemIds() {
-    return Object.keys($gameParty.items)
-      .map(Number)
-      .filter((itemId) => $gameParty.itemCount(itemId) > 0)
-      .sort((a, b) => a - b);
   }
 }

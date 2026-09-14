@@ -27,9 +27,8 @@ class Game_Actor extends Game_Battler {
   }
 
   // =====================================
-  // EQUIPMENT MANAGEMENT
+  // Equipment Management
   // =====================================
-
   weapon() {
     if (this.weaponId <= 0) {
       return null;
@@ -76,7 +75,7 @@ class Game_Actor extends Game_Battler {
   }
 
   // =====================================
-  // SKILL MANAGEMENT
+  // Skill Management
   // =====================================
 
   learnSkill(skillId) {
@@ -319,7 +318,7 @@ class Game_Actor extends Game_Battler {
   }
 
   // =====================================
-  // EXPERIENCE AND LEVEL MANAGEMENT
+  // Experience and Level Management
   // =====================================
 
   gainExp(amount) {
@@ -396,7 +395,7 @@ class Game_Actor extends Game_Battler {
   }
 
   // =====================================
-  // COMBAT STAT CALCULATIONS
+  // Combat Stat Calculations
   // =====================================
 
   attackWithWeapon(weapon) {
@@ -419,6 +418,20 @@ class Game_Actor extends Game_Battler {
     return this.attackPercentWithWeapon(this.weapon());
   }
 
+  defenseWithArmor(armor) {
+    const armorDefense = armor ? armor.defense || 0 : 0;
+
+    return this.defense + this.vitality + armorDefense;
+  }
+
+  totalDefense() {
+    return this.defenseWithArmor(this.armor());
+  }
+
+  // =====================================
+  // Magic Attack Calculations
+  // =====================================
+
   magicAttackWithWeapon(weapon) {
     const weaponMagicAttack = weapon ? weapon.magicAttack || 0 : 0;
 
@@ -437,15 +450,5 @@ class Game_Actor extends Game_Battler {
 
   totalCritical() {
     return this.criticalWithWeapon(this.weapon());
-  }
-
-  defenseWithArmor(armor) {
-    const armorDefense = armor ? armor.defense || 0 : 0;
-
-    return this.defense + this.vitality + armorDefense;
-  }
-
-  totalDefense() {
-    return this.defenseWithArmor(this.armor());
   }
 }

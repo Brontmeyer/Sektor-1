@@ -13,10 +13,6 @@ class Input {
     DebugManager.log("Input initialized.");
   }
 
-  static endFrame() {
-    this.triggeredKeys = {};
-  }
-
   static isPressed(code) {
     return this.keys[code] === true;
   }
@@ -35,5 +31,9 @@ class Input {
 
   static onKeyUp(event) {
     this.keys[event.code] = false;
+  }
+
+  static endFrame() {
+    this.triggeredKeys = {};
   }
 }

@@ -17,20 +17,6 @@ class Window_Equipment {
     this.selectWindow = new Window_EquipSelect();
   }
 
-  show() {
-    this.visible = true;
-
-    this.index = 0;
-  }
-
-  hide() {
-    this.visible = false;
-  }
-
-  isOpen() {
-    return this.visible;
-  }
-
   update() {
     if (!this.visible) {
       return;
@@ -54,7 +40,9 @@ class Window_Equipment {
           $gameActor.weaponId = 0;
 
           if (oldWeapon) {
-            DebugManager.log(`${$gameActor.name} unequipped ${oldWeapon.name}.`);
+            DebugManager.log(
+              `${$gameActor.name} unequipped ${oldWeapon.name}.`,
+            );
           }
         } else {
           $gameActor.equipWeapon(result.id);
@@ -109,6 +97,20 @@ class Window_Equipment {
 
       return;
     }
+  }
+
+  show() {
+    this.visible = true;
+
+    this.index = 0;
+  }
+
+  hide() {
+    this.visible = false;
+  }
+
+  isOpen() {
+    return this.visible;
   }
 
   draw() {

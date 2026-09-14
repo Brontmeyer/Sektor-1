@@ -217,6 +217,10 @@ class Game_Interpreter {
     return true;
   }
 
+  // =================================
+  // Items, Equipment, and Experience
+  // =================================
+
   commandGainItem(command) {
     $gameParty.gainItem(command.itemId, command.amount || 1);
 

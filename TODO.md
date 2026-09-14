@@ -2,6 +2,9 @@
 
 ## Battle
 
+TODO: Undead interaction
+Restorative HP recovery cast on an undead target becomes damage.
+
 // =====================================
 // RESTORE MAGIC
 // =====================================

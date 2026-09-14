@@ -15,47 +15,6 @@ class Window_Magic {
     this.y = (Graphics.height - this.height) / 2;
   }
 
-  skills() {
-    return $gameActor.knownSkills().filter((skill) => skill.type === "magic");
-  }
-
-  currentSkill() {
-    const skills = this.skills();
-
-    return skills[this.index] || null;
-  }
-
-  canUseFromField(skill) {
-    if (!skill) {
-      return false;
-    }
-
-    const canTargetPlayer =
-      Array.isArray(skill.target) &&
-      (skill.target.includes("ally") || skill.target.includes("self"));
-
-    const isFieldEffect = skill.effect === "heal";
-
-    if (!canTargetPlayer || !isFieldEffect) {
-      return false;
-    }
-
-    return $gameActor.canUseSkill(skill.id);
-  }
-
-  show() {
-    this.visible = true;
-    this.index = 0;
-  }
-
-  hide() {
-    this.visible = false;
-  }
-
-  isOpen() {
-    return this.visible;
-  }
-
   update() {
     if (!this.visible) {
       return;
@@ -104,6 +63,47 @@ class Window_Magic {
 
       $gameActor.useSkill(skill.id, $gameActor);
     }
+  }
+
+  skills() {
+    return $gameActor.knownSkills().filter((skill) => skill.type === "magic");
+  }
+
+  currentSkill() {
+    const skills = this.skills();
+
+    return skills[this.index] || null;
+  }
+
+  canUseFromField(skill) {
+    if (!skill) {
+      return false;
+    }
+
+    const canTargetPlayer =
+      Array.isArray(skill.target) &&
+      (skill.target.includes("ally") || skill.target.includes("self"));
+
+    const isFieldEffect = skill.effect === "heal";
+
+    if (!canTargetPlayer || !isFieldEffect) {
+      return false;
+    }
+
+    return $gameActor.canUseSkill(skill.id);
+  }
+
+  show() {
+    this.visible = true;
+    this.index = 0;
+  }
+
+  hide() {
+    this.visible = false;
+  }
+
+  isOpen() {
+    return this.visible;
   }
 
   draw() {

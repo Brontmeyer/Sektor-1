@@ -45,7 +45,7 @@ class Game_Battler {
   }
 
   // =====================================
-  // CORE COMBAT STATS
+  // Core Combat Stats
   // =====================================
 
   startDefending() {
@@ -113,7 +113,7 @@ class Game_Battler {
   }
 
   // =====================================
-  // HP MANAGEMENT
+  // HP Management
   // =====================================
 
   gainHp(amount) {
@@ -161,7 +161,7 @@ class Game_Battler {
   }
 
   // =====================================
-  // MP MANAGEMENT
+  // MP Management
   // =====================================
 
   gainMp(amount) {
@@ -220,7 +220,7 @@ class Game_Battler {
   }
 
   // =====================================
-  // INTERNAL HELPERS
+  // Internal Helpers
   // =====================================
 
   _validAmount(amount) {

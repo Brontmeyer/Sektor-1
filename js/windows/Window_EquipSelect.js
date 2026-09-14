@@ -17,6 +17,44 @@ class Window_EquipSelect {
     this.y = (Graphics.height - this.height) / 2;
   }
 
+  update() {
+    if (!this.visible) {
+      return;
+    }
+
+    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+      this.hide();
+
+      return;
+    }
+
+    const entries = this.entries();
+
+    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+      this.index--;
+
+      if (this.index < 0) {
+        this.index = entries.length - 1;
+      }
+    }
+
+    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+      this.index++;
+
+      if (this.index >= entries.length) {
+        this.index = 0;
+      }
+    }
+
+    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+      this.result = this.currentEntry();
+
+      this.visible = false;
+
+      return;
+    }
+  }
+
   show(type) {
     this.visible = true;
     this.type = type;
@@ -107,55 +145,68 @@ class Window_EquipSelect {
     return result;
   }
 
-  update() {
-    if (!this.visible) {
-      return;
-    }
-
-    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
-      this.hide();
-
-      return;
-    }
-
-    const entries = this.entries();
-
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
-      this.index--;
-
-      if (this.index < 0) {
-        this.index = entries.length - 1;
-      }
-    }
-
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
-      this.index++;
-
-      if (this.index >= entries.length) {
-        this.index = 0;
-      }
-    }
-
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
-      this.result = this.currentEntry();
-
-      this.visible = false;
-
-      return;
-    }
-  }
-
   currentEntry() {
     const entries = this.entries();
 
     return entries[this.index] || null;
   }
 
+  hasResult() {
+    return this.result !== null;
+  }
+
+  takeResult() {
+    const result = this.result;
+
+    this.result = null;
+
+    return result;
+  }
+
+  previewStat() {
+    const entries = this.entries();
+
+    const entry = entries[this.index];
+
+    if (!entry) {
+      return null;
+    }
+
+    if (this.type === "weapon") {
+      const current = $gameActor.totalAttack();
+
+      const weapon = entry.id === 0 ? null : DatabaseManager.weapon(entry.id);
+
+      const preview = $gameActor.attackWithWeapon(weapon);
+
+      return {
+        name: "Attack",
+        current: current,
+        preview: preview,
+      };
+    }
+
+    if (this.type === "armor") {
+      const current = $gameActor.totalDefense();
+
+      const armor = entry.id === 0 ? null : DatabaseManager.armor(entry.id);
+
+      const preview = $gameActor.defenseWithArmor(armor);
+
+      return {
+        name: "Defense",
+        current: current,
+        preview: preview,
+      };
+    }
+    return null;
+  }
+
   draw() {
     if (!this.visible) {
       return;
     }
-    
+
     const context = Graphics.context;
     const entries = this.entries();
 
@@ -255,56 +306,5 @@ class Window_EquipSelect {
       );
     }
     context.restore();
-  }
-
-  hasResult() {
-    return this.result !== null;
-  }
-
-  takeResult() {
-    const result = this.result;
-
-    this.result = null;
-
-    return result;
-  }
-
-  previewStat() {
-    const entries = this.entries();
-
-    const entry = entries[this.index];
-
-    if (!entry) {
-      return null;
-    }
-
-    if (this.type === "weapon") {
-      const current = $gameActor.totalAttack();
-
-      const weapon = entry.id === 0 ? null : DatabaseManager.weapon(entry.id);
-
-      const preview = $gameActor.attackWithWeapon(weapon);
-
-      return {
-        name: "Attack",
-        current: current,
-        preview: preview,
-      };
-    }
-
-    if (this.type === "armor") {
-      const current = $gameActor.totalDefense();
-
-      const armor = entry.id === 0 ? null : DatabaseManager.armor(entry.id);
-
-      const preview = $gameActor.defenseWithArmor(armor);
-
-      return {
-        name: "Defense",
-        current: current,
-        preview: preview,
-      };
-    }
-    return null;
   }
 }

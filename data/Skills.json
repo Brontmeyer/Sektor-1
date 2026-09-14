@@ -1,6 +1,7 @@
 [
   null,
-  { "_comment": "RESTORE MAGIC",
+  {
+    "_comment": "RESTORE MAGIC",
     "id": 1,
     "name": "Mend",
     "description": "Heal a small amount of HP.",
@@ -14,7 +15,7 @@
     "power": 5,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -38,6 +39,8 @@
     "power": 35,
     "reflectable": true,
 
+    "status": {},
+
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
 
@@ -59,6 +62,8 @@
     "mpCost": 64,
     "power": 130,
     "reflectable": true,
+
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -82,10 +87,10 @@
     "power": 0,
     "reflectable": true,
 
-    "status": "poison",
+    "status": { "poison": 1.0 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["ally"],
+    "scope": ["single"]
   },
   {
     "id": 5,
@@ -101,24 +106,24 @@
     "power": 0,
     "reflectable": true,
 
-    "status": [
-      "sleep",
-      "poison",
-      "sadness",
-      "fury",
-      "confusion",
-      "silence",
-      "frog",
-      "small",
-      "slow-numb",
-      "petrify",
-      "berserk",
-      "paralyzed",
-      "darkness"
-    ],
+    "status": {
+      "sleep": 1.0,
+      "poison": 1.0,
+      "sadness": 1.0,
+      "fury": 1.0,
+      "confuse": 1.0,
+      "silence": 1.0,
+      "frog": 1.0,
+      "small": 1.0,
+      "slow-numb": 1.0,
+      "petrify": 1.0,
+      "berserk": 1.0,
+      "paralyzed": 1.0,
+      "darkness": 1.0
+    },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["ally"],
+    "scope": ["single"]
   },
   {
     "id": 6,
@@ -126,23 +131,23 @@
     "description": "Inflicts Resist status. Prevents status transformations.",
 
     "type": "magic",
-    "category": "restore",
+    "category": "indirect",
     "element": "restorative",
-    "effect": "removeStatus",
+    "effect": "inflictStatus",
 
     "mpCost": 120,
     "power": 0,
     "reflectable": true,
 
-    "status": ["resist"],
+    "status": { "resist": 1.0 },
 
-    "target": ["ally", "enemy"],
+    "target": ["ally"],
     "scope": ["single"]
   },
   {
     "id": 7,
     "name": "Rekindle",
-    "description": "Revive a party member with minimal health.",
+    "description": "Revive a party member with 25% health.",
 
     "type": "magic",
     "category": "restore",
@@ -150,10 +155,10 @@
     "effect": "revive",
 
     "mpCost": 34,
-    "reviveFraction": 0.25,
+    "revivePercent": 0.25,
     "reflectable": true,
 
-    "status": ["dead"],
+    "status": {},
 
     "target": ["ally"],
     "scope": ["single"]
@@ -169,10 +174,10 @@
     "effect": "revive",
 
     "mpCost": 100,
-    "reviveFraction": 1.0,
+    "revivePercent": 1.0,
     "reflectable": true,
 
-    "status": ["dead"],
+    "status": {},
 
     "target": ["ally"],
     "scope": ["single"]
@@ -185,29 +190,20 @@
     "type": "magic",
     "category": "restore",
     "element": "restorative",
-    "effect": "regenerate",
+    "effect": "inflictStatus",
 
     "mpCost": 30,
     "power": 0,
     "reflectable": true,
 
-    "status": ["regenerate"],
+    "status": { "regen": 1.0 },
 
     "target": ["ally"],
-    "scope": ["single", "all"]
+    "scope": ["single"]
   },
 
-
-
-
-
-
-
-
-
-
-
-  { "_comment": "ATTACK MAGIC",
+  {
+    "_comment": "ATTACK MAGIC",
     "id": 10,
     "name": "Ember",
     "description": "Low fire-elemental damage.",
@@ -221,7 +217,7 @@
     "power": 8,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -245,7 +241,7 @@
     "power": 20,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -269,7 +265,7 @@
     "power": 64,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -293,7 +289,7 @@
     "power": 8,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -317,7 +313,7 @@
     "power": 20,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -341,7 +337,7 @@
     "power": 64,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -365,7 +361,7 @@
     "power": 8,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -389,7 +385,7 @@
     "power": 20,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -413,7 +409,7 @@
     "power": 64,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -437,7 +433,7 @@
     "power": 11,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -461,7 +457,7 @@
     "power": 24,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -485,7 +481,7 @@
     "power": 70,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
     "target": ["ally", "enemy"],
     "scope": ["single", "all"],
@@ -509,17 +505,10 @@
     "power": 10,
     "reflectable": true,
 
-    "status": {
-      "Poison": 0.48
-    },
+    "status": { "poison": 0.48 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single"],
-
-    "scopePower": {
-      "single": 1.0,
-      "all": 0.6666666667
-    }
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "id": 23,
@@ -535,17 +524,10 @@
     "power": 21,
     "reflectable": true,
 
-    "status": {
-      "Poison": 0.48
-    },
+    "status": { "poison": 0.48 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single"],
-
-    "scopePower": {
-      "single": 1.0,
-      "all": 0.6666666667
-    }
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "id": 24,
@@ -561,17 +543,10 @@
     "power": 68,
     "reflectable": true,
 
-    "status": {
-      "Poison": 0.72
-    },
+    "status": { "poison": 0.72 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single"],
-
-    "scopePower": {
-      "single": 1.0,
-      "all": 0.6666666667
-    }
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "id": 25,
@@ -584,18 +559,13 @@
     "effect": "damage",
 
     "mpCost": 14,
-    "gravityFraction": 0.25,
+    "gravityPercent": 0.25,
     "reflectable": false,
 
-    "status": [],
+    "status": {},
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
-    "scopePower": {
-      "single": 1.0,
-      "all": 0.6666666667
-    }
+    "target": ["enemy"],
+    "scope": ["single", "all"]
   },
   {
     "id": 26,
@@ -608,18 +578,13 @@
     "effect": "damage",
 
     "mpCost": 33,
-    "gravityFraction": 0.5,
+    "gravityPercent": 0.5,
     "reflectable": false,
 
-    "status": [],
+    "status": {},
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
-    "scopePower": {
-      "single": 1.0,
-      "all": 0.6666666667
-    }
+    "target": ["enemy"],
+    "scope": ["single", "all"]
   },
   {
     "id": 27,
@@ -632,33 +597,20 @@
     "effect": "damage",
 
     "mpCost": 48,
-    "gravityFraction": 0.75,
+    "gravityPercent": 0.75,
     "reflectable": false,
 
-    "status": [],
+    "status": {},
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
-    "scopePower": {
-      "single": 1.0,
-      "all": 0.6666666667
-    }
+    "target": ["enemy"],
+    "scope": ["single", "all"]
   },
 
-
-
-
-
-
-
-
-
-
-  { "_comment": "INDIRECT MAGIC",
+  {
+    "_comment": "INDIRECT MAGIC",
     "id": 28,
     "name": "Dreambind",
-    "description": "72% chance of inflicting Sleep on target. ",
+    "description": "72% chance of inflicting Sleep on target.",
 
     "type": "magic",
     "category": "indirect",
@@ -669,10 +621,10 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["sleep"],
+    "status": { "sleep": 0.72 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "id": 29,
@@ -688,10 +640,12 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["confuse"],
+    "status": {
+      "confuse": 0.6
+    },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "id": 30,
@@ -707,10 +661,10 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["silence"],
+    "status": { "silence": 0.6 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "id": 31,
@@ -726,10 +680,12 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["small"],
+    "status": { "small": 0.72 },
+    "allyStatusChance": 1.0,
+    "toggleStatus": true,
 
     "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "scope": ["single"]
   },
   {
     "id": 32,
@@ -745,10 +701,12 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["frog"],
+    "status": { "frog": 0.72 },
+    "allyStatusChance": 1.0,
+    "toggleStatus": true,
 
-    "target": ["ally"],
-    "scope": ["single", "all"]
+    "target": ["ally", "enemy"],
+    "scope": ["single"]
   },
   {
     "id": 33,
@@ -764,10 +722,11 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["berserk"],
+    "status": { "berserk": 0.8 },
+    "allyStatusChance": 1.0,
 
     "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "scope": ["single"]
   },
   {
     "id": 34,
@@ -775,7 +734,7 @@
     "description": "Grants Haste to target.",
 
     "type": "magic",
-    "category": "restore",
+    "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
 
@@ -783,10 +742,10 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["haste"],
+    "status": { "haste": 1.0 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["ally"],
+    "scope": ["single"]
   },
   {
     "id": 35,
@@ -802,10 +761,10 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["slow"],
+    "status": { "slow": 1.0 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "id": 36,
@@ -821,10 +780,10 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["stop"],
+    "status": { "stop": 0.6 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "id": 37,
@@ -840,10 +799,10 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["barrier"],
+    "status": { "barrier": 1.0 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["ally"],
+    "scope": ["single"]
   },
   {
     "id": 38,
@@ -859,10 +818,10 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["mbarrier"],
+    "status": { "mbarrier": 1.0 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["ally"],
+    "scope": ["single"]
   },
   {
     "id": 39,
@@ -878,10 +837,10 @@
     "power": 0,
     "reflectable": false,
 
-    "status": ["reflect"],
+    "status": { "reflect": 1.0 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["ally"],
+    "scope": ["single"]
   },
   {
     "id": 40,
@@ -897,10 +856,15 @@
     "power": 0,
     "reflectable": false,
 
-    "status": ["barrier", "mbarrier", "reflect", "shield"],
+    "status": {
+      "barrier": 1.0,
+      "mbarrier": 1.0,
+      "reflect": 1.0,
+      "shield": 1.0
+    },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "id": 41,
@@ -916,10 +880,21 @@
     "power": 0,
     "reflectable": false,
 
-    "status": ["haste", "slow", "stop", "regenerate", "barrier", "mbarrier", "reflect", "shield", "deathforce", "resist"],
+    "status": {
+      "haste": 1.0,
+      "slow": 1.0,
+      "stop": 1.0,
+      "regen": 1.0,
+      "barrier": 1.0,
+      "mbarrier": 1.0,
+      "reflect": 1.0,
+      "shield": 1.0,
+      "deathforce": 1.0,
+      "resist": 1.0
+    },
 
     "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "scope": ["single"]
   },
   {
     "id": 42,
@@ -935,10 +910,10 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["death"],
+    "status": { "death": 0.44 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "id": 43,
@@ -948,13 +923,13 @@
     "type": "magic",
     "category": "indirect",
     "element": "none",
-    "effect": "inflictStatus",
+    "effect": "escape",
 
     "mpCost": 16,
     "power": 0,
     "reflectable": false,
 
-    "status": ["retreat"],
+    "status": {},
 
     "target": ["ally"],
     "scope": ["all"]
@@ -967,20 +942,20 @@
     "type": "magic",
     "category": "indirect",
     "element": "none",
-    "effect": "inflictStatus",
+    "effect": "banish",
 
     "mpCost": 99,
     "power": 0,
     "reflectable": false,
 
-    "status": ["banish"],
+    "status": {},
 
     "target": ["enemy"],
     "scope": ["single"]
   },
   {
     "id": 45,
-    "name": "Twin Awgis",
+    "name": "Twin Aegis",
     "description": "Grants Barrier and MBarrier.",
 
     "type": "magic",
@@ -992,23 +967,17 @@
     "power": 0,
     "reflectable": true,
 
-    "status": ["barrier", "mbarrier"],
+    "status": {
+      "barrier": 1.0,
+      "mbarrier": 1.0
+    },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["ally"],
+    "scope": ["single"]
   },
 
-
-
-
-
-
-
-
-
-
-  
-  { "_comment": "ADVANCED MAGIC",
+  {
+    "_comment": "ADVANCED MAGIC",
     "id": 46,
     "name": "Starfall",
     "description": "Major non-elemental damage. Cannot be reflected.",
@@ -1022,15 +991,15 @@
     "power": 80,
     "reflectable": false,
 
-    "status": [],
+    "status": {},
 
-    "target": ["ally", "enemy"],
+    "target": ["enemy"],
     "scope": ["single"]
   },
   {
     "id": 47,
     "name": "Meteor Barrage",
-    "description": "Moderate non-elemental damage to random enemy target. Four attacks. Cannot be reflected.",
+    "description": "Moderate non-elemental damage to random enemies. Four attacks. Cannot be reflected.",
 
     "type": "magic",
     "category": "advanced",
@@ -1039,9 +1008,11 @@
 
     "mpCost": 110,
     "power": 30,
+    "hits": 4,
+    "randomTargetPerHit": true,
     "reflectable": false,
 
-    "status": [],
+    "status": {},
 
     "target": ["enemy"],
     "scope": ["single"]
@@ -1060,10 +1031,15 @@
     "power": 95,
     "reflectable": true,
 
-    "status": ["stop"],
+    "status": { "stop": 0.68 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
   },
   {
     "id": 49,
@@ -1079,10 +1055,15 @@
     "power": 100,
     "reflectable": true,
 
-    "status": ["petrify"],
+    "status": { "petrify": 0.32 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
   },
   {
     "id": 50,
@@ -1098,10 +1079,15 @@
     "power": 105,
     "reflectable": true,
 
-    "status": ["confuse"],
+    "status": { "confuse": 0.32 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
   },
   {
     "id": 51,
@@ -1117,10 +1103,15 @@
     "power": 115,
     "reflectable": true,
 
-    "status": [],
+    "status": {},
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["enemy"],
+    "scope": ["single", "all"],
+
+    "scopePower": {
+      "single": 1.0,
+      "all": 0.6666666667
+    }
   },
   {
     "id": 52,
@@ -1133,12 +1124,12 @@
     "effect": "heal",
 
     "mpCost": 99,
-    "healFraction": 1.0,
+    "healPercent": 1.0,
     "reflectable": false,
 
-    "status": [],
+    "status": {},
 
-    "target": ["ally", "enemy"],
+    "target": ["ally"],
     "scope": ["single"]
   },
   {
@@ -1155,10 +1146,10 @@
     "power": 0,
     "reflectable": false,
 
-    "status": ["shield"],
+    "status": { "shield": 1.0 },
 
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"]
+    "target": ["ally"],
+    "scope": ["single"]
   },
   {
     "id": 54,
@@ -1174,7 +1165,7 @@
     "power": 105,
     "reflectable": false,
 
-    "status": [],
+    "status": {},
 
     "target": ["enemy"],
     "scope": ["all"]

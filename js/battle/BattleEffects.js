@@ -6,6 +6,15 @@ class BattleEffects {
     this.current = null;
   }
 
+  start(type, target, duration = 0.4) {
+    this.current = {
+      type,
+      target,
+      timer: duration,
+      duration,
+    };
+  }
+
   update(deltaTime) {
     if (!this.current) {
       return;
@@ -16,15 +25,6 @@ class BattleEffects {
     if (this.current.timer <= 0) {
       this.current = null;
     }
-  }
-
-  start(type, target, duration = 0.4) {
-    this.current = {
-      type,
-      target,
-      timer: duration,
-      duration,
-    };
   }
 
   draw(context) {

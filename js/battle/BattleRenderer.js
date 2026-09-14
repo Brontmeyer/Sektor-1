@@ -5,6 +5,103 @@ class BattleRenderer {
     this.scene = scene;
   }
 
+  // =================================
+  // Battle Rendering
+  // =================================
+
+  draw() {
+    const context = Graphics.context;
+
+    context.save();
+
+    // -----------------------------
+    // Battle background
+    // -----------------------------
+
+    context.fillStyle = "#202020";
+
+    context.fillRect(0, 0, Graphics.width, Graphics.height);
+
+    // -----------------------------
+    // Battle title
+    // -----------------------------
+
+    context.textAlign = "left";
+    context.textBaseline = "alphabetic";
+    context.font = "28px Arial";
+    context.fillStyle = "#ffffff";
+
+    context.fillText("Battle", 40, 50);
+
+    // -----------------------------
+    // Battle presentation
+    // -----------------------------
+
+    if (this.scene.battleView === "front") {
+      this.drawFrontView(context);
+    } else {
+      this.drawSideView(context);
+    }
+    this.drawBattleHud(context);
+    this.drawBattleEffect(context);
+    this.drawBattlePopups(context);
+
+    // -----------------------------
+    // Battle messages
+    // -----------------------------
+
+    if (this.scene.battleMessages.length > 0) {
+      context.textAlign = "center";
+      context.textBaseline = "alphabetic";
+      context.font = "20px Arial";
+      context.fillStyle = "#ffffff";
+
+      const startY = Graphics.height - 250;
+
+      for (let i = 0; i < this.scene.battleMessages.length; i++) {
+        context.fillText(
+          this.scene.battleMessages[i],
+          Graphics.width / 2,
+          startY + i * 28,
+        );
+      }
+    }
+
+    // -----------------------------
+    // Test battle exit hint
+    // -----------------------------
+
+    context.textAlign = "right";
+    context.textBaseline = "alphabetic";
+    context.font = "16px Arial";
+    context.fillStyle = "#ffffff";
+
+    context.fillText(
+      "Escape: Leave Test Battle",
+      Graphics.width - 30,
+      Graphics.height - 30,
+    );
+
+    // -----------------------------
+    // Battle windows
+    // -----------------------------
+
+    if (
+      !this.scene.victory &&
+      !this.scene.defeat &&
+      !this.scene.battleInputLocked &&
+      !this.scene.magicWindow.isOpen() &&
+      !this.scene.itemWindow.isOpen()
+    ) {
+      this.scene.commandWindow.draw();
+    }
+
+    this.scene.magicWindow.draw();
+    this.scene.itemWindow.draw();
+
+    context.restore();
+  }
+
   drawActorSprite(context, x, y, actor) {
     if (!actor) {
       return;
@@ -123,6 +220,127 @@ class BattleRenderer {
     context.lineWidth = 3;
     context.strokeRect(-width / 2, -height / 2, width, height);
     context.restore();
+  }
+
+  drawBattlePopups(context) {
+    for (const popup of this.scene.battlePopups) {
+      const target = popup.target;
+
+      if (!target) {
+        continue;
+      }
+
+      let position = null;
+      let offsetY = 0;
+
+      if ($gameParty.battleMembers().includes(target)) {
+        position = this.scene.getAllyPosition(target);
+        offsetY = -120;
+      } else if (this.scene.enemies.includes(target)) {
+        position = this.scene.getEnemyPosition(target);
+        offsetY = -80;
+      }
+
+      if (!position) {
+        continue;
+      }
+
+      const progress = popup.age / popup.duration;
+      const alpha = Math.max(0, 1 - progress);
+
+      const x = position.x;
+      const stackOffset = (popup.stackIndex || 0) * 30;
+
+      const y = position.y + offsetY - popup.rise - stackOffset;
+
+      context.save();
+
+      context.globalAlpha = alpha;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.font = "bold 28px Arial";
+
+      if (popup.type === "heal") {
+        context.fillStyle = "#66ff88";
+      } else if (popup.type === "damage") {
+        context.fillStyle = "#ff5555";
+      } else if (popup.type === "weak") {
+        context.fillStyle = "#ffcc55";
+      } else if (popup.type === "resist") {
+        context.fillStyle = "#66ccff";
+      } else if (popup.type === "immune") {
+        context.fillStyle = "#cccccc";
+      } else if (popup.type === "critical") {
+        context.fillStyle = "#ffff66";
+      } else {
+        context.fillStyle = "#ffffff";
+      }
+
+      context.strokeStyle = "#000000";
+      context.lineWidth = 4;
+
+      context.strokeText(popup.text, x, y);
+      context.fillText(popup.text, x, y);
+
+      context.restore();
+    }
+  }
+
+  drawBattleHud(context) {
+    const hudHeight = 180;
+    const hudY = Graphics.height - hudHeight - 10;
+
+    context.fillStyle = "rgba(0, 0, 0, 0.9)";
+
+    context.fillRect(20, hudY, Graphics.width - 40, hudHeight);
+
+    context.strokeStyle = "#ffffff";
+    context.lineWidth = 2;
+
+    context.strokeRect(20, hudY, Graphics.width - 40, hudHeight);
+
+    // Party status. With one member this preserves the current layout; with
+    // two or three members it automatically spreads the status blocks out.
+    const members = $gameParty.battleMembers();
+
+    context.textAlign = "left";
+    context.textBaseline = "alphabetic";
+    context.fillStyle = "#ffffff";
+
+    if (members.length <= 1) {
+      const actor = members[0];
+
+      if (!actor) {
+        return;
+      }
+      const statusX = Graphics.width - 320;
+
+      context.font = "22px Arial";
+      context.fillText(actor.name, statusX, hudY + 45);
+
+      context.font = "18px Arial";
+      context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 85);
+      context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 120);
+      return;
+    }
+
+    const statusStartX = Math.max(300, Graphics.width - 690);
+    const statusWidth = (Graphics.width - statusStartX - 40) / members.length;
+
+    members.forEach((actor, index) => {
+      const statusX = statusStartX + index * statusWidth;
+
+      context.font = "20px Arial";
+      context.fillText(actor.name, statusX, hudY + 42);
+
+      context.font = "16px Arial";
+      context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 82);
+      context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 116);
+    });
+  }
+
+  drawBattleEffect(context) {
+    this.scene.battleEffects.draw(context);
   }
 
   drawEnemies(context) {
@@ -273,219 +491,5 @@ class BattleRenderer {
 
     this.drawEnemies(context);
     this.drawEnemyTargetCursor(context);
-  }
-
-  drawBattleHud(context) {
-    const hudHeight = 180;
-    const hudY = Graphics.height - hudHeight - 10;
-
-    context.fillStyle = "rgba(0, 0, 0, 0.9)";
-
-    context.fillRect(20, hudY, Graphics.width - 40, hudHeight);
-
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 2;
-
-    context.strokeRect(20, hudY, Graphics.width - 40, hudHeight);
-
-    // Party status. With one member this preserves the current layout; with
-    // two or three members it automatically spreads the status blocks out.
-    const members = $gameParty.battleMembers();
-
-    context.textAlign = "left";
-    context.textBaseline = "alphabetic";
-    context.fillStyle = "#ffffff";
-
-    if (members.length <= 1) {
-      const actor = members[0];
-
-      if (!actor) {
-        return;
-      }
-      const statusX = Graphics.width - 320;
-
-      context.font = "22px Arial";
-      context.fillText(actor.name, statusX, hudY + 45);
-
-      context.font = "18px Arial";
-      context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 85);
-      context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 120);
-      return;
-    }
-
-    const statusStartX = Math.max(300, Graphics.width - 690);
-    const statusWidth = (Graphics.width - statusStartX - 40) / members.length;
-
-    members.forEach((actor, index) => {
-      const statusX = statusStartX + index * statusWidth;
-
-      context.font = "20px Arial";
-      context.fillText(actor.name, statusX, hudY + 42);
-
-      context.font = "16px Arial";
-      context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 82);
-      context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 116);
-    });
-  }
-
-  drawBattleEffect(context) {
-    this.scene.battleEffects.draw(context);
-  }
-
-  drawBattlePopups(context) {
-    for (const popup of this.scene.battlePopups) {
-      const target = popup.target;
-
-      if (!target) {
-        continue;
-      }
-
-      let position = null;
-      let offsetY = 0;
-
-      if ($gameParty.battleMembers().includes(target)) {
-        position = this.scene.getAllyPosition(target);
-        offsetY = -120;
-      } else if (this.scene.enemies.includes(target)) {
-        position = this.scene.getEnemyPosition(target);
-        offsetY = -80;
-      }
-
-      if (!position) {
-        continue;
-      }
-
-      const progress = popup.age / popup.duration;
-      const alpha = Math.max(0, 1 - progress);
-
-      const x = position.x;
-      const stackOffset = (popup.stackIndex || 0) * 30;
-
-      const y = position.y + offsetY - popup.rise - stackOffset;
-
-      context.save();
-
-      context.globalAlpha = alpha;
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.font = "bold 28px Arial";
-
-      if (popup.type === "heal") {
-        context.fillStyle = "#66ff88";
-      } else if (popup.type === "damage") {
-        context.fillStyle = "#ff5555";
-      } else if (popup.type === "weak") {
-        context.fillStyle = "#ffcc55";
-      } else if (popup.type === "resist") {
-        context.fillStyle = "#66ccff";
-      } else if (popup.type === "immune") {
-        context.fillStyle = "#cccccc";
-      } else if (popup.type === "critical") {
-        context.fillStyle = "#ffff66";
-      } else {
-        context.fillStyle = "#ffffff";
-      }
-
-      context.strokeStyle = "#000000";
-      context.lineWidth = 4;
-
-      context.strokeText(popup.text, x, y);
-      context.fillText(popup.text, x, y);
-
-      context.restore();
-    }
-  }
-
-  draw() {
-    const context = Graphics.context;
-
-    context.save();
-
-    // -----------------------------
-    // Battle background
-    // -----------------------------
-
-    context.fillStyle = "#202020";
-
-    context.fillRect(0, 0, Graphics.width, Graphics.height);
-
-    // -----------------------------
-    // Battle title
-    // -----------------------------
-
-    context.textAlign = "left";
-    context.textBaseline = "alphabetic";
-    context.font = "28px Arial";
-    context.fillStyle = "#ffffff";
-
-    context.fillText("Battle", 40, 50);
-
-    // -----------------------------
-    // Battle presentation
-    // -----------------------------
-
-    if (this.scene.battleView === "front") {
-      this.drawFrontView(context);
-    } else {
-      this.drawSideView(context);
-    }
-    this.drawBattleHud(context);
-    this.drawBattleEffect(context);
-    this.drawBattlePopups(context);
-
-    // -----------------------------
-    // Battle messages
-    // -----------------------------
-
-    if (this.scene.battleMessages.length > 0) {
-      context.textAlign = "center";
-      context.textBaseline = "alphabetic";
-      context.font = "20px Arial";
-      context.fillStyle = "#ffffff";
-
-      const startY = Graphics.height - 250;
-
-      for (let i = 0; i < this.scene.battleMessages.length; i++) {
-        context.fillText(
-          this.scene.battleMessages[i],
-          Graphics.width / 2,
-          startY + i * 28,
-        );
-      }
-    }
-
-    // -----------------------------
-    // Test battle exit hint
-    // -----------------------------
-
-    context.textAlign = "right";
-    context.textBaseline = "alphabetic";
-    context.font = "16px Arial";
-    context.fillStyle = "#ffffff";
-
-    context.fillText(
-      "Escape: Leave Test Battle",
-      Graphics.width - 30,
-      Graphics.height - 30,
-    );
-
-    // -----------------------------
-    // Battle windows
-    // -----------------------------
-
-    if (
-      !this.scene.victory &&
-      !this.scene.defeat &&
-      !this.scene.battleInputLocked &&
-      !this.scene.magicWindow.isOpen() &&
-      !this.scene.itemWindow.isOpen()
-    ) {
-      this.scene.commandWindow.draw();
-    }
-
-    this.scene.magicWindow.draw();
-    this.scene.itemWindow.draw();
-
-    context.restore();
   }
 }

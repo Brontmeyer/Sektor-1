@@ -1,3 +1,5 @@
+"use strict";
+
 class BattlePartyController {
   constructor(scene) {
     this.scene = scene;
@@ -7,14 +9,64 @@ class BattlePartyController {
     this.activeBattler = null;
   }
 
-  currentBattler() {
-    return this.activeBattler;
-  }
+  // =================================
+  // Party Turn Queue Management
+  // =================================
 
   initializePartyTurnQueue() {
     this.partyTurnQueue = $gameParty.livingBattleMembers();
     this.currentPartyTurn = 0;
     this.activeBattler = this.partyTurnQueue[0] || null;
+  }
+
+  battleContext() {
+    return {
+      battler: this.currentBattler(),
+      turnState: this.scene.battleManager.currentTurnState(),
+      turnIndex: this.currentPartyTurn,
+      partySize: this.partyTurnQueue.length,
+      isFirstTurn: this.currentPartyTurn === 0,
+      isLastTurn: this.currentPartyTurn === this.partyTurnQueue.length - 1,
+    };
+  }
+
+  battlePosition(index) {
+    const positions = this.formationPositions();
+    const safeIndex = Math.max(0, Math.min(index, positions.length - 1));
+
+    return positions[safeIndex];
+  }
+
+  formationPositions() {
+    const battlefieldBottom = Graphics.height - 190;
+
+    return [
+      // Tyler - upper left
+      { x: 400, y: battlefieldBottom - 180 },
+
+      // Sarah - middle left
+      { x: 140, y: battlefieldBottom - 180 },
+
+      // Aboo - middle right
+      { x: 260, y: battlefieldBottom - 310 },
+
+      // G Prime - lower left/center
+      { x: 260, y: battlefieldBottom - 50 },
+    ];
+  }
+
+  positionForBattler(battler) {
+    const index = $gameParty.battleMemberIndex(battler);
+
+    if (index < 0) {
+      return this.battlePosition(0);
+    }
+
+    return this.battlePosition(index);
+  }
+
+  currentBattler() {
+    return this.activeBattler;
   }
 
   nextBattler() {
@@ -33,16 +85,6 @@ class BattlePartyController {
     return null;
   }
 
-  resetPartyTurnQueue() {
-    for (const battler of $gameParty.battleMembers()) {
-      battler.stopDefending();
-    }
-    
-    this.partyTurnQueue = $gameParty.livingBattleMembers();
-    this.currentPartyTurn = 0;
-    this.activeBattler = this.partyTurnQueue[0] || null;
-  }
-
   hasNextBattler() {
     for (
       let i = this.currentPartyTurn + 1;
@@ -59,53 +101,13 @@ class BattlePartyController {
     return false;
   }
 
-  // =============================================================
-  // Pass 10 - Party Battlefield Foundation
-  // =============================================================
-
-  formationPositions() {
-    const battlefieldBottom = Graphics.height - 190;
-
-    return [
-      // Tyler - upper left
-      { x: 400, y: battlefieldBottom - 180 },
-
-      // Party Test - middle left
-      { x: 140, y: battlefieldBottom - 180 },
-
-      // Party Test 2 - middle right
-      { x: 260, y: battlefieldBottom - 310 },
-
-      // Party Test 3 - lower left/center
-      { x: 260, y: battlefieldBottom - 50 },
-    ];
-  }
-
-  battlePosition(index) {
-    const positions = this.formationPositions();
-    const safeIndex = Math.max(0, Math.min(index, positions.length - 1));
-
-    return positions[safeIndex];
-  }
-
-  positionForBattler(battler) {
-    const index = $gameParty.battleMemberIndex(battler);
-
-    if (index < 0) {
-      return this.battlePosition(0);
+  resetPartyTurnQueue() {
+    for (const battler of $gameParty.battleMembers()) {
+      battler.stopDefending();
     }
 
-    return this.battlePosition(index);
-  }
-
-  battleContext() {
-    return {
-      battler: this.currentBattler(),
-      turnState: this.scene.battleManager.currentTurnState(),
-      turnIndex: this.currentPartyTurn,
-      partySize: this.partyTurnQueue.length,
-      isFirstTurn: this.currentPartyTurn === 0,
-      isLastTurn: this.currentPartyTurn === this.partyTurnQueue.length - 1,
-    };
+    this.partyTurnQueue = $gameParty.livingBattleMembers();
+    this.currentPartyTurn = 0;
+    this.activeBattler = this.partyTurnQueue[0] || null;
   }
 }

@@ -5,6 +5,22 @@ class SaveManager {
     return localStorage.getItem(this.saveKey(slotId)) !== null;
   }
 
+  static read(slotId = 1) {
+    const json = localStorage.getItem(this.saveKey(slotId));
+
+    if (!json) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(json);
+    } catch (error) {
+      console.error("Could not read save data:", error);
+
+      return null;
+    }
+  }
+
   static async load(slotId = 1) {
     const saveData = this.read(slotId);
 
@@ -14,9 +30,9 @@ class SaveManager {
       return false;
     }
 
-    // =========================
-    // RESTORE ACTOR
-    // =========================
+    // =================================
+    // Restore Actor
+    // =================================
 
     const actorData = saveData.actor;
 
@@ -58,9 +74,9 @@ class SaveManager {
       ? [...actorData.skills]
       : $gameActor.skills;
 
-    // =========================
-    // RESTORE PARTY
-    // =========================
+    // =================================
+    // Restore Party
+    // =================================
 
     const partyData = saveData.party;
 
@@ -74,9 +90,9 @@ class SaveManager {
       }
     }
 
-    // =========================
-    // RESTORE SWITCHES
-    // =========================
+    // =================================
+    // Restore Switches
+    // =================================
 
     if (saveData.switches) {
       $gameSwitches.data = {
@@ -84,9 +100,9 @@ class SaveManager {
       };
     }
 
-    // =========================
-    // RESTORE VARIABLES
-    // =========================
+    // =================================
+    // Restore Variables
+    // =================================
 
     if (saveData.variables) {
       $gameVariables.data = {
@@ -94,9 +110,9 @@ class SaveManager {
       };
     }
 
-    // =========================
-    // RESTORE SELF SWITCHES
-    // =========================
+    // =================================
+    // Restore Self Switches
+    // =================================
 
     if (saveData.selfSwitches) {
       $gameSelfSwitches.data = {
@@ -104,9 +120,9 @@ class SaveManager {
       };
     }
 
-    // =========================
-    // RESTORE LOCATION
-    // =========================
+    // =================================
+    // Restore Location
+    // =================================
 
     const location = saveData.location;
 
@@ -128,7 +144,7 @@ class SaveManager {
         const savedY = Number(location.y);
 
         // =========================
-        // SAME MAP
+        // Same Map
         // =========================
 
         if (scene.map.id === savedMapId) {
@@ -146,7 +162,7 @@ class SaveManager {
           DebugManager.log(`Player position restored: (${savedX}, ${savedY})`);
 
           // =========================
-          // DIFFERENT MAP
+          // Different Map
           // =========================
         } else {
           DebugManager.log(`Loading saved map ${savedMapId}...`);
@@ -168,22 +184,6 @@ class SaveManager {
     }
     DebugManager.log(`Game loaded from slot ${slotId}.`);
     return true;
-  }
-
-  static read(slotId = 1) {
-    const json = localStorage.getItem(this.saveKey(slotId));
-
-    if (!json) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(json);
-    } catch (error) {
-      console.error("Could not read save data:", error);
-
-      return null;
-    }
   }
 
   static save(slotId = 1) {

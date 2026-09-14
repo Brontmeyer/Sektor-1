@@ -5,6 +5,23 @@ class BattleAnimationController {
     this.scene = scene;
   }
 
+  moveToward(current, target, amount) {
+    const scene = this.scene;
+    if (current < target) {
+      return Math.min(current + amount, target);
+    }
+
+    if (current > target) {
+      return Math.max(current - amount, target);
+    }
+
+    return target;
+  }
+
+  // =================================
+  // Updates
+  // =================================
+
   updateBattlerStates(deltaTime) {
     const scene = this.scene;
 
@@ -80,7 +97,7 @@ class BattleAnimationController {
 
     const actor = scene.partyController.currentBattler();
     const battleData = actor ? scene.getPartyBattleData(actor) : null;
-    
+
     const actorTarget = scene.getActorTargetOffset();
     const actorTargetY = scene.getActorTargetYOffset();
 
@@ -196,18 +213,9 @@ class BattleAnimationController {
     }
   }
 
-  moveToward(current, target, amount) {
-    const scene = this.scene;
-    if (current < target) {
-      return Math.min(current + amount, target);
-    }
-
-    if (current > target) {
-      return Math.max(current - amount, target);
-    }
-
-    return target;
-  }
+  // =================================
+  // State Management
+  // =================================
 
   setActorState(
     state,
@@ -248,6 +256,10 @@ class BattleAnimationController {
     }
   }
 
+  // =================================
+  // Battle Manager
+  // =================================
+
   getActiveActorData() {
     const actor = this.scene.partyController.currentBattler();
 
@@ -256,6 +268,22 @@ class BattleAnimationController {
     }
 
     return this.scene.getPartyBattleData(actor);
+  }
+
+  getActorStateYOffset(actor) {
+    const scene = this.scene;
+    const battleData = scene.getPartyBattleData(actor);
+    const state = battleData?.state || "idle";
+
+    if (state === "hurt") {
+      return 34;
+    }
+
+    if (state === "defeat") {
+      return 52;
+    }
+
+    return 0;
   }
 
   getActorTargetOffset() {
@@ -313,20 +341,18 @@ class BattleAnimationController {
     return 0;
   }
 
-  getActorStateYOffset(actor) {
+  getActorVisualAlpha(actor) {
     const scene = this.scene;
-    const battleData = scene.getPartyBattleData(actor);
-    const state = battleData?.state || "idle";
 
-    if (state === "hurt") {
-      return 34;
+    if (
+      scene.actionPhase === "magicEffect" &&
+      scene.magicEffectSkill &&
+      scene.magicEffectTarget === actor
+    ) {
+      return 0.65;
     }
 
-    if (state === "defeat") {
-      return 52;
-    }
-
-    return 0;
+    return 1;
   }
 
   getActorVisualScale(actor) {
@@ -363,33 +389,6 @@ class BattleAnimationController {
       const progress = 1 - scene.actionPhaseTimer / duration;
 
       return 1.03 - 0.03 * progress;
-    }
-
-    return 1;
-  }
-
-  getActorVisualAlpha(actor) {
-    const scene = this.scene;
-
-    if (
-      scene.actionPhase === "magicEffect" &&
-      scene.magicEffectSkill &&
-      scene.magicEffectTarget === actor
-    ) {
-      return 0.65;
-    }
-
-    return 1;
-  }
-
-  getEnemyVisualAlpha(enemy = this.scene.enemy) {
-    const scene = this.scene;
-    if (
-      scene.actionPhase === "magicEffect" &&
-      scene.magicEffectSkill &&
-      scene.magicEffectTarget === enemy
-    ) {
-      return 0.45;
     }
 
     return 1;
@@ -443,5 +442,18 @@ class BattleAnimationController {
     };
 
     return rows[state] ?? 0;
+  }
+
+  getEnemyVisualAlpha(enemy = this.scene.enemy) {
+    const scene = this.scene;
+    if (
+      scene.actionPhase === "magicEffect" &&
+      scene.magicEffectSkill &&
+      scene.magicEffectTarget === enemy
+    ) {
+      return 0.45;
+    }
+
+    return 1;
   }
 }

@@ -24,21 +24,21 @@ class Game_Party {
     }
   }
 
-  // =====================================
-  // PARTY MEMBERS
-  // =====================================
+  // =================================
+  // Party Members
+  // =================================
 
   members() {
     return [...this._actors];
   }
 
+  leader() {
+    return this._actors[0] || null;
+  }
+
   actorById(actorId) {
     const id = Number(actorId);
     return this._actors.find((actor) => actor.actorId === id) || null;
-  }
-
-  leader() {
-    return this._actors[0] || null;
   }
 
   addActor(actor) {
@@ -113,27 +113,27 @@ class Game_Party {
     return this._battleActorIds.length > 0;
   }
 
+  battleLeader() {
+    return this.battleMembers()[0] || this.leader();
+  }
+
   battleMembers() {
     return this._battleActorIds
       .map((actorId) => this.actorById(actorId))
       .filter((actor) => actor !== null);
   }
 
-  livingBattleMembers() {
-    return this.battleMembers().filter((actor) => actor.isAlive());
-  }
-
-  battleLeader() {
-    return this.battleMembers()[0] || this.leader();
-  }
-
   battleMemberIndex(actor) {
     return this.battleMembers().indexOf(actor);
   }
 
-  // =====================================
-  // ITEMS
-  // =====================================
+  livingBattleMembers() {
+    return this.battleMembers().filter((actor) => actor.isAlive());
+  }
+
+  // =================================
+  // Items
+  // =================================
 
   gainItem(itemId, amount = 1) {
     const currentAmount = this.itemCount(itemId);
@@ -223,9 +223,9 @@ class Game_Party {
     return true;
   }
 
-  // =====================================
-  // ARMORS
-  // =====================================
+  // =================================
+  // Armors
+  // =================================
 
   armorCount(armorId) {
     return this.armors[armorId] || 0;
@@ -259,9 +259,9 @@ class Game_Party {
     return this.armorCount(armorId) > 0;
   }
 
-  // =====================================
-  // WEAPONS
-  // =====================================
+  // =================================
+  // Weapons
+  // =================================
 
   weaponCount(weaponId) {
     return this.weapons[weaponId] || 0;
