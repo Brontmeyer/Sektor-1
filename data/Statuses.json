@@ -1,0 +1,593 @@
+[
+  null,
+  {
+    "_comment": "ID 1: ☠️ Poison",
+    "id": 1,
+    "key": "poison",
+    "name": "Poison",
+    "description": "Gradually damages the afflicted target over time.",
+
+    "classification": {
+      "family": "damageOverTime",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "hpDamagePercent": 0.03,
+      "trigger": "turnStart",
+      "canKill": true
+    }
+  },
+  {
+    "_comment": "ID 2: 🌱 Regen",
+    "id": 2,
+    "key": "regen",
+    "name": "Regen",
+    "description": "Gradually restores the afflicted target's HP over time.",
+
+    "classification": {
+      "family": "healingOverTime",
+      "negative": false,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "hpHealPercent": 0.03,
+      "trigger": "turnStart"
+    }
+  },
+  {
+    "_comment": "ID 3: 🛡️ Barrier",
+    "id": 3,
+    "key": "barrier",
+    "name": "Barrier",
+    "description": "Reduces physical damage taken.",
+
+    "classification": {
+      "family": "defensive",
+      "negative": false,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "turns",
+      "turns": 4
+    },
+
+    "effects": {
+      "physicalDamageTakenMultiplier": 0.5
+    }
+  },
+  {
+    "_comment": "ID 4: 🔮 MBarrier",
+    "id": 4,
+    "key": "mbarrier",
+    "name": "MBarrier",
+    "description": "Reduces magical damage taken.",
+
+    "classification": {
+      "family": "defensive",
+      "negative": false,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "turns",
+      "turns": 4
+    },
+
+    "effects": {
+      "magicalDamageTakenMultiplier": 0.5
+    }
+  },
+  {
+    "_comment": "ID 5: 🪞 Reflect",
+    "id": 5,
+    "key": "reflect",
+    "name": "Reflect",
+    "description": "Reflects eligible skills back toward the opposing side.",
+
+    "classification": {
+      "family": "defensive",
+      "negative": false,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "turns",
+      "turns": 4
+    },
+
+    "effects": {
+      "reflectableSkills": true,
+      "perTarget": true,
+      "maxReflections": 1
+    }
+  },
+  {
+    "_comment": "ID 6: ⏩ Haste",
+    "id": 6,
+    "key": "haste",
+    "name": "Haste",
+    "description": "Increases the rate at which the target can act.",
+
+    "classification": {
+      "family": "time",
+      "negative": false,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "turns",
+      "turns": 4
+    },
+
+    "effects": {
+      "turnSpeedMultiplier": 2.0
+    }
+  },
+  {
+    "_comment": "ID 7: 🐌 Slow",
+    "id": 7,
+    "key": "slow",
+    "name": "Slow",
+    "description": "Decreases the rate at which the target can act.",
+
+    "classification": {
+      "family": "time",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "turns",
+      "turns": 4
+    },
+
+    "effects": {
+      "turnSpeedMultiplier": 0.5
+    }
+  },
+  {
+    "_comment": "ID 8: 🛑 Stop",
+    "id": 8,
+    "key": "stop",
+    "name": "Stop",
+    "description": "Temporarily prevents the target from taking actions.",
+
+    "classification": {
+      "family": "time",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "turns",
+      "turns": 2
+    },
+
+    "effects": {
+      "haltsTurnProgression": true,
+      "canAct": false
+    }
+  },
+  {
+    "_comment": "ID 9: ⚡ Paralyze",
+    "id": 9,
+    "key": "paralyze",
+    "name": "Paralyze",
+    "description": "Temporarily prevents the target from taking actions.",
+
+    "classification": {
+      "family": "control",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "turns",
+      "turns": 2
+    },
+
+    "effects": {
+      "canAct": false
+    }
+  },
+  {
+    "_comment": "ID 10: 💤 Sleep",
+    "id": 10,
+    "key": "sleep",
+    "name": "Sleep",
+    "description": "Prevents the target from acting until awakened.",
+
+    "classification": {
+      "family": "mental",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "canAct": false,
+      "removeOnPhysicalDamage": true
+    }
+  },
+  {
+    "_comment": "ID 11: 🌀 Confuse",
+    "id": 11,
+    "key": "confuse",
+    "name": "Confuse",
+    "description": "Causes the target to act unpredictably.",
+
+    "classification": {
+      "family": "mental",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "forceRandomTarget": true,
+      "removeOnPhysicalDamage": true
+    }
+  },
+  {
+    "_comment": "ID 12: 🔇 Silence",
+    "id": 12,
+    "key": "silence",
+    "name": "Silence",
+    "description": "Prevents the target from using magic abilities.",
+
+    "classification": {
+      "family": "mental",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "blockedSkillTypes": ["magic"]
+    }
+  },
+  {
+    "_comment": "ID 13: 🗿 Petrify",
+    "id": 13,
+    "key": "petrify",
+    "name": "Petrify",
+    "description": "Turns the target to stone, preventing all actions.",
+
+    "classification": {
+      "family": "control",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "canAct": false,
+      "countsAsDefeated": true
+    }
+  },
+  {
+    "_comment": "ID 14: 💀 Death",
+    "id": 14,
+    "key": "death",
+    "name": "Death",
+    "description": "The target is defeated and can no longer act.",
+
+    "classification": {
+      "family": "defeat",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "canAct": false,
+      "countsAsDefeated": true,
+      "setsHpToZero": true,
+      "canBeRevived": true
+    }
+  },
+  {
+    "_comment": "ID 15: 😡 Berserk",
+    "id": 15,
+    "key": "berserk",
+    "name": "Berserk",
+    "description": "Greatly increases physical power but causes the target to attack uncontrollably.",
+
+    "classification": {
+      "family": "mental",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "playerControl": false,
+      "forcePhysicalAttack": true,
+      "physicalDamageMultiplier": 1.5
+    }
+  },
+  {
+    "_comment": "ID 16: 😤 Fury",
+    "id": 16,
+    "key": "fury",
+    "name": "Fury",
+    "description": "Increases Limit generation at the cost of physical accuracy.",
+
+    "classification": {
+      "family": "mental",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": true
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "limitGainMultiplier": 2.0,
+      "physicalAccuracyMultiplier": 0.7
+    }
+  },
+  {
+    "_comment": "ID 17: 😔 Sadness",
+    "id": 17,
+    "key": "sadness",
+    "name": "Sadness",
+    "description": "Reduces damage taken at the cost of slower Limit generation.",
+
+    "classification": {
+      "family": "mental",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": true
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "physicalDamageTakenMultiplier": 0.7,
+      "magicalDamageTakenMultiplier": 0.7,
+      "limitGainMultiplier": 0.5
+    }
+  },
+  {
+    "_comment": "ID 18: 🌑 Darkness",
+    "id": 18,
+    "key": "darkness",
+    "name": "Darkness",
+    "description": "Greatly reduces the target's physical accuracy.",
+
+    "classification": {
+      "family": "sensory",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "physicalAccuracyMultiplier": 0.5
+    }
+  },
+  {
+    "_comment": "ID 19: 🐸 Frog",
+    "id": 19,
+    "key": "frog",
+    "name": "Frog",
+    "description": "Transforms the target into a frog, greatly weakening its combat abilities.",
+
+    "classification": {
+      "family": "transformation",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "physicalDamageMultiplier": 0.1,
+      "allowedActions": ["attack"]
+    }
+  },
+  {
+    "_comment": "ID 20: 🤏 Small",
+    "id": 20,
+    "key": "small",
+    "name": "Small",
+    "description": "Shrinks the target, greatly reducing physical damage dealt and physical damage taken.",
+
+    "classification": {
+      "family": "transformation",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "physicalDamageMultiplier": 0.1,
+      "physicalDamageTakenMultiplier": 0.5
+    }
+  },
+  {
+    "_comment": "ID 21: ⏳💀 Death-Sentence",
+    "id": 21,
+    "key": "deathSentence",
+    "name": "Death-Sentence",
+    "description": "Places a deadly countdown on the target.",
+
+    "classification": {
+      "family": "countdown",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "countdown",
+      "turns": 3
+    },
+
+    "effects": {
+      "onExpire": {
+        "applyStatus": "death"
+      }
+    }
+  },
+  {
+    "_comment": "ID 22: ⏳🗿 Slow-Numb",
+    "id": 22,
+    "key": "slowNumb",
+    "name": "Slow-Numb",
+    "description": "Gradually petrifies the target when its countdown expires.",
+
+    "classification": {
+      "family": "countdown",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "countdown",
+      "turns": 3
+    },
+
+    "effects": {
+      "onExpire": {
+        "applyStatus": "petrify"
+      }
+    }
+  },
+  {
+    "_comment": "ID 23: ❤️‍🩹 Near-Death",
+    "id": 23,
+    "key": "nearDeath",
+    "name": "Near-Death",
+    "description": "Activates when the target's HP falls to a critical level.",
+
+    "classification": {
+      "family": "critical",
+      "negative": false,
+      "removable": false,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "derived"
+    },
+
+    "conditions": {
+      "hpPercentAtOrBelow": 0.25
+    },
+
+    "effects": {
+      "limitGainMultiplier": 2.0
+    }
+  },
+  {
+    "_comment": "ID 24: 🩸 Dual",
+    "id": 24,
+    "key": "dual",
+    "name": "Dual",
+    "description": "Rapidly drains the target's HP over time.",
+
+    "classification": {
+      "family": "damageOverTime",
+      "negative": true,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "untilRemoved"
+    },
+
+    "effects": {
+      "hpDamagePercent": 0.06,
+      "trigger": "turnStart",
+      "canKill": true
+    }
+  },
+  {
+    "_comment": "ID 25: 🛡️✨ Shield",
+    "id": 25,
+    "key": "shield",
+    "name": "Shield",
+    "description": "Nullifies physical damage and absorbs elemental magical damage.",
+
+    "classification": {
+      "family": "defensive",
+      "negative": false,
+      "removable": true,
+      "persistsAfterBattle": false
+    },
+
+    "duration": {
+      "type": "turns",
+      "turns": 2
+    },
+
+    "effects": {
+      "physicalDamageTakenMultiplier": 0.0,
+      "absorbElementalMagic": true
+    }
+  }
+]
