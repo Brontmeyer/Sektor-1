@@ -1,0 +1,591 @@
+# 📖 Sektor 1 Design Bible
+
+This document defines the design identity of Sektor 1.
+
+It exists to answer a question deeper than how the engine works:
+
+> **What makes Sektor 1 feel like Sektor 1?**
+
+Architecture explains where systems belong. Battle documentation explains how combat rules behave. Coding style explains how the project is written.
+
+The Design Bible protects the ideas underneath all of them.
+
+It records established design principles and terminology without pretending unfinished story, world, character, or progression details have already been decided.
+
+---
+
+# 🌌 Game Identity
+
+Sektor 1 is a modern JRPG built from scratch in JavaScript and inspired by classic turn-based JRPG design.
+
+Its identity comes from combining familiar RPG foundations with a custom engine and original systems that can interact in increasingly unusual ways.
+
+The goal is not to reproduce one existing RPG.
+
+The goal is to understand what makes classic systems satisfying, then build a game whose mechanics develop their own vocabulary, relationships, and surprises.
+
+Sektor 1 should feel understandable at first glance and deeper the longer the player experiments with it.
+
+---
+
+# 🧭 Core Design Pillars
+
+## Familiar Foundations, Original Combinations
+
+Players should recognize the language of a classic JRPG: party members, enemies, turns, physical attacks, magic, items, equipment, elements, statuses, progression, bosses, towns, dungeons, and exploration.
+
+Sektor 1 can then use those familiar foundations to create its own combinations through Essences, unusual targeting, status interactions, Mastery, future Evolution, and character-specific mechanics.
+
+Familiarity is the doorway, not the destination.
+
+## Systems Should Interact
+
+Mechanics become more interesting when they affect one another.
+
+A status should not exist only as an icon. An Essence passive should not exist only as a percentage buried in a menu. Targeting rules should matter because unusual interactions make them useful.
+
+Whenever practical, new mechanics should connect to the game's existing vocabulary rather than forming isolated islands.
+
+## Data Creates Possibility
+
+Skills, Essences, statuses, enemies, and other content should be expressible through reusable rules wherever practical.
+
+This is both an engineering principle and a design principle.
+
+A reusable rule creates future design space.
+
+If the engine understands elemental absorption, countdown effects, derived states, status families, multiple hits, scope-dependent power, and unusual target groups, future content can recombine those ideas without requiring an entirely new combat engine each time.
+
+## Complexity Should Earn Its Place
+
+Sektor 1 can become deep without becoming needlessly obscure.
+
+A mechanic should create a meaningful choice, interaction, strategy, discovery, or emotional payoff.
+
+Complexity that exists only to make a system look sophisticated should be questioned.
+
+## Growth Should Feel Meaningful
+
+Progression should change what the player can do, not merely inflate numbers.
+
+The Essence system expresses this especially strongly through ability unlocks, passives, Resonance, Mastery Ready, Mastery Trials, and eventual Essence Evolution.
+
+Growth should reveal possibilities.
+
+---
+
+# ⚔️ Battle Identity
+
+Sektor 1 uses a custom side-view, turn-based battle system.
+
+Battle should reward understanding the relationships between:
+
+- Party composition
+- Skills
+- Elements
+- Status effects
+- Targeting
+- Equipment
+- Essences
+- Passive effects
+- Enemy behavior
+- Future character-specific mechanics
+
+The battle system should support straightforward play while leaving room for players who enjoy discovering stronger or stranger combinations.
+
+Not every battle needs to be a puzzle. The underlying systems should nevertheless be coherent enough that clever use of them feels intentional rather than accidental.
+
+Canonical mechanical rules belong in `docs/battle_system.md`.
+
+---
+
+# ✨ Magic Identity
+
+Magic is not intended to be only a ladder of progressively larger damage numbers.
+
+The initial 54 skills establish four major categories:
+
+```text
+Restore Magic
+Attack Magic
+Indirect Magic
+Advanced Magic
+```
+
+Future categories include Summon Magic and Limit Skills.
+
+The magic system should support:
+
+- Direct damage
+- Restoration
+- Status manipulation
+- Transformation
+- Battlefield control
+- Defensive effects
+- Multi-target decisions
+- Unusual ally/enemy interactions
+- High-impact advanced abilities
+
+A spell's identity can come from what it changes, not merely how much HP it removes.
+
+---
+
+# 🎯 Targeting as Design Space
+
+Targeting is part of a skill's design rather than a menu afterthought.
+
+Sektor 1 supports skills that can distinguish between:
+
+```text
+Ally / Enemy
+Single / All
+```
+
+Some skills may permit unusual combinations, including restorative abilities that can legally target enemies.
+
+This creates room for mechanics such as planned undead restorative damage and other future interactions where the meaning of an effect depends on the target.
+
+The design principle is:
+
+> **Target legality and effect interpretation are separate decisions.**
+
+Do not unnecessarily restrict a skill's targeting merely because its most common use suggests one obvious target.
+
+---
+
+# 🧪 Status Identity
+
+Statuses are a major part of Sektor 1's battle vocabulary.
+
+Status System v1 defines 25 initial statuses:
+
+```text
+Poison
+Regen
+Barrier
+MBarrier
+Reflect
+Haste
+Slow
+Stop
+Paralyze
+Sleep
+Confuse
+Silence
+Petrify
+Death
+Berserk
+Fury
+Sadness
+Darkness
+Frog
+Small
+Death-Sentence
+Slow-Numb
+Near-Death
+Dual
+Shield
+```
+
+The goal is not simply to reproduce a checklist of classic status effects.
+
+The system is designed so statuses can express reusable concepts such as damage over time, healing over time, control, transformation, countdowns, derived states, defensive modifiers, action restrictions, and elemental absorption.
+
+Different statuses may deliberately share a family without becoming identical.
+
+Poison and Dual are an important example. Both belong to the damage-over-time family, but Poison-specific mechanics do not automatically affect Dual.
+
+This allows the game to have relationships without erasing individuality.
+
+---
+
+# ⏳ Time and Status Design
+
+Time-related statuses should affect the battler experiencing them rather than behaving like disconnected global counters.
+
+Countdown statuses such as Death-Sentence and Slow-Numb advance when the afflicted battler completes a turn.
+
+This means Haste and Slow can naturally influence countdown pacing through the battler's turn progression.
+
+Derived states such as Near-Death are different again. They exist because the battler currently satisfies a condition rather than because something manually applied a timer.
+
+The broader principle is:
+
+> **Use the duration model that expresses the fantasy and gameplay of the effect.**
+
+---
+
+# 💎 Essence Identity
+
+Essences are one of Sektor 1's defining progression systems.
+
+The initial Essence System contains 19 Essences:
+
+```text
+Healing
+Purity
+Renewal
+Flame
+Ice
+Lightning
+Earth
+Poison
+Gravity
+Mind
+Metamorph
+Time
+Ward
+Null
+Astral
+Wind
+Fury
+Wayfarer
+Rift
+```
+
+All 54 current skills are assigned exactly once across the 19 Essences.
+
+Essences are not merely containers for spells.
+
+They are intended to grow with the player, unlock abilities, awaken passive effects, reach Mastery Ready, undergo Mastery Trials, and eventually participate in Essence Evolution.
+
+An Essence should develop an identity through the combination of:
+
+```text
+Theme
+Abilities
+Passive behavior
+Progression
+Mastery Trial
+Future evolution possibilities
+```
+
+---
+
+# 🌱 Resonance
+
+Equipped Essences gain full battle Resonance regardless of whether one of their abilities was cast during the battle.
+
+This is intentional.
+
+Resonance represents growth through being carried into battle and participating in the character's journey, not a requirement to repeatedly spam one particular ability.
+
+The established progression thresholds are:
+
+```text
+Level 1       0 Resonance
+Level 2     100 Resonance
+Level 3     300 Resonance
+Level 4     700 Resonance
+Mastery    1500 Resonance
+```
+
+At 1500 Resonance, the Essence becomes **Mastery Ready** and caps.
+
+It does **not** automatically become Level 5.
+
+This distinction is central to the system.
+
+---
+
+# 👑 Mastery
+
+Mastery is meant to be an accomplishment rather than another automatic experience threshold.
+
+When an Essence reaches 1500 Resonance, the player receives a cryptic indication that something has changed.
+
+The game should not immediately turn Mastery into a giant quest-marker checklist.
+
+Each Essence can eventually have its own **Mastery Trial**.
+
+Completing that trial promotes the Essence to:
+
+> **Level 5 · MASTERED**
+
+The Mastery Trial gives the Essence's progression a gameplay or narrative climax rather than allowing the final level to arrive silently through arithmetic.
+
+Until the quest system exists, Mastery quest IDs remain intentionally unassigned.
+
+---
+
+# 🌠 Essence Evolution
+
+Mastered Essences are intended to become eligible for a future Essence Evolution system.
+
+The detailed recipes and combinations are not yet designed and should not be treated as canonical until they are deliberately established.
+
+The current principle is that Evolution should build on mastery rather than replace it.
+
+Original mastered Essences are not intended to be consumed simply to create an evolution.
+
+Evolution should expand the player's possibility space rather than punish completion by deleting the progress that enabled it.
+
+---
+
+# 🧬 Passive Design
+
+Essence passives are an important part of Essence identity.
+
+Passives should generally interact with existing battle vocabulary rather than exist as disconnected bonuses.
+
+Current passive concepts include interactions with:
+
+- Elements
+- Status chance
+- Status families
+- MP costs and refunds
+- Low-HP conditions
+- Status negation
+- Evasion
+- Cleansing
+- Revival
+- Physical damage
+- Escape
+- Banish behavior
+
+Level 4 is generally the point where an Essence awakens its unique passive.
+
+A passive should help make the Essence feel different even when two Essences grant abilities of similar numerical strength.
+
+---
+
+# 🔗 Stacking and Combination
+
+Sektor 1 should allow mechanics to combine when their rules legitimately overlap.
+
+The player should be rewarded for understanding those relationships.
+
+For example, the current design allows Fury and Near-Death Limit-gain multipliers to stack multiplicatively, producing a ×4 result when both conditions apply.
+
+This is not a universal rule that every modifier must multiply.
+
+Each category of modifier should have a documented stacking rule when ambiguity becomes possible.
+
+The design goal is predictable depth rather than accidental arithmetic.
+
+---
+
+# 🧟 Exceptions Should Create Gameplay
+
+Exceptions are valuable when they create strategy.
+
+Examples already present in the design include:
+
+- Restore magic being allowed to target enemies for future undead interaction
+- Shield converting elemental magical damage into healing while leaving non-elemental magic normal
+- Frog restricting actions without becoming identical to Stop or Paralyze
+- Poison and Dual sharing a family without sharing every interaction
+- Near-Death being derived rather than cleansable
+- Death-Sentence and Slow-Numb using battler-relative countdowns
+
+These are good exceptions because they create meaningful behavior.
+
+Exceptions that exist only because two implementations accidentally disagree should be treated as bugs, not lore.
+
+---
+
+# 👥 Party Design
+
+Sektor 1 is designed around a multi-character party rather than a permanently single-character battle model.
+
+The engine already contains the foundation for multiple party members and a party turn queue.
+
+Future character design should make party composition matter through differences in abilities, equipment, statistics, Essences, Limit Skills, and other character-specific mechanics as those systems are designed.
+
+Characters should ideally create different tactical possibilities rather than feeling like identical stat containers with different portraits.
+
+Detailed character identities, personalities, backstories, and final combat roles are not defined in this document until they become canonical.
+
+---
+
+# 👹 Enemy and Boss Design
+
+Enemies should eventually interact with the same battle vocabulary the player learns.
+
+An enemy can become interesting through behavior, resistances, weaknesses, status relationships, target priorities, or combinations of familiar mechanics rather than through inflated HP alone.
+
+Bosses should be able to introduce additional structure such as phases, threshold reactions, conditional actions, and specialized mechanics.
+
+Boss encounters should use the reusable battle engine wherever possible so their unusuality feels like the system being pushed creatively rather than the rules being discarded.
+
+Enemy AI and boss scripting remain future runtime systems.
+
+---
+
+# 🌎 World and Exploration
+
+World exploration, towns, dungeons, side quests, event scripting, cutscenes, and the story campaign are planned parts of Sektor 1.
+
+Their detailed design is not yet established enough to canonize here.
+
+When those systems are designed, they should support the same broader philosophy as battle:
+
+- Exploration should reward curiosity
+- Locations should have gameplay identity as well as visual identity
+- Progression should create new possibilities
+- Systems should reinforce the world rather than feel detached from it
+
+Unapproved concepts belong in `docs/ideas.md` until they are intentionally promoted into canonical design.
+
+---
+
+# 🎭 Story and Characters
+
+Sektor 1's detailed story, cast, themes, cultures, factions, and world history should only enter this Design Bible when they have been deliberately established.
+
+This document should not invent canon merely to fill empty headings.
+
+When story canon grows, the Design Bible can record durable principles and established facts while more detailed narrative material can live in dedicated documents if needed.
+
+A useful rule is:
+
+> **Empty canon is better than fake canon.**
+
+---
+
+# 🎨 Presentation
+
+Sektor 1 currently uses a side-view battle presentation and HTML5 Canvas rendering.
+
+Visual and audio identity should reinforce readability first. Players need to understand targets, damage, healing, critical hits, weaknesses, resistances, immunities, status changes, and battle outcomes without fighting the interface.
+
+Style can become expressive without sacrificing information.
+
+Detailed final art direction, UI language, animation standards, music direction, and audio identity remain open design areas until deliberately established.
+
+---
+
+# 🔍 Discovery
+
+Not every system needs to explain its deepest possibility immediately.
+
+The Essence Mastery design already establishes one example: reaching Mastery Ready should produce a cryptic message rather than an enormous marker telling the player exactly where to go and what to do.
+
+Sektor 1 should leave room for discovery where discovery is enjoyable.
+
+The player should be able to understand the rules needed to make informed decisions while still having interactions, combinations, secrets, and progression moments worth uncovering.
+
+Mystery should invite experimentation, not require guessing basic controls.
+
+---
+
+# ⚖️ Balance Philosophy
+
+Balance should protect meaningful choices rather than force every option to produce identical numbers.
+
+Different abilities can be strong for different reasons:
+
+```text
+Damage
+Efficiency
+Reliability
+Target flexibility
+Status utility
+Defense
+Tempo
+Synergy
+Recovery
+Risk / reward
+```
+
+A strange skill does not need to compete with a direct-damage spell on raw damage alone.
+
+Likewise, a powerful combination is not automatically a problem if it requires meaningful setup, investment, timing, or discovery and does not erase the rest of the game's decision space.
+
+Exact numerical balance will evolve through implementation and testing.
+
+---
+
+# 🧪 Experimental Ideas vs Canon
+
+Sektor 1 needs somewhere to be messy.
+
+That place is:
+
+```text
+docs/ideas.md
+```
+
+An idea in `ideas.md` is not canonical merely because it is exciting or detailed.
+
+The Design Bible should contain concepts that have been deliberately accepted as part of Sektor 1's identity.
+
+The flow is:
+
+```text
+Idea
+  ↓
+Discussion / Experimentation
+  ↓
+Decision
+  ↓
+Canonical Design
+  ↓
+Implementation
+```
+
+Implementation can reveal that a design needs revision. If the design intentionally changes, update the canonical documentation rather than allowing contradictory rules to accumulate.
+
+---
+
+# 📚 Canonical Design Sources
+
+Each project source has a specific job.
+
+```text
+README.md              Public overview
+TODO.md                Active unfinished work
+
+data/*.json            Canonical content definitions
+
+docs/architecture.md   Technical structure and ownership
+docs/battle_system.md  Canonical battle mechanics
+docs/coding_style.md   Coding and data conventions
+docs/design_bible.md   Design identity and principles
+docs/ideas.md          Experimental, non-canonical concepts
+docs/roadmap.md        High-level development direction
+```
+
+Do not force every detail into the Design Bible.
+
+Its job is to preserve the game's identity and durable design decisions so future systems can be judged against something more useful than memory.
+
+---
+
+# 🧭 The Sektor 1 Design Test
+
+When considering a new mechanic, ask:
+
+```text
+Does it create an interesting choice or possibility?
+Does it interact with systems we already have?
+Can the player understand enough of it to make decisions?
+Does its complexity earn its place?
+Can it be expressed through reusable rules where practical?
+Does progression make something meaningfully different?
+Does it feel like it belongs beside the rest of Sektor 1?
+```
+
+Not every mechanic must answer every question perfectly.
+
+The questions exist to keep the game moving in a coherent direction as it grows.
+
+---
+
+# ❤️ The Heart of Sektor 1
+
+Sektor 1 should feel like a game that respects curiosity.
+
+It gives the player recognizable pieces, then allows those pieces to form combinations that are stranger, deeper, and more personal than they first appeared.
+
+Its systems should be understandable without being exhausted at first glance. Its progression should reveal possibilities. Its unusual rules should create stories the player remembers rather than exceptions they merely memorize.
+
+And as the project grows, we should never become so attached to complexity that we forget the simplest test of all:
+
+> **Is this fun to discover, understand, and use?**
+
+If the answer is yes, we're probably somewhere interesting.
+
+---
+
+Built with ❤️ by **Sarah & Tyler**
