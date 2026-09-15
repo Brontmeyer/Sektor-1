@@ -1,0 +1,542 @@
+# ⚔️ Sektor 1 Battle System
+
+This document describes the architecture, rules, and current behavior of Sektor 1's battle system.
+
+It is intended to answer a simple question:
+
+> **How is battle supposed to work?**
+
+Canonical gameplay definitions belong in the JSON databases. This document explains how those definitions are interpreted during battle and records the rules that should remain consistent as the system grows.
+
+---
+
+# 🧭 Battle Design Principles
+
+Sektor 1 uses a custom side-view, turn-based battle system built specifically for the game.
+
+The battle system should remain:
+
+- Data-driven wherever practical
+- Modular rather than concentrated in one giant class
+- Shared between actors and enemies through `Game_Battler`
+- Capable of supporting multiple party members and multiple enemies
+- Flexible enough for unusual skills, statuses, Essences, bosses, and future mechanics
+- Clear about the difference between game data, runtime state, battle rules, and presentation
+
+Battle data describes an action. Runtime systems decide how that action behaves.
+
+---
+
+# 🔄 Battle Flow
+
+The current battle turn state model is:
+
+```text
+TURN_START
+    ↓
+TURN_COMMAND
+    ↓
+TURN_ACTION
+    ↓
+TURN_END
+```
+
+During the party phase, living party members act through the party turn queue. When one party member finishes an action, control advances to the next available battler. When the party has finished acting, battle advances to the enemy phase.
+
+The current action sequences are timed phases rather than instantaneous state changes.
+
+Examples include:
+
+```text
+Physical Attack
+lunge → hit → return → wait
+
+Magic
+magicCast → magicEffect → magicRecover → magicWait
+
+Item
+itemUse → itemEffect → itemRecover → itemWait
+```
+
+These phases allow gameplay resolution, animation, timing, popups, and messages to remain coordinated.
+
+---
+
+# 👥 Battlers
+
+Actors and enemies share common battle behavior through `Game_Battler`.
+
+A battler can own runtime values such as:
+
+- HP and MP
+- Core statistics
+- Equipment-derived statistics where applicable
+- Element interactions
+- Battle state
+- Defending state
+- Skill usability
+- Future active status effects and status durations
+
+Actor-specific behavior belongs in `Game_Actor`.
+
+Enemy-specific behavior belongs in `Game_Enemy`.
+
+Rules that apply equally to both should normally live at the shared battler level or in an appropriate battle system.
+
+---
+
+# 🎮 Player Commands
+
+The current battle command foundation supports:
+
+```text
+Attack
+Magic
+Item
+Defend
+```
+
+`BattleManager` interprets the selected command and begins the appropriate targeting or action sequence.
+
+Future commands and special character mechanics should extend this system without forcing unrelated command logic into rendering or UI classes.
+
+---
+
+# 🎯 Targeting
+
+Targeting is coordinated through `BattleTargetManager`.
+
+The battle system currently supports concepts including:
+
+- Ally targets
+- Enemy targets
+- Single targets
+- All targets
+- Selection of living targets
+- Skills that permit more than one target group
+- Skills that permit more than one target scope
+
+Skill data should determine which target groups and scopes are legal.
+
+The battle scene and target manager handle the player's current selection. Effect resolution should not redefine the skill's targeting rules.
+
+When a skill permits both allies and enemies, the current magic command flow prefers the enemy group as the initial selection while still allowing the legal target groups defined by the skill.
+
+---
+
+# 🗡️ Physical Attacks
+
+The current basic physical attack foundation uses the attacker's total Attack and the target's total Defense.
+
+The base damage relationship is currently:
+
+```text
+Damage = max(1, Total Attack - Total Defense)
+```
+
+Physical attacks also perform an accuracy roll using the attacker's total attack percentage.
+
+Critical hits currently use a 2× damage multiplier. Critical chance is influenced by the attacker's Luck, level difference, and total critical bonus.
+
+Defending currently reduces incoming basic physical attack damage by 50% while still allowing a minimum of 1 damage in this attack path.
+
+These are current engine rules, not permanent balance promises. If formulas are deliberately rebalanced later, this document should be updated with the engine.
+
+---
+
+# ✨ Magic and Skills
+
+Canonical skill definitions live in:
+
+```text
+data/Skills.json
+```
+
+The initial Skills System v1 contains 54 skills across Restore, Attack, Indirect, and Advanced magic categories.
+
+Skills can describe behavior such as:
+
+- Damage
+- Healing
+- Status application
+- Status removal
+- Revival
+- Gravity-style HP effects
+- Multiple hits
+- Random targeting per hit
+- Single-target and all-target scopes
+- Ally and enemy targeting
+- Elemental behavior
+
+The engine should interpret reusable skill properties rather than hard-code individual spell names whenever practical.
+
+For all-target magic, MP cost is paid once for the cast even though the effect is resolved against multiple targets.
+
+The current battle presentation can report elemental outcomes such as:
+
+```text
+IMMUNE
+WEAK
+RESIST
+```
+
+based on the target's elemental interaction with the skill.
+
+---
+
+# 🌐 Scope Power
+
+Some power-based skills support both single-target and all-target casting.
+
+`scopePower` exists to allow the power component of a spell to change with scope without silently changing unrelated mechanics.
+
+Status application chance is not automatically reduced merely because a skill is cast on all targets.
+
+This distinction is important:
+
+> **Scope modifies the properties explicitly designed to scale with scope. It does not globally weaken every part of the skill.**
+
+---
+
+# ❤️ Restore Magic and Unusual Targets
+
+Restore magic is intentionally capable of supporting unusual ally/enemy interactions.
+
+Some restorative skills may legally target enemies. This is necessary for planned undead-style interactions where healing or restorative power can become harmful to an appropriate target.
+
+Target legality and effect interpretation are separate responsibilities.
+
+A skill being restorative does not automatically mean its target must be an ally.
+
+The complete undead restorative-damage interaction remains future runtime work.
+
+---
+
+# 🧪 Status System
+
+Canonical status definitions live in:
+
+```text
+data/Statuses.json
+```
+
+Status System v1 defines 25 initial statuses using reusable data structures.
+
+The status database is designed, but the complete runtime is not yet implemented.
+
+The planned runtime must support:
+
+- Status application and removal
+- Positive and negative statuses
+- Status families
+- Turn-based durations
+- Until-removed durations
+- Countdown durations
+- Derived states
+- Persistent-after-battle states
+- Damage and healing over time
+- Action restrictions
+- Accuracy and damage modifiers
+- Turn-speed modifiers
+- Status immunity and resistance
+- Status stacking and interactions
+- Status UI indicators
+
+Status behavior should be driven by properties in `Statuses.json` wherever practical rather than by checks for individual status names.
+
+---
+
+# ⏳ Status Timing
+
+Sektor 1's status architecture distinguishes multiple duration models.
+
+Turn-based statuses expire after their defined number of turns.
+
+Until-removed statuses remain until a valid removal condition occurs.
+
+Countdown statuses use a remaining-turn counter. Their countdown advances when the afflicted battler completes a turn, rather than after every global battle action.
+
+This means Haste and Slow naturally affect how quickly a battler reaches the end of a countdown through their influence on that battler's turn pace.
+
+Derived statuses are evaluated from current battle conditions instead of being manually applied and removed like ordinary statuses.
+
+Near-Death is the initial derived example and is active at or below 25% Max HP.
+
+---
+
+# ☠️ Status Runtime Rules
+
+The initial status design establishes several rules that the runtime must preserve.
+
+Poison and Dual are distinct statuses even though both belong to the damage-over-time family. Poison-specific mechanics do not automatically apply to Dual.
+
+Regen and damaging-over-time statuses may coexist. Their effects resolve independently according to their own definitions.
+
+Stop and Paralyze are intentionally distinct. Both prevent acting, while Stop additionally halts turn progression according to its status definition.
+
+Sleep and Confuse can be removed by physical damage. Confuse also forces random targeting while active.
+
+Frog restricts actions according to its allowed-action rules. When `allowedActions` is present, that restriction takes precedence over ordinary skill availability.
+
+Death-Sentence applies Death when its countdown expires. Slow-Numb applies Petrify when its countdown expires.
+
+Fury and Sadness are intended to be mutually exclusive. That relationship is an engine interaction rule rather than duplicated inside each status definition.
+
+Death is a battle defeat state that can be revived. Planned post-battle processing restores defeated party members to 1 HP after battle rather than encoding that behavior inside the Death status object.
+
+---
+
+# 🛡️ Defensive Status Rules
+
+Barrier and MBarrier reduce their respective physical or magical incoming damage categories according to their data definitions.
+
+Reflect is designed to redirect reflectable skills on a per-target basis and currently defines a maximum of one reflection.
+
+Shield is a specialized defensive status. Its design calls for:
+
+- Physical damage to be nullified
+- Incoming elemental magical damage to be absorbed as HP recovery
+- Recovery to remain capped at Max HP
+- Non-elemental magical damage to resolve normally
+
+For elemental absorption, normal damage calculation should occur first. The resulting elemental damage is then converted into healing.
+
+---
+
+# 💎 Essence Interaction
+
+Canonical Essence definitions live in:
+
+```text
+data/Essences.json
+```
+
+Essences connect character progression to the battle system by granting abilities and passive effects.
+
+The initial design contains 19 Essences with all 54 current skills assigned exactly once across the Essence set.
+
+Equipped Essences are designed to gain full battle Resonance regardless of whether one of their granted abilities was cast during that battle.
+
+At 1500 Resonance, an Essence becomes **Mastery Ready** and stops gaining Resonance. It does not automatically become Level 5.
+
+Completing that Essence's future Mastery Trial promotes it to Level 5 MASTERED.
+
+The full Essence runtime, passive evaluation, battle Resonance awards, Mastery Trials, and Essence Evolution remain future implementation work.
+
+---
+
+# 🧬 Essence Passive Effects
+
+Essence passives should be implemented as reusable engine behaviors rather than one-off checks for specific Essence names.
+
+The current design includes passive concepts such as:
+
+- Element damage bonuses
+- Element status-chance bonuses
+- Status-family resistance
+- Skill MP refunds
+- Low-HP self-status effects
+- Incoming-status negation
+- Physical evasion bonuses
+- MP cost reduction
+- Cleanse-triggered healing
+- Revival bonuses
+- Low-HP physical damage bonuses
+- Escape recovery
+- Banish chaining
+
+Where multiple multipliers legitimately apply, the battle engine should use the documented stacking rule for that mechanic. For the current Fury and Near-Death Limit-gain design, the multipliers stack multiplicatively.
+
+---
+
+# 🎒 Items
+
+Items use their own battle selection window and action sequence.
+
+The current flow stores the selected item, closes the item window, locks battle input while the action resolves, and proceeds through the item action phases.
+
+Item effects should ultimately follow the same architectural principle as skills and statuses: content data describes the item, while reusable runtime systems interpret its behavior.
+
+---
+
+# 🛡️ Defend
+
+Defend is a battle command rather than a skill.
+
+The current physical attack path checks whether the target is defending and reduces incoming basic physical attack damage by 50%.
+
+As battle mechanics expand, any broader Defend interactions should be documented here and implemented in the appropriate shared battle layer.
+
+---
+
+# 💥 Battle Effects and Presentation
+
+Battle resolution and battle presentation are separate responsibilities.
+
+`BattleEffects` supports reusable effect processing.
+
+`BattleAnimationController` coordinates visual action timing and animations.
+
+`BattleRenderer` draws the battle state.
+
+The battle scene can present:
+
+- Damage popups
+- Healing popups
+- Misses
+- Critical-hit feedback
+- Weakness feedback
+- Resistance feedback
+- Immunity feedback
+- Battle messages
+- Actor and enemy hurt/defeat states
+
+Presentation should report the result of battle logic rather than becoming the authority that decides the result.
+
+---
+
+# 🏆 Victory and Defeat
+
+Victory occurs when all enemies are defeated.
+
+Defeat occurs when the party has no living battle members remaining.
+
+Action sequences check these conditions before continuing normal turn flow so battle does not advance into another ordinary command or enemy phase after its outcome has been decided.
+
+Future victory processing may include experience, rewards, Resonance, drops, post-battle status cleanup, and other progression systems.
+
+---
+
+# 🤖 Enemy Turns and AI
+
+The current engine has an enemy-turn foundation and can queue an enemy turn after the party finishes acting.
+
+The complete Enemy AI system remains unfinished.
+
+Future AI should be responsible for decisions such as:
+
+- Selecting actions
+- Selecting legal targets
+- Responding to battle conditions
+- Weighted or conditional skill use
+- Boss-specific behavior
+
+AI chooses what an enemy attempts to do. Shared battle systems should still resolve targeting legality, damage, statuses, and effects.
+
+---
+
+# 👹 Boss Battles
+
+Boss scripting is planned but not yet a completed runtime system.
+
+The battle architecture should eventually support mechanics such as:
+
+- Phase changes
+- Conditional actions
+- Threshold reactions
+- Unique status interactions
+- Scripted battle events
+- Specialized targeting behavior
+
+Boss-specific logic should use reusable battle systems rather than duplicating the core combat engine.
+
+---
+
+# 🌟 Future Battle Systems
+
+Major battle features still planned include:
+
+- Complete Status Runtime
+- Complete Essence Runtime
+- Enemy AI
+- Boss mechanics
+- Summon Magic
+- Limit Skills
+- Party switching
+- Dual Techniques
+- Additional enemy and encounter systems
+- Expanded item behavior
+- Battle rewards and progression integration
+
+These are planned architecture, not claims about currently completed runtime behavior.
+
+---
+
+# 🧱 Responsibility Rules
+
+When adding a battle feature, ask which layer owns the responsibility.
+
+```text
+Skills.json / Statuses.json / Essences.json
+    Define canonical content
+
+Game_Battler / Game_Actor / Game_Enemy
+    Own battler state and shared battler behavior
+
+BattleManager
+    Coordinates turn and action flow
+
+BattleTargetManager
+    Owns target-selection rules and current target state
+
+BattleEffects
+    Resolves reusable battle effects
+
+BattleAnimationController
+    Coordinates battle animation behavior
+
+BattleRenderer
+    Draws battle presentation
+
+Scene_Battle
+    Coordinates the complete battle scene
+
+Windows
+    Present commands, skills, items, and other player choices
+```
+
+A new mechanic should be placed in the narrowest system that truly owns it.
+
+Avoid making `Scene_Battle` or `BattleManager` the permanent home of every new rule simply because they can access most of the battle state.
+
+---
+
+# 📚 Canonical Sources
+
+Battle documentation and data have different responsibilities.
+
+```text
+data/Skills.json       Canonical skill definitions
+data/Essences.json     Canonical Essence definitions
+data/Statuses.json     Canonical status definitions
+
+docs/battle_system.md  Canonical battle rules and interactions
+docs/architecture.md   Engine structure and ownership
+TODO.md                Unfinished development work
+```
+
+If this document disagrees with an intentionally updated canonical data file, the data file defines the content and this document should be updated.
+
+If implementation temporarily disagrees with an agreed battle rule because that feature is unfinished, the unfinished runtime should be tracked in `TODO.md` rather than rewriting the intended rule to match incomplete code.
+
+---
+
+# ❤️ Battle System Philosophy
+
+Sektor 1's battle system is not a collection of isolated spell scripts.
+
+It is a set of reusable rules that can combine in increasingly interesting ways as the game grows.
+
+A new skill should mostly be data.
+
+A new status should mostly be data.
+
+A new Essence should mostly be data.
+
+The engine should provide the vocabulary that makes those combinations possible.
+
+That keeps the battle system understandable today while leaving room for the strange, powerful, and wonderfully unusual things Sektor 1 may need tomorrow.
+
+---
+
+Built with ❤️ by **Sarah & Tyler**
