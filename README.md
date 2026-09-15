@@ -1,107 +1,260 @@
 # 🎮 Sektor 1
 
-A modern JRPG built completely from scratch in JavaScript.
+**Sektor 1** is a modern JRPG built from scratch in JavaScript.
 
----
+Inspired by classic JRPGs, Sektor 1 combines traditional turn-based RPG
+design with a custom engine built to remain clean, modular, and
+expandable as the game grows.
 
-## Current Status
+Rather than relying on a prebuilt battle engine, the game's major
+systems are being designed and implemented specifically for Sektor 1.
 
-### Engine Foundation
-- ✅ Modular Engine Architecture
-- ✅ Shared Game_Battler System
-- ✅ Party Foundation
-- ✅ Save / Load
-- ✅ Equipment System
-- ✅ Inventory System
+------------------------------------------------------------------------
 
-### Battle System
-- ✅ Side-View Battles
-- ✅ Fire Magic
-- ✅ Cure Magic
-- ✅ Battle Effects
-- ✅ Animation Controller
-- ✅ Single Target
-- ✅ All Target
-- ✅ Ally Targeting
-- ✅ Enemy Targeting
+# ⚔️ Current Development Focus
 
-### Development
+## Status System Runtime
 
-Current Milestone:
+The first major versions of the game's Skills, Essence, and Status
+databases have been designed.
 
-> **Pass 9 – Multi-Character Turn System**
+Current development is focused on turning those definitions into fully
+functional battle mechanics.
 
----
+### Recently Completed
 
-# Vision
+-   ✅ Skills System v1
+-   ✅ 54 initial skills
+-   ✅ Essence System v1
+-   ✅ 19 initial Essences
+-   ✅ Essence Resonance and Mastery design
+-   ✅ Status System v1
+-   ✅ 25 initial status effects
+-   ✅ Reusable status families and duration models
+-   ✅ Countdown and derived status architecture
 
-Sektor 1 is inspired by classic JRPGs while building an engine designed to grow for many years.
+------------------------------------------------------------------------
 
-Rather than relying on RPG Maker's built-in battle system, every major gameplay system is being written from scratch in JavaScript.
+# 🛠️ Engine Foundation
 
-The goal is to create an engine that is:
+Sektor 1 uses a modular JavaScript engine designed to allow individual
+systems to grow without tightly coupling unrelated parts of the game.
 
-- Clean
-- Modular
-- Easy to maintain
-- Easy to expand
+Completed foundations include:
 
----
+-   ✅ Modular engine architecture
+-   ✅ Shared `Game_Battler` system
+-   ✅ Party foundation
+-   ✅ Multi-character turn system
+-   ✅ Turn queue
+-   ✅ Save / Load
+-   ✅ Equipment system
+-   ✅ Inventory system
 
-# Technology
+------------------------------------------------------------------------
 
-- JavaScript
-- HTML5 Canvas
-- JSON
-- Git
-- GitHub
-- Visual Studio Code
+# ⚔️ Battle System
 
----
+The battle system is being built specifically for Sektor 1.
 
-# Project Philosophy
+Current battle features include:
 
-Every new feature should make the engine easier to expand.
+-   ✅ Side-view battles
+-   ✅ Multi-character turns
+-   ✅ Single-target actions
+-   ✅ All-target actions
+-   ✅ Ally targeting
+-   ✅ Enemy targeting
+-   ✅ Battle effects
+-   ✅ Animation controller
+-   ✅ Magic foundation
 
-Code quality is considered just as important as gameplay.
+Systems currently being expanded include:
 
----
+-   🚧 Status effect runtime
+-   🚧 Essence runtime
+-   🚧 Skill / status interactions
+-   🚧 Enemy AI
+-   🚧 Boss mechanics
+-   🚧 Limit Skills
 
-# Development Philosophy
+------------------------------------------------------------------------
 
-Sektor 1 is being developed one system at a time.
+# ✨ Skills
 
-Every new feature must make the engine easier to expand.
+The initial skill database contains **54 skills** divided across several
+major categories:
 
-The goal isn't simply to finish the game.
+-   Restore Magic
+-   Attack Magic
+-   Indirect Magic
+-   Advanced Magic
 
-The goal is to build an engine that can continue growing
-for years without becoming difficult to maintain.
+Skills are data-driven through `data/Skills.json`, allowing battle
+behavior to be expanded without hard-coding individual spells throughout
+the engine.
 
----
+Future categories include Summon Magic and Limit Skills.
 
-# Current Progress
+------------------------------------------------------------------------
 
-✔ Engine Architecture
+# 💎 Essence System
 
-✔ Battle Foundation
+Essences are one of Sektor 1's primary character-progression systems.
 
-✔ Targeting System
+The initial database contains **19 Essences**, with all 54 current
+skills assigned to an Essence.
 
-✔ Party Foundation
+Essences can grow through **Resonance**, unlocking abilities and unique
+passive effects as they develop.
 
-✔ Multi-Character Turns
+At maximum Resonance, an Essence becomes **Mastery Ready**. Completing
+its eventual Mastery Trial allows it to reach its mastered state.
 
-⬜ Status Effects
+The system is also designed to support future **Essence Evolution**.
 
-⬜ Enemy AI
+------------------------------------------------------------------------
 
-⬜ Boss System
+# 🧪 Status System
 
-⬜ World Exploration
+Sektor 1 currently defines **25 status effects** through
+`data/Statuses.json`.
 
-⬜ Story Campaign
+The system is designed around reusable mechanics rather than hard-coded
+status behavior.
 
----
+The status architecture supports concepts including:
 
-Built with ❤️ by Tyler Brontmeyer
+-   Positive and negative statuses
+-   Status families
+-   Turn-based durations
+-   Persistent statuses
+-   Damage and healing over time
+-   Action restrictions
+-   Damage and accuracy modifiers
+-   Turn-speed modifiers
+-   Transformations
+-   Defeat states
+-   Countdown statuses
+-   Derived battle states
+-   Status interaction and removal
+-   Defensive effects
+-   Elemental magic absorption
+
+The database design is complete for Status System v1. Runtime
+implementation is the current development focus.
+
+------------------------------------------------------------------------
+
+# 🗃️ Data-Driven Design
+
+Core gameplay definitions are stored separately from engine code.
+
+Canonical game data currently includes:
+
+``` text
+data/Skills.json
+data/Essences.json
+data/Statuses.json
+```
+
+This separation allows gameplay content to expand while keeping the
+underlying engine maintainable.
+
+------------------------------------------------------------------------
+
+# 🌎 Future Development
+
+Major systems still planned include:
+
+-   Enemy AI
+-   Boss scripting
+-   Party switching
+-   Limit Skills
+-   Summon Magic
+-   World exploration
+-   Towns and dungeons
+-   Side quests
+-   Event scripting
+-   Cutscenes
+-   Essence Mastery Trials
+-   Essence Evolution
+-   Story campaign
+
+------------------------------------------------------------------------
+
+# 📚 Documentation
+
+Technical and design documentation lives in the `docs/` directory.
+
+``` text
+docs/
+├── architecture.md
+├── battle_system.md
+├── coding_style.md
+├── design_bible.md
+├── ideas.md
+└── roadmap.md
+```
+
+Each document has a specific purpose:
+
+-   **architecture.md** - Engine structure and system relationships
+-   **battle_system.md** - Canonical battle rules and mechanics
+-   **coding_style.md** - Project coding and data conventions
+-   **design_bible.md** - Core game-design principles and terminology
+-   **ideas.md** - Experimental and unapproved concepts
+-   **roadmap.md** - High-level development milestones
+
+`TODO.md` tracks active unfinished development work.
+
+------------------------------------------------------------------------
+
+# 💻 Technology
+
+Sektor 1 is currently built with:
+
+-   JavaScript
+-   HTML5 Canvas
+-   JSON
+-   Git
+-   GitHub
+-   Visual Studio Code
+
+------------------------------------------------------------------------
+
+# 🧭 Development Philosophy
+
+Sektor 1 is developed **one system at a time**.
+
+Every new feature should make the engine easier to understand, maintain,
+and expand.
+
+Gameplay data should remain separate from engine logic whenever
+practical, allowing new skills, statuses, Essences, enemies, and other
+content to be added without rewriting unrelated systems.
+
+The goal is not simply to finish one game.
+
+The goal is to build a foundation capable of supporting Sektor 1 as it
+continues to grow.
+
+------------------------------------------------------------------------
+
+# 📌 Project Status
+
+### Completed Design Milestones
+
+-   ✅ Skills System v1
+-   ✅ Essence System v1
+-   ✅ Status System v1
+
+### Current Focus
+
+> 🚧 **Status System Runtime**
+
+See [`TODO.md`](TODO.md) for the current development checklist.
+
+------------------------------------------------------------------------
+
+Built with ❤️ by **Sarah & Tyler**
