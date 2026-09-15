@@ -1,17 +1,19 @@
 [
-    null,
-    {
-        "id": 1,
-        "name": "Leather Armor",
-        "description": "Light protective armor.",
-        "price": 100,
-        "defense": 4
-    },
-    {
-        "id": 2,
-        "name": "Iron Armor",
-        "description": "Heavy armor made from iron.",
-        "price": 300,
-        "defense": 8
-    }
+  null,
+  {
+    "_comment": "01: Leather Armor - Light protective armor.",
+    "id": 1,
+    "name": "Leather Armor",
+    "description": "Light protective armor.",
+    "price": 100,
+    "defense": 4
+  },
+  {
+    "_comment": "02: Iron Armor - Heavy armor made from iron.",
+    "id": 2,
+    "name": "Iron Armor",
+    "description": "Heavy armor made from iron.",
+    "price": 300,
+    "defense": 8
+  }
 ]

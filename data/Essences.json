@@ -1,11 +1,13 @@
 [
   null,
   {
+    "_comment": "💚 Healing Essence",
     "id": 1,
-    "name": "Flame Essence",
-    "description": "An Essence infused with elemental fire.",
+    "name": "Healing Essence",
+    "description": "An Essence attuned to healing and restoration.",
     "type": "magic",
-    "element": "fire",
+    "element": "none",
+    "maxLevel": 5,
 
     "abilities": [
       {
@@ -19,8 +21,18 @@
       {
         "skillId": 3,
         "unlockLevel": 3
+      },
+      {
+        "skillId": 52,
+        "unlockLevel": 4
       }
     ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "essenceAbilityMpCostReduction",
+      "value": 0.15
+    },
 
     "levels": [
       {
@@ -34,7 +46,1038 @@
       {
         "level": 3,
         "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
       }
-    ]
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "✨ Purity Essence",
+    "id": 2,
+    "name": "Purity Essence",
+    "description": "An Essence attuned to purification and resistance.",
+    "type": "magic",
+    "element": "none",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 4,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 5,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 6,
+        "unlockLevel": 3
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "essenceCleanseHeal",
+      "healPercent": 0.1
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "🌱 Renewal Essence",
+    "id": 3,
+    "name": "Renewal Essence",
+    "description": "An Essence attuned to revival and regeneration.",
+    "type": "magic",
+    "element": "none",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 7,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 8,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 9,
+        "unlockLevel": 3
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "reviveGrantStatus",
+      "status": "regen"
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+
+  {
+    "_comment": "🔥 Flame Essence",
+    "id": 4,
+    "name": "Flame Essence",
+    "description": "An Essence infused with elemental fire.",
+    "type": "magic",
+    "element": "fire",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 10,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 11,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 12,
+        "unlockLevel": 3
+      },
+      {
+        "skillId": 51,
+        "unlockLevel": 4
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "elementDamageBoost",
+      "element": "fire",
+      "value": 0.1
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "❄️ Ice Essence",
+    "id": 5,
+    "name": "Ice Essence",
+    "description": "An Essence infused with elemental ice.",
+    "type": "magic",
+    "element": "ice",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 13,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 14,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 15,
+        "unlockLevel": 3
+      },
+      {
+        "skillId": 48,
+        "unlockLevel": 4
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "elementStatusChance",
+      "triggerElement": "ice",
+      "status": "slow",
+      "chance": 0.15
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "⚡ Lightning Essence",
+    "id": 6,
+    "name": "Lightning Essence",
+    "description": "An Essence infused with elemental lightning.",
+    "type": "magic",
+    "element": "lightning",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 16,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 17,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 18,
+        "unlockLevel": 3
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "elementStatusChance",
+      "triggerElement": "lightning",
+      "status": "paralyze",
+      "chance": 0.1
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "🌎 Earth Essence",
+    "id": 7,
+    "name": "Earth Essence",
+    "description": "An Essence infused with elemental earth.",
+    "type": "magic",
+    "element": "earth",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 19,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 20,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 21,
+        "unlockLevel": 3
+      },
+      {
+        "skillId": 49,
+        "unlockLevel": 4
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "elementSelfStatusChance",
+      "triggerElement": "earth",
+      "status": "barrier",
+      "chance": 0.2
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "☠️ Poison Essence",
+    "id": 8,
+    "name": "Poison Essence",
+    "description": "An Essence infused with elemental poison.",
+    "type": "magic",
+    "element": "poison",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 22,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 23,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 24,
+        "unlockLevel": 3
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "statusDamageBoost",
+      "status": "poison",
+      "value": 0.25
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "🌀 Gravity Essence",
+    "id": 9,
+    "name": "Gravity Essence",
+    "description": "An Essence infused with elemental gravity.",
+    "type": "magic",
+    "element": "gravity",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 25,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 26,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 27,
+        "unlockLevel": 3
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "elementSelfStatusChance",
+      "triggerElement": "gravity",
+      "status": "haste",
+      "chance": 0.15
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+
+  {
+    "_comment": "🧠 Mind Essence",
+    "id": 10,
+    "name": "Mind Essence",
+    "description": "An Essence attuned to thought and consciousness.",
+    "type": "magic",
+    "element": "none",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 28,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 29,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 30,
+        "unlockLevel": 3
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "statusFamilyResistance",
+      "statusFamily": "mental",
+      "value": 0.25
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "🧬 Metamorph Essence",
+    "id": 11,
+    "name": "Metamorph Essence",
+    "description": "An Essence attuned to transformation and adaptation.",
+    "type": "magic",
+    "element": "none",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 31,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 32,
+        "unlockLevel": 2
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "essenceAbilityStatusChanceBoost",
+      "value": 0.15
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "⏳ Time Essence",
+    "id": 12,
+    "name": "Time Essence",
+    "description": "An Essence attuned to the flow and distortion of time.",
+    "type": "magic",
+    "element": "none",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 34,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 35,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 36,
+        "unlockLevel": 3
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "essenceAbilityMpRefundChance",
+      "chance": 0.15
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "🛡️ Ward Essence",
+    "id": 13,
+    "name": "Ward Essence",
+    "description": "An Essence attuned to protection and defense.",
+    "type": "magic",
+    "element": "none",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 37,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 38,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 39,
+        "unlockLevel": 3
+      },
+      {
+        "skillId": 45,
+        "unlockLevel": 4
+      },
+      {
+        "skillId": 53,
+        "unlockLevel": 4
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "lowHpSelfStatuses",
+      "hpThreshold": 0.25,
+      "statuses": ["barrier", "mbarrier"],
+      "oncePerBattle": true
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "🚫 Null Essence",
+    "id": 14,
+    "name": "Null Essence",
+    "description": "An Essence attuned to negation and void.",
+    "type": "magic",
+    "element": "none",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 40,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 41,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 42,
+        "unlockLevel": 3
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "incomingStatusNegateChance",
+      "chance": 0.2
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+
+  {
+    "_comment": "🌌 Astral Essence",
+    "id": 15,
+    "name": "Astral Essence",
+    "description": "An Essence attuned to the cosmos and celestial forces.",
+    "type": "magic",
+    "element": "none",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 46,
+        "unlockLevel": 1
+      },
+      {
+        "skillId": 47,
+        "unlockLevel": 2
+      },
+      {
+        "skillId": 54,
+        "unlockLevel": 3
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "essenceAbilityPartialMpRefundChance",
+      "chance": 0.1,
+      "refundPercent": 0.5
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "🌪️ Wind Essence",
+    "id": 16,
+    "name": "Wind Essence",
+    "description": "An Essence infused with elemental wind.",
+    "type": "magic",
+    "element": "wind",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 50,
+        "unlockLevel": 1
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "physicalEvasionBonus",
+      "value": 0.15
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "🩸 Fury Essence",
+    "id": 17,
+    "name": "Fury Essence",
+    "description": "An Essence attuned to aggression and battle instinct.",
+    "type": "magic",
+    "element": "none",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 33,
+        "unlockLevel": 1
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "lowHpPhysicalDamageBoost",
+      "thresholds": [
+        {
+          "hpThreshold": 0.5,
+          "value": 0.1
+        },
+        {
+          "hpThreshold": 0.25,
+          "value": 0.2
+        }
+      ]
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "🧭 Wayfarer Essence",
+    "id": 18,
+    "name": "Wayfarer Essence",
+    "description": "An Essence attuned to survival and the paths between danger.",
+    "type": "magic",
+    "element": "none",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 43,
+        "unlockLevel": 1
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "successfulEscapePartyRecovery",
+      "hpPercent": 0.1,
+      "mpPercent": 0.1
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
+  },
+  {
+    "_comment": "🌀 Rift Essence",
+    "id": 19,
+    "name": "Rift Essence",
+    "description": "An Essence attuned to space and the boundaries between worlds.",
+    "type": "magic",
+    "element": "none",
+    "maxLevel": 5,
+
+    "abilities": [
+      {
+        "skillId": 44,
+        "unlockLevel": 1
+      }
+    ],
+
+    "passive": {
+      "unlockLevel": 4,
+      "type": "banishChainChance",
+      "chance": 0.25,
+      "maxChains": 1
+    },
+
+    "levels": [
+      {
+        "level": 1,
+        "resonanceRequired": 0
+      },
+      {
+        "level": 2,
+        "resonanceRequired": 100
+      },
+      {
+        "level": 3,
+        "resonanceRequired": 300
+      },
+      {
+        "level": 4,
+        "resonanceRequired": 700
+      }
+    ],
+
+    "mastery": {
+      "resonanceRequired": 1500,
+      "questRequired": true,
+      "questId": null,
+      "evolutionEligible": true
+    }
   }
 ]
