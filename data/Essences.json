@@ -1,7 +1,7 @@
 [
   null,
   {
-    "_comment": "💚 Healing Essence",
+    "_comment": "ID 1: 💚 Healing Essence",
     "id": 1,
     "name": "Healing Essence",
     "description": "An Essence attuned to healing and restoration.",
@@ -61,7 +61,7 @@
     }
   },
   {
-    "_comment": "✨ Purity Essence",
+    "_comment": "ID 2: ✨ Purity Essence",
     "id": 2,
     "name": "Purity Essence",
     "description": "An Essence attuned to purification and resistance.",
@@ -117,7 +117,7 @@
     }
   },
   {
-    "_comment": "🌱 Renewal Essence",
+    "_comment": "ID 3: 🌱 Renewal Essence",
     "id": 3,
     "name": "Renewal Essence",
     "description": "An Essence attuned to revival and regeneration.",
@@ -172,9 +172,8 @@
       "evolutionEligible": true
     }
   },
-
   {
-    "_comment": "🔥 Flame Essence",
+    "_comment": "ID 4:🔥 Flame Essence",
     "id": 4,
     "name": "Flame Essence",
     "description": "An Essence infused with elemental fire.",
@@ -235,7 +234,7 @@
     }
   },
   {
-    "_comment": "❄️ Ice Essence",
+    "_comment": "ID 5: ❄️ Ice Essence",
     "id": 5,
     "name": "Ice Essence",
     "description": "An Essence infused with elemental ice.",
@@ -297,7 +296,7 @@
     }
   },
   {
-    "_comment": "⚡ Lightning Essence",
+    "_comment": "ID 6: ⚡ Lightning Essence",
     "id": 6,
     "name": "Lightning Essence",
     "description": "An Essence infused with elemental lightning.",
@@ -355,7 +354,7 @@
     }
   },
   {
-    "_comment": "🌎 Earth Essence",
+    "_comment": "ID 7: 🌎 Earth Essence",
     "id": 7,
     "name": "Earth Essence",
     "description": "An Essence infused with elemental earth.",
@@ -417,7 +416,7 @@
     }
   },
   {
-    "_comment": "☠️ Poison Essence",
+    "_comment": "ID 8: ☠️ Poison Essence",
     "id": 8,
     "name": "Poison Essence",
     "description": "An Essence infused with elemental poison.",
@@ -474,7 +473,7 @@
     }
   },
   {
-    "_comment": "🌀 Gravity Essence",
+    "_comment": "ID 9: 🌀 Gravity Essence",
     "id": 9,
     "name": "Gravity Essence",
     "description": "An Essence infused with elemental gravity.",
@@ -531,9 +530,8 @@
       "evolutionEligible": true
     }
   },
-
   {
-    "_comment": "🧠 Mind Essence",
+    "_comment": "ID 10: 🧠 Mind Essence",
     "id": 10,
     "name": "Mind Essence",
     "description": "An Essence attuned to thought and consciousness.",
@@ -590,7 +588,7 @@
     }
   },
   {
-    "_comment": "🧬 Metamorph Essence",
+    "_comment": "ID 11: 🧬 Metamorph Essence",
     "id": 11,
     "name": "Metamorph Essence",
     "description": "An Essence attuned to transformation and adaptation.",
@@ -642,7 +640,7 @@
     }
   },
   {
-    "_comment": "⏳ Time Essence",
+    "_comment": "ID 12: ⏳ Time Essence",
     "id": 12,
     "name": "Time Essence",
     "description": "An Essence attuned to the flow and distortion of time.",
@@ -698,7 +696,7 @@
     }
   },
   {
-    "_comment": "🛡️ Ward Essence",
+    "_comment": "ID 13: 🛡️ Ward Essence",
     "id": 13,
     "name": "Ward Essence",
     "description": "An Essence attuned to protection and defense.",
@@ -764,7 +762,7 @@
     }
   },
   {
-    "_comment": "🚫 Null Essence",
+    "_comment": "ID 14: 🚫 Null Essence",
     "id": 14,
     "name": "Null Essence",
     "description": "An Essence attuned to negation and void.",
@@ -819,9 +817,8 @@
       "evolutionEligible": true
     }
   },
-
   {
-    "_comment": "🌌 Astral Essence",
+    "_comment": "ID 15: 🌌 Astral Essence",
     "id": 15,
     "name": "Astral Essence",
     "description": "An Essence attuned to the cosmos and celestial forces.",
@@ -878,7 +875,7 @@
     }
   },
   {
-    "_comment": "🌪️ Wind Essence",
+    "_comment": "ID 16: 🌪️ Wind Essence",
     "id": 16,
     "name": "Wind Essence",
     "description": "An Essence infused with elemental wind.",
@@ -926,7 +923,7 @@
     }
   },
   {
-    "_comment": "🩸 Fury Essence",
+    "_comment": "ID 17: 🩸 Fury Essence",
     "id": 17,
     "name": "Fury Essence",
     "description": "An Essence attuned to aggression and battle instinct.",
@@ -983,7 +980,7 @@
     }
   },
   {
-    "_comment": "🧭 Wayfarer Essence",
+    "_comment": "ID 18: 🧭 Wayfarer Essence",
     "id": 18,
     "name": "Wayfarer Essence",
     "description": "An Essence attuned to survival and the paths between danger.",
@@ -1032,7 +1029,7 @@
     }
   },
   {
-    "_comment": "🌀 Rift Essence",
+    "_comment": "ID 19: 🌀 Rift Essence",
     "id": 19,
     "name": "Rift Essence",
     "description": "An Essence attuned to space and the boundaries between worlds.",

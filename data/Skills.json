@@ -1,7 +1,7 @@
 [
   null,
   {
-    "_comment": "01: Mend - Heal a small amount of HP",
+    "_comment": "ID 1: Mend - Heal a small amount of HP",
     "id": 1,
     "name": "Mend",
     "description": "Heal a small amount of HP.",
@@ -26,7 +26,7 @@
     }
   },
   {
-    "_comment": "02: Greater Mend - Heal a moderate amount of HP",
+    "_comment": "ID 2: Greater Mend - Heal a moderate amount of HP",
     "id": 2,
     "name": "Greater Mend",
     "description": "Heal a moderate amount of HP.",
@@ -51,7 +51,7 @@
     }
   },
   {
-    "_comment": "03: Grand Mend - Heal a large amount of HP",
+    "_comment": "ID 3: Grand Mend - Heal a large amount of HP",
     "id": 3,
     "name": "Grand Mend",
     "description": "Heal a large amount of HP.",
@@ -76,7 +76,7 @@
     }
   },
   {
-    "_comment": "04: Purge Venom - Cure Poison",
+    "_comment": "ID 4: Purge Venom - Cure Poison",
     "id": 4,
     "name": "Purge Venom",
     "description": "Cures Poison.",
@@ -96,7 +96,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "05: Soul Cleanse - Cure Multiple Statuses",
+    "_comment": "ID 5: Soul Cleanse - Cure Multiple Statuses",
     "id": 5,
     "name": "Soul Cleanse",
     "description": "Cures Sleep, Poison, Sadness, Fury, Confusion, Silence, Frog, Small, Slow-numb, Petrify, Berserk, Paralyzed, and Darkness.",
@@ -130,7 +130,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "06: Unchanging Will - Inflict Resist",
+    "_comment": "ID 6: Unchanging Will - Inflict Resist",
     "id": 6,
     "name": "Unchanging Will",
     "description": "Inflicts Resist status. Prevents status transformations.",
@@ -150,7 +150,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "07: Rekindle - Revive with 25% HP",
+    "_comment": "ID 7: Rekindle - Revive with 25% HP",
     "id": 7,
     "name": "Rekindle",
     "description": "Revive a party member with 25% health.",
@@ -170,7 +170,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "08: Reawakening - Revive with Full HP",
+    "_comment": "ID 8: Reawakening - Revive with Full HP",
     "id": 8,
     "name": "Reawakening",
     "description": "Revive a party member with full health.",
@@ -190,7 +190,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "09: Lifebloom - Gradual HP Restore with Regen",
+    "_comment": "ID 9: Lifebloom - Gradual HP Restore with Regen",
     "id": 9,
     "name": "Lifebloom",
     "description": "Gradually restores HP; Inflicts Regen.",
@@ -209,9 +209,8 @@
     "target": ["ally"],
     "scope": ["single"]
   },
-
   {
-    "_comment": "10: Ember - Low Fire Damage",
+    "_comment": "ID 10: Ember - Low Fire Damage",
     "id": 10,
     "name": "Ember",
     "description": "Low fire-elemental damage.",
@@ -236,7 +235,7 @@
     }
   },
   {
-    "_comment": "11: Blaze - Moderate Fire Damage",
+    "_comment": "ID 11: Blaze - Moderate Fire Damage",
     "id": 11,
     "name": "Blaze",
     "description": "Moderate fire-elemental damage.",
@@ -261,7 +260,7 @@
     }
   },
   {
-    "_comment": "12: Inferno - High Fire Damage",
+    "_comment": "ID 12: Inferno - High Fire Damage",
     "id": 12,
     "name": "Inferno",
     "description": "High fire-elemental damage.",
@@ -286,7 +285,7 @@
     }
   },
   {
-    "_comment": "13: Frost - Low Ice Damage",
+    "_comment": "ID 13: Frost - Low Ice Damage",
     "id": 13,
     "name": "Frost",
     "description": "Low ice-elemental damage.",
@@ -311,7 +310,7 @@
     }
   },
   {
-    "_comment": "14: Glacial Lance - Moderate Ice Damage",
+    "_comment": "ID 14: Glacial Lance - Moderate Ice Damage",
     "id": 14,
     "name": "Glacial Lance",
     "description": "Moderate ice-elemental damage.",
@@ -336,7 +335,7 @@
     }
   },
   {
-    "_comment": "15: Absolute Zero - High Ice Damage",
+    "_comment": "ID 15: Absolute Zero - High Ice Damage",
     "id": 15,
     "name": "Absolute Zero",
     "description": "High ice-elemental damage.",
@@ -361,7 +360,7 @@
     }
   },
   {
-    "_comment": "16: Spark - Low Lightning Damage",
+    "_comment": "ID 16: Spark - Low Lightning Damage",
     "id": 16,
     "name": "Spark",
     "description": "Low lightning-elemental damage.",
@@ -386,7 +385,7 @@
     }
   },
   {
-    "_comment": "17: Thunderstrike - Moderate Lightning Damage",
+    "_comment": "ID 17: Thunderstrike - Moderate Lightning Damage",
     "id": 17,
     "name": "Thunderstrike",
     "description": "Moderate lightning-elemental damage.",
@@ -411,7 +410,7 @@
     }
   },
   {
-    "_comment": "18: Stormbreaker - High Lightning Damage",
+    "_comment": "ID 18: Stormbreaker - High Lightning Damage",
     "id": 18,
     "name": "Stormbreaker",
     "description": "High lightning-elemental damage.",
@@ -436,7 +435,7 @@
     }
   },
   {
-    "_comment": "19: Stoneburst - Low Earth Damage",
+    "_comment": "ID 19: Stoneburst - Low Earth Damage",
     "id": 19,
     "name": "Stoneburst",
     "description": "Low earth-elemental damage.",
@@ -461,7 +460,7 @@
     }
   },
   {
-    "_comment": "20: Faultline - Moderate Earth Damage",
+    "_comment": "ID 20: Faultline - Moderate Earth Damage",
     "id": 20,
     "name": "Faultline",
     "description": "Moderate earth-elemental damage.",
@@ -486,7 +485,7 @@
     }
   },
   {
-    "_comment": "21: Worldshatter - High Earth Damage",
+    "_comment": "ID 21: Worldshatter - High Earth Damage",
     "id": 21,
     "name": "Worldshatter",
     "description": "High earth-elemental damage.",
@@ -511,7 +510,7 @@
     }
   },
   {
-    "_comment": "22: Venom - Low Poison Damage",
+    "_comment": "ID 22: Venom - Low Poison Damage",
     "id": 22,
     "name": "Venom",
     "description": "Low poison-elemental damage. 48% chance of inflicting Poison.",
@@ -531,7 +530,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "23: Toxic Surge - Moderate Poison Damage",
+    "_comment": "ID 23: Toxic Surge - Moderate Poison Damage",
     "id": 23,
     "name": "Toxic Surge",
     "description": "Moderate poison-elemental damage. 48% chance of inflicting Poison.",
@@ -551,7 +550,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "24: Plague Nova - High Poison Damage",
+    "_comment": "ID 24: Plague Nova - High Poison Damage",
     "id": 24,
     "name": "Plague Nova",
     "description": "High poison-elemental damage. 72% chance of inflicting Poison.",
@@ -571,7 +570,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "25: Burden - Low Gravity Damage",
+    "_comment": "ID 25: Burden - Low Gravity Damage",
     "id": 25,
     "name": "Burden",
     "description": "Gravity-elemental damage equal to 25% of target's current HP. Cannot be reflected.",
@@ -591,7 +590,7 @@
     "scope": ["single", "all"]
   },
   {
-    "_comment": "26: Heavyfall - Moderate Gravity Damage",
+    "_comment": "ID 26: Heavyfall - Moderate Gravity Damage",
     "id": 26,
     "name": "Heavyfall",
     "description": "Gravity-elemental damage equal to 50% of target's current HP. Cannot be reflected.",
@@ -611,7 +610,7 @@
     "scope": ["single", "all"]
   },
   {
-    "_comment": "27: Cataclysm - High Gravity Damage",
+    "_comment": "ID 27: Cataclysm - High Gravity Damage",
     "id": 27,
     "name": "Cataclysm",
     "description": "Gravity-elemental damage equal to 75% of target's current HP. Cannot be reflected.",
@@ -630,9 +629,8 @@
     "target": ["enemy"],
     "scope": ["single", "all"]
   },
-
   {
-    "_comment": "28: Dreambind - Inflict Sleep",
+    "_comment": "ID 28: Dreambind - Inflict Sleep",
     "id": 28,
     "name": "Dreambind",
     "description": "72% chance of inflicting Sleep on target.",
@@ -652,7 +650,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "29: Mindtwist - Inflict Confuse",
+    "_comment": "ID 29: Mindtwist - Inflict Confuse",
     "id": 29,
     "name": "Mindtwist",
     "description": "60% chance of inflicting Confuse on target.",
@@ -674,7 +672,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "30: Spellseal - Inflict Silence",
+    "_comment": "ID 30: Spellseal - Inflict Silence",
     "id": 30,
     "name": "Spellseal",
     "description": "60% chance of inflicting Silence on target.",
@@ -694,7 +692,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "31: Diminish - Inflict or Cure Small",
+    "_comment": "ID 31: Diminish - Inflict or Cure Small",
     "id": 31,
     "name": "Diminish",
     "description": "Inflicts or cures Small on target. 72% probability on enemies, 100% on allies.",
@@ -716,7 +714,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "32: Beastshape - Inflict or Cure Frog",
+    "_comment": "ID 32: Beastshape - Inflict or Cure Frog",
     "id": 32,
     "name": "Beastshape",
     "description": "Inflicts or cures Frog on target. 72% probability on enemies, 100% on allies.",
@@ -738,7 +736,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "33: Bloodrage - Inflict Berserk",
+    "_comment": "ID 33: Bloodrage - Inflict Berserk",
     "id": 33,
     "name": "Bloodrage",
     "description": "Inflicts Berserk on target. 80% probability on enemies, 100% on allies.",
@@ -759,7 +757,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "34: Quickening - Grant Haste",
+    "_comment": "ID 34: Quickening - Grant Haste",
     "id": 34,
     "name": "Quickening",
     "description": "Grants Haste to target.",
@@ -779,7 +777,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "35: Time Bind - Inflict Slow",
+    "_comment": "ID 35: Time Bind - Inflict Slow",
     "id": 35,
     "name": "Time Bind",
     "description": "Inflicts Slow on target. Only enemy immunity can prevent it.",
@@ -799,7 +797,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "36: Time Lock - Inflict Stop",
+    "_comment": "ID 36: Time Lock - Inflict Stop",
     "id": 36,
     "name": "Time Lock",
     "description": "60% chance of inflicting Stop on target.",
@@ -819,7 +817,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "37: Iron Veil - Reduce Physical Damage",
+    "_comment": "ID 37: Iron Veil - Reduce Physical Damage",
     "id": 37,
     "name": "Iron Veil",
     "description": "Reduces physical damage.",
@@ -839,7 +837,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "38: Mystic Veil - Reduce Magical Damage",
+    "_comment": "ID 38: Mystic Veil - Reduce Magical Damage",
     "id": 38,
     "name": "Mystic Veil",
     "description": "Reduces magical damage.",
@@ -859,7 +857,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "39: Mirror Ward - Grant Reflect",
+    "_comment": "ID 39: Mirror Ward - Grant Reflect",
     "id": 39,
     "name": "Mirror Ward",
     "description": "Grants Reflect. Cannot be reflected.",
@@ -879,7 +877,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "40: Wardbreaker - Remove Barrier, MBarrier, Reflect, and Shield",
+    "_comment": "ID 40: Wardbreaker - Remove Barrier, MBarrier, Reflect, and Shield",
     "id": 40,
     "name": "Wardbreaker",
     "description": "Remove Barrier, MBarrier, Reflect, and Shield statuses. Cannot be reflected.",
@@ -904,7 +902,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "41: Nulify - Remove Multiple Statuses",
+    "_comment": "ID 41: Nulify - Remove Multiple Statuses",
     "id": 41,
     "name": "Nulify",
     "description": "Remove Haste, Slow, Stop, Regen, Barrier, MBarrier, Reflect, Shield, Death Force, and Resist statuses. Cannot be reflected.",
@@ -935,7 +933,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "42: Final Tol - Inflict Death with 44% chance",
+    "_comment": "ID 42: Final Tol - Inflict Death with 44% chance",
     "id": 42,
     "name": "Final Tol",
     "description": "44% chance of inflicting Death.",
@@ -955,7 +953,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "43: Retreat - Instantly end battle without reward",
+    "_comment": "ID 43: Retreat - Instantly end battle without reward",
     "id": 43,
     "name": "Retreat",
     "description": "Instantly end battle without reward. Cannot be reflected.",
@@ -975,7 +973,7 @@
     "scope": ["all"]
   },
   {
-    "_comment": "44: Banish - Remove an enemy from battle and flag as Dead",
+    "_comment": "ID 44: Banish - Remove an enemy from battle and flag as Dead",
     "id": 44,
     "name": "Banish",
     "description": "Remove an enemy from battle and flag as Dead. No Gil will be received from this enemy. Cannot be reflected.",
@@ -995,7 +993,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "45: Twin Aegis - Grant Barrier and MBarrier",
+    "_comment": "ID 45: Twin Aegis - Grant Barrier and MBarrier",
     "id": 45,
     "name": "Twin Aegis",
     "description": "Grants Barrier and MBarrier.",
@@ -1017,9 +1015,8 @@
     "target": ["ally"],
     "scope": ["single"]
   },
-
   {
-    "_comment": "46: Starfall - Major non-elemental damage",
+    "_comment": "ID 46: Starfall - Major non-elemental damage",
     "id": 46,
     "name": "Starfall",
     "description": "Major non-elemental damage. Cannot be reflected.",
@@ -1039,7 +1036,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "47: Meteor Barrage - Moderate non-elemental damage to random enemies. Four attacks",
+    "_comment": "ID 47: Meteor Barrage - Moderate non-elemental damage to random enemies. Four attacks",
     "id": 47,
     "name": "Meteor Barrage",
     "description": "Moderate non-elemental damage to random enemies. Four attacks. Cannot be reflected.",
@@ -1061,7 +1058,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "48: Winter's Grasp - High ice-elemental damage. 68% chance of inflicting Stop.",
+    "_comment": "ID 48: Winter's Grasp - High ice-elemental damage. 68% chance of inflicting Stop.",
     "id": 48,
     "name": "Winter's Grasp",
     "description": "High ice-elemental damage. 68% chance of inflicting Stop.",
@@ -1086,7 +1083,7 @@
     }
   },
   {
-    "_comment": "49: Stone Prison - High earth-elemental damage. 32% chance of inflicting Petrify.",
+    "_comment": "ID 49: Stone Prison - High earth-elemental damage. 32% chance of inflicting Petrify.",
     "id": 49,
     "name": "Stone Prison",
     "description": "High earth-elemental damage. 32% chance of inflicting Petrify.",
@@ -1111,7 +1108,7 @@
     }
   },
   {
-    "_comment": "50: Tempest Spiral - High wind-elemental damage. 32% chance of inflicting Confusion.",
+    "_comment": "ID 50: Tempest Spiral - High wind-elemental damage. 32% chance of inflicting Confusion.",
     "id": 50,
     "name": "Tempest Spiral",
     "description": "High wind-elemental damage. 32% chance of inflicting Confusion.",
@@ -1136,7 +1133,7 @@
     }
   },
   {
-    "_comment": "51: Solar Eruption - Heavy fire-elemental damage.",
+    "_comment": "ID 51: Solar Eruption - Heavy fire-elemental damage.",
     "id": 51,
     "name": "Solar Eruption",
     "description": "Heavy fire-elemental damage.",
@@ -1161,7 +1158,7 @@
     }
   },
   {
-    "_comment": "52: Perfect Renewal - Fully restores target's HP. Cannot be reflected.",
+    "_comment": "ID 52: Perfect Renewal - Fully restores target's HP. Cannot be reflected.",
     "id": 52,
     "name": "Perfect Renewal",
     "description": "Fully restores target's HP. Cannot be reflected.",
@@ -1181,7 +1178,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "53: Astral Bulwark - Extreme magic defense. Cannot be reflected.",
+    "_comment": "ID 53: Astral Bulwark - Extreme magic defense. Cannot be reflected.",
     "id": 53,
     "name": "Astral Bulwark",
     "description": "Extreme magic defense. Cannot be reflected.",
@@ -1201,7 +1198,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "54: Genesis Nova - Heavy non-elemental magic damage to all enemies. Cannot be reflected.",
+    "_comment": "ID 54: Genesis Nova - Heavy non-elemental magic damage to all enemies. Cannot be reflected.",
     "id": 54,
     "name": "Genesis Nova",
     "description": "Heavy non-elemental magic damage to all enemies. Cannot be reflected.",
