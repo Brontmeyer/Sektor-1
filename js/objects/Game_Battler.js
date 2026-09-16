@@ -46,7 +46,7 @@ class Game_Battler {
   }
 
   // =====================================
-  // Core Combat Stats
+  // Status Management
   // =====================================
 
   hasStatus(statusKey) {
@@ -78,6 +78,24 @@ class Game_Battler {
     }
 
     this.statuses.push(runtimeStatus);
+
+    this.applyStatusEffects(statusKey);
+
+    return true;
+  }
+
+  applyStatusEffects(statusKey) {
+    const definition = DatabaseManager.statuses.find(
+      (status) => status?.key === statusKey,
+    );
+
+    if (!definition) {
+      return false;
+    }
+
+    if (definition.effects?.setsHpToZero === true) {
+      this.hp = 0;
+    }
 
     return true;
   }
@@ -142,6 +160,10 @@ class Game_Battler {
 
     return false;
   }
+
+  // =====================================
+  // Core Combat Stats
+  // =====================================
 
   startDefending() {
     this.defending = true;
