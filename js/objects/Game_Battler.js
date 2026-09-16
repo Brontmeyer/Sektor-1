@@ -181,10 +181,6 @@ class Game_Battler {
     return this.magicDefense + this.spirit;
   }
 
-  totalAttackPercent() {
-    return this.attackPercent;
-  }
-
   totalDefensePercent() {
     return this.defensePercent;
   }
