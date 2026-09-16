@@ -100,6 +100,45 @@ class Game_Battler {
     return true;
   }
 
+  processStatusTrigger(trigger) {
+    let processedCount = 0;
+
+    for (const runtimeStatus of this.statuses) {
+      const definition = DatabaseManager.statuses.find(
+        (status) => status?.key === runtimeStatus.key,
+      );
+
+      if (!definition) {
+        continue;
+      }
+
+      if (definition.effects?.trigger !== trigger) {
+        continue;
+      }
+
+      this.applyTriggeredStatusEffects(definition);
+      processedCount++;
+    }
+    return processedCount;
+  }
+
+  applyTriggeredStatusEffects(definition) {
+    if (!definition?.effects) {
+      return false;
+    }
+
+    if (typeof definition.effects.hpDamagePercent === "number") {
+      const damage = Math.floor(
+        this.maxHp * definition.effects.hpDamagePercent,
+      );
+
+      const minimumHp = definition.effects.canKill === true ? 0 : 1;
+
+      this.hp = Math.max(minimumHp, this.hp - damage);
+    }
+    return true;
+  }
+
   removeStatus(statusKey) {
     const index = this.statuses.findIndex((status) => status.key === statusKey);
 
