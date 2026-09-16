@@ -66,9 +66,18 @@ class Game_Battler {
       return false;
     }
 
-    this.statuses.push({
+    const runtimeStatus = {
       key: definition.key,
-    });
+    };
+
+    if (
+      definition.duration.type === "turns" ||
+      definition.duration.type === "countdown"
+    ) {
+      runtimeStatus.turnsRemaining = definition.duration.turns;
+    }
+
+    this.statuses.push(runtimeStatus);
 
     return true;
   }
@@ -82,6 +91,56 @@ class Game_Battler {
 
     this.statuses.splice(index, 1);
     return true;
+  }
+
+  tickStatusDurations() {
+    for (let index = this.statuses.length - 1; index >= 0; index--) {
+      const status = this.statuses[index];
+
+      if (
+        !Number.isInteger(status.turnsRemaining) ||
+        status.turnsRemaining <= 0
+      ) {
+        continue;
+      }
+
+      status.turnsRemaining--;
+
+      if (status.turnsRemaining === 0) {
+        const definition = DatabaseManager.statuses.find(
+          (entry) => entry?.key === status.key,
+        );
+
+        if (definition?.duration?.type === "turns") {
+          this.statuses.splice(index, 1);
+        } else if (definition?.duration?.type === "countdown") {
+          this.resolveStatusExpiration(status.key);
+          this.statuses.splice(index, 1);
+        }
+      }
+    }
+  }
+
+  resolveStatusExpiration(statusKey) {
+    const definition = DatabaseManager.statuses.find(
+      (status) => status?.key === statusKey,
+    );
+
+    if (!definition) {
+      return false;
+    }
+
+    const onExpire = definition.effects?.onExpire;
+
+    if (!onExpire) {
+      return false;
+    }
+
+    if (onExpire.applyStatus) {
+      return this.addStatus(onExpire.applyStatus);
+    }
+
+    return false;
   }
 
   startDefending() {
