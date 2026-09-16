@@ -11,8 +11,11 @@ class DatabaseValidator {
     this.validateIndexedDatabase("Weapons", database.weapons, errors);
     this.validateIndexedDatabase("Armors", database.armors, errors);
     this.validateIndexedDatabase("Skills", database.skills, errors);
+    this.validateIndexedDatabase("Statuses", database.statuses, errors);
+
     this.validateMapInfos(database.mapInfos, errors);
     this.validateSkills(database.skills, errors);
+    this.validateStatuses(database.statuses, errors);
 
     if (errors.length > 0) {
       const details = errors.map((error) => `- ${error}`).join("\n");
@@ -149,6 +152,116 @@ class DatabaseValidator {
 
       if (!Number.isFinite(skill.mpCost) || skill.mpCost < 0) {
         errors.push(`Skill ${index} must have a non-negative numeric mpCost.`);
+      }
+    }
+  }
+
+  static validateStatuses(statuses, errors) {
+    if (!Array.isArray(statuses)) {
+      return;
+    }
+
+    const keys = new Set();
+
+    for (let index = 1; index < statuses.length; index++) {
+      const status = statuses[index];
+
+      if (!status) {
+        continue;
+      }
+
+      if (!status.key || typeof status.key !== "string") {
+        errors.push(`Status ${index} must have a key.`);
+      } else if (keys.has(status.key)) {
+        errors.push(
+          `Statuses.json contains duplicate status key "${status.key}".`,
+        );
+      } else {
+        keys.add(status.key);
+      }
+
+      if (
+        !status.classification ||
+        typeof status.classification !== "object" ||
+        Array.isArray(status.classification)
+      ) {
+        errors.push(`Status ${index} must define a classification object.`);
+      } else {
+        const classification = status.classification;
+
+        if (
+          !classification.family ||
+          typeof classification.family !== "string"
+        ) {
+          errors.push(`Status ${index} must define a classification family.`);
+        }
+
+        if (typeof classification.negative !== "boolean") {
+          errors.push(
+            `Status ${index} classification.negative must be a boolean.`,
+          );
+        }
+
+        if (typeof classification.removable !== "boolean") {
+          errors.push(
+            `Status ${index} classification.removable must be a boolean.`,
+          );
+        }
+
+        if (typeof classification.persistsAfterBattle !== "boolean") {
+          errors.push(
+            `Status ${index} classification.persistsAfterBattle must be a boolean.`,
+          );
+        }
+      }
+
+      if (
+        !status.duration ||
+        typeof status.duration !== "object" ||
+        Array.isArray(status.duration)
+      ) {
+        errors.push(`Status ${index} must define a duration object.`);
+      } else {
+        const duration = status.duration;
+
+        const validDurationTypes = new Set([
+          "untilRemoved",
+          "turns",
+          "countdown",
+          "derived",
+        ]);
+
+        if (!validDurationTypes.has(duration.type)) {
+          errors.push(
+            `Status ${index} has unsupported duration type "${duration.type}".`,
+          );
+        }
+
+        if (
+          duration.type === "turns" &&
+          (!Number.isInteger(duration.turns) || duration.turns <= 0)
+        ) {
+          errors.push(
+            `Status ${index} with duration type "turns" must define a positive integer turns value.`,
+          );
+        }
+
+        if (
+          duration.type === "countdown" &&
+          (!Number.isInteger(duration.turns) || duration.turns <= 0)
+        ) {
+          errors.push(
+            `Status ${index} with duration type "countdown" must define a positive integer turns value.`,
+          );
+        }
+      }
+
+      if (
+        !status.effects ||
+        typeof status.effects !== "object" ||
+        Array.isArray(status.effects)
+      ) {
+        errors.push(`Status ${index} must define an effects object.`);
       }
     }
   }
