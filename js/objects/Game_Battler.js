@@ -41,12 +41,48 @@ class Game_Battler {
       ...(data.elementRates || {}),
     };
 
+    this.statuses = [];
     this.defending = false;
   }
 
   // =====================================
   // Core Combat Stats
   // =====================================
+
+  hasStatus(statusKey) {
+    return this.statuses.some((status) => status.key === statusKey);
+  }
+
+  addStatus(statusKey) {
+    if (this.hasStatus(statusKey)) {
+      return false;
+    }
+
+    const definition = DatabaseManager.statuses.find(
+      (status) => status?.key === statusKey,
+    );
+
+    if (!definition) {
+      return false;
+    }
+
+    this.statuses.push({
+      key: definition.key,
+    });
+
+    return true;
+  }
+
+  removeStatus(statusKey) {
+    const index = this.statuses.findIndex((status) => status.key === statusKey);
+
+    if (index === -1) {
+      return false;
+    }
+
+    this.statuses.splice(index, 1);
+    return true;
+  }
 
   startDefending() {
     this.defending = true;
