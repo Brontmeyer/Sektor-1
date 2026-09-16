@@ -103,6 +103,13 @@ class Scene_Battle extends Scene_Base {
     this.partyController.initializePartyTurnQueue();
     this.initializePartyBattleData();
 
+    const canAct = this.battleManager.beginPartyTurn();
+
+    if (!canAct) {
+      this.battleManager.finishPartyAction();
+      return;
+    }
+
     this.battleManager.setTurnState(BattleManager.TURN_COMMAND);
 
     DebugManager.log(`Battle started against ${this.enemy.name}.`);

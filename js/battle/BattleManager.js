@@ -34,6 +34,22 @@ class BattleManager {
     return this.scene.partyController;
   }
 
+  beginPartyTurn() {
+    const party = this.party();
+    const battler = party.activeBattler;
+
+    if (!battler) {
+      return false;
+    }
+
+    battler.processStatusTrigger(BattleManager.TURN_START);
+
+    if (battler.isDead()) {
+      return false;
+    }
+    return true;
+  }
+
   finishPartyAction() {
     const battle = this.scene;
     const party = this.party();
@@ -41,6 +57,12 @@ class BattleManager {
     if (party.hasNextBattler()) {
       party.nextBattler();
 
+      const canAct = this.beginPartyTurn();
+
+      if (!canAct) {
+        return this.finishPartyAction();
+      }
+      
       this.setTurnState(BattleManager.TURN_COMMAND);
 
       battle.battleInputLocked = false;

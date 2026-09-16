@@ -54,7 +54,7 @@
 
   {
     "id": 2,
-    "name": "Party Test",
+    "name": "Super Sexy Sarah",
     "sideBattleSprite": "Player_Battle.png",
     "battleSpriteWidth": 190,
     "battleSpriteHeight": 166,
@@ -106,7 +106,7 @@
 
   {
     "id": 3,
-    "name": "Party Test 2",
+    "name": "Aboo",
     "sideBattleSprite": "Player_Battle.png",
     "battleSpriteWidth": 190,
     "battleSpriteHeight": 166,
@@ -158,7 +158,7 @@
 
   {
     "id": 4,
-    "name": "Party Test 3",
+    "name": "G Prime",
     "sideBattleSprite": "Player_Battle.png",
     "battleSpriteWidth": 190,
     "battleSpriteHeight": 166,
