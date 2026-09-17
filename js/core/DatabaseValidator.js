@@ -257,6 +257,45 @@ class DatabaseValidator {
       }
 
       if (
+        status.conditions !== undefined &&
+        (typeof status.conditions !== "object" ||
+          status.conditions === null ||
+          Array.isArray(status.conditions))
+      ) {
+        errors.push(`Status ${index} conditions must be an object.`);
+      }
+
+      if (
+        status.conditions &&
+        typeof status.conditions === "object" &&
+        !Array.isArray(status.conditions)
+      ) {
+        const conditions = status.conditions;
+
+        if (
+          conditions.hpPercentAtOrBelow !== undefined &&
+          (typeof conditions.hpPercentAtOrBelow !== "number" ||
+            conditions.hpPercentAtOrBelow < 0 ||
+            conditions.hpPercentAtOrBelow > 1)
+        ) {
+          errors.push(
+            `Status ${index} conditions.hpPercentAtOrBelow must be a number from 0 to 1.`,
+          );
+        }
+
+        if (
+          conditions.hpPercentAbove !== undefined &&
+          (typeof conditions.hpPercentAbove !== "number" ||
+            conditions.hpPercentAbove < 0 ||
+            conditions.hpPercentAbove > 1)
+        ) {
+          errors.push(
+            `Status ${index} conditions.hpPercentAbove must be a number from 0 to 1.`,
+          );
+        }
+      }
+
+      if (
         !status.effects ||
         typeof status.effects !== "object" ||
         Array.isArray(status.effects)

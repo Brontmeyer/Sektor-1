@@ -535,6 +535,7 @@
     },
 
     "conditions": {
+      "hpPercentAbove": 0,
       "hpPercentAtOrBelow": 0.25
     },
 

@@ -53,6 +53,48 @@ class Game_Battler {
     return this.statuses.some((status) => status.key === statusKey);
   }
 
+  updateDerivedStatuses() {
+    const derivedStatuses = DatabaseManager.statuses.filter(
+      (status) => status?.duration?.type === "derived",
+    );
+
+    const activeDerivedStatuses = derivedStatuses.filter((status) => {
+      const conditions = status.conditions;
+
+      if (!conditions) {
+        return false;
+      }
+
+      let matches = true;
+
+      if (typeof conditions.hpPercentAbove === "number") {
+        matches = matches && this.hpRate() > conditions.hpPercentAbove;
+      }
+
+      if (typeof conditions.hpPercentAtOrBelow === "number") {
+        matches = matches && this.hpRate() <= conditions.hpPercentAtOrBelow;
+      }
+
+      return matches;
+    });
+
+    for (const status of activeDerivedStatuses) {
+      this.addStatus(status.key);
+    }
+
+    for (const status of derivedStatuses) {
+      const shouldBeActive = activeDerivedStatuses.some(
+        (activeStatus) => activeStatus.key === status.key,
+      );
+
+      if (!shouldBeActive) {
+        this.removeStatus(status.key);
+      }
+    }
+
+    return activeDerivedStatuses;
+  }
+
   addStatus(statusKey) {
     if (this.hasStatus(statusKey)) {
       return false;
@@ -94,7 +136,7 @@ class Game_Battler {
     }
 
     if (definition.effects?.setsHpToZero === true) {
-      this.hp = 0;
+      this.setHp(0);
     }
 
     return true;
@@ -134,7 +176,7 @@ class Game_Battler {
 
       const minimumHp = definition.effects.canKill === true ? 0 : 1;
 
-      this.hp = Math.max(minimumHp, this.hp - damage);
+      this.setHp(Math.max(minimumHp, this.hp - damage));
     }
     return true;
   }
@@ -270,16 +312,28 @@ class Game_Battler {
 
   gainHp(amount) {
     const value = this._validAmount(amount);
-    this.hp = Math.min(this.hp + value, this.maxHp);
+
+    this.setHp(this.hp + value);
 
     DebugManager.log(`${this.name} recovered ${value} HP.`);
 
     return value;
   }
 
+  setHp(value) {
+    const validValue = Number.isFinite(value) ? value : 0;
+
+    this.hp = Math.max(0, Math.min(validValue, this.maxHp));
+
+    this.updateDerivedStatuses();
+
+    return this.hp;
+  }
+
   loseHp(amount) {
     const value = this._validAmount(amount);
-    this.hp = Math.max(this.hp - value, 0);
+
+    this.setHp(this.hp - value);
 
     DebugManager.log(`${this.name} lost ${value} HP.`);
 
@@ -287,7 +341,7 @@ class Game_Battler {
   }
 
   recoverAllHp() {
-    this.hp = this.maxHp;
+    this.setHp(this.maxHp);
 
     DebugManager.log(`${this.name}'s HP was fully restored.`);
   }
