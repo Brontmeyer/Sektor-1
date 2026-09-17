@@ -50,6 +50,19 @@ class BattleManager {
     return true;
   }
 
+  endPartyTurn() {
+    const party = this.party();
+    const battler = party.activeBattler;
+
+    if (!battler) {
+      return false;
+    }
+
+    battler.tickStatusDurations();
+
+    return true;
+  }
+
   finishPartyAction() {
     const battle = this.scene;
     const party = this.party();
@@ -62,7 +75,7 @@ class BattleManager {
       if (!canAct) {
         return this.finishPartyAction();
       }
-      
+
       this.setTurnState(BattleManager.TURN_COMMAND);
 
       battle.battleInputLocked = false;
@@ -145,6 +158,7 @@ class BattleManager {
           return;
         }
 
+        this.endPartyTurn();
         this.finishPartyAction();
         break;
 
@@ -185,6 +199,7 @@ class BattleManager {
           return;
         }
 
+        this.endPartyTurn();
         this.finishPartyAction();
         break;
 
@@ -215,6 +230,7 @@ class BattleManager {
           return;
         }
 
+        this.endPartyTurn();
         this.finishPartyAction();
         break;
 
@@ -785,7 +801,7 @@ class BattleManager {
 
     if (!success) {
       battle.pendingItem = null;
-      return;
+      return false;
     }
 
     const healing = battler.hp - hpBefore;
@@ -797,6 +813,7 @@ class BattleManager {
 
     // The pending item has now been used.
     battle.pendingItem = null;
+    return true;
   }
 
   performDefend() {
@@ -811,6 +828,7 @@ class BattleManager {
 
     battle.addBattleMessage(`${battler.name} defends!`);
 
+    this.endPartyTurn();
     this.finishPartyAction();
   }
 
