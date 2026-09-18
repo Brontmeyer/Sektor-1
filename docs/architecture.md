@@ -203,7 +203,7 @@ Game_Variables.js
 
 Battle behavior that is genuinely common to actors and enemies belongs at this level rather than being independently duplicated in both actor and enemy implementations.
 
-Active status instances, status-effect queries, incoming physical/magical damage modifiers, elemental-magic absorption, Reflect capability/limits, damage-triggered status removal, and shared action/skill availability rules live at this layer because those rules apply equally to actors and enemies. Action-facing systems can calculate an attack or spell, then delegate target-side status, damage, and restriction questions to the battler instead of reimplementing status rules.
+Active status instances, status-effect queries, incoming physical/magical damage modifiers, elemental-magic absorption, Reflect capability/limits, damage-triggered status removal, shared action/skill availability rules, and forced-action control flags live at this layer because those rules apply equally to actors and enemies. Action-facing systems can calculate an attack or spell, then delegate target-side status, damage, restriction, and control-authority questions to the battler instead of reimplementing status rules.
 
 ## Game_Actor
 
@@ -262,7 +262,7 @@ The battle layer should coordinate combat without turning one file into a contai
 
 `BattleManager` coordinates the overall battle state and battle flow.
 
-It also owns battle-relative effect routing that requires knowledge of both sides of the encounter. Reflect is resolved here because redirecting a skill requires identifying the Reflect holder's side, choosing a living battler on the opposing side, preserving the original cast cost, and presenting the redirected result without turning reflection into a second cast.
+It also owns battle-relative effect routing that requires knowledge of both sides of the encounter. Reflect is resolved here because redirecting a skill requires identifying the Reflect holder's side, choosing a living battler on the opposing side, preserving the original cast cost, and presenting the redirected result without turning reflection into a second cast. Forced-action control is coordinated here for the same reason: Berserk can begin a party action without player input, while Confuse may need a legal random target drawn from one or both battle sides.
 
 It should orchestrate battle systems rather than permanently absorbing every specialized mechanic into itself.
 
@@ -272,7 +272,7 @@ It should orchestrate battle systems rather than permanently absorbing every spe
 
 ## BattleTargetManager
 
-`BattleTargetManager` owns targeting responsibilities such as selecting and resolving valid battle targets.
+`BattleTargetManager` owns targeting responsibilities such as selecting and resolving valid battle targets. It can also bind an already-resolved battler back into the current ally/enemy selection state, allowing forced targeting to reuse the same downstream attack and skill execution paths as manual selection.
 
 Targeting rules should remain centralized enough that skills, items, and future battle systems can use consistent target behavior.
 

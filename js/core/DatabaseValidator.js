@@ -463,6 +463,9 @@ class DatabaseValidator {
           "countsAsDefeated",
           "setsHpToZero",
           "canBeRevived",
+          "forceRandomTarget",
+          "playerControl",
+          "forcePhysicalAttack",
         ]) {
           if (
             effects[effectKey] !== undefined &&

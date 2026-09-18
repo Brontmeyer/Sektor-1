@@ -497,6 +497,102 @@ class BattleManager {
     return candidates[index] || candidates[0] || null;
   }
 
+  battlerForcesRandomTarget(battler) {
+    return (
+      battler &&
+      typeof battler.forcesRandomTarget === "function" &&
+      battler.forcesRandomTarget()
+    );
+  }
+
+  battlerForcesPhysicalAttack(battler) {
+    return (
+      battler &&
+      typeof battler.forcesPhysicalAttack === "function" &&
+      battler.forcesPhysicalAttack()
+    );
+  }
+
+  allLivingBattlers() {
+    return [
+      ...$gameParty.livingBattleMembers(),
+      ...this.livingBattlersForSide("enemy"),
+    ];
+  }
+
+  physicalAttackCandidates(battler) {
+    if (!battler) {
+      return [];
+    }
+
+    if (this.battlerForcesRandomTarget(battler)) {
+      return this.allLivingBattlers();
+    }
+
+    const side = this.battlerSide(battler);
+    return this.livingBattlersForSide(this.opposingBattleSide(side));
+  }
+
+  randomSkillTargetCandidates(skill) {
+    const battle = this.scene;
+
+    if (!skill || !battle.targetManager) {
+      return [];
+    }
+
+    const candidates = [];
+
+    for (const group of battle.targetManager.allowedTargetGroups(skill)) {
+      const groupCandidates = battle.targetManager.selectableBattlers(
+        group,
+        skill,
+      );
+
+      for (const battler of groupCandidates) {
+        if (!candidates.includes(battler)) {
+          candidates.push(battler);
+        }
+      }
+    }
+
+    return candidates;
+  }
+
+  selectForcedTarget(target) {
+    if (!target || !this.scene.targetManager) {
+      return null;
+    }
+
+    return this.scene.targetManager.selectBattler(target);
+  }
+
+  startForcedPartyAction(random = Math.random) {
+    const battle = this.scene;
+    const battler = this.party().currentBattler();
+
+    if (!battler || !this.battlerForcesPhysicalAttack(battler)) {
+      return false;
+    }
+
+    const candidates = this.physicalAttackCandidates(battler);
+    const target = this.battlerForcesRandomTarget(battler)
+      ? this.randomBattleTarget(candidates, random)
+      : candidates[0] || null;
+
+    if (!target || !this.selectForcedTarget(target)) {
+      return false;
+    }
+
+    battle.selectingEnemyTarget = false;
+    battle.enemyTargetAction = null;
+    battle.addBattleMessage(`${battler.name} attacks uncontrollably!`);
+
+    this.setTurnState(BattleManager.TURN_ACTION);
+    this.performAttack();
+
+    return true;
+  }
+
   resolveSkillReflection(skill, target, random = Math.random) {
     const reflections = [];
     let resolvedTarget = target;
@@ -872,6 +968,10 @@ class BattleManager {
         return this.skipPartyTurn();
       }
 
+      if (this.startForcedPartyAction()) {
+        return;
+      }
+
       this.setTurnState(BattleManager.TURN_COMMAND);
 
       battle.battleInputLocked = false;
@@ -1038,6 +1138,14 @@ class BattleManager {
 
     DebugManager.log(`${battler.name} selected "${command}".`);
 
+    if (
+      typeof battler.isPlayerControlled === "function" &&
+      !battler.isPlayerControlled()
+    ) {
+      this.rejectRestrictedAction(battler, command);
+      return;
+    }
+
     const actionKey = battle.commandWindow.commandActionKey
       ? battle.commandWindow.commandActionKey(command)
       : String(command || "").toLowerCase();
@@ -1048,14 +1156,34 @@ class BattleManager {
     }
 
     switch (command) {
-      case "Attack":
-        battle.targetGroup = "enemy";
+      case "Attack": {
         battle.targetScope = "single";
 
+        if (this.battlerForcesRandomTarget(battler)) {
+          const target = this.randomBattleTarget(
+            this.physicalAttackCandidates(battler),
+          );
+
+          if (!target || !this.selectForcedTarget(target)) {
+            battle.addBattleMessage(`${battler.name} has no valid target.`);
+            return;
+          }
+
+          battle.addBattleMessage(
+            `${battler.name} is confused and lashes out at ${target.name}!`,
+          );
+          battle.enemyTargetAction = null;
+          battle.selectingEnemyTarget = false;
+          this.performAttack();
+          break;
+        }
+
+        battle.targetGroup = "enemy";
         battle.targetManager.selectFirstLivingEnemy();
         battle.enemyTargetAction = "attack";
         battle.selectingEnemyTarget = true;
         break;
+      }
 
       case "Magic":
         battle.magicWindow.show();
@@ -1131,6 +1259,55 @@ class BattleManager {
     battle.targetScope = scopes.includes("single")
       ? "single"
       : scopes[0] || "single";
+
+    // Confuse preserves the chosen action/skill but takes target selection away
+    // from the player. Single-target skills choose randomly from every target
+    // that is legal for the selected skill. All-target-only skills choose a
+    // random legal target group and then resolve against that whole side.
+    if (this.battlerForcesRandomTarget(battler)) {
+      if (battle.targetScope === "single") {
+        const target = this.randomBattleTarget(
+          this.randomSkillTargetCandidates(skill),
+        );
+
+        if (!target || !this.selectForcedTarget(target)) {
+          battle.addBattleMessage(`${skill.name} has no valid targets.`);
+          battle.pendingMagicSkill = null;
+          return;
+        }
+
+        battle.pendingMagicTarget = target;
+        battle.addBattleMessage(
+          `${battler.name} is confused and targets ${target.name} with ${skill.name}!`,
+        );
+      } else {
+        const legalGroups = targetGroups.filter(
+          (group) =>
+            battle.targetManager.selectableBattlers(group, skill).length > 0,
+        );
+        const targetGroup = this.randomBattleTarget(legalGroups);
+
+        if (!targetGroup) {
+          battle.addBattleMessage(`${skill.name} has no valid targets.`);
+          battle.pendingMagicSkill = null;
+          return;
+        }
+
+        battle.targetGroup = targetGroup;
+        battle.pendingMagicTarget = null;
+        battle.addBattleMessage(
+          `${battler.name} is confused and targets all ${targetGroup} battlers with ${skill.name}!`,
+        );
+      }
+
+      battle.enemyTargetAction = null;
+      battle.selectingEnemyTarget = false;
+      battle.battleInputLocked = true;
+      battle.setActorState("magic", 0.9);
+      battle.setActionPhase("magicCast", 0.4);
+      battle.magicWindow.hide();
+      return;
+    }
 
     battle.enemyTargetAction = "magic";
     battle.selectingEnemyTarget = true;
@@ -1503,6 +1680,10 @@ class BattleManager {
       return;
     }
 
+    if (this.startForcedPartyAction()) {
+      return;
+    }
+
     this.setTurnState(BattleManager.TURN_COMMAND);
 
     if (unlockInputAtRoundStart) {
@@ -1552,11 +1733,18 @@ class BattleManager {
 
     battle.setEnemyState("attack", 0.4, enemy);
 
-    const target = $gameParty.livingBattleMembers()[0];
+    const target = this.battlerForcesRandomTarget(enemy)
+      ? this.randomBattleTarget(this.physicalAttackCandidates(enemy))
+      : $gameParty.livingBattleMembers()[0];
 
     if (!target) {
       battle.enemyTurnIndex = 0;
-      this.declareBattleOutcome(BattleManager.OUTCOME_DEFEAT);
+
+      const outcome = this.detectBattleOutcome();
+      if (outcome) {
+        this.declareBattleOutcome(outcome);
+      }
+
       return;
     }
 
@@ -1587,6 +1775,12 @@ class BattleManager {
       } else if (damage > 0) {
         battle.setActorState("hurt", 0.3, target);
       }
+    } else if (battle.enemies.includes(target)) {
+      if (this.battlerIsDefeated(target)) {
+        battle.setEnemyState("defeat", 0, target);
+      } else if (damage > 0) {
+        battle.setEnemyState("hurt", 0.3, target);
+      }
     }
 
     const damageMessage =
@@ -1596,10 +1790,11 @@ class BattleManager {
 
     battle.addBattleMessage(`${enemy.name} attacks! ${damageMessage}`);
 
-    if ($gameParty.livingBattleMembers().length === 0) {
+    const outcome = this.detectBattleOutcome();
+
+    if (outcome) {
       battle.enemyTurnIndex = 0;
-      battle.addBattleMessage(`${target.name} has fallen!`);
-      this.declareBattleOutcome(BattleManager.OUTCOME_DEFEAT);
+      this.declareBattleOutcome(outcome);
       return;
     }
 

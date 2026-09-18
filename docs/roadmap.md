@@ -97,10 +97,11 @@ Status Runtime Core v1, Status Combat Modifiers v1, Reflect Runtime v1, Action R
 - Barrier / MBarrier reduction and Shield physical immunity / elemental absorption
 - Per-target Reflect routing with one-bounce protection and single-cost all-target casting
 - Shared action/skill restrictions for Silence and Frog, including command-window availability
+- Data-driven forced action control for Confuse random targeting and Berserk auto-attacks
 - Shared `isDefeated()` semantics for HP-zero and status-defined defeat, including Petrify
 - Data-driven Death/KO revival with defeated-target selection and cleansing-aware Petrify handling
 
-Remaining milestone work is primarily the advanced mechanics required by the 25 initial statuses, including time-speed modifiers, Confuse random targeting, Berserk forced actions, and Fury / Sadness Limit behavior.
+Remaining milestone work is primarily the advanced mechanics required by the 25 initial statuses, including time-speed modifiers and Fury / Sadness Limit behavior.
 
 This milestone should continue to establish reusable status processing rather than twenty-five unrelated status scripts.
 

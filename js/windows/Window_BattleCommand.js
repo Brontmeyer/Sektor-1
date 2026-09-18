@@ -41,6 +41,13 @@ class Window_BattleCommand {
       return true;
     }
 
+    if (
+      typeof actor.isPlayerControlled === "function" &&
+      !actor.isPlayerControlled()
+    ) {
+      return false;
+    }
+
     if (typeof actor.canUseBattleAction !== "function") {
       return true;
     }

@@ -183,6 +183,24 @@ class Game_Battler {
       .filter((value) => value !== undefined);
   }
 
+  hasStatusEffectFlag(effectKey) {
+    return this.statusEffectValues(effectKey).some((value) => value === true);
+  }
+
+  isPlayerControlled() {
+    return !this.statusEffectValues("playerControl").some(
+      (value) => value === false,
+    );
+  }
+
+  forcesPhysicalAttack() {
+    return this.hasStatusEffectFlag("forcePhysicalAttack");
+  }
+
+  forcesRandomTarget() {
+    return this.hasStatusEffectFlag("forceRandomTarget");
+  }
+
   normalizedActionKey(value) {
     return typeof value === "string" ? value.trim().toLowerCase() : "";
   }

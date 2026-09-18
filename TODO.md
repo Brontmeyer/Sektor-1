@@ -42,11 +42,11 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Haste / Slow turn-speed modifiers
 - [x] Stop / Paralyze action prevention
 - [x] Sleep / Confuse physical-damage removal
-- [ ] Confuse random targeting
+- [x] Confuse random targeting
 - [x] Silence skill-type restrictions
 - [x] Petrify defeat-state handling
 - [x] Death defeat / revival handling
-- [ ] Berserk forced physical attacks
+- [x] Berserk forced physical attacks
 - [ ] Fury / Sadness Limit modifiers
 - [x] Darkness physical accuracy reduction
 - [x] Frog restricted actions

@@ -108,6 +108,31 @@ class BattleTargetManager {
     return battlers.filter((battler) => this.isSelectableTarget(battler, skill));
   }
 
+  selectBattler(target) {
+    if (!target) {
+      return null;
+    }
+
+    const allies = $gameParty.battleMembers();
+    const allyIndex = allies.indexOf(target);
+
+    if (allyIndex >= 0) {
+      this.scene.targetGroup = "ally";
+      this.scene.selectedAllyIndex = allyIndex;
+      return target;
+    }
+
+    const enemyIndex = this.scene.enemies.indexOf(target);
+
+    if (enemyIndex >= 0) {
+      this.scene.targetGroup = "enemy";
+      this.scene.selectedEnemyIndex = enemyIndex;
+      return target;
+    }
+
+    return null;
+  }
+
   // =================================
   // Target Movement
   // =================================

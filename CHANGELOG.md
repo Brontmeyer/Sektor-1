@@ -68,6 +68,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added Petrify defeat handling without forcing HP to zero
 - Added Rekindle / Reawakening revival execution, defeated-target selection, and revival-aware Reflect routing
 - Added dedicated defeat/revival regression coverage for battle outcomes, rewards, cleansing, targeting, and metadata validation
+- Added Forced Action Control v1 with data-driven Confuse target randomization and Berserk automatic physical attacks
+- Added cross-side Confuse targeting for basic attacks, legal-target randomization for single-target skills, and enemy friendly-fire support
+- Added forced-control metadata validation and dedicated regression coverage
 
 ### Changed
 
@@ -119,6 +122,15 @@ docs/roadmap.md        High-level development direction
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 18 - Forced Action Control v1
+
+- Connected Confuse `forceRandomTarget` metadata to player attacks, single-target skills, and enemy physical turns
+- Connected Berserk `playerControl` / `forcePhysicalAttack` metadata to automatic party attacks
+- Added reusable target rebinding so forced selections reuse normal attack and skill execution paths
+- Added control-effect schema validation and dedicated regression tests
 
 ---
 

@@ -116,7 +116,9 @@ class Scene_Battle extends Scene_Base {
       return;
     }
 
-    this.battleManager.setTurnState(BattleManager.TURN_COMMAND);
+    if (!this.battleManager.startForcedPartyAction()) {
+      this.battleManager.setTurnState(BattleManager.TURN_COMMAND);
+    }
 
     DebugManager.log(`Battle started: ${this.encounter.name}.`);
   }
