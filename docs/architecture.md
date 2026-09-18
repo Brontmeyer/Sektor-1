@@ -396,7 +396,9 @@ Several major systems intentionally cross architectural boundaries while retaini
 
 `Skills.json` defines skills.
 
-Battle systems resolve their targeting, costs, effects, damage, healing, status interactions, and other runtime behavior.
+`Game_Actor` owns reusable skill execution details that belong to the acting battler, including MP payment, damage/healing formulas, and routing a skill's `status` payload into the shared Status Runtime. Status application, refresh, removal, toggle behavior, resistance, and immunity remain owned by `Game_Battler`; skill execution does not duplicate those rules.
+
+`BattleManager` coordinates battle targeting and presentation, then consumes the status-resolution results produced by the caster so status feedback is shown without making individual skill names part of battle-flow logic.
 
 Windows present available skills to the player.
 

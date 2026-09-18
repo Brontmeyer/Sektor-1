@@ -270,7 +270,13 @@ Status behavior should be driven by properties in `Statuses.json` wherever pract
 
 Battlers may optionally define `statusRates` for a specific status key and `statusFamilyRates` for a complete status family. A rate of `1.0` is normal susceptibility, values below `1.0` reduce the final application chance, values above `1.0` increase it up to the final 100% cap, and `0` grants immunity. Specific-status and family rates multiply together.
 
-Ordinary status application uses the calling effect's base chance multiplied by the target's effective status rate. Derived statuses are not rolled or manually inflicted; the runtime evaluates them from their conditions. The shared runtime API is ready for skills, while routing every `Skills.json` `inflictStatus` / `removeStatus` entry through it remains part of the unfinished Skills Runtime work.
+Ordinary status application uses the calling effect's base chance multiplied by the target's effective status rate. Derived statuses are not rolled or manually inflicted; the runtime evaluates them from their conditions.
+
+Skill status payloads now route through this same runtime. `Game_Actor.useSkill()` interprets the reusable `status` object for damage skills, pure status application, and status removal. Skill-defined base chances continue to respect target status resistance and immunity when applying a status. `allyStatusChance` can override the base chance for allied targets, and `toggleStatus` lets reversible transformations such as Small and Frog use the same skill to apply or remove their status. Status-removal skills use their own per-status chance without being blocked by the target's resistance to receiving that status.
+
+The runtime records the most recent per-status resolution so battle presentation can distinguish applied, refreshed, removed, resisted, immune, unchanged, and unsupported status references without hard-coding individual skill names.
+
+`Skills.json` still contains the legacy keys `resist` and `deathforce`, but neither is part of the approved 25-status `Statuses.json` v1 set. The runtime therefore reports those references as unsupported instead of inventing ad-hoc status behavior. They remain future design work unless they are formally added to the canonical status database.
 
 ---
 

@@ -54,6 +54,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added data-driven outgoing physical-damage and physical-accuracy status modifiers
 - Added Sleep / Confuse physical-damage removal and Shield elemental-magic absorption
 - Added dedicated combat-modifier regression coverage
+- Added Skill / Status Integration v1 so skill status payloads route through the shared Status Runtime
+- Added ally-specific status chances, reversible status toggles, status removal, and damage-plus-status resolution
+- Added battle feedback for applied, refreshed, removed, resisted, and immune skill-driven statuses
+- Added dedicated skill/status integration regression coverage
 
 ### Changed
 
@@ -71,6 +75,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Routed player and enemy physical attacks through one status-aware physical damage path
 - Routed magical skill damage through target-side incoming-damage resolution
 - Made enemy physical accuracy use enemy `attackPercent` safely instead of inheriting actor-only weapon assumptions
+- Standardized Soul Cleanse's Slow-Numb reference on the canonical `slowNumb` runtime key
+- Made skill status metadata validate status chances, ally-specific chances, and toggle flags before runtime use
 
 ### Documentation
 
@@ -96,6 +102,17 @@ docs/roadmap.md        High-level development direction
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 14 - Skill / Status Integration v1
+
+- Routed `Skills.json` status payloads through the shared Status Runtime for status-only and damaging skills
+- Added ally-specific application chances and reusable toggle semantics for reversible statuses
+- Added reusable skill-driven status removal and battle presentation of status outcomes
+- Corrected Soul Cleanse to use the canonical `slowNumb` status key
+- Added validation and regression tests for skill/status metadata and runtime behavior
+- Kept legacy `resist` and `deathforce` skill references non-canonical until their owning status designs are approved
 
 ---
 

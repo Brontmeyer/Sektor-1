@@ -144,8 +144,167 @@ class Game_Actor extends Game_Battler {
     return true;
   }
 
-  useSkill(skillId, target = this, payCost = true, scope = "single") {
+  skillStatusChance(skill, target, baseChance) {
+    const fallbackChance = Number(baseChance);
+    let chance = Number.isFinite(fallbackChance) ? fallbackChance : 0;
+
+    if (
+      target instanceof Game_Actor &&
+      Number.isFinite(Number(skill?.allyStatusChance))
+    ) {
+      chance = Number(skill.allyStatusChance);
+    }
+
+    return Math.max(0, Math.min(1, chance));
+  }
+
+  resolveSkillStatusEffects(skill, target, random = Math.random) {
+    const statusPayload = skill?.status;
+
+    if (
+      !target ||
+      !statusPayload ||
+      typeof statusPayload !== "object" ||
+      Array.isArray(statusPayload)
+    ) {
+      return [];
+    }
+
+    const results = [];
+
+    for (const [statusKey, baseChance] of Object.entries(statusPayload)) {
+      const chance = this.skillStatusChance(skill, target, baseChance);
+      const definition =
+        typeof target.statusDefinition === "function"
+          ? target.statusDefinition(statusKey)
+          : null;
+      const statusName = definition?.name || statusKey;
+
+      if (typeof target.statusDefinition === "function" && !definition) {
+        results.push({
+          key: statusKey,
+          name: statusName,
+          applied: false,
+          refreshed: false,
+          removed: false,
+          reason: "unknownStatus",
+          chance: 0,
+        });
+        continue;
+      }
+
+      if (skill.effect === "removeStatus") {
+        const roll = typeof random === "function" ? random() : Math.random();
+
+        if (chance <= 0 || roll >= chance) {
+          results.push({
+            key: statusKey,
+            name: statusName,
+            applied: false,
+            refreshed: false,
+            removed: false,
+            reason: "missed",
+            chance,
+          });
+          continue;
+        }
+
+        const removed =
+          typeof target.removeStatus === "function"
+            ? target.removeStatus(statusKey)
+            : false;
+
+        results.push({
+          key: statusKey,
+          name: statusName,
+          applied: false,
+          refreshed: false,
+          removed,
+          reason: removed ? "removed" : "unchanged",
+          chance,
+        });
+        continue;
+      }
+
+      if (
+        skill.toggleStatus === true &&
+        typeof target.hasStatus === "function" &&
+        target.hasStatus(statusKey)
+      ) {
+        const roll = typeof random === "function" ? random() : Math.random();
+
+        if (chance <= 0 || roll >= chance) {
+          results.push({
+            key: statusKey,
+            name: statusName,
+            applied: false,
+            refreshed: false,
+            removed: false,
+            reason: "missed",
+            chance,
+          });
+          continue;
+        }
+
+        const removed =
+          typeof target.removeStatus === "function"
+            ? target.removeStatus(statusKey)
+            : false;
+
+        results.push({
+          key: statusKey,
+          name: statusName,
+          applied: false,
+          refreshed: false,
+          removed,
+          reason: removed ? "removed" : "unchanged",
+          chance,
+        });
+        continue;
+      }
+
+      if (typeof target.tryAddStatus !== "function") {
+        results.push({
+          key: statusKey,
+          name: statusName,
+          applied: false,
+          refreshed: false,
+          removed: false,
+          reason: "unsupportedTarget",
+          chance: 0,
+        });
+        continue;
+      }
+
+      const application = target.tryAddStatus(statusKey, chance, random);
+
+      results.push({
+        key: statusKey,
+        name: statusName,
+        removed: false,
+        ...application,
+      });
+    }
+
+    return results;
+  }
+
+  skillStatusResults() {
+    return Array.isArray(this._lastSkillStatusResults)
+      ? this._lastSkillStatusResults.map((result) => ({ ...result }))
+      : [];
+  }
+
+  useSkill(
+    skillId,
+    target = this,
+    payCost = true,
+    scope = "single",
+    random = Math.random,
+  ) {
     const skill = DatabaseManager.skill(skillId);
+
+    this._lastSkillStatusResults = [];
 
     if (!skill) {
       console.warn(`Cannot use skill ${skillId}: skill does not exist.`);
@@ -167,6 +326,14 @@ class Game_Actor extends Game_Battler {
       return false;
     }
 
+    const paySkillCost = () => {
+      if (!payCost) {
+        return true;
+      }
+
+      return this.payMpCost(skill.mpCost || 0);
+    };
+
     // HEALING EFFECT
     if (skill.effect === "heal") {
       if (typeof target.isFullHp === "function" && target.isFullHp()) {
@@ -177,15 +344,16 @@ class Game_Actor extends Game_Battler {
 
       const healAmount = this.magicHealing(skill, scope);
 
-      if (payCost) {
-        const paid = this.payMpCost(skill.mpCost || 0);
-
-        if (!paid) {
-          return false;
-        }
+      if (!paySkillCost()) {
+        return false;
       }
 
       target.gainHp(healAmount);
+      this._lastSkillStatusResults = this.resolveSkillStatusEffects(
+        skill,
+        target,
+        random,
+      );
 
       DebugManager.log(`${this.name} used ${skill.name} on ${target.name}.`);
 
@@ -202,12 +370,8 @@ class Game_Actor extends Game_Battler {
 
       const damage = this.magicDamage(skill, target, scope);
 
-      if (payCost) {
-        const paid = this.payMpCost(skill.mpCost || 0);
-
-        if (!paid) {
-          return false;
-        }
+      if (!paySkillCost()) {
+        return false;
       }
 
       const damageResult =
@@ -222,6 +386,12 @@ class Game_Actor extends Game_Battler {
         target.loseHp(damage);
       }
 
+      this._lastSkillStatusResults = this.resolveSkillStatusEffects(
+        skill,
+        target,
+        random,
+      );
+
       const resolvedDamage = damageResult?.damage ?? damage;
       const resolvedHealing = damageResult?.healing ?? 0;
 
@@ -235,6 +405,23 @@ class Game_Actor extends Game_Battler {
           `${this.name} used ${skill.name} on ${target.name} for ${resolvedDamage} damage.`,
         );
       }
+
+      return true;
+    }
+
+    // STATUS APPLICATION / REMOVAL EFFECTS
+    if (skill.effect === "inflictStatus" || skill.effect === "removeStatus") {
+      if (!paySkillCost()) {
+        return false;
+      }
+
+      this._lastSkillStatusResults = this.resolveSkillStatusEffects(
+        skill,
+        target,
+        random,
+      );
+
+      DebugManager.log(`${this.name} used ${skill.name} on ${target.name}.`);
 
       return true;
     }

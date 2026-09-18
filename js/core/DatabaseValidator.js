@@ -176,6 +176,45 @@ class DatabaseValidator {
       if (!Number.isFinite(skill.mpCost) || skill.mpCost < 0) {
         errors.push(`Skill ${index} must have a non-negative numeric mpCost.`);
       }
+
+      if (
+        skill.status !== undefined &&
+        (typeof skill.status !== "object" ||
+          skill.status === null ||
+          Array.isArray(skill.status))
+      ) {
+        errors.push(`Skill ${index} status must be an object when provided.`);
+      } else if (skill.status && typeof skill.status === "object") {
+        for (const [statusKey, chance] of Object.entries(skill.status)) {
+          if (!statusKey) {
+            errors.push(`Skill ${index} status keys must be non-empty strings.`);
+          }
+
+          if (!Number.isFinite(chance) || chance < 0 || chance > 1) {
+            errors.push(
+              `Skill ${index} status chance for "${statusKey}" must be between 0 and 1.`,
+            );
+          }
+        }
+      }
+
+      if (
+        skill.allyStatusChance !== undefined &&
+        (!Number.isFinite(skill.allyStatusChance) ||
+          skill.allyStatusChance < 0 ||
+          skill.allyStatusChance > 1)
+      ) {
+        errors.push(
+          `Skill ${index} allyStatusChance must be between 0 and 1 when provided.`,
+        );
+      }
+
+      if (
+        skill.toggleStatus !== undefined &&
+        typeof skill.toggleStatus !== "boolean"
+      ) {
+        errors.push(`Skill ${index} toggleStatus must be true or false when provided.`);
+      }
     }
   }
 

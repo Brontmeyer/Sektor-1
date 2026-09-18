@@ -99,7 +99,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Define Indirect Magic
 - [x] Define Advanced Magic
 - [ ] Implement remaining skill mechanics required by Skills.json
-- [ ] Implement status interaction with skills
+- [x] Implement status interaction with skills
 - [ ] Implement undead restorative-damage interaction
 - [ ] Design Summon Magic
 - [ ] Design Limit Skills

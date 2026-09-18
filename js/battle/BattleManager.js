@@ -360,6 +360,80 @@ class BattleManager {
     };
   }
 
+  presentSkillStatusResults(caster, skill, target, results = []) {
+    const battle = this.scene;
+
+    if (!Array.isArray(results) || results.length === 0) {
+      return [];
+    }
+
+    const applied = [];
+    const refreshed = [];
+    const removed = [];
+    let blocked = false;
+
+    for (const result of results) {
+      const name = result.name || result.key || "Status";
+
+      if (result.applied) {
+        if (result.refreshed) {
+          refreshed.push(name);
+          battle.addBattlePopup(target, `${name} ↻`, "status");
+        } else {
+          applied.push(name);
+          battle.addBattlePopup(target, name, "status");
+        }
+        continue;
+      }
+
+      if (result.removed) {
+        removed.push(name);
+        battle.addBattlePopup(target, `-${name}`, "status");
+        continue;
+      }
+
+      if (result.reason === "immune" || result.reason === "resisted") {
+        blocked = true;
+      }
+
+      if (result.reason === "unknownStatus") {
+        console.warn(
+          `${skill.name} references unknown status "${result.key}".`,
+        );
+      }
+    }
+
+    if (skill.effect === "inflictStatus" || skill.effect === "removeStatus") {
+      let message = `${caster.name} casts ${skill.name}!`;
+
+      if (applied.length > 0) {
+        message += ` ${target.name} gains ${applied.join(", ")}!`;
+      } else if (refreshed.length > 0) {
+        message += ` ${refreshed.join(", ")} refreshed on ${target.name}!`;
+      } else if (removed.length > 0) {
+        message += ` ${removed.join(", ")} removed from ${target.name}!`;
+      } else {
+        message += ` No effect on ${target.name}.`;
+      }
+
+      battle.addBattleMessage(message);
+
+      if (blocked) {
+        battle.addBattlePopup(target, "RESIST", "resist");
+      }
+    }
+
+    if (typeof target.isDead === "function" && target.isDead()) {
+      if ($gameParty.battleMembers().includes(target)) {
+        battle.setActorState("defeat", 0, target);
+      } else if (battle.enemies.includes(target)) {
+        battle.setEnemyState("defeat", 0, target);
+      }
+    }
+
+    return results;
+  }
+
   presentMagicDamage(caster, skill, target, hpBefore) {
     const battle = this.scene;
     const damage = Math.max(0, hpBefore - target.hp);
@@ -955,6 +1029,13 @@ class BattleManager {
         paidCost = true;
         affectedTargets.push(battler);
 
+        this.presentSkillStatusResults(
+          caster,
+          skill,
+          battler,
+          caster.skillStatusResults?.() || [],
+        );
+
         // -----------------------------
         // DAMAGE
         // -----------------------------
@@ -1018,6 +1099,13 @@ class BattleManager {
       battle.setActorState("idle");
       return;
     }
+
+    this.presentSkillStatusResults(
+      caster,
+      skill,
+      target,
+      caster.skillStatusResults?.() || [],
+    );
 
     // =====================================
     // ENEMY TARGET

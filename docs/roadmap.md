@@ -110,12 +110,11 @@ Status Runtime is complete when the engine can load the canonical status databas
 
 Skills v1 already defines the initial 54 abilities, but some mechanics still depend on systems that are unfinished.
 
-Once Status Runtime exists, the Skills System can complete the interactions that require it.
+The first Status Runtime dependency is now connected: skill `status` payloads can apply, refresh, toggle, or remove canonical runtime statuses, including status payloads attached to damaging spells. Ally-specific status chances and target resistance/immunity flow through the same reusable rules.
 
-Primary work includes:
+Primary remaining work includes:
 
 - Implement remaining mechanics required by `Skills.json`
-- Connect skill status application and removal to Status Runtime
 - Verify single-target and all-target behavior
 - Verify scope-dependent power behavior
 - Complete multi-hit and random-target-per-hit behavior
