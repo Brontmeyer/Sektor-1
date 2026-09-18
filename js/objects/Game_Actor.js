@@ -29,6 +29,7 @@ class Game_Actor extends Game_Battler {
   // =====================================
   // Equipment Management
   // =====================================
+  
   weapon() {
     if (this.weaponId <= 0) {
       return null;

@@ -95,11 +95,6 @@ class Scene_Battle extends Scene_Base {
   start() {
     super.start();
 
-    // =============================================================
-    // Pass 9 - Awakening
-    // Initialize the party turn queue.
-    // =============================================================
-
     this.partyController.initializePartyTurnQueue();
     this.initializePartyBattleData();
 
