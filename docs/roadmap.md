@@ -77,9 +77,9 @@ These foundations allow the next phase of development to focus primarily on turn
 
 The Status System is the current major runtime foundation.
 
-The canonical status data is designed, and the runtime now handles shared status instances, application/removal, duration refresh, resistance/immunity rates, derived-state evaluation, battler-relative turn timing, battle presentation, reusable status-driven combat modifiers, and per-target Reflect redirection. The milestone remains active because several control-flow and defeat-state mechanics still need to be connected.
+The canonical status data is designed, and the runtime now handles shared status instances, application/removal, duration refresh, resistance/immunity rates, derived-state evaluation, battler-relative turn timing, battle presentation, reusable status-driven combat modifiers, per-target Reflect redirection, and data-driven action restrictions. The milestone remains active because several control-flow and defeat-state mechanics still need to be connected.
 
-Status Runtime Core v1, Status Combat Modifiers v1, and Reflect Runtime v1 have established:
+Status Runtime Core v1, Status Combat Modifiers v1, Reflect Runtime v1, and Action Restrictions v1 have established:
 
 - `Statuses.json` database loading and keyed lookup
 - Status application and removal APIs
@@ -96,8 +96,9 @@ Status Runtime Core v1, Status Combat Modifiers v1, and Reflect Runtime v1 have 
 - Sleep / Confuse removal after actual physical damage
 - Barrier / MBarrier reduction and Shield physical immunity / elemental absorption
 - Per-target Reflect routing with one-bounce protection and single-cost all-target casting
+- Shared action/skill restrictions for Silence and Frog, including command-window availability
 
-Remaining milestone work is primarily the advanced mechanics required by the 25 initial statuses, including time-speed modifiers, Confuse random targeting, Silence and Frog skill restrictions, Petrify defeat handling, Death revival semantics, Berserk forced actions, and Fury / Sadness Limit behavior.
+Remaining milestone work is primarily the advanced mechanics required by the 25 initial statuses, including time-speed modifiers, Confuse random targeting, Petrify defeat handling, Death revival semantics, Berserk forced actions, and Fury / Sadness Limit behavior.
 
 This milestone should continue to establish reusable status processing rather than twenty-five unrelated status scripts.
 

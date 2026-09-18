@@ -61,6 +61,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added Reflect Runtime v1 with per-target skill redirection and canonical one-bounce protection
 - Added reflection-aware magic resolution that preserves the original caster, scope, status payload, and single MP cost
 - Added dedicated Reflect regression coverage for direct, all-target, ally-only, non-reflectable, and healing cases
+- Added Action Restrictions v1 with data-driven `allowedActions` and `blockedSkillTypes` handling
+- Added Silence magic blocking and Frog Attack-only command restrictions through the shared battler runtime
+- Added battle-command availability feedback plus dedicated action-restriction regression coverage
 
 ### Changed
 
@@ -82,6 +85,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Made skill status metadata validate status chances, ally-specific chances, and toggle flags before runtime use
 - Made skill metadata require an explicit `reflectable` flag and validated Reflect status metadata before runtime use
 - Centralized single-target and all-target magic effect presentation through one reflection-aware per-target resolver
+- Made actor skill usability and battle command execution honor the same shared status-driven action restrictions
+- Made skill metadata require a non-empty `type` because status restrictions depend on reusable skill categories
 
 ### Documentation
 
@@ -107,6 +112,16 @@ docs/roadmap.md        High-level development direction
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 16 - Action Restrictions v1
+
+- Implemented shared battler action allowlists and blocked skill-type rules from status data
+- Connected Silence to magic-skill availability and Frog to Attack-only battle commands
+- Added command-window dimming/skipping plus execution-time guards against restricted actions
+- Added validation for skill types and status restriction metadata
+- Added dedicated regression tests for runtime, UI, and battle-flow restrictions
 
 ---
 

@@ -173,6 +173,13 @@ class DatabaseValidator {
         }
       }
 
+      if (
+        typeof skill.type !== "string" ||
+        skill.type.trim().length === 0
+      ) {
+        errors.push(`Skill ${index} must define a non-empty string type.`);
+      }
+
       if (!Number.isFinite(skill.mpCost) || skill.mpCost < 0) {
         errors.push(`Skill ${index} must have a non-negative numeric mpCost.`);
       }
@@ -424,6 +431,26 @@ class DatabaseValidator {
         errors.push(`Status ${index} must define an effects object.`);
       } else {
         const effects = status.effects;
+
+        for (const effectKey of ["allowedActions", "blockedSkillTypes"]) {
+          const values = effects[effectKey];
+
+          if (values === undefined) {
+            continue;
+          }
+
+          if (
+            !Array.isArray(values) ||
+            values.length === 0 ||
+            values.some(
+              (value) => typeof value !== "string" || value.trim().length === 0,
+            )
+          ) {
+            errors.push(
+              `Status ${index} effects.${effectKey} must be a non-empty array of non-empty strings when provided.`,
+            );
+          }
+        }
 
         if (
           effects.reflectableSkills !== undefined &&

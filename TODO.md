@@ -43,13 +43,13 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Stop / Paralyze action prevention
 - [x] Sleep / Confuse physical-damage removal
 - [ ] Confuse random targeting
-- [ ] Silence skill-type restrictions
+- [x] Silence skill-type restrictions
 - [ ] Petrify defeat-state handling
 - [ ] Death defeat / revival handling
 - [ ] Berserk forced physical attacks
 - [ ] Fury / Sadness Limit modifiers
 - [x] Darkness physical accuracy reduction
-- [ ] Frog restricted actions
+- [x] Frog restricted actions
 - [x] Small physical damage modifiers
 - [x] Death-Sentence countdown → Death
 - [x] Slow-Numb countdown → Petrify

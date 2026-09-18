@@ -135,6 +135,10 @@ class Game_Actor extends Game_Battler {
       return false;
     }
 
+    if (!this.canUseSkillDefinition(skill)) {
+      return false;
+    }
+
     const mpCost = skill.mpCost || 0;
 
     if (!this.canPayMpCost(mpCost)) {

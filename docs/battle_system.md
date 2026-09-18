@@ -260,6 +260,7 @@ The runtime currently supports:
 - Fury / Sadness mutual exclusivity
 - Turn-start damage and healing triggers
 - Generic action prevention through `effects.canAct`
+- Data-driven action allowlists and blocked skill types for status restrictions
 - Shared physical and magical incoming-damage modifiers
 - Shared outgoing physical-damage and physical-accuracy modifiers
 - Physical-damage status-removal triggers
@@ -314,7 +315,7 @@ Sleep and Confuse are removed when the afflicted battler actually takes physical
 
 Physical combat modifiers are read from status data rather than status names. Outgoing `physicalDamageMultiplier` values affect basic physical damage, `physicalAccuracyMultiplier` values affect physical hit chance, and target-side `physicalDamageTakenMultiplier` values are applied by the shared incoming-damage resolver. This makes the damage portions of Berserk, Fury, Darkness, Frog, Small, Sadness, Barrier, and Shield reusable even while their unrelated mechanics remain separate work.
 
-Frog's restricted-action behavior remains future work. When `allowedActions` is implemented, that restriction should take precedence over ordinary skill availability.
+Action restrictions are resolved from status data rather than status names. `effects.allowedActions` narrows the battler to the intersection of all active allowlists, while `effects.blockedSkillTypes` blocks matching skill/action types. Frog currently uses `allowedActions: ["attack"]`, so Attack remains available while Magic, Item, and Defend are disabled. Silence uses `blockedSkillTypes: ["magic"]`, so physical attacks, items, and Defend remain available while magic skills are unusable. The battle command window dims/skips restricted commands, and the execution layer rechecks the same shared rule before resolving an action.
 
 Death-Sentence applies Death when its countdown expires. Slow-Numb applies Petrify when its countdown expires.
 

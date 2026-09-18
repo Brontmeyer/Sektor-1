@@ -261,6 +261,7 @@ function testSkillStatusMetadataValidation() {
     {
       id: 1,
       name: "Broken",
+      type: "magic",
       target: ["enemy"],
       scope: ["single"],
       mpCost: 0,

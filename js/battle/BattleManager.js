@@ -283,6 +283,30 @@ class BattleManager {
     return true;
   }
 
+  battlerCanUseAction(battler, actionType) {
+    if (!this.battlerCanAct(battler)) {
+      return false;
+    }
+
+    if (typeof battler.canUseBattleAction === "function") {
+      return battler.canUseBattleAction(actionType);
+    }
+
+    return true;
+  }
+
+  rejectRestrictedAction(battler, actionName) {
+    if (!battler || !actionName) {
+      return false;
+    }
+
+    this.scene.addBattleMessage(
+      `${battler.name} cannot use ${actionName} right now!`,
+    );
+
+    return false;
+  }
+
   // =================================
   // Combat Resolution
   // =================================
@@ -956,6 +980,15 @@ class BattleManager {
 
     DebugManager.log(`${battler.name} selected "${command}".`);
 
+    const actionKey = battle.commandWindow.commandActionKey
+      ? battle.commandWindow.commandActionKey(command)
+      : String(command || "").toLowerCase();
+
+    if (!this.battlerCanUseAction(battler, actionKey)) {
+      this.rejectRestrictedAction(battler, command);
+      return;
+    }
+
     switch (command) {
       case "Attack":
         battle.targetGroup = "enemy";
@@ -986,6 +1019,11 @@ class BattleManager {
     const skill = battle.magicWindow.currentSkill();
 
     if (!skill) {
+      return;
+    }
+
+    if (!this.battlerCanUseAction(battler, "magic")) {
+      this.rejectRestrictedAction(battler, "Magic");
       return;
     }
 
@@ -1032,7 +1070,13 @@ class BattleManager {
 
   executeItem() {
     const battle = this.scene;
+    const battler = this.party().currentBattler();
     const item = battle.itemWindow.currentItem();
+
+    if (!this.battlerCanUseAction(battler, "item")) {
+      this.rejectRestrictedAction(battler, "Item");
+      return;
+    }
 
     if (!item) {
       return;
@@ -1057,7 +1101,13 @@ class BattleManager {
 
   performAttack() {
     const battle = this.scene;
+    const battler = this.party().currentBattler();
     const target = battle.targetManager.getSelectedTarget();
+
+    if (!this.battlerCanUseAction(battler, "attack")) {
+      this.rejectRestrictedAction(battler, "Attack");
+      return;
+    }
 
     if (!target) {
       return;
@@ -1340,7 +1390,8 @@ class BattleManager {
     const battle = this.scene;
     const battler = this.party().currentBattler();
 
-    if (!battler || battler.isDead()) {
+    if (!this.battlerCanUseAction(battler, "defend")) {
+      this.rejectRestrictedAction(battler, "Defend");
       return;
     }
 

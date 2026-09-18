@@ -109,6 +109,91 @@ class Game_Battler {
       .filter((value) => value !== undefined);
   }
 
+  normalizedActionKey(value) {
+    return typeof value === "string" ? value.trim().toLowerCase() : "";
+  }
+
+  allowedBattleActions() {
+    const allowLists = this.statusEffectValues("allowedActions")
+      .filter((value) => Array.isArray(value))
+      .map((actions) =>
+        actions
+          .map((action) => this.normalizedActionKey(action))
+          .filter((action) => action.length > 0),
+      );
+
+    if (allowLists.length === 0) {
+      return null;
+    }
+
+    let allowed = new Set(allowLists[0]);
+
+    for (const actions of allowLists.slice(1)) {
+      const actionSet = new Set(actions);
+      allowed = new Set([...allowed].filter((action) => actionSet.has(action)));
+    }
+
+    return [...allowed];
+  }
+
+  blockedSkillTypes() {
+    const blocked = new Set();
+
+    for (const value of this.statusEffectValues("blockedSkillTypes")) {
+      if (!Array.isArray(value)) {
+        continue;
+      }
+
+      for (const skillType of value) {
+        const normalized = this.normalizedActionKey(skillType);
+
+        if (normalized) {
+          blocked.add(normalized);
+        }
+      }
+    }
+
+    return [...blocked];
+  }
+
+  canUseBattleAction(actionType) {
+    if (!this.canAct()) {
+      return false;
+    }
+
+    const action = this.normalizedActionKey(actionType);
+
+    if (!action) {
+      return false;
+    }
+
+    const allowedActions = this.allowedBattleActions();
+
+    if (allowedActions && !allowedActions.includes(action)) {
+      return false;
+    }
+
+    if (this.blockedSkillTypes().includes(action)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  canUseSkillDefinition(skill) {
+    if (!skill || typeof skill !== "object") {
+      return false;
+    }
+
+    const skillType = this.normalizedActionKey(skill.type);
+
+    if (!skillType) {
+      return false;
+    }
+
+    return this.canUseBattleAction(skillType);
+  }
+
   physicalDamageMultiplier() {
     return Math.max(0, this.statusEffectMultiplier("physicalDamageMultiplier"));
   }

@@ -203,7 +203,7 @@ Game_Variables.js
 
 Battle behavior that is genuinely common to actors and enemies belongs at this level rather than being independently duplicated in both actor and enemy implementations.
 
-Active status instances, status-effect queries, incoming physical/magical damage modifiers, elemental-magic absorption, Reflect capability/limits, and damage-triggered status removal live at this layer because those rules apply equally to actors and enemies. Action-facing systems can calculate an attack or spell, then delegate target-side status and damage questions to the battler instead of reimplementing defensive status rules.
+Active status instances, status-effect queries, incoming physical/magical damage modifiers, elemental-magic absorption, Reflect capability/limits, damage-triggered status removal, and shared action/skill availability rules live at this layer because those rules apply equally to actors and enemies. Action-facing systems can calculate an attack or spell, then delegate target-side status, damage, and restriction questions to the battler instead of reimplementing status rules.
 
 ## Game_Actor
 
@@ -398,11 +398,11 @@ Several major systems intentionally cross architectural boundaries while retaini
 
 `Skills.json` defines skills.
 
-`Game_Actor` owns reusable skill execution details that belong to the acting battler, including MP payment, damage/healing formulas, and routing a skill's `status` payload into the shared Status Runtime. Status application, refresh, removal, toggle behavior, resistance, and immunity remain owned by `Game_Battler`; skill execution does not duplicate those rules.
+`Game_Actor` owns reusable skill execution details that belong to the acting battler, including MP payment, damage/healing formulas, and routing a skill's `status` payload into the shared Status Runtime. Status application, refresh, removal, toggle behavior, resistance, immunity, and status-driven skill availability remain owned by `Game_Battler`; skill execution does not duplicate those rules.
 
 `BattleManager` coordinates battle targeting and presentation, then consumes the status-resolution results produced by the caster so status feedback is shown without making individual skill names part of battle-flow logic.
 
-Windows present available skills to the player.
+Windows present available commands and skills to the player. `Window_BattleCommand` reads the active battler's shared action-availability rules so forbidden commands are dimmed and skipped, while `BattleManager` rechecks the same rule before execution.
 
 ## Essences
 
