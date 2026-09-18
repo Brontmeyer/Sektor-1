@@ -156,6 +156,30 @@ class Game_Battler {
     );
   }
 
+  reflectsSkills() {
+    return this.activeStatusDefinitions().some(
+      (definition) => definition.effects?.reflectableSkills === true,
+    );
+  }
+
+  maxSkillReflections() {
+    let maxReflections = 0;
+
+    for (const definition of this.activeStatusDefinitions()) {
+      if (definition.effects?.reflectableSkills !== true) {
+        continue;
+      }
+
+      const value = Number(definition.effects?.maxReflections);
+
+      if (Number.isInteger(value) && value > maxReflections) {
+        maxReflections = value;
+      }
+    }
+
+    return maxReflections;
+  }
+
   removeStatusesOnPhysicalDamage() {
     const removedStatuses = [];
 

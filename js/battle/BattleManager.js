@@ -360,6 +360,221 @@ class BattleManager {
     };
   }
 
+  battlerSide(battler) {
+    if (!battler) {
+      return null;
+    }
+
+    if ($gameParty.battleMembers().includes(battler)) {
+      return "ally";
+    }
+
+    if (this.scene.enemies.includes(battler)) {
+      return "enemy";
+    }
+
+    return null;
+  }
+
+  livingBattlersForSide(side) {
+    if (side === "ally") {
+      return $gameParty.livingBattleMembers();
+    }
+
+    if (side === "enemy") {
+      return this.scene.enemies.filter((enemy) => enemy && enemy.isAlive());
+    }
+
+    return [];
+  }
+
+  opposingBattleSide(side) {
+    if (side === "ally") {
+      return "enemy";
+    }
+
+    if (side === "enemy") {
+      return "ally";
+    }
+
+    return null;
+  }
+
+  randomBattleTarget(candidates, random = Math.random) {
+    if (!Array.isArray(candidates) || candidates.length === 0) {
+      return null;
+    }
+
+    const roll = typeof random === "function" ? Number(random()) : Math.random();
+    const normalizedRoll = Number.isFinite(roll)
+      ? Math.max(0, Math.min(0.999999999, roll))
+      : 0;
+    const index = Math.floor(normalizedRoll * candidates.length);
+
+    return candidates[index] || candidates[0] || null;
+  }
+
+  resolveSkillReflection(skill, target, random = Math.random) {
+    const reflections = [];
+    let resolvedTarget = target;
+    let reflectionLimit = null;
+
+    if (!skill || skill.reflectable !== true || !resolvedTarget) {
+      return {
+        target: resolvedTarget,
+        reflected: false,
+        reflections,
+      };
+    }
+
+    while (
+      resolvedTarget &&
+      typeof resolvedTarget.reflectsSkills === "function" &&
+      resolvedTarget.reflectsSkills()
+    ) {
+      if (reflectionLimit === null) {
+        reflectionLimit =
+          typeof resolvedTarget.maxSkillReflections === "function"
+            ? resolvedTarget.maxSkillReflections()
+            : 0;
+      }
+
+      if (
+        !Number.isInteger(reflectionLimit) ||
+        reflections.length >= reflectionLimit
+      ) {
+        break;
+      }
+
+      const currentSide = this.battlerSide(resolvedTarget);
+      const reflectedSide = this.opposingBattleSide(currentSide);
+      const candidates = this.livingBattlersForSide(reflectedSide);
+      const reflectedTarget = this.randomBattleTarget(candidates, random);
+
+      if (!reflectedTarget) {
+        break;
+      }
+
+      reflections.push({
+        from: resolvedTarget,
+        to: reflectedTarget,
+      });
+
+      resolvedTarget = reflectedTarget;
+    }
+
+    return {
+      target: resolvedTarget,
+      reflected: reflections.length > 0,
+      reflections,
+    };
+  }
+
+  presentSkillReflection(skill, reflection) {
+    const battle = this.scene;
+
+    if (!reflection?.reflected || !Array.isArray(reflection.reflections)) {
+      return [];
+    }
+
+    for (const step of reflection.reflections) {
+      battle.addBattlePopup(step.from, "REFLECT", "status");
+      battle.addBattleMessage(
+        `${step.from.name}'s Reflect redirects ${skill.name} to ${step.to.name}!`,
+      );
+    }
+
+    return reflection.reflections;
+  }
+
+  resolveMagicEffectOnTarget(
+    caster,
+    skill,
+    requestedTarget,
+    payCost = true,
+    scope = "single",
+    random = Math.random,
+  ) {
+    if (!caster || !skill || !requestedTarget) {
+      return {
+        success: false,
+        requestedTarget,
+        target: requestedTarget,
+        reflected: false,
+        reflections: [],
+      };
+    }
+
+    const reflection = this.resolveSkillReflection(
+      skill,
+      requestedTarget,
+      random,
+    );
+    const target = reflection.target;
+
+    if (!target) {
+      return {
+        success: false,
+        requestedTarget,
+        target: null,
+        ...reflection,
+      };
+    }
+
+    const hpBefore = target.hp;
+    const success = caster.useSkill(
+      skill.id,
+      target,
+      payCost,
+      scope,
+      random,
+      { reflected: reflection.reflected },
+    );
+
+    if (!success) {
+      return {
+        success: false,
+        requestedTarget,
+        target,
+        hpBefore,
+        ...reflection,
+      };
+    }
+
+    this.presentSkillReflection(skill, reflection);
+
+    const statusResults = caster.skillStatusResults?.() || [];
+    this.presentSkillStatusResults(caster, skill, target, statusResults);
+
+    let damageResult = null;
+    let healing = 0;
+
+    if (skill.effect === "damage") {
+      damageResult = this.presentMagicDamage(caster, skill, target, hpBefore);
+    }
+
+    if (skill.effect === "heal") {
+      healing = Math.max(0, target.hp - hpBefore);
+
+      this.scene.addBattlePopup(target, `+${healing}`, "heal");
+      this.scene.addBattleMessage(
+        `${caster.name} casts ${skill.name}! ` +
+          `${target.name} recovers ${healing} HP!`,
+      );
+    }
+
+    return {
+      success: true,
+      requestedTarget,
+      target,
+      hpBefore,
+      healing,
+      damageResult,
+      statusResults,
+      ...reflection,
+    };
+  }
+
   presentSkillStatusResults(caster, skill, target, results = []) {
     const battle = this.scene;
 
@@ -980,11 +1195,10 @@ class BattleManager {
   performMagicEffect() {
     const battle = this.scene;
     const skill = battle.pendingMagicSkill;
-    const target = battle.pendingMagicTarget;
-
+    const requestedTarget = battle.pendingMagicTarget;
     const caster = this.party().currentBattler();
 
-    if (!caster) {
+    if (!caster || !skill) {
       return;
     }
 
@@ -993,10 +1207,6 @@ class BattleManager {
     // =====================================
 
     if (battle.targetScope === "all") {
-      if (!skill) {
-        return;
-      }
-
       const targets = battle.targetManager.getCurrentTargets();
 
       if (!targets || targets.length === 0) {
@@ -1006,58 +1216,27 @@ class BattleManager {
       let paidCost = false;
       const affectedTargets = [];
 
-      for (const battler of targets) {
-        if (!battler) {
+      for (const target of targets) {
+        if (!target) {
           continue;
         }
 
-        const hpBefore = battler.hp;
-
-        // Pay the MP cost only once, even though the spell
-        // is being applied to multiple targets.
-        const success = caster.useSkill(
-          skill.id,
-          battler,
+        // Reflection is resolved independently for every original target.
+        // MP is still paid only once for the cast.
+        const resolution = this.resolveMagicEffectOnTarget(
+          caster,
+          skill,
+          target,
           !paidCost,
           battle.targetScope,
         );
 
-        if (!success) {
+        if (!resolution.success) {
           continue;
         }
 
         paidCost = true;
-        affectedTargets.push(battler);
-
-        this.presentSkillStatusResults(
-          caster,
-          skill,
-          battler,
-          caster.skillStatusResults?.() || [],
-        );
-
-        // -----------------------------
-        // DAMAGE
-        // -----------------------------
-
-        if (skill.effect === "damage") {
-          this.presentMagicDamage(caster, skill, battler, hpBefore);
-        }
-
-        // -----------------------------
-        // HEALING
-        // -----------------------------
-
-        if (skill.effect === "heal") {
-          const healing = Math.max(0, battler.hp - hpBefore);
-
-          battle.addBattlePopup(battler, `+${healing}`, "heal");
-
-          battle.addBattleMessage(
-            `${caster.name} casts ${skill.name}! ` +
-              `${battler.name} recovers ${healing} HP!`,
-          );
-        }
+        affectedTargets.push(resolution.target);
       }
 
       // -----------------------------
@@ -1065,12 +1244,14 @@ class BattleManager {
       // -----------------------------
 
       if (affectedTargets.length > 0) {
+        const visualTargets = [...new Set(affectedTargets)];
+
         if (skill.element === "fire") {
-          battle.startBattleEffect("fire", affectedTargets, 0.4);
+          battle.startBattleEffect("fire", visualTargets, 0.4);
         }
 
         if (skill.effect === "heal") {
-          battle.startBattleEffect("cure", affectedTargets, 0.5);
+          battle.startBattleEffect("cure", visualTargets, 0.5);
         }
       }
 
@@ -1084,15 +1265,19 @@ class BattleManager {
     // SINGLE TARGET MAGIC EFFECT
     // =====================================
 
-    if (!skill || !target) {
+    if (!requestedTarget) {
       return;
     }
 
-    const targetHpBefore = target.hp;
+    const resolution = this.resolveMagicEffectOnTarget(
+      caster,
+      skill,
+      requestedTarget,
+      true,
+      battle.targetScope,
+    );
 
-    const success = caster.useSkill(skill.id, target, true, battle.targetScope);
-
-    if (!success) {
+    if (!resolution.success) {
       battle.pendingMagicSkill = null;
       battle.pendingMagicTarget = null;
 
@@ -1100,43 +1285,7 @@ class BattleManager {
       return;
     }
 
-    this.presentSkillStatusResults(
-      caster,
-      skill,
-      target,
-      caster.skillStatusResults?.() || [],
-    );
-
-    // =====================================
-    // ENEMY TARGET
-    // =====================================
-
-    if (battle.enemies.includes(target)) {
-      if (skill.effect === "damage") {
-        this.presentMagicDamage(caster, skill, target, targetHpBefore);
-      }
-    }
-
-    // =====================================
-    // ALLY TARGET
-    // =====================================
-
-    if ($gameParty.battleMembers().includes(target)) {
-      if (skill.effect === "damage") {
-        this.presentMagicDamage(caster, skill, target, targetHpBefore);
-      }
-
-      if (skill.effect === "heal") {
-        const healing = Math.max(0, target.hp - targetHpBefore);
-
-        battle.addBattlePopup(target, `+${healing}`, "heal");
-
-        battle.addBattleMessage(
-          `${caster.name} casts ${skill.name}! ` +
-            `${target.name} recovers ${healing} HP!`,
-        );
-      }
-    }
+    const target = resolution.target;
 
     battle.magicEffectSkill = skill;
     battle.magicEffectTarget = target;

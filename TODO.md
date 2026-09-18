@@ -38,7 +38,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Poison / Dual damage-over-time
 - [x] Regen healing-over-time
 - [x] Barrier / MBarrier damage reduction
-- [ ] Reflect spell reflection
+- [x] Reflect spell reflection
 - [ ] Haste / Slow turn-speed modifiers
 - [x] Stop / Paralyze action prevention
 - [x] Sleep / Confuse physical-damage removal

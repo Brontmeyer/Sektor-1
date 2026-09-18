@@ -301,6 +301,7 @@ class Game_Actor extends Game_Battler {
     payCost = true,
     scope = "single",
     random = Math.random,
+    options = {},
   ) {
     const skill = DatabaseManager.skill(skillId);
 
@@ -318,7 +319,9 @@ class Game_Actor extends Game_Battler {
       return false;
     }
 
-    if (!this.isValidSkillTarget(skill, target)) {
+    const reflected = options?.reflected === true;
+
+    if (!reflected && !this.isValidSkillTarget(skill, target)) {
       console.warn(
         `${target?.name || "Target"} is not a valid target for ${skill.name}.`,
       );
@@ -336,7 +339,11 @@ class Game_Actor extends Game_Battler {
 
     // HEALING EFFECT
     if (skill.effect === "heal") {
-      if (typeof target.isFullHp === "function" && target.isFullHp()) {
+      if (
+        !reflected &&
+        typeof target.isFullHp === "function" &&
+        target.isFullHp()
+      ) {
         DebugManager.log(`${target.name} is already at full HP.`);
 
         return false;

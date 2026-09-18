@@ -177,6 +177,10 @@ class DatabaseValidator {
         errors.push(`Skill ${index} must have a non-negative numeric mpCost.`);
       }
 
+      if (typeof skill.reflectable !== "boolean") {
+        errors.push(`Skill ${index} reflectable must be true or false.`);
+      }
+
       if (
         skill.status !== undefined &&
         (typeof skill.status !== "object" ||
@@ -418,6 +422,55 @@ class DatabaseValidator {
         Array.isArray(status.effects)
       ) {
         errors.push(`Status ${index} must define an effects object.`);
+      } else {
+        const effects = status.effects;
+
+        if (
+          effects.reflectableSkills !== undefined &&
+          typeof effects.reflectableSkills !== "boolean"
+        ) {
+          errors.push(
+            `Status ${index} effects.reflectableSkills must be true or false when provided.`,
+          );
+        }
+
+        if (
+          effects.perTarget !== undefined &&
+          typeof effects.perTarget !== "boolean"
+        ) {
+          errors.push(
+            `Status ${index} effects.perTarget must be true or false when provided.`,
+          );
+        }
+
+        if (
+          effects.maxReflections !== undefined &&
+          (!Number.isInteger(effects.maxReflections) ||
+            effects.maxReflections < 1)
+        ) {
+          errors.push(
+            `Status ${index} effects.maxReflections must be a positive integer when provided.`,
+          );
+        }
+
+        if (
+          effects.reflectableSkills === true &&
+          effects.perTarget !== true
+        ) {
+          errors.push(
+            `Status ${index} that reflects skills must define effects.perTarget as true.`,
+          );
+        }
+
+        if (
+          effects.reflectableSkills === true &&
+          (!Number.isInteger(effects.maxReflections) ||
+            effects.maxReflections < 1)
+        ) {
+          errors.push(
+            `Status ${index} that reflects skills must define a positive integer maxReflections.`,
+          );
+        }
       }
     }
   }

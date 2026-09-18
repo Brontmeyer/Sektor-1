@@ -77,9 +77,9 @@ These foundations allow the next phase of development to focus primarily on turn
 
 The Status System is the current major runtime foundation.
 
-The canonical status data is designed, and the runtime now handles shared status instances, application/removal, duration refresh, resistance/immunity rates, derived-state evaluation, battler-relative turn timing, battle presentation, and reusable status-driven combat modifiers. The milestone remains active because several control-flow and defeat-state mechanics still need to be connected.
+The canonical status data is designed, and the runtime now handles shared status instances, application/removal, duration refresh, resistance/immunity rates, derived-state evaluation, battler-relative turn timing, battle presentation, reusable status-driven combat modifiers, and per-target Reflect redirection. The milestone remains active because several control-flow and defeat-state mechanics still need to be connected.
 
-Status Runtime Core v1 and Status Combat Modifiers v1 have established:
+Status Runtime Core v1, Status Combat Modifiers v1, and Reflect Runtime v1 have established:
 
 - `Statuses.json` database loading and keyed lookup
 - Status application and removal APIs
@@ -95,8 +95,9 @@ Status Runtime Core v1 and Status Combat Modifiers v1 have established:
 - Shared outgoing physical-damage and physical-accuracy modifiers
 - Sleep / Confuse removal after actual physical damage
 - Barrier / MBarrier reduction and Shield physical immunity / elemental absorption
+- Per-target Reflect routing with one-bounce protection and single-cost all-target casting
 
-Remaining milestone work is primarily the advanced mechanics required by the 25 initial statuses, including reflection, time-speed modifiers, Confuse random targeting, Silence and Frog skill restrictions, Petrify defeat handling, Death revival semantics, Berserk forced actions, and Fury / Sadness Limit behavior.
+Remaining milestone work is primarily the advanced mechanics required by the 25 initial statuses, including time-speed modifiers, Confuse random targeting, Silence and Frog skill restrictions, Petrify defeat handling, Death revival semantics, Berserk forced actions, and Fury / Sadness Limit behavior.
 
 This milestone should continue to establish reusable status processing rather than twenty-five unrelated status scripts.
 
@@ -110,7 +111,7 @@ Status Runtime is complete when the engine can load the canonical status databas
 
 Skills v1 already defines the initial 54 abilities, but some mechanics still depend on systems that are unfinished.
 
-The first Status Runtime dependency is now connected: skill `status` payloads can apply, refresh, toggle, or remove canonical runtime statuses, including status payloads attached to damaging spells. Ally-specific status chances and target resistance/immunity flow through the same reusable rules.
+The first Status Runtime dependencies are now connected: skill `status` payloads can apply, refresh, toggle, or remove canonical runtime statuses, including status payloads attached to damaging spells, and reflectable skills can be redirected by the shared Reflect runtime. Ally-specific status chances, target resistance/immunity, and per-target reflection all flow through reusable rules.
 
 Primary remaining work includes:
 

@@ -264,6 +264,7 @@ function testSkillStatusMetadataValidation() {
       target: ["enemy"],
       scope: ["single"],
       mpCost: 0,
+      reflectable: true,
       status: { poison: 1.5 },
       allyStatusChance: -0.1,
       toggleStatus: "yes",

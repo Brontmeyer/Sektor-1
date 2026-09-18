@@ -203,7 +203,7 @@ Game_Variables.js
 
 Battle behavior that is genuinely common to actors and enemies belongs at this level rather than being independently duplicated in both actor and enemy implementations.
 
-Active status instances, status-effect queries, incoming physical/magical damage modifiers, elemental-magic absorption, and damage-triggered status removal live at this layer because those rules apply equally to actors and enemies. Action-facing systems can calculate an attack or spell, then delegate target-side damage resolution to the battler instead of reimplementing defensive status rules.
+Active status instances, status-effect queries, incoming physical/magical damage modifiers, elemental-magic absorption, Reflect capability/limits, and damage-triggered status removal live at this layer because those rules apply equally to actors and enemies. Action-facing systems can calculate an attack or spell, then delegate target-side status and damage questions to the battler instead of reimplementing defensive status rules.
 
 ## Game_Actor
 
@@ -261,6 +261,8 @@ The battle layer should coordinate combat without turning one file into a contai
 ## BattleManager
 
 `BattleManager` coordinates the overall battle state and battle flow.
+
+It also owns battle-relative effect routing that requires knowledge of both sides of the encounter. Reflect is resolved here because redirecting a skill requires identifying the Reflect holder's side, choosing a living battler on the opposing side, preserving the original cast cost, and presenting the redirected result without turning reflection into a second cast.
 
 It should orchestrate battle systems rather than permanently absorbing every specialized mechanic into itself.
 

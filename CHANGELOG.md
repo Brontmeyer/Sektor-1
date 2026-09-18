@@ -58,6 +58,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added ally-specific status chances, reversible status toggles, status removal, and damage-plus-status resolution
 - Added battle feedback for applied, refreshed, removed, resisted, and immune skill-driven statuses
 - Added dedicated skill/status integration regression coverage
+- Added Reflect Runtime v1 with per-target skill redirection and canonical one-bounce protection
+- Added reflection-aware magic resolution that preserves the original caster, scope, status payload, and single MP cost
+- Added dedicated Reflect regression coverage for direct, all-target, ally-only, non-reflectable, and healing cases
 
 ### Changed
 
@@ -77,6 +80,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Made enemy physical accuracy use enemy `attackPercent` safely instead of inheriting actor-only weapon assumptions
 - Standardized Soul Cleanse's Slow-Numb reference on the canonical `slowNumb` runtime key
 - Made skill status metadata validate status chances, ally-specific chances, and toggle flags before runtime use
+- Made skill metadata require an explicit `reflectable` flag and validated Reflect status metadata before runtime use
+- Centralized single-target and all-target magic effect presentation through one reflection-aware per-target resolver
 
 ### Documentation
 
@@ -102,6 +107,16 @@ docs/roadmap.md        High-level development direction
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 15 - Reflect Runtime v1
+
+- Implemented data-driven Reflect routing for canonical reflectable skills
+- Resolved all-target reflection independently per original target while preserving one MP payment per cast
+- Allowed reflected effects to land across normal ally/enemy selection restrictions without becoming a second cast
+- Enforced the canonical one-reflection cap to prevent bounce loops
+- Added reflection metadata validation and dedicated regression tests
 
 ---
 

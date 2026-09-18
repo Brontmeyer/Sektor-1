@@ -330,7 +330,13 @@ Battle presentation exposes active status names for both sides. Turn-based and c
 
 Barrier and MBarrier now reduce their respective physical or magical incoming damage categories through the shared battler damage resolver. Multiple compatible incoming-damage multipliers combine multiplicatively.
 
-Reflect is designed to redirect reflectable skills on a per-target basis and currently defines a maximum of one reflection. Reflection itself remains future runtime work.
+Reflect redirects eligible skills at the per-target resolution layer. A skill only reflects when its canonical definition has `reflectable: true` and the current target has an active status whose effects enable `reflectableSkills`.
+
+The initial Reflect status uses `perTarget: true` and `maxReflections: 1`. Each original target of an all-target cast therefore resolves reflection independently, while the spell's MP cost is still paid only once for the cast. A reflected skill is redirected to a random living battler on the side opposing the Reflect holder.
+
+Reflection changes the resolved target; it does not create a second cast. The reflected effect therefore keeps the original caster, scope, power, status chances, and paid MP cost. Because the redirection happens after the player has already chosen a legal original target, the reflected destination is allowed to receive the effect even when that battler could not have been manually selected under the skill's normal ally/enemy targeting rules.
+
+The reflection count is capped by the Reflect status that first redirects the skill. With the current one-reflection cap, a redirected skill lands on its new target even if that target also has Reflect, preventing infinite bounce loops. Skills marked `reflectable: false`, including Mirror Ward and Wardbreaker, ignore Reflect entirely.
 
 Shield is a specialized defensive status. Its implemented damage rules are:
 
