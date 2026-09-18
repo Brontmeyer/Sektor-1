@@ -14,6 +14,7 @@
     "battleSpriteRows": 1,
 
     "level": 1,
+    "expReward": 50,
 
     "maxHp": 250,
     "maxMp": 0,

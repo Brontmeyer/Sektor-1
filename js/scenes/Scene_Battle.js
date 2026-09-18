@@ -10,7 +10,9 @@ class Scene_Battle extends Scene_Base {
 
     this.encounter = encounter;
     this.onComplete = typeof onComplete === "function" ? onComplete : null;
+    this.outcome = null;
     this.result = null;
+    this.battleExited = false;
     this.enemies = encounter.members.map(
       (member) => new Game_Enemy(member.enemyId),
     );
@@ -132,13 +134,13 @@ class Scene_Battle extends Scene_Base {
     // HANDLE VICTORY OR DEFEAT FIRST
     // -----------------------------
 
-    if (this.victory || this.defeat) {
+    if (this.outcome) {
       if (
         Input.isTriggered("KeyE") ||
         Input.isTriggered("Enter") ||
         Input.isTriggered("Escape")
       ) {
-        this.finishBattle(this.victory ? "victory" : "defeat");
+        this.finishBattle();
       }
 
       return;
@@ -330,12 +332,18 @@ class Scene_Battle extends Scene_Base {
     }
   }
 
-  finishBattle(result) {
-    if (this.result) {
-      return;
+  finishBattle(outcome = this.outcome) {
+    if (this.battleExited) {
+      return this.result;
     }
 
-    this.result = result;
+    const result = this.battleManager.finalizeBattle(outcome);
+
+    if (!result) {
+      return null;
+    }
+
+    this.battleExited = true;
 
     try {
       if (this.onComplete) {
@@ -344,6 +352,8 @@ class Scene_Battle extends Scene_Base {
     } finally {
       SceneManager.pop();
     }
+
+    return result;
   }
 
   currentBattler() {

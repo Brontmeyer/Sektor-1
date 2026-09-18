@@ -416,15 +416,53 @@ Presentation should report the result of battle logic rather than becoming the a
 
 ---
 
-# 🏆 Victory and Defeat
+# 🏆 Battle Resolution
 
 Victory occurs when all enemies are defeated.
 
 Defeat occurs when the party has no living battle members remaining.
 
-Action sequences check these conditions before continuing normal turn flow so battle does not advance into another ordinary command or enemy phase after its outcome has been decided.
+Escape is a third terminal outcome when the encounter permits it.
 
-Future victory processing may include experience, rewards, Resonance, drops, post-battle status cleanup, and other progression systems.
+`BattleManager` owns the authoritative finalization path. Finalization is idempotent: once a battle has produced its final result, later calls return that same result and cannot award rewards or perform post-battle restoration a second time.
+
+## Experience Rewards
+
+Victory totals `expReward` from every defeated enemy in the encounter. That full total is awarded once to every member of `$gameParty.battleMembers()` that participated in the battle.
+
+This includes active party members who were defeated when victory was earned. Reserve roster members who were not in the active battle party receive no battle EXP.
+
+Defeat and escape award no EXP. Currency, item drops, and Essence Resonance are represented in the reward result but intentionally remain zero or empty until their owning systems are implemented.
+
+## Post-Battle State
+
+Battle finalization deliberately restores map-safe party state:
+
+- Defeated active battle members return at 1 HP.
+- Surviving HP and MP values carry out of battle unchanged, even when battle EXP causes a level-up.
+- Defending is cleared.
+- Statuses with `classification.persistsAfterBattle: true` are preserved.
+- Other battle statuses are removed.
+
+The cleanup rules are data-driven, so future persistent statuses do not require special-case battle-resolution code.
+
+## Structured Result
+
+The originating map event receives one structured battle result through the battle completion callback. The result records the outcome, encounter identity, rewards, defeated enemies, and per-participant progression/restoration details.
+
+Conceptually:
+
+```text
+{
+  outcome: victory | defeat | escape,
+  encounter: { id, name },
+  rewards: { exp, currency, drops, resonance },
+  defeatedEnemies: [...],
+  party: [...]
+}
+```
+
+`Game_Interpreter.battleResult()` exposes the latest result, and the originating event also receives it as `lastBattleResult`. This establishes the handoff point for future event branching without coupling map-event logic to the battle scene.
 
 ---
 
@@ -477,7 +515,7 @@ Major battle features still planned include:
 - Dual Techniques
 - Additional enemy and encounter systems
 - Expanded item behavior
-- Battle rewards and progression integration
+- Currency, item-drop, and Essence Resonance reward integration
 
 These are planned architecture, not claims about currently completed runtime behavior.
 

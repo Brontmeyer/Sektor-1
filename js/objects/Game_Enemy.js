@@ -11,6 +11,7 @@ class Game_Enemy extends Game_Battler {
     super(enemyData);
 
     this.enemyId = enemyId;
+    this.expReward = enemyData.expReward ?? 0;
     this.battleSprite = enemyData.battleSprite || null;
     this.battleSpriteWidth = enemyData.battleSpriteWidth || 128;
     this.battleSpriteHeight = enemyData.battleSpriteHeight || 128;

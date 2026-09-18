@@ -21,6 +21,23 @@ function loadClass(relativePath, className, globals = {}) {
   return { Class: context.__loadedClass, context };
 }
 
+function loadClasses(relativePaths, exportExpression, globals = {}) {
+  const context = vm.createContext({ console, ...globals });
+  const source = relativePaths
+    .map((relativePath) =>
+      fs.readFileSync(path.join(projectRoot, relativePath), "utf8"),
+    )
+    .join("\n");
+
+  vm.runInContext(
+    `${source}\nglobalThis.__loadedClasses = ${exportExpression};`,
+    context,
+    { filename: relativePaths.join(", ") },
+  );
+
+  return { classes: context.__loadedClasses, context };
+}
+
 function testEncounterValidation() {
   const { Class: DatabaseValidator } = loadClass(
     "js/core/DatabaseValidator.js",
@@ -64,6 +81,32 @@ function testEncounterValidation() {
     invalidErrors,
   );
   assert.equal(invalidErrors.length, 3);
+}
+
+function testEnemyRewardValidation() {
+  const { Class: DatabaseValidator } = loadClass(
+    "js/core/DatabaseValidator.js",
+    "DatabaseValidator",
+  );
+  const validErrors = [];
+  DatabaseValidator.validateEnemies(
+    [null, { id: 1, name: "Slime", expReward: 25 }],
+    validErrors,
+  );
+  assert.deepEqual(validErrors, []);
+
+  const invalidErrors = [];
+  DatabaseValidator.validateEnemies(
+    [
+      null,
+      { id: 1, name: "Missing" },
+      { id: 2, name: "Negative", expReward: -1 },
+      { id: 3, name: "String", expReward: "50" },
+      { id: 4, name: "Fractional", expReward: 2.5 },
+    ],
+    invalidErrors,
+  );
+  assert.equal(invalidErrors.length, 4);
 }
 
 function testProjectDatabaseValidation() {
@@ -157,6 +200,26 @@ function testBattleSceneConstructionAndExit() {
 
   class BattleManager extends EmptySystem {
     static TURN_COMMAND = "command";
+
+    constructor(scene) {
+      super();
+      this.scene = scene;
+      this.finalResult = null;
+    }
+
+    finalizeBattle(outcome) {
+      if (this.finalResult) {
+        return this.finalResult;
+      }
+
+      this.scene.outcome = outcome;
+      this.finalResult = {
+        outcome,
+        rewards: { exp: 0, currency: 0, drops: [], resonance: 0 },
+      };
+      this.scene.result = this.finalResult;
+      return this.finalResult;
+    }
   }
 
   const { Class: Scene_Battle } = loadClass(
@@ -205,23 +268,28 @@ function testBattleSceneConstructionAndExit() {
   assert.equal(position.x, 800);
   assert.equal(position.y, 290);
 
-  scene.finishBattle("victory");
-  scene.finishBattle("escape");
-  assert.deepEqual(results, ["victory"]);
+  const firstResult = scene.finishBattle("victory");
+  const secondResult = scene.finishBattle("escape");
+  assert.equal(firstResult.outcome, "victory");
+  assert.equal(secondResult, firstResult);
+  assert.equal(results.length, 1);
+  assert.equal(results[0], firstResult);
   assert.equal(popCount, 1);
 }
 
 function testInterpreterPausesForBattle() {
   const encounterIds = [];
   const messages = [];
+  let battleCallback = null;
   const { Class: Game_Interpreter } = loadClass(
     "js/objects/Game_Interpreter.js",
     "Game_Interpreter",
     {
       DebugManager: { log() {} },
       SceneManager: {
-        startBattle(encounterId) {
+        startBattle(encounterId, onComplete) {
           encounterIds.push(encounterId);
+          battleCallback = onComplete;
           return true;
         },
       },
@@ -238,16 +306,29 @@ function testInterpreterPausesForBattle() {
     hasResult: () => false,
   };
   const interpreter = new Game_Interpreter(messageWindow, choiceWindow);
+  const event = { id: 7 };
 
-  interpreter.setup([
-    { code: "battle", encounterId: 1 },
-    { code: "text", speaker: "System", text: "Battle complete." },
-  ]);
+  interpreter.setup(
+    [
+      { code: "battle", encounterId: 1 },
+      { code: "text", speaker: "System", text: "Battle complete." },
+    ],
+    event,
+  );
   interpreter.update();
 
   assert.deepEqual(encounterIds, [1]);
   assert.equal(interpreter.index, 1);
   assert.equal(interpreter.isRunning(), true);
+
+  const result = {
+    outcome: "victory",
+    rewards: { exp: 50, currency: 0, drops: [], resonance: 0 },
+  };
+  battleCallback(result);
+
+  assert.equal(interpreter.battleResult(), result);
+  assert.equal(event.lastBattleResult, result);
 
   interpreter.update();
   assert.equal(messages.length, 1);
@@ -258,10 +339,282 @@ function testInterpreterPausesForBattle() {
   assert.equal(interpreter.isRunning(), false);
 }
 
+function makeResolutionActor({ id, name, hp = 100, mp = 20, level = 1 }) {
+  return {
+    actorId: id,
+    name,
+    hp,
+    mp,
+    level,
+    exp: 0,
+    gainExpCalls: 0,
+    restoreCalls: 0,
+    isDead() {
+      return this.hp <= 0;
+    },
+    gainExp(amount) {
+      this.gainExpCalls++;
+      this.exp += amount;
+      return 0;
+    },
+    restorePostBattleState(snapshot) {
+      this.restoreCalls++;
+      this.hp = snapshot.wasDefeated ? 1 : snapshot.hp;
+      this.mp = snapshot.mp;
+
+      return {
+        wasDefeated: snapshot.wasDefeated,
+        hp: this.hp,
+        mp: this.mp,
+        removedStatuses: [],
+        persistentStatuses: [],
+      };
+    },
+  };
+}
+
+function makeResolutionEnemy(enemyId, name, expReward, dead = true) {
+  return {
+    enemyId,
+    name,
+    expReward,
+    isDead: () => dead,
+  };
+}
+
+function loadBattleManagerForParty(party) {
+  return loadClass("js/battle/BattleManager.js", "BattleManager", {
+    DebugManager: { log() {} },
+    $gameParty: party,
+  }).Class;
+}
+
+function testBattleResolutionAwardsActivePartyExactlyOnce() {
+  const tyler = makeResolutionActor({ id: 1, name: "Tyler", hp: 72 });
+  const sarah = makeResolutionActor({ id: 2, name: "Sarah", hp: 0 });
+  const reserve = makeResolutionActor({ id: 3, name: "Reserve", hp: 100 });
+  const activeMembers = [tyler, sarah];
+  const party = {
+    battleMembers: () => activeMembers,
+    livingBattleMembers: () => activeMembers.filter((actor) => !actor.isDead()),
+  };
+  const BattleManager = loadBattleManagerForParty(party);
+  const messages = [];
+  const scene = {
+    encounter: { id: 12, name: "Two Slimes", canEscape: true },
+    enemies: [
+      makeResolutionEnemy(1, "Slime A", 20),
+      makeResolutionEnemy(1, "Slime B", 30),
+    ],
+    outcome: null,
+    result: null,
+    victory: false,
+    defeat: false,
+    pendingEnemyTurn: true,
+    enemyTurnDelay: 1,
+    battleInputLocked: true,
+    addBattleMessage(message) {
+      messages.push(message);
+    },
+  };
+  const manager = new BattleManager(scene);
+
+  const first = manager.finalizeBattle("victory");
+  const second = manager.finalizeBattle("victory");
+
+  assert.equal(second, first);
+  assert.equal(first.outcome, "victory");
+  assert.equal(first.rewards.exp, 50);
+  assert.equal(first.rewards.currency, 0);
+  assert.deepEqual(Array.from(first.rewards.drops), []);
+  assert.equal(first.rewards.resonance, 0);
+  assert.equal(first.defeatedEnemies.length, 2);
+  assert.equal(tyler.exp, 50);
+  assert.equal(sarah.exp, 50);
+  assert.equal(reserve.exp, 0);
+  assert.equal(tyler.gainExpCalls, 1);
+  assert.equal(sarah.gainExpCalls, 1);
+  assert.equal(reserve.gainExpCalls, 0);
+  assert.equal(tyler.hp, 72);
+  assert.equal(sarah.hp, 1);
+  assert.equal(tyler.restoreCalls, 1);
+  assert.equal(sarah.restoreCalls, 1);
+  assert.deepEqual(messages, ["Victory!"]);
+}
+
+function testBattleResolutionNoRewardsForDefeatOrEscape() {
+  for (const outcome of ["defeat", "escape"]) {
+    const actor = makeResolutionActor({ id: 1, name: "Tyler", hp: 10 });
+    const party = {
+      battleMembers: () => [actor],
+      livingBattleMembers: () => (actor.isDead() ? [] : [actor]),
+    };
+    const BattleManager = loadBattleManagerForParty(party);
+    const scene = {
+      encounter: { id: 1, name: "Test", canEscape: true },
+      enemies: [makeResolutionEnemy(1, "Test Slime", 999)],
+      outcome: null,
+      result: null,
+      victory: false,
+      defeat: false,
+      pendingEnemyTurn: false,
+      enemyTurnDelay: 0,
+      battleInputLocked: false,
+      addBattleMessage() {},
+    };
+    const manager = new BattleManager(scene);
+    const result = manager.finalizeBattle(outcome);
+
+    assert.equal(result.outcome, outcome);
+    assert.equal(result.rewards.exp, 0);
+    assert.equal(result.rewards.currency, 0);
+    assert.deepEqual(Array.from(result.rewards.drops), []);
+    assert.equal(result.rewards.resonance, 0);
+    assert.equal(actor.exp, 0);
+    assert.equal(actor.gainExpCalls, 0);
+  }
+}
+
+function testRealActorBattleResolutionPreservesPostBattleState() {
+  const actors = JSON.parse(
+    fs.readFileSync(path.join(projectRoot, "data", "Actors.json"), "utf8"),
+  );
+  const statuses = JSON.parse(
+    fs.readFileSync(path.join(projectRoot, "data", "Statuses.json"), "utf8"),
+  );
+  const activeMembers = [];
+  const party = {
+    battleMembers: () => activeMembers,
+    livingBattleMembers: () => activeMembers.filter((actor) => actor.isAlive()),
+  };
+  const DatabaseManager = {
+    statuses,
+    actor(actorId) {
+      return actors[actorId] || null;
+    },
+    weapon() {
+      return null;
+    },
+    armor() {
+      return null;
+    },
+    skill() {
+      return null;
+    },
+  };
+  const { classes } = loadClasses(
+    [
+      "js/objects/Game_Battler.js",
+      "js/objects/Game_Actor.js",
+      "js/battle/BattleManager.js",
+    ],
+    "{ Game_Actor, BattleManager }",
+    {
+      DatabaseManager,
+      DebugManager: { log() {} },
+      $gameParty: party,
+    },
+  );
+  const tyler = new classes.Game_Actor(1);
+  const sarah = new classes.Game_Actor(2);
+  const reserve = new classes.Game_Actor(3);
+
+  activeMembers.push(tyler, sarah);
+  tyler.setHp(275);
+  tyler.mp = 61;
+  sarah.addStatus("poison");
+  sarah.addStatus("fury");
+  sarah.setHp(0);
+  sarah.mp = 19;
+
+  const scene = {
+    encounter: { id: 1, name: "Integration Battle" },
+    enemies: [
+      makeResolutionEnemy(1, "Slime A", 50),
+      makeResolutionEnemy(1, "Slime B", 50),
+    ],
+    outcome: null,
+    result: null,
+    victory: false,
+    defeat: false,
+    pendingEnemyTurn: false,
+    enemyTurnDelay: 0,
+    battleInputLocked: false,
+    addBattleMessage() {},
+  };
+  const manager = new classes.BattleManager(scene);
+  const result = manager.finalizeBattle("victory");
+
+  assert.equal(result.rewards.exp, 100);
+  assert.equal(tyler.level, 2);
+  assert.equal(sarah.level, 2);
+  assert.equal(reserve.level, 1);
+  assert.equal(tyler.exp, 0);
+  assert.equal(sarah.exp, 0);
+  assert.equal(reserve.exp, 0);
+  assert.equal(tyler.hp, 275);
+  assert.equal(tyler.mp, 61);
+  assert.equal(sarah.hp, 1);
+  assert.equal(sarah.mp, 19);
+  assert.equal(sarah.hasStatus("poison"), false);
+  assert.equal(sarah.hasStatus("fury"), true);
+}
+
+function testPostBattleStatusCleanupPreservesPersistentStatuses() {
+  const statuses = [
+    null,
+    {
+      key: "poison",
+      classification: { persistsAfterBattle: false },
+      duration: { type: "untilRemoved" },
+      effects: {},
+    },
+    {
+      key: "fury",
+      classification: { persistsAfterBattle: true },
+      duration: { type: "untilRemoved" },
+      effects: {},
+    },
+  ];
+  const { Class: Game_Battler } = loadClass(
+    "js/objects/Game_Battler.js",
+    "Game_Battler",
+    {
+      DatabaseManager: { statuses },
+      DebugManager: { log() {} },
+    },
+  );
+  const battler = new Game_Battler({ name: "Tyler", maxHp: 100, maxMp: 20 });
+
+  battler.addStatus("poison");
+  battler.addStatus("fury");
+  battler.startDefending();
+  battler.setHp(0);
+
+  const restored = battler.restorePostBattleState({
+    hp: 0,
+    mp: 7,
+    wasDefeated: true,
+  });
+
+  assert.equal(battler.hp, 1);
+  assert.equal(battler.mp, 7);
+  assert.equal(battler.isDefending(), false);
+  assert.equal(battler.hasStatus("poison"), false);
+  assert.equal(battler.hasStatus("fury"), true);
+  assert.deepEqual(Array.from(restored.removedStatuses), ["poison"]);
+  assert.deepEqual(Array.from(restored.persistentStatuses), ["fury"]);
+}
+
 testEncounterValidation();
+testEnemyRewardValidation();
 testProjectDatabaseValidation();
 testBattleEntryApi();
 testBattleSceneConstructionAndExit();
 testInterpreterPausesForBattle();
+testBattleResolutionAwardsActivePartyExactlyOnce();
+testBattleResolutionNoRewardsForDefeatOrEscape();
+testRealActorBattleResolutionPreservesPostBattleState();
+testPostBattleStatusCleanupPreservesPersistentStatuses();
 
-console.log("Battle encounter regression tests passed.");
+console.log("Battle encounter and resolution regression tests passed.");

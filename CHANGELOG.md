@@ -40,6 +40,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added the high-level development roadmap
 - Added validated, data-driven battle encounters
 - Added map-event battle entry through `SceneManager.startBattle()`
+- Added Battle Resolution v1 with idempotent victory, defeat, and escape finalization
+- Added enemy EXP rewards and active-battle-party EXP distribution
+- Added structured battle results returned to the originating map event
+- Added regression coverage for duplicate battle rewards and post-battle cleanup
 
 ### Changed
 
@@ -49,6 +53,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Clarified the separation between canonical data, runtime implementation, active TODO work, experimental ideas, and documentation
 - Established Status Runtime as the current major development focus
 - Removed hard-coded enemy construction from `Scene_Battle`
+- Centralized terminal battle outcomes and final reward processing in `BattleManager`
+- Made post-battle status cleanup honor `persistsAfterBattle` and restore defeated participants to 1 HP
 
 ### Documentation
 

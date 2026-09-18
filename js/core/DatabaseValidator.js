@@ -15,6 +15,7 @@ class DatabaseValidator {
     this.validateIndexedDatabase("Statuses", database.statuses, errors);
 
     this.validateMapInfos(database.mapInfos, errors);
+    this.validateEnemies(database.enemies, errors);
     this.validateSkills(database.skills, errors);
     this.validateStatuses(database.statuses, errors);
     this.validateEncounters(database.encounters, database.enemies, errors);
@@ -111,6 +112,26 @@ class DatabaseValidator {
 
       if (!mapInfo.file || typeof mapInfo.file !== "string") {
         errors.push(`Map ${mapInfo.id} must have a file name.`);
+      }
+    }
+  }
+
+  static validateEnemies(enemies, errors) {
+    if (!Array.isArray(enemies)) {
+      return;
+    }
+
+    for (let index = 1; index < enemies.length; index++) {
+      const enemy = enemies[index];
+
+      if (!enemy) {
+        continue;
+      }
+
+      if (!Number.isInteger(enemy.expReward) || enemy.expReward < 0) {
+        errors.push(
+          `Enemy ${index} expReward must be a non-negative integer.`,
+        );
       }
     }
   }

@@ -12,6 +12,8 @@ class Game_Interpreter {
     this.index = 0;
 
     this.running = false;
+
+    this.lastBattleResult = null;
   }
 
   setup(commands, event = null) {
@@ -21,6 +23,7 @@ class Game_Interpreter {
 
     this.index = 0;
 
+    this.lastBattleResult = null;
     this.running = this.commands.length > 0;
   }
 
@@ -446,7 +449,15 @@ class Game_Interpreter {
   }
 
   commandBattle(command) {
-    const started = SceneManager.startBattle(command.encounterId);
+    const originatingEvent = this.event;
+
+    const started = SceneManager.startBattle(command.encounterId, (result) => {
+      this.lastBattleResult = result;
+
+      if (originatingEvent) {
+        originatingEvent.lastBattleResult = result;
+      }
+    });
 
     if (!started) {
       return true;
@@ -454,6 +465,10 @@ class Game_Interpreter {
 
     this.index++;
     return false;
+  }
+
+  battleResult() {
+    return this.lastBattleResult;
   }
 
   finish() {

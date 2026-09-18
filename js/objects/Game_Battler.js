@@ -192,6 +192,61 @@ class Game_Battler {
     return true;
   }
 
+  clearTemporaryBattleStatuses() {
+    const removedStatuses = [];
+
+    this.statuses = this.statuses.filter((runtimeStatus) => {
+      const definition = DatabaseManager.statuses.find(
+        (status) => status?.key === runtimeStatus.key,
+      );
+
+      const persistsAfterBattle =
+        definition?.classification?.persistsAfterBattle === true;
+
+      if (!persistsAfterBattle) {
+        removedStatuses.push(runtimeStatus.key);
+      }
+
+      return persistsAfterBattle;
+    });
+
+    return removedStatuses;
+  }
+
+  restorePostBattleState(stateBeforeRewards = null) {
+    const wasDefeated =
+      stateBeforeRewards?.wasDefeated === true ||
+      (!stateBeforeRewards && this.isDead());
+
+    const hpBeforeRewards = Number(stateBeforeRewards?.hp);
+    const mpBeforeRewards = Number(stateBeforeRewards?.mp);
+
+    // Battle rewards must not accidentally become a healing system. Preserve
+    // the HP/MP that existed when battle ended, except defeated party members
+    // deliberately return to the map at 1 HP.
+    if (wasDefeated) {
+      this.setHp(1);
+    } else if (Number.isFinite(hpBeforeRewards)) {
+      this.setHp(hpBeforeRewards);
+    }
+
+    if (Number.isFinite(mpBeforeRewards)) {
+      this.mp = Math.max(0, Math.min(mpBeforeRewards, this.maxMp));
+    }
+
+    this.stopDefending();
+
+    const removedStatuses = this.clearTemporaryBattleStatuses();
+
+    return {
+      wasDefeated,
+      hp: this.hp,
+      mp: this.mp,
+      removedStatuses,
+      persistentStatuses: this.statuses.map((status) => status.key),
+    };
+  }
+
   tickStatusDurations() {
     for (let index = this.statuses.length - 1; index >= 0; index--) {
       const status = this.statuses[index];

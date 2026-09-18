@@ -6,6 +6,10 @@ class BattleManager {
   static TURN_ACTION = "action";
   static TURN_END = "turnEnd";
 
+  static OUTCOME_VICTORY = "victory";
+  static OUTCOME_DEFEAT = "defeat";
+  static OUTCOME_ESCAPE = "escape";
+
   constructor(scene) {
     this.scene = scene;
 
@@ -24,6 +28,192 @@ class BattleManager {
     // =============================================================
 
     this.turnState = BattleManager.TURN_START;
+
+    // Pass 11 - Battle Resolution v1
+    this.finalResult = null;
+  }
+
+  // =================================
+  // Battle Resolution
+  // =================================
+
+  validOutcome(outcome) {
+    return [
+      BattleManager.OUTCOME_VICTORY,
+      BattleManager.OUTCOME_DEFEAT,
+      BattleManager.OUTCOME_ESCAPE,
+    ].includes(outcome);
+  }
+
+  declareBattleOutcome(outcome) {
+    const battle = this.scene;
+
+    if (!this.validOutcome(outcome)) {
+      console.error(`Invalid battle outcome: ${outcome}`);
+      return false;
+    }
+
+    if (battle.outcome) {
+      return battle.outcome === outcome;
+    }
+
+    battle.outcome = outcome;
+    battle.victory = outcome === BattleManager.OUTCOME_VICTORY;
+    battle.defeat = outcome === BattleManager.OUTCOME_DEFEAT;
+    battle.pendingEnemyTurn = false;
+    battle.enemyTurnDelay = 0;
+    battle.battleInputLocked = false;
+
+    if (outcome === BattleManager.OUTCOME_VICTORY) {
+      battle.addBattleMessage("Victory!");
+    } else if (outcome === BattleManager.OUTCOME_DEFEAT) {
+      battle.addBattleMessage("Defeat...");
+    }
+
+    return true;
+  }
+
+  detectBattleOutcome() {
+    const battle = this.scene;
+
+    if (battle.enemies.every((enemy) => enemy.isDead())) {
+      return BattleManager.OUTCOME_VICTORY;
+    }
+
+    if ($gameParty.livingBattleMembers().length === 0) {
+      return BattleManager.OUTCOME_DEFEAT;
+    }
+
+    return null;
+  }
+
+  finishPartyActionSequence() {
+    const battle = this.scene;
+
+    battle.setActionPhase("none");
+
+    const outcome = battle.outcome || this.detectBattleOutcome();
+
+    if (outcome) {
+      this.declareBattleOutcome(outcome);
+      return;
+    }
+
+    this.endPartyTurn();
+    this.finishPartyAction();
+  }
+
+  createRewardBundle(defeatedEnemies) {
+    return {
+      exp: this.calculateExperienceReward(defeatedEnemies),
+      currency: this.calculateCurrencyReward(defeatedEnemies),
+      drops: this.calculateItemDrops(defeatedEnemies),
+      resonance: this.calculateEssenceResonance(defeatedEnemies),
+    };
+  }
+
+  calculateExperienceReward(defeatedEnemies) {
+    return defeatedEnemies.reduce((total, enemy) => {
+      const reward = enemy.expReward;
+      return total + (Number.isInteger(reward) && reward > 0 ? reward : 0);
+    }, 0);
+  }
+
+  // Extension points for later reward passes. These intentionally return
+  // empty rewards until their owning systems exist.
+  calculateCurrencyReward(_defeatedEnemies) {
+    return 0;
+  }
+
+  calculateItemDrops(_defeatedEnemies) {
+    return [];
+  }
+
+  calculateEssenceResonance(_defeatedEnemies) {
+    return 0;
+  }
+
+  finalizeBattle(outcome = this.scene.outcome) {
+    if (this.finalResult) {
+      return this.finalResult;
+    }
+
+    if (!this.validOutcome(outcome)) {
+      console.error(`Cannot finalize invalid battle outcome: ${outcome}`);
+      return null;
+    }
+
+    // Once an outcome has been declared it is authoritative. A later caller
+    // cannot change victory into escape, defeat into victory, and so on.
+    if (this.scene.outcome && this.scene.outcome !== outcome) {
+      outcome = this.scene.outcome;
+    }
+
+    this.declareBattleOutcome(outcome);
+
+    const partyMembers = $gameParty.battleMembers();
+    const partySnapshots = new Map(
+      partyMembers.map((actor) => [
+        actor,
+        {
+          hp: actor.hp,
+          mp: actor.mp,
+          wasDefeated: actor.isDead(),
+          levelBefore: actor.level,
+        },
+      ]),
+    );
+
+    const defeatedEnemies = this.scene.enemies.filter((enemy) =>
+      enemy.isDead(),
+    );
+
+    const rewards =
+      outcome === BattleManager.OUTCOME_VICTORY
+        ? this.createRewardBundle(defeatedEnemies)
+        : { exp: 0, currency: 0, drops: [], resonance: 0 };
+
+    const partyResults = partyMembers.map((actor) => {
+      const snapshot = partySnapshots.get(actor);
+      let levelsGained = 0;
+      let expGained = 0;
+
+      if (outcome === BattleManager.OUTCOME_VICTORY && rewards.exp > 0) {
+        levelsGained = actor.gainExp(rewards.exp);
+        expGained = rewards.exp;
+      }
+
+      const postBattle = actor.restorePostBattleState(snapshot);
+
+      return {
+        actorId: actor.actorId,
+        name: actor.name,
+        expGained,
+        levelsGained,
+        levelBefore: snapshot.levelBefore,
+        levelAfter: actor.level,
+        ...postBattle,
+      };
+    });
+
+    this.finalResult = {
+      outcome,
+      encounter: {
+        id: this.scene.encounter.id,
+        name: this.scene.encounter.name,
+      },
+      rewards,
+      defeatedEnemies: defeatedEnemies.map((enemy) => ({
+        enemyId: enemy.enemyId,
+        name: enemy.name,
+        expReward: enemy.expReward,
+      })),
+      party: partyResults,
+    };
+
+    this.scene.result = this.finalResult;
+
+    return this.finalResult;
   }
 
   // =================================
@@ -142,24 +332,7 @@ class BattleManager {
         break;
 
       case "wait":
-        battle.setActionPhase("none");
-
-        if (battle.defeat) {
-          battle.battleInputLocked = false;
-          return;
-        }
-
-        if (battle.enemies.every((enemy) => enemy.isDead())) {
-          battle.victory = true;
-
-          battle.addBattleMessage("Victory!");
-
-          battle.battleInputLocked = false;
-          return;
-        }
-
-        this.endPartyTurn();
-        this.finishPartyAction();
+        this.finishPartyActionSequence();
         break;
 
       // =====================================
@@ -183,24 +356,7 @@ class BattleManager {
         break;
 
       case "magicWait":
-        battle.setActionPhase("none");
-
-        if (battle.defeat) {
-          battle.battleInputLocked = false;
-          return;
-        }
-
-        if (battle.enemies.every((enemy) => enemy.isDead())) {
-          battle.victory = true;
-          battle.battleInputLocked = false;
-
-          battle.addBattleMessage("Victory!");
-
-          return;
-        }
-
-        this.endPartyTurn();
-        this.finishPartyAction();
+        this.finishPartyActionSequence();
         break;
 
       // =====================================
@@ -221,17 +377,7 @@ class BattleManager {
         break;
 
       case "itemWait":
-        battle.setActionPhase("none");
-
-        if (battle.enemies.every((enemy) => enemy.isDead())) {
-          battle.victory = true;
-          battle.battleInputLocked = false;
-          battle.addBattleMessage("Victory!");
-          return;
-        }
-
-        this.endPartyTurn();
-        this.finishPartyAction();
+        this.finishPartyActionSequence();
         break;
 
       // =====================================
@@ -246,7 +392,7 @@ class BattleManager {
 
   updatePendingEnemyTurn(deltaTime) {
     const battle = this.scene;
-    if (battle.victory || battle.defeat) {
+    if (battle.outcome) {
       battle.pendingEnemyTurn = false;
       return;
     }
@@ -484,7 +630,9 @@ class BattleManager {
       if (target.isDead()) {
         battle.setActorState("defeat", 0, target);
 
-        battle.defeat = $gameParty.livingBattleMembers().length === 0;
+        if ($gameParty.livingBattleMembers().length === 0) {
+          this.declareBattleOutcome(BattleManager.OUTCOME_DEFEAT);
+        }
 
         battle.addBattleMessage(
           `${battler.name} attacks ${target.name}! ${target.name} takes ${damage} damage!`,
@@ -607,7 +755,7 @@ class BattleManager {
             );
 
             if ($gameParty.livingBattleMembers().length === 0) {
-              battle.defeat = true;
+              this.declareBattleOutcome(BattleManager.OUTCOME_DEFEAT);
             }
           } else if (battle.enemies.includes(battler)) {
             battle.setEnemyState(
@@ -746,7 +894,7 @@ class BattleManager {
         );
 
         if ($gameParty.livingBattleMembers().length === 0) {
-          battle.defeat = true;
+          this.declareBattleOutcome(BattleManager.OUTCOME_DEFEAT);
         }
 
         battle.addBattleMessage(
@@ -858,9 +1006,8 @@ class BattleManager {
     const target = $gameParty.livingBattleMembers()[0];
 
     if (!target) {
-      battle.defeat = true;
-      battle.pendingEnemyTurn = false;
       battle.enemyTurnIndex = 0;
+      this.declareBattleOutcome(BattleManager.OUTCOME_DEFEAT);
       return;
     }
 
@@ -888,11 +1035,9 @@ class BattleManager {
     );
 
     if ($gameParty.livingBattleMembers().length === 0) {
-      battle.defeat = true;
-      battle.pendingEnemyTurn = false;
       battle.enemyTurnIndex = 0;
-
-      battle.addBattleMessage(`${target.name} has fallen! Defeat...`);
+      battle.addBattleMessage(`${target.name} has fallen!`);
+      this.declareBattleOutcome(BattleManager.OUTCOME_DEFEAT);
       return;
     }
 

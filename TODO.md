@@ -31,7 +31,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Implement status stacking and interaction rules
 - [ ] Implement status UI indicators
 - [ ] Implement Fury / Sadness mutual exclusivity
-- [ ] Implement post-battle Death recovery behavior
+- [x] Implement post-battle Death recovery behavior
 
 ## Status Effect Mechanics
 
@@ -56,6 +56,14 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Near-Death derived HP state
 - [ ] Shield physical immunity
 - [ ] Shield elemental magic absorption
+
+---
+
+## Battle Rewards
+
+- [ ] Implement battle currency rewards
+- [ ] Implement enemy item drop tables and award resolution
+- [ ] Implement battle Essence Resonance rewards
 
 ---
 
