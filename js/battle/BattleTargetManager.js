@@ -73,6 +73,41 @@ class BattleTargetManager {
     return this.allowedTargetGroups(skill).includes(group);
   }
 
+  currentSkill() {
+    return this.scene.pendingMagicSkill || null;
+  }
+
+  currentCaster() {
+    return this.scene?.partyController?.currentBattler?.() || null;
+  }
+
+  isSelectableTarget(battler, skill = this.currentSkill()) {
+    if (!battler) {
+      return false;
+    }
+
+    if (skill) {
+      const caster = this.currentCaster();
+
+      if (caster && typeof caster.isValidSkillTarget === "function") {
+        return caster.isValidSkillTarget(skill, battler);
+      }
+    }
+
+    if (typeof battler.isAlive === "function") {
+      return battler.isAlive();
+    }
+
+    return !(typeof battler.isDead === "function" && battler.isDead());
+  }
+
+  selectableBattlers(group, skill = this.currentSkill()) {
+    const battlers =
+      group === "ally" ? $gameParty.battleMembers() : this.scene.enemies;
+
+    return battlers.filter((battler) => this.isSelectableTarget(battler, skill));
+  }
+
   // =================================
   // Target Movement
   // =================================
@@ -95,7 +130,7 @@ class BattleTargetManager {
         index = 0;
       }
 
-      if (enemies[index] && enemies[index].isAlive()) {
+      if (this.isSelectableTarget(enemies[index])) {
         this.scene.selectedEnemyIndex = index;
         return;
       }
@@ -120,7 +155,7 @@ class BattleTargetManager {
         index = 0;
       }
 
-      if (allies[index] && allies[index].isAlive()) {
+      if (this.isSelectableTarget(allies[index])) {
         this.scene.selectedAllyIndex = index;
         return;
       }
@@ -129,20 +164,17 @@ class BattleTargetManager {
 
   moveSpatialSelection(group, dx, dy) {
     const isAlly = group === "ally";
-
     const battlers = isAlly ? $gameParty.battleMembers() : this.scene.enemies;
-
     const selectedIndex = isAlly
       ? this.scene.selectedAllyIndex
       : this.scene.selectedEnemyIndex;
-
     const current = battlers[selectedIndex];
 
-    if (!current || current.isDead()) {
+    if (!this.isSelectableTarget(current)) {
       if (isAlly) {
-        this.selectFirstLivingAlly();
+        this.selectFirstSelectableAlly();
       } else {
-        this.selectFirstLivingEnemy();
+        this.selectFirstSelectableEnemy();
       }
 
       return false;
@@ -158,7 +190,7 @@ class BattleTargetManager {
     for (let i = 0; i < battlers.length; i++) {
       const battler = battlers[i];
 
-      if (!battler || battler.isDead() || i === selectedIndex) {
+      if (!this.isSelectableTarget(battler) || i === selectedIndex) {
         continue;
       }
 
@@ -168,18 +200,14 @@ class BattleTargetManager {
 
       const offsetX = position.x - currentPosition.x;
       const offsetY = position.y - currentPosition.y;
-
-      // How far is the candidate in the requested direction?
       const forward = offsetX * dx + offsetY * dy;
 
       if (forward <= 0) {
         continue;
       }
 
-      // Penalize targets that are far off the requested axis.
       const sideways = Math.abs(offsetX * dy - offsetY * dx);
       const distance = Math.hypot(offsetX, offsetY);
-
       const score = distance + sideways * 0.75;
 
       if (score < bestScore) {
@@ -205,9 +233,11 @@ class BattleTargetManager {
   // Target Selection
   // =================================
 
-  selectFirstLivingEnemy() {
+  selectFirstSelectableEnemy(skill = this.currentSkill()) {
     const { enemies } = this.scene;
-    const index = enemies.findIndex((enemy) => enemy && enemy.isAlive());
+    const index = enemies.findIndex((enemy) =>
+      this.isSelectableTarget(enemy, skill),
+    );
 
     if (index < 0) {
       return null;
@@ -217,26 +247,34 @@ class BattleTargetManager {
     return enemies[index];
   }
 
-  selectFirstLivingAlly() {
-    const allies = $gameParty.livingBattleMembers();
+  selectFirstSelectableAlly(skill = this.currentSkill()) {
+    const allies = $gameParty.battleMembers();
+    const index = allies.findIndex((ally) =>
+      this.isSelectableTarget(ally, skill),
+    );
 
-    if (allies.length === 0) {
+    if (index < 0) {
       return null;
     }
 
-    const allMembers = $gameParty.battleMembers();
-    const index = allMembers.indexOf(allies[0]);
-
-    this.scene.selectedAllyIndex = Math.max(0, index);
-    return allies[0];
+    this.scene.selectedAllyIndex = index;
+    return allies[index];
   }
 
-  selectFrontLivingAlly() {
+  selectFirstLivingEnemy() {
+    return this.selectFirstSelectableEnemy(null);
+  }
+
+  selectFirstLivingAlly() {
+    return this.selectFirstSelectableAlly(null);
+  }
+
+  selectFrontSelectableAlly(skill = this.currentSkill()) {
     const allies = $gameParty.battleMembers();
     const enemy = this.getSelectedEnemy();
 
     if (!enemy) {
-      return this.selectFirstLivingAlly();
+      return this.selectFirstSelectableAlly(skill);
     }
 
     const enemyPosition = this.scene.getEnemyPosition(enemy);
@@ -247,12 +285,11 @@ class BattleTargetManager {
     for (let i = 0; i < allies.length; i++) {
       const ally = allies[i];
 
-      if (!ally || ally.isDead()) {
+      if (!this.isSelectableTarget(ally, skill)) {
         continue;
       }
 
       const allyPosition = this.scene.getAllyPosition(ally);
-
       const distance = Math.hypot(
         allyPosition.x - enemyPosition.x,
         allyPosition.y - enemyPosition.y,
@@ -272,12 +309,12 @@ class BattleTargetManager {
     return allies[bestIndex];
   }
 
-  selectFrontLivingEnemy() {
+  selectFrontSelectableEnemy(skill = this.currentSkill()) {
     const enemies = this.scene.enemies;
     const ally = this.getSelectedAlly();
 
     if (!ally) {
-      return this.selectFirstLivingEnemy();
+      return this.selectFirstSelectableEnemy(skill);
     }
 
     const allyPosition = this.scene.getAllyPosition(ally);
@@ -288,12 +325,11 @@ class BattleTargetManager {
     for (let i = 0; i < enemies.length; i++) {
       const enemy = enemies[i];
 
-      if (!enemy || enemy.isDead()) {
+      if (!this.isSelectableTarget(enemy, skill)) {
         continue;
       }
 
       const enemyPosition = this.scene.getEnemyPosition(enemy);
-
       const distance = Math.hypot(
         enemyPosition.x - allyPosition.x,
         enemyPosition.y - allyPosition.y,
@@ -313,21 +349,25 @@ class BattleTargetManager {
     return enemies[bestIndex];
   }
 
+  selectFrontLivingAlly() {
+    return this.selectFrontSelectableAlly(null);
+  }
+
+  selectFrontLivingEnemy() {
+    return this.selectFrontSelectableEnemy(null);
+  }
+
   // =================================
   // Target Retrieval
   // =================================
 
   getCurrentTargets() {
     if (this.scene.targetScope === "all") {
-      if (this.scene.targetGroup === "ally") {
-        return $gameParty.livingBattleMembers();
-      }
-
-      return this.scene.enemies.filter((enemy) => enemy && enemy.isAlive());
+      return this.selectableBattlers(this.scene.targetGroup);
     }
 
     const target = this.getSelectedTarget();
-    return target ? [target] : [];
+    return this.isSelectableTarget(target) ? [target] : [];
   }
 
   getSelectedAlly() {

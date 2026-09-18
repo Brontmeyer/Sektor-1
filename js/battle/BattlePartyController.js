@@ -75,7 +75,7 @@ class BattlePartyController {
 
       const battler = this.partyTurnQueue[this.currentPartyTurn] || null;
 
-      if (battler && !battler.isDead()) {
+      if (battler && battler.isAlive()) {
         this.activeBattler = battler;
         return battler;
       }
@@ -93,7 +93,7 @@ class BattlePartyController {
     ) {
       const battler = this.partyTurnQueue[i];
 
-      if (battler && !battler.isDead()) {
+      if (battler && battler.isAlive()) {
         return true;
       }
     }

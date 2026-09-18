@@ -323,6 +323,12 @@ Fury and Sadness are intended to be mutually exclusive. That relationship is an 
 
 Death is a battle defeat state that can be revived. Post-battle processing restores defeated party members to 1 HP after battle rather than encoding that behavior inside the Death status object.
 
+The shared battler model distinguishes **dead** from **defeated**. `isDead()` remains the HP-zero check. `isDefeated()` is the battle-state check and is true when HP is zero or when an active status defines `effects.countsAsDefeated: true`. Death therefore reaches defeat through both HP zero and status metadata, while Petrify counts as defeated without changing the battler's HP. Battle outcome, active-turn, ordinary target-selection, defeat-presentation, and defeated-enemy reward paths use the broader defeated-state contract.
+
+Revival is data-driven through skills with `effect: "revive"` and a valid `revivePercent`. A normal HP-zero KO can be revived even when no Death status object is present. A revivable defeat status such as Death is removed before HP is restored. A non-revivable defeat status such as Petrify blocks revival and must instead be removed by an appropriate cleansing skill such as Soul Cleanse. Ordinary healing does not target defeated battlers.
+
+Battle target selection uses the same skill-target validity contract as execution. Rekindle and Reawakening can therefore select revivable defeated allies, Soul Cleanse can select a Petrified ally because it can remove Petrify, and normal healing continues to select active battlers only. If a reflectable revival is redirected, Reflect chooses a revivable battler on the opposing side rather than a living target that cannot receive revival.
+
 Battle presentation exposes active status names for both sides. Turn-based and countdown statuses include their remaining-turn value, and compact summaries collapse additional statuses behind a `+N` suffix when space is limited.
 
 ---
@@ -333,7 +339,7 @@ Barrier and MBarrier now reduce their respective physical or magical incoming da
 
 Reflect redirects eligible skills at the per-target resolution layer. A skill only reflects when its canonical definition has `reflectable: true` and the current target has an active status whose effects enable `reflectableSkills`.
 
-The initial Reflect status uses `perTarget: true` and `maxReflections: 1`. Each original target of an all-target cast therefore resolves reflection independently, while the spell's MP cost is still paid only once for the cast. A reflected skill is redirected to a random living battler on the side opposing the Reflect holder.
+The initial Reflect status uses `perTarget: true` and `maxReflections: 1`. Each original target of an all-target cast therefore resolves reflection independently, while the spell's MP cost is still paid only once for the cast. Reflected skills normally redirect to a random living battler on the side opposing the Reflect holder. Revival is the state-aware exception: a reflected revive selects a random revivable defeated battler on the opposing side so the redirected effect still has a legal revival destination.
 
 Reflection changes the resolved target; it does not create a second cast. The reflected effect therefore keeps the original caster, scope, power, status chances, and paid MP cost. Because the redirection happens after the player has already chosen a legal original target, the reflected destination is allowed to receive the effect even when that battler could not have been manually selected under the skill's normal ally/enemy targeting rules.
 
@@ -444,9 +450,9 @@ Presentation should report the result of battle logic rather than becoming the a
 
 # 🏆 Battle Resolution
 
-Victory occurs when all enemies are defeated.
+Victory occurs when all enemies are defeated under the shared `isDefeated()` contract. This includes status-defined defeat such as Petrify, not only HP-zero enemies.
 
-Defeat occurs when the party has no living battle members remaining.
+Defeat occurs when the party has no active, non-defeated battle members remaining.
 
 Escape is a third terminal outcome when the encounter permits it.
 
@@ -464,7 +470,7 @@ Defeat and escape award no EXP. Currency, item drops, and Essence Resonance are 
 
 Battle finalization deliberately restores map-safe party state:
 
-- Defeated active battle members return at 1 HP.
+- Defeated active battle members return at 1 HP, including participants whose defeat came from a temporary `countsAsDefeated` status such as Petrify.
 - Surviving HP and MP values carry out of battle unchanged, even when battle EXP causes a level-up.
 - Defending is cleared.
 - Statuses with `classification.persistsAfterBattle: true` are preserved.

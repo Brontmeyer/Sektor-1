@@ -143,6 +143,15 @@ class DatabaseValidator {
 
     const validTargets = new Set(["self", "ally", "enemy"]);
     const validScopes = new Set(["single", "all"]);
+    const validEffects = new Set([
+      "damage",
+      "heal",
+      "inflictStatus",
+      "removeStatus",
+      "revive",
+      "escape",
+      "banish",
+    ]);
 
     for (let index = 1; index < skills.length; index++) {
       const skill = skills[index];
@@ -178,6 +187,23 @@ class DatabaseValidator {
         skill.type.trim().length === 0
       ) {
         errors.push(`Skill ${index} must define a non-empty string type.`);
+      }
+
+      if (!validEffects.has(skill.effect)) {
+        errors.push(
+          `Skill ${index} has unsupported effect "${skill.effect}".`,
+        );
+      }
+
+      if (
+        skill.effect === "revive" &&
+        (!Number.isFinite(skill.revivePercent) ||
+          skill.revivePercent <= 0 ||
+          skill.revivePercent > 1)
+      ) {
+        errors.push(
+          `Skill ${index} revivePercent must be greater than 0 and at most 1.`,
+        );
       }
 
       if (!Number.isFinite(skill.mpCost) || skill.mpCost < 0) {
@@ -431,6 +457,31 @@ class DatabaseValidator {
         errors.push(`Status ${index} must define an effects object.`);
       } else {
         const effects = status.effects;
+
+        for (const effectKey of [
+          "canAct",
+          "countsAsDefeated",
+          "setsHpToZero",
+          "canBeRevived",
+        ]) {
+          if (
+            effects[effectKey] !== undefined &&
+            typeof effects[effectKey] !== "boolean"
+          ) {
+            errors.push(
+              `Status ${index} effects.${effectKey} must be true or false when provided.`,
+            );
+          }
+        }
+
+        if (
+          effects.canBeRevived === true &&
+          effects.countsAsDefeated !== true
+        ) {
+          errors.push(
+            `Status ${index} with effects.canBeRevived must also set effects.countsAsDefeated to true.`,
+          );
+        }
 
         for (const effectKey of ["allowedActions", "blockedSkillTypes"]) {
           const values = effects[effectKey];

@@ -341,6 +341,53 @@ class Game_Actor extends Game_Battler {
       return this.payMpCost(skill.mpCost || 0);
     };
 
+    // REVIVAL EFFECT
+    if (skill.effect === "revive") {
+      if (!target || typeof target.canBeRevived !== "function") {
+        console.warn(`${skill.name} has no valid revival target.`);
+        return false;
+      }
+
+      if (!target.canBeRevived()) {
+        DebugManager.log(`${target.name} cannot be revived by ${skill.name}.`);
+        return false;
+      }
+
+      const revivePercent = Number(skill.revivePercent);
+
+      if (
+        !Number.isFinite(revivePercent) ||
+        revivePercent <= 0 ||
+        revivePercent > 1
+      ) {
+        console.warn(`${skill.name} has an invalid revivePercent.`);
+        return false;
+      }
+
+      if (!paySkillCost()) {
+        return false;
+      }
+
+      const revival = target.revive(revivePercent);
+
+      if (!revival?.success) {
+        return false;
+      }
+
+      this._lastSkillStatusResults = this.resolveSkillStatusEffects(
+        skill,
+        target,
+        random,
+      );
+
+      DebugManager.log(
+        `${this.name} used ${skill.name} on ${target.name}; ` +
+          `${target.name} revived with ${target.hp} HP.`,
+      );
+
+      return true;
+    }
+
     // HEALING EFFECT
     if (skill.effect === "heal") {
       if (
@@ -510,30 +557,81 @@ class Game_Actor extends Game_Battler {
     );
   }
 
+  skillCanRemoveDefeatStatus(skill, target) {
+    if (skill?.effect !== "removeStatus" || !target) {
+      return false;
+    }
+
+    const statusPayload = skill.status;
+
+    if (
+      !statusPayload ||
+      typeof statusPayload !== "object" ||
+      Array.isArray(statusPayload)
+    ) {
+      return false;
+    }
+
+    return Object.keys(statusPayload).some((statusKey) => {
+      if (
+        typeof target.hasStatus !== "function" ||
+        !target.hasStatus(statusKey)
+      ) {
+        return false;
+      }
+
+      const definition =
+        typeof target.statusDefinition === "function"
+          ? target.statusDefinition(statusKey)
+          : null;
+
+      return (
+        definition?.effects?.countsAsDefeated === true &&
+        definition?.classification?.removable !== false
+      );
+    });
+  }
+
   isValidSkillTarget(skill, target) {
     if (!skill || !target) {
       return false;
     }
 
     const allowedTargets = Array.isArray(skill.target) ? skill.target : [];
-
-    if (allowedTargets.length === 0) {
-      return true;
-    }
+    let targetGroupAllowed = allowedTargets.length === 0;
 
     if (allowedTargets.includes("self") && target === this) {
-      return true;
+      targetGroupAllowed = true;
     }
 
     if (allowedTargets.includes("ally") && target instanceof Game_Actor) {
-      return true;
+      targetGroupAllowed = true;
     }
 
     if (allowedTargets.includes("enemy") && target instanceof Game_Enemy) {
-      return true;
+      targetGroupAllowed = true;
     }
 
-    return false;
+    if (!targetGroupAllowed) {
+      return false;
+    }
+
+    if (skill.effect === "revive") {
+      return (
+        typeof target.canBeRevived === "function" && target.canBeRevived()
+      );
+    }
+
+    const defeated =
+      typeof target.isDefeated === "function"
+        ? target.isDefeated()
+        : typeof target.isDead === "function" && target.isDead();
+
+    if (defeated) {
+      return this.skillCanRemoveDefeatStatus(skill, target);
+    }
+
+    return true;
   }
 
   // =====================================

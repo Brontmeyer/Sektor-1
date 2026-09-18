@@ -229,7 +229,12 @@ class BattleRenderer {
       return;
     }
 
-    if (typeof battler.isDead === "function" && battler.isDead()) {
+    if (
+      (typeof battler.isDefeated === "function" && battler.isDefeated()) ||
+      (typeof battler.isDefeated !== "function" &&
+        typeof battler.isDead === "function" &&
+        battler.isDead())
+    ) {
       return;
     }
 
@@ -426,17 +431,21 @@ class BattleRenderer {
 
     if (this.scene.targetScope === "all") {
       if (this.scene.targetGroup === "ally") {
-        const allies = $gameParty.livingBattleMembers();
+        const allies = this.scene.targetManager.selectableBattlers("ally");
 
         for (const ally of allies) {
           const position = this.scene.getAllyPosition(ally);
           context.fillText("▼", position.x, position.y - 160);
         }
       } else {
+        const selectableEnemies = new Set(
+          this.scene.targetManager.selectableBattlers("enemy"),
+        );
+
         for (let i = 0; i < this.scene.enemies.length; i++) {
           const enemy = this.scene.enemies[i];
 
-          if (!enemy || enemy.isDead()) {
+          if (!selectableEnemies.has(enemy)) {
             continue;
           }
 

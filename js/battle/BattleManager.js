@@ -76,7 +76,7 @@ class BattleManager {
   detectBattleOutcome() {
     const battle = this.scene;
 
-    if (battle.enemies.every((enemy) => enemy.isDead())) {
+    if (battle.enemies.every((enemy) => this.battlerIsDefeated(enemy))) {
       return BattleManager.OUTCOME_VICTORY;
     }
 
@@ -163,14 +163,14 @@ class BattleManager {
         {
           hp: actor.hp,
           mp: actor.mp,
-          wasDefeated: actor.isDead(),
+          wasDefeated: this.battlerIsDefeated(actor),
           levelBefore: actor.level,
         },
       ]),
     );
 
     const defeatedEnemies = this.scene.enemies.filter((enemy) =>
-      enemy.isDead(),
+      this.battlerIsDefeated(enemy),
     );
 
     const rewards =
@@ -229,6 +229,45 @@ class BattleManager {
     return this.scene.partyController;
   }
 
+  battlerIsDefeated(battler) {
+    if (!battler) {
+      return false;
+    }
+
+    if (typeof battler.isDefeated === "function") {
+      return battler.isDefeated();
+    }
+
+    return typeof battler.isDead === "function" && battler.isDead();
+  }
+
+  presentDefeatTransition(battler, wasDefeated = false) {
+    if (!battler) {
+      return false;
+    }
+
+    const battle = this.scene;
+    const isDefeated = this.battlerIsDefeated(battler);
+
+    if (isDefeated === wasDefeated) {
+      return false;
+    }
+
+    if ($gameParty.battleMembers().includes(battler)) {
+      battle.setActorState(isDefeated ? "defeat" : "idle", 0, battler);
+    } else if (battle.enemies.includes(battler)) {
+      battle.setEnemyState(isDefeated ? "defeat" : "idle", 0, battler);
+    }
+
+    const outcome = this.detectBattleOutcome();
+
+    if (outcome) {
+      this.declareBattleOutcome(outcome);
+    }
+
+    return true;
+  }
+
   processTurnStartStatuses(battler) {
     const battle = this.scene;
 
@@ -254,7 +293,7 @@ class BattleManager {
       }
     }
 
-    if (battler.isDead()) {
+    if (this.battlerIsDefeated(battler)) {
       if ($gameParty.battleMembers().includes(battler)) {
         battle.setActorState("defeat", 0, battler);
       } else if (battle.enemies.includes(battler)) {
@@ -272,7 +311,7 @@ class BattleManager {
   }
 
   battlerCanAct(battler) {
-    if (!battler || battler.isDead()) {
+    if (!battler || this.battlerIsDefeated(battler)) {
       return false;
     }
 
@@ -412,6 +451,26 @@ class BattleManager {
     return [];
   }
 
+  reflectedSkillCandidates(skill, side) {
+    if (skill?.effect !== "revive") {
+      return this.livingBattlersForSide(side);
+    }
+
+    const battlers =
+      side === "ally"
+        ? $gameParty.battleMembers()
+        : side === "enemy"
+          ? this.scene.enemies
+          : [];
+
+    return battlers.filter(
+      (battler) =>
+        battler &&
+        typeof battler.canBeRevived === "function" &&
+        battler.canBeRevived(),
+    );
+  }
+
   opposingBattleSide(side) {
     if (side === "ally") {
       return "enemy";
@@ -472,7 +531,7 @@ class BattleManager {
 
       const currentSide = this.battlerSide(resolvedTarget);
       const reflectedSide = this.opposingBattleSide(currentSide);
-      const candidates = this.livingBattlersForSide(reflectedSide);
+      const candidates = this.reflectedSkillCandidates(skill, reflectedSide);
       const reflectedTarget = this.randomBattleTarget(candidates, random);
 
       if (!reflectedTarget) {
@@ -546,6 +605,7 @@ class BattleManager {
     }
 
     const hpBefore = target.hp;
+    const defeatedBefore = this.battlerIsDefeated(target);
     const success = caster.useSkill(
       skill.id,
       target,
@@ -587,12 +647,26 @@ class BattleManager {
       );
     }
 
+    if (skill.effect === "revive") {
+      healing = Math.max(0, target.hp - hpBefore);
+
+      this.scene.addBattlePopup(target, `+${target.hp}`, "heal");
+      this.scene.addBattleMessage(
+        `${caster.name} casts ${skill.name}! ` +
+          `${target.name} returns with ${target.hp} HP!`,
+      );
+    }
+
+    this.presentDefeatTransition(target, defeatedBefore);
+
     return {
       success: true,
       requestedTarget,
       target,
       hpBefore,
       healing,
+      defeatedBefore,
+      defeatedAfter: this.battlerIsDefeated(target),
       damageResult,
       statusResults,
       ...reflection,
@@ -662,14 +736,6 @@ class BattleManager {
       }
     }
 
-    if (typeof target.isDead === "function" && target.isDead()) {
-      if ($gameParty.battleMembers().includes(target)) {
-        battle.setActorState("defeat", 0, target);
-      } else if (battle.enemies.includes(target)) {
-        battle.setEnemyState("defeat", 0, target);
-      }
-    }
-
     return results;
   }
 
@@ -722,19 +788,11 @@ class BattleManager {
     }
 
     if ($gameParty.battleMembers().includes(target)) {
-      if (target.isDead()) {
-        battle.setActorState("defeat", 0, target);
-      } else if (damage > 0) {
+      if (!this.battlerIsDefeated(target) && damage > 0) {
         battle.setActorState("hurt", 0.4, target);
       }
-
-      if ($gameParty.livingBattleMembers().length === 0) {
-        this.declareBattleOutcome(BattleManager.OUTCOME_DEFEAT);
-      }
     } else if (battle.enemies.includes(target)) {
-      if (target.isDead()) {
-        battle.setEnemyState("defeat", 0, target);
-      } else if (damage > 0) {
+      if (!this.battlerIsDefeated(target) && damage > 0) {
         battle.setEnemyState("hurt", 0.4, target);
       }
     }
@@ -757,7 +815,7 @@ class BattleManager {
     this.processTurnStartStatuses(battler);
 
     if (this.scene.outcome || !this.battlerCanAct(battler)) {
-      if (!this.scene.outcome && !battler.isDead()) {
+      if (!this.scene.outcome && !this.battlerIsDefeated(battler)) {
         this.scene.addBattleMessage(`${battler.name} cannot act!`);
       }
 
@@ -1042,17 +1100,29 @@ class BattleManager {
     // Store the selected skill before entering target selection.
     battle.pendingMagicSkill = skill;
 
-    // Start on the first allowed target group.
-    // Prefer enemies when both groups are available so offensive-style
-    // targeting still feels natural without depending on skill.effect.
-    if (targetGroups.includes("enemy")) {
-      battle.targetGroup = "enemy";
-      battle.targetManager.selectFirstLivingEnemy();
-    } else if (targetGroups.includes("ally")) {
-      battle.targetGroup = "ally";
-      battle.targetManager.selectFirstLivingAlly();
-    } else {
-      console.warn(`Skill ${skill.name} has no supported battle target group.`);
+    // Start on the first allowed group that actually contains a legal target.
+    // Enemy-first preserves the established offensive targeting preference,
+    // while revive/cleanse skills can select defeated allies through the same
+    // target-validity contract used by execution.
+    const preferredGroups = ["enemy", "ally"].filter((group) =>
+      targetGroups.includes(group),
+    );
+    let selectedTarget = null;
+
+    for (const group of preferredGroups) {
+      battle.targetGroup = group;
+      selectedTarget =
+        group === "enemy"
+          ? battle.targetManager.selectFirstSelectableEnemy(skill)
+          : battle.targetManager.selectFirstSelectableAlly(skill);
+
+      if (selectedTarget) {
+        break;
+      }
+    }
+
+    if (!selectedTarget) {
+      battle.addBattleMessage(`${skill.name} has no valid targets.`);
       battle.pendingMagicSkill = null;
       return;
     }
@@ -1115,8 +1185,10 @@ class BattleManager {
 
     battle.pendingAttackTarget = target;
 
-    if (battle.enemy.isDead()) {
-      const nextEnemy = battle.enemies.find((enemy) => !enemy.isDead());
+    if (this.battlerIsDefeated(battle.enemy)) {
+      const nextEnemy = battle.enemies.find(
+        (enemy) => !this.battlerIsDefeated(enemy),
+      );
 
       if (!nextEnemy) {
         return;
@@ -1149,7 +1221,7 @@ class BattleManager {
     const target = battle.pendingAttackTarget;
     battle.pendingAttackTarget = null;
 
-    if (!target || target.isDead()) {
+    if (!target || this.battlerIsDefeated(target)) {
       return;
     }
 
@@ -1198,7 +1270,7 @@ class BattleManager {
     // -----------------------------
 
     if ($gameParty.battleMembers().includes(target)) {
-      if (target.isDead()) {
+      if (this.battlerIsDefeated(target)) {
         battle.setActorState("defeat", 0, target);
 
         if ($gameParty.livingBattleMembers().length === 0) {
@@ -1227,7 +1299,7 @@ class BattleManager {
     // Enemy target
     // -----------------------------
 
-    if (target.isDead()) {
+    if (this.battlerIsDefeated(target)) {
       battle.setEnemyState("defeat", 0, target);
 
       battle.addBattleMessage(`${battler.name} attacks! ${damageMessage}`);
@@ -1456,7 +1528,7 @@ class BattleManager {
   performEnemyTurn(enemy = this.scene.enemies[this.scene.enemyTurnIndex]) {
     const battle = this.scene;
 
-    if (!enemy || enemy.isDead()) {
+    if (!enemy || this.battlerIsDefeated(enemy)) {
       this.advanceEnemyTurn(true, 0.2);
       return;
     }
@@ -1467,7 +1539,7 @@ class BattleManager {
       return;
     }
 
-    if (enemy.isDead()) {
+    if (this.battlerIsDefeated(enemy)) {
       this.advanceEnemyTurn(true);
       return;
     }
@@ -1510,7 +1582,7 @@ class BattleManager {
     }
 
     if ($gameParty.battleMembers().includes(target)) {
-      if (target.isDead()) {
+      if (this.battlerIsDefeated(target)) {
         battle.setActorState("defeat", 0, target);
       } else if (damage > 0) {
         battle.setActorState("hurt", 0.3, target);

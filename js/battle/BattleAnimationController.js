@@ -43,7 +43,7 @@ class BattleAnimationController {
       if (battleData.stateTimer <= 0) {
         battleData.stateTimer = 0;
 
-        if (!actor.isDead()) {
+        if (actor.isAlive()) {
           battleData.state = "idle";
         }
       }
@@ -63,7 +63,7 @@ class BattleAnimationController {
         if (battleData.stateTimer <= 0) {
           battleData.stateTimer = 0;
 
-          if (!enemy.isDead()) {
+          if (enemy.isAlive()) {
             battleData.state = "idle";
           }
         }
@@ -78,7 +78,7 @@ class BattleAnimationController {
       (!activeActorData || activeActorData.state === "idle") &&
       scene.enemies.every(
         (enemy, index) =>
-          enemy.isDead() || scene.enemyBattleData[index].state === "idle",
+          !enemy.isAlive() || scene.enemyBattleData[index].state === "idle",
       ) &&
       (!activeActorData || Math.abs(activeActorData.visualX) < 0.5) &&
       scene.enemyBattleData.every((data) => Math.abs(data.visualX) < 0.5) &&

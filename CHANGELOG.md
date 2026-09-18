@@ -64,6 +64,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added Action Restrictions v1 with data-driven `allowedActions` and `blockedSkillTypes` handling
 - Added Silence magic blocking and Frog Attack-only command restrictions through the shared battler runtime
 - Added battle-command availability feedback plus dedicated action-restriction regression coverage
+- Added Defeat & Revival Runtime v1 with a shared data-driven defeated-state contract
+- Added Petrify defeat handling without forcing HP to zero
+- Added Rekindle / Reawakening revival execution, defeated-target selection, and revival-aware Reflect routing
+- Added dedicated defeat/revival regression coverage for battle outcomes, rewards, cleansing, targeting, and metadata validation
 
 ### Changed
 
@@ -87,6 +91,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Centralized single-target and all-target magic effect presentation through one reflection-aware per-target resolver
 - Made actor skill usability and battle command execution honor the same shared status-driven action restrictions
 - Made skill metadata require a non-empty `type` because status restrictions depend on reusable skill categories
+- Distinguished HP-zero death from the broader `isDefeated()` battle state so status-defined defeat can participate in outcome, targeting, animation, and reward logic
+- Made skill validation enforce the current effect vocabulary and validate `revivePercent` plus defeat/revival status metadata
+- Corrected the stale `Game_Party` comment to the canonical four-member active battle limit
 
 ### Documentation
 
@@ -112,6 +119,18 @@ docs/roadmap.md        High-level development direction
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 17 - Defeat & Revival Runtime v1
+
+- Added `isDefeated()` as the shared battle-state contract for HP-zero and status-defined defeat
+- Connected Petrify's `countsAsDefeated` metadata to battle outcome, targeting, turn, presentation, and reward paths
+- Implemented data-driven revival for Rekindle and Reawakening, including Death-status removal and percentage HP restoration
+- Allowed status-cleansing skills to target Petrified battlers while ordinary healing continues to reject defeated targets
+- Added revive-aware reflection candidates and target-selection behavior
+- Added defeat/revival schema validation and dedicated regression tests
+- Corrected the active battle-party comment from three members to four
 
 ---
 

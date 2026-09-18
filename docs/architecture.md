@@ -398,9 +398,11 @@ Several major systems intentionally cross architectural boundaries while retaini
 
 `Skills.json` defines skills.
 
-`Game_Actor` owns reusable skill execution details that belong to the acting battler, including MP payment, damage/healing formulas, and routing a skill's `status` payload into the shared Status Runtime. Status application, refresh, removal, toggle behavior, resistance, immunity, and status-driven skill availability remain owned by `Game_Battler`; skill execution does not duplicate those rules.
+`Game_Actor` owns reusable skill execution details that belong to the acting battler, including MP payment, damage/healing/revival formulas, and routing a skill's `status` payload into the shared Status Runtime. Status application, refresh, removal, toggle behavior, resistance, immunity, defeated-state evaluation, revivability, and status-driven skill availability remain owned by `Game_Battler`; skill execution does not duplicate those rules.
 
-`BattleManager` coordinates battle targeting and presentation, then consumes the status-resolution results produced by the caster so status feedback is shown without making individual skill names part of battle-flow logic.
+`BattleTargetManager` asks the acting actor's shared skill-target contract whether a battler is selectable. This allows ordinary actions to continue targeting active battlers while revival can select revivable defeated battlers and status cleansing can select a defeated battler when the chosen skill can remove that defeat status.
+
+`BattleManager` coordinates battle targeting and presentation, then consumes the status-resolution results produced by the caster so status feedback is shown without making individual skill names part of battle-flow logic. Battle outcome and reward paths consume the shared `isDefeated()` contract rather than assuming every defeated battler must have zero HP.
 
 Windows present available commands and skills to the player. `Window_BattleCommand` reads the active battler's shared action-availability rules so forbidden commands are dimmed and skipped, while `BattleManager` rechecks the same rule before execution.
 
@@ -416,7 +418,7 @@ Battle systems consume Essence-granted abilities and passive effects where appro
 
 `Statuses.json` defines Status System v1.
 
-The active Status Runtime provides reusable application, removal, duration, countdown, derived-state, modifier, immunity/resistance, stacking, and interaction behavior. The shared damage path consumes data-driven incoming damage, outgoing physical damage, physical accuracy, wake-on-hit, and elemental absorption properties without checking individual status names.
+The active Status Runtime provides reusable application, removal, duration, countdown, derived-state, modifier, immunity/resistance, stacking, interaction, defeat-state, and revival behavior. `effects.countsAsDefeated` contributes to the shared defeated-state contract, while `effects.canBeRevived` controls whether a status-defined defeat can be removed through revival. The shared damage path consumes data-driven incoming damage, outgoing physical damage, physical accuracy, wake-on-hit, and elemental absorption properties without checking individual status names.
 
 Battlers own their active status state while battle systems trigger and coordinate status effects at the appropriate points in combat.
 

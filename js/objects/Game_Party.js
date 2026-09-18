@@ -9,7 +9,7 @@ class Game_Party {
 
     // Party roster and active battle party are intentionally separate.
     // This lets the project grow into a larger roster later while keeping
-    // a maximum of three active battle members.
+    // a maximum of four active battle members.
     this._actors = [];
     this._battleActorIds = [];
 

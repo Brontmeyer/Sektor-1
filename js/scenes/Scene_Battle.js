@@ -169,7 +169,12 @@ class Scene_Battle extends Scene_Base {
 
           if (canSwitchToAlly) {
             this.targetGroup = "ally";
-            this.targetManager.selectFrontLivingAlly();
+
+            if (skill) {
+              this.targetManager.selectFrontSelectableAlly(skill);
+            } else {
+              this.targetManager.selectFrontLivingAlly();
+            }
           }
 
           return;
@@ -219,7 +224,12 @@ class Scene_Battle extends Scene_Base {
 
             if (canSwitchToEnemy) {
               this.targetGroup = "enemy";
-              this.targetManager.selectFrontLivingEnemy();
+
+              if (skill) {
+                this.targetManager.selectFrontSelectableEnemy(skill);
+              } else {
+                this.targetManager.selectFrontLivingEnemy();
+              }
             }
           }
 
@@ -230,7 +240,7 @@ class Scene_Battle extends Scene_Base {
       if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
         const target = this.targetManager.getSelectedTarget();
 
-        if (target && !target.isDead()) {
+        if (target && this.targetManager.isSelectableTarget(target)) {
           if (this.targetGroup === "enemy") {
             this.enemy = target;
           }

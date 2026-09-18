@@ -4,7 +4,7 @@
  * Shared combat foundation for actors and enemies.
  *
  * Game_Battler owns the state and behavior that every combatant has in
- * common: HP/MP, core battle stats, derived stats, and alive/dead checks.
+ * common: HP/MP, core battle stats, derived stats, and defeat-state checks.
  * Actor-specific equipment/skills/EXP stay in Game_Actor, while enemy-
  * specific sprite/database behavior stays in Game_Enemy.
  */
@@ -87,6 +87,80 @@ class Game_Battler {
     return this.statuses
       .map((runtimeStatus) => this.statusDefinition(runtimeStatus.key))
       .filter((definition) => definition !== null);
+  }
+
+  activeDefeatStatusDefinitions() {
+    return this.activeStatusDefinitions().filter(
+      (definition) => definition.effects?.countsAsDefeated === true,
+    );
+  }
+
+  hasNonRevivableDefeatStatus() {
+    return this.activeDefeatStatusDefinitions().some(
+      (definition) => definition.effects?.canBeRevived !== true,
+    );
+  }
+
+  canBeRevived() {
+    if (!this.isDefeated()) {
+      return false;
+    }
+
+    if (this.hasNonRevivableDefeatStatus()) {
+      return false;
+    }
+
+    const defeatStatuses = this.activeDefeatStatusDefinitions();
+
+    return (
+      this.isDead() ||
+      defeatStatuses.some(
+        (definition) => definition.effects?.canBeRevived === true,
+      )
+    );
+  }
+
+  revive(hpPercent = 1) {
+    const percent = Number(hpPercent);
+
+    if (
+      !this.canBeRevived() ||
+      !Number.isFinite(percent) ||
+      percent <= 0 ||
+      percent > 1
+    ) {
+      return {
+        success: false,
+        hpBefore: this.hp,
+        hpAfter: this.hp,
+        hpRecovered: 0,
+        removedStatuses: [],
+      };
+    }
+
+    const hpBefore = this.hp;
+    const removedStatuses = [];
+
+    for (const definition of this.activeDefeatStatusDefinitions()) {
+      if (definition.effects?.canBeRevived !== true) {
+        continue;
+      }
+
+      if (this.removeStatus(definition.key, { force: true })) {
+        removedStatuses.push(definition.key);
+      }
+    }
+
+    const revivedHp = Math.max(1, Math.floor(this.maxHp * percent));
+    this.setHp(revivedHp);
+
+    return {
+      success: !this.isDefeated(),
+      hpBefore,
+      hpAfter: this.hp,
+      hpRecovered: Math.max(0, this.hp - hpBefore),
+      removedStatuses,
+    };
   }
 
   statusEffectMultiplier(effectKey) {
@@ -593,7 +667,7 @@ class Game_Battler {
   restorePostBattleState(stateBeforeRewards = null) {
     const wasDefeated =
       stateBeforeRewards?.wasDefeated === true ||
-      (!stateBeforeRewards && this.isDead());
+      (!stateBeforeRewards && this.isDefeated());
 
     const hpBeforeRewards = Number(stateBeforeRewards?.hp);
     const mpBeforeRewards = Number(stateBeforeRewards?.mp);
@@ -687,7 +761,7 @@ class Game_Battler {
   }
 
   canAct() {
-    if (this.isDead()) {
+    if (this.isDefeated()) {
       return false;
     }
 
@@ -902,8 +976,12 @@ class Game_Battler {
     return this.hp <= 0;
   }
 
+  isDefeated() {
+    return this.isDead() || this.activeDefeatStatusDefinitions().length > 0;
+  }
+
   isAlive() {
-    return !this.isDead();
+    return !this.isDefeated();
   }
 
   isFullHp() {
