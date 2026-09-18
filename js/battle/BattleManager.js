@@ -283,6 +283,156 @@ class BattleManager {
     return true;
   }
 
+  // =================================
+  // Combat Resolution
+  // =================================
+
+  physicalHitChance(battler) {
+    if (!battler || typeof battler.totalAttackPercent !== "function") {
+      return 0;
+    }
+
+    const baseAccuracy = Number(battler.totalAttackPercent());
+    const accuracyMultiplier =
+      typeof battler.physicalAccuracyMultiplier === "function"
+        ? battler.physicalAccuracyMultiplier()
+        : 1;
+    const accuracy = Number.isFinite(baseAccuracy) ? baseAccuracy : 0;
+
+    return Math.max(0, Math.min(100, accuracy * accuracyMultiplier));
+  }
+
+  calculatePhysicalDamage(attacker, target, { critical = false } = {}) {
+    if (!attacker || !target) {
+      return 0;
+    }
+
+    const attack =
+      typeof attacker.totalAttack === "function" ? attacker.totalAttack() : 0;
+    const defense =
+      typeof target.totalDefense === "function" ? target.totalDefense() : 0;
+
+    let damage = Math.max(1, attack - defense);
+
+    if (critical) {
+      damage = Math.max(1, Math.floor(damage * 2));
+    }
+
+    const outgoingMultiplier =
+      typeof attacker.physicalDamageMultiplier === "function"
+        ? attacker.physicalDamageMultiplier()
+        : 1;
+
+    damage = Math.max(1, Math.floor(damage * outgoingMultiplier));
+
+    if (typeof target.isDefending === "function" && target.isDefending()) {
+      damage = Math.max(1, Math.floor(damage * 0.5));
+    }
+
+    return damage;
+  }
+
+  applyPhysicalDamage(attacker, target, options = {}) {
+    const requestedDamage = this.calculatePhysicalDamage(
+      attacker,
+      target,
+      options,
+    );
+
+    if (typeof target?.receiveDamage === "function") {
+      return target.receiveDamage(requestedDamage, { category: "physical" });
+    }
+
+    const hpBefore = target?.hp ?? 0;
+
+    target?.loseHp?.(requestedDamage);
+
+    return {
+      damage: Math.max(0, hpBefore - (target?.hp ?? hpBefore)),
+      healing: 0,
+      absorbed: false,
+      category: "physical",
+      element: null,
+      requestedDamage,
+      resolvedDamage: requestedDamage,
+      damageMultiplier: 1,
+      removedStatuses: [],
+    };
+  }
+
+  presentMagicDamage(caster, skill, target, hpBefore) {
+    const battle = this.scene;
+    const damage = Math.max(0, hpBefore - target.hp);
+    const healing = Math.max(0, target.hp - hpBefore);
+    const elementRate =
+      typeof target.elementRate === "function"
+        ? target.elementRate(skill.element)
+        : 1;
+    const absorbed =
+      elementRate > 0 &&
+      typeof target.absorbsElementalMagic === "function" &&
+      target.absorbsElementalMagic(skill.element);
+
+    if (elementRate === 0) {
+      battle.addBattlePopup(target, "IMMUNE", "immune");
+      battle.addBattleMessage(
+        `${caster.name} casts ${skill.name}! ${target.name} is immune!`,
+      );
+
+      return { damage: 0, healing: 0, absorbed: false, elementRate };
+    }
+
+    if (absorbed) {
+      battle.addBattlePopup(target, "ABSORB", "heal");
+
+      if (healing > 0) {
+        battle.addBattlePopup(target, `+${healing}`, "heal");
+      }
+
+      const recoveryText =
+        healing > 0 ? ` and recovers ${healing} HP!` : "!";
+
+      battle.addBattleMessage(
+        `${caster.name} casts ${skill.name}! ` +
+          `${target.name} absorbs the magic${recoveryText}`,
+      );
+
+      return { damage: 0, healing, absorbed: true, elementRate };
+    }
+
+    battle.addBattlePopup(target, `-${damage}`, "damage");
+
+    if (elementRate > 1) {
+      battle.addBattlePopup(target, "WEAK", "weak");
+    } else if (elementRate < 1) {
+      battle.addBattlePopup(target, "RESIST", "resist");
+    }
+
+    if ($gameParty.battleMembers().includes(target)) {
+      if (target.isDead()) {
+        battle.setActorState("defeat", 0, target);
+      } else if (damage > 0) {
+        battle.setActorState("hurt", 0.4, target);
+      }
+
+      if ($gameParty.livingBattleMembers().length === 0) {
+        this.declareBattleOutcome(BattleManager.OUTCOME_DEFEAT);
+      }
+    } else if (battle.enemies.includes(target)) {
+      if (target.isDead()) {
+        battle.setEnemyState("defeat", 0, target);
+      } else if (damage > 0) {
+        battle.setEnemyState("hurt", 0.4, target);
+      }
+    }
+
+    battle.addBattleMessage(
+      `${caster.name} casts ${skill.name}! ${target.name} takes ${damage} damage!`,
+    );
+
+    return { damage, healing: 0, absorbed: false, elementRate };
+  }
+
   beginPartyTurn() {
     const party = this.party();
     const battler = party.activeBattler;
@@ -664,10 +814,7 @@ class BattleManager {
       return;
     }
 
-    let damage = Math.max(1, battler.totalAttack() - target.totalDefense());
-
-    const hitChance = Math.max(0, Math.min(100, battler.totalAttackPercent()));
-
+    const hitChance = this.physicalHitChance(battler);
     const hitRoll = Math.random() * 100;
 
     if (hitRoll >= hitChance) {
@@ -680,32 +827,32 @@ class BattleManager {
       return;
     }
 
-    const criticalMultiplier = 2;
-
     const criticalChancePercent = Math.max(
       0,
       (battler.luck + battler.level - target.level) / 4 +
         battler.totalCritical(),
     );
-
     const criticalChance = criticalChancePercent / 100;
     const isCritical = Math.random() < criticalChance;
+    const damageResult = this.applyPhysicalDamage(battler, target, {
+      critical: isCritical,
+    });
+    const damage = damageResult.damage;
 
-    if (isCritical) {
-      damage = Math.max(1, Math.floor(damage * criticalMultiplier));
+    if (damage > 0) {
+      battle.addBattlePopup(target, `-${damage}`, "damage");
+
+      if (isCritical) {
+        battle.addBattlePopup(target, "CRITICAL", "critical");
+      }
+    } else {
+      battle.addBattlePopup(target, "BLOCK", "immune");
     }
 
-    if (target.isDefending()) {
-      damage = Math.max(1, Math.floor(damage * 0.5));
-    }
-
-    target.loseHp(damage);
-
-    battle.addBattlePopup(target, `-${damage}`, "damage");
-
-    if (isCritical) {
-      battle.addBattlePopup(target, "CRITICAL", "critical");
-    }
+    const damageMessage =
+      damage > 0
+        ? `${target.name} takes ${damage} damage!`
+        : `${target.name} blocks the attack!`;
 
     // -----------------------------
     // Ally target
@@ -720,16 +867,18 @@ class BattleManager {
         }
 
         battle.addBattleMessage(
-          `${battler.name} attacks ${target.name}! ${target.name} takes ${damage} damage!`,
+          `${battler.name} attacks ${target.name}! ${damageMessage}`,
         );
 
         return;
       }
 
-      battle.setActorState("hurt", 0.3, target);
+      if (damage > 0) {
+        battle.setActorState("hurt", 0.3, target);
+      }
 
       battle.addBattleMessage(
-        `${battler.name} attacks ${target.name}! ${target.name} takes ${damage} damage!`,
+        `${battler.name} attacks ${target.name}! ${damageMessage}`,
       );
 
       return;
@@ -742,18 +891,16 @@ class BattleManager {
     if (target.isDead()) {
       battle.setEnemyState("defeat", 0, target);
 
-      battle.addBattleMessage(
-        `${battler.name} attacks! ${target.name} takes ${damage} damage!`,
-      );
+      battle.addBattleMessage(`${battler.name} attacks! ${damageMessage}`);
 
       return;
     }
 
-    battle.setEnemyState("hurt", 0.3, target);
+    if (damage > 0) {
+      battle.setEnemyState("hurt", 0.3, target);
+    }
 
-    battle.addBattleMessage(
-      `${battler.name} attacks! ${target.name} takes ${damage} damage!`,
-    );
+    battle.addBattleMessage(`${battler.name} attacks! ${damageMessage}`);
   }
 
   performMagicEffect() {
@@ -813,54 +960,7 @@ class BattleManager {
         // -----------------------------
 
         if (skill.effect === "damage") {
-          const damage = Math.max(0, hpBefore - battler.hp);
-
-          const elementRate =
-            typeof battler.elementRate === "function"
-              ? battler.elementRate(skill.element)
-              : 1;
-
-          if (elementRate === 0) {
-            battle.addBattlePopup(battler, "IMMUNE", "immune");
-          } else {
-            battle.addBattlePopup(battler, `-${damage}`, "damage");
-
-            if (elementRate > 1) {
-              battle.addBattlePopup(battler, "WEAK", "weak");
-            } else if (elementRate < 1) {
-              battle.addBattlePopup(battler, "RESIST", "resist");
-            }
-          }
-
-          if ($gameParty.battleMembers().includes(battler)) {
-            battle.setActorState(
-              battler.isDead() ? "defeat" : "hurt",
-              battler.isDead() ? 0 : 0.4,
-              battler,
-            );
-
-            if ($gameParty.livingBattleMembers().length === 0) {
-              this.declareBattleOutcome(BattleManager.OUTCOME_DEFEAT);
-            }
-          } else if (battle.enemies.includes(battler)) {
-            battle.setEnemyState(
-              battler.isDead() ? "defeat" : "hurt",
-              battler.isDead() ? 0 : 0.4,
-              battler,
-            );
-          }
-
-          if (elementRate === 0) {
-            battle.addBattleMessage(
-              `${caster.name} casts ${skill.name}! ` +
-                `${battler.name} is immune!`,
-            );
-          } else {
-            battle.addBattleMessage(
-              `${caster.name} casts ${skill.name}! ` +
-                `${battler.name} takes ${damage} damage!`,
-            );
-          }
+          this.presentMagicDamage(caster, skill, battler, hpBefore);
         }
 
         // -----------------------------
@@ -925,40 +1025,7 @@ class BattleManager {
 
     if (battle.enemies.includes(target)) {
       if (skill.effect === "damage") {
-        const damage = Math.max(0, targetHpBefore - target.hp);
-
-        const elementRate =
-          typeof target.elementRate === "function"
-            ? target.elementRate(skill.element)
-            : 1;
-
-        if (elementRate === 0) {
-          battle.addBattlePopup(target, "IMMUNE", "immune");
-        } else {
-          battle.addBattlePopup(target, `-${damage}`, "damage");
-
-          if (elementRate > 1) {
-            battle.addBattlePopup(target, "WEAK", "weak");
-          } else if (elementRate < 1) {
-            battle.addBattlePopup(target, "RESIST", "resist");
-          }
-        }
-
-        if (target.isDead()) {
-          battle.setEnemyState("defeat", 0, target);
-        } else if (elementRate !== 0) {
-          battle.setEnemyState("hurt", 0.4, target);
-        }
-
-        if (elementRate === 0) {
-          battle.addBattleMessage(
-            `${caster.name} casts ${skill.name}! ${target.name} is immune!`,
-          );
-        } else {
-          battle.addBattleMessage(
-            `${caster.name} casts ${skill.name}! ${target.name} takes ${damage} damage!`,
-          );
-        }
+        this.presentMagicDamage(caster, skill, target, targetHpBefore);
       }
     }
 
@@ -968,24 +1035,7 @@ class BattleManager {
 
     if ($gameParty.battleMembers().includes(target)) {
       if (skill.effect === "damage") {
-        const damage = targetHpBefore - target.hp;
-
-        battle.addBattlePopup(target, `-${damage}`, "damage");
-
-        battle.setActorState(
-          target.isDead() ? "defeat" : "hurt",
-          target.isDead() ? 0 : 0.4,
-          target,
-        );
-
-        if ($gameParty.livingBattleMembers().length === 0) {
-          this.declareBattleOutcome(BattleManager.OUTCOME_DEFEAT);
-        }
-
-        battle.addBattleMessage(
-          `${caster.name} casts ${skill.name}! ` +
-            `${target.name} takes ${damage} damage!`,
-        );
+        this.presentMagicDamage(caster, skill, target, targetHpBefore);
       }
 
       if (skill.effect === "heal") {
@@ -1150,28 +1200,41 @@ class BattleManager {
       return;
     }
 
-    const attack = enemy.totalAttack();
-    const defense = target.totalDefense();
+    const hitChance = this.physicalHitChance(enemy);
+    const hitRoll = Math.random() * 100;
 
-    let damage = Math.max(1, attack - defense);
-
-    if (target.isDefending()) {
-      damage = Math.max(1, Math.floor(damage * 0.5));
+    if (hitRoll >= hitChance) {
+      battle.addBattlePopup(target, "MISS", "miss");
+      battle.addBattleMessage(
+        `${enemy.name} attacks! ${enemy.name} misses ${target.name}!`,
+      );
+      this.completeEnemyTurn(enemy, false);
+      return;
     }
 
-    target.loseHp(damage);
+    const damageResult = this.applyPhysicalDamage(enemy, target);
+    const damage = damageResult.damage;
+
+    if (damage > 0) {
+      battle.addBattlePopup(target, `-${damage}`, "damage");
+    } else {
+      battle.addBattlePopup(target, "BLOCK", "immune");
+    }
 
     if ($gameParty.battleMembers().includes(target)) {
-      battle.setActorState(
-        target.isDead() ? "defeat" : "hurt",
-        target.isDead() ? 0 : 0.3,
-        target,
-      );
+      if (target.isDead()) {
+        battle.setActorState("defeat", 0, target);
+      } else if (damage > 0) {
+        battle.setActorState("hurt", 0.3, target);
+      }
     }
 
-    battle.addBattleMessage(
-      `${enemy.name} attacks! ` + `${target.name} takes ${damage} damage!`,
-    );
+    const damageMessage =
+      damage > 0
+        ? `${target.name} takes ${damage} damage!`
+        : `${target.name} blocks the attack!`;
+
+    battle.addBattleMessage(`${enemy.name} attacks! ${damageMessage}`);
 
     if ($gameParty.livingBattleMembers().length === 0) {
       battle.enemyTurnIndex = 0;

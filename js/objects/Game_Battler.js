@@ -109,6 +109,69 @@ class Game_Battler {
       .filter((value) => value !== undefined);
   }
 
+  physicalDamageMultiplier() {
+    return Math.max(0, this.statusEffectMultiplier("physicalDamageMultiplier"));
+  }
+
+  physicalAccuracyMultiplier() {
+    return Math.max(
+      0,
+      this.statusEffectMultiplier("physicalAccuracyMultiplier"),
+    );
+  }
+
+  incomingDamageMultiplier(category) {
+    if (category === "physical") {
+      return Math.max(
+        0,
+        this.statusEffectMultiplier("physicalDamageTakenMultiplier"),
+      );
+    }
+
+    if (category === "magical") {
+      return Math.max(
+        0,
+        this.statusEffectMultiplier("magicalDamageTakenMultiplier"),
+      );
+    }
+
+    return 1;
+  }
+
+  isElementalMagicElement(element) {
+    if (typeof element !== "string" || element.length === 0) {
+      return false;
+    }
+
+    return element !== "none" && element !== "restorative";
+  }
+
+  absorbsElementalMagic(element) {
+    if (!this.isElementalMagicElement(element)) {
+      return false;
+    }
+
+    return this.statusEffectValues("absorbElementalMagic").some(
+      (value) => value === true,
+    );
+  }
+
+  removeStatusesOnPhysicalDamage() {
+    const removedStatuses = [];
+
+    for (const definition of [...this.activeStatusDefinitions()]) {
+      if (definition.effects?.removeOnPhysicalDamage !== true) {
+        continue;
+      }
+
+      if (this.removeStatus(definition.key, { force: true })) {
+        removedStatuses.push(definition.key);
+      }
+    }
+
+    return removedStatuses;
+  }
+
   statusRate(statusKey) {
     const definition = this.statusDefinition(statusKey);
 
@@ -591,7 +654,7 @@ class Game_Battler {
   }
 
   totalAttackPercent() {
-    return this.attackPercentWithWeapon(this.weapon());
+    return this.attackPercent;
   }
 
   totalDefense() {
@@ -631,6 +694,64 @@ class Game_Battler {
   // =====================================
   // HP Management
   // =====================================
+
+  receiveDamage(amount, { category = "physical", element = null } = {}) {
+    const requestedDamage = this._validAmount(amount);
+    const damageMultiplier = this.incomingDamageMultiplier(category);
+    const resolvedDamage = Math.max(
+      0,
+      Math.floor(requestedDamage * damageMultiplier),
+    );
+    const hpBefore = this.hp;
+    const absorbed =
+      category === "magical" &&
+      resolvedDamage > 0 &&
+      this.absorbsElementalMagic(element);
+
+    if (absorbed) {
+      this.setHp(this.hp + resolvedDamage);
+
+      const healing = Math.max(0, this.hp - hpBefore);
+
+      DebugManager.log(
+        `${this.name} absorbed ${resolvedDamage} ${element || "elemental"} damage.`,
+      );
+
+      return {
+        damage: 0,
+        healing,
+        absorbed: true,
+        category,
+        element,
+        requestedDamage,
+        resolvedDamage,
+        damageMultiplier,
+        removedStatuses: [],
+      };
+    }
+
+    this.setHp(this.hp - resolvedDamage);
+
+    const damage = Math.max(0, hpBefore - this.hp);
+    const removedStatuses =
+      category === "physical" && damage > 0
+        ? this.removeStatusesOnPhysicalDamage()
+        : [];
+
+    DebugManager.log(`${this.name} lost ${damage} HP.`);
+
+    return {
+      damage,
+      healing: 0,
+      absorbed: false,
+      category,
+      element,
+      requestedDamage,
+      resolvedDamage,
+      damageMultiplier,
+      removedStatuses,
+    };
+  }
 
   gainHp(amount) {
     const value = this._validAmount(amount);

@@ -50,6 +50,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added generic `canAct` enforcement for Stop, Paralyze, and other action-blocking statuses
 - Added battle HUD and enemy-field status indicators with remaining-turn summaries
 - Added dedicated status-runtime regression coverage
+- Added Status Combat Modifiers v1 with shared physical/magical incoming-damage resolution
+- Added data-driven outgoing physical-damage and physical-accuracy status modifiers
+- Added Sleep / Confuse physical-damage removal and Shield elemental-magic absorption
+- Added dedicated combat-modifier regression coverage
 
 ### Changed
 
@@ -64,6 +68,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Made status reapplication refresh turn/countdown duration instead of creating duplicate runtime instances
 - Made Fury and Sadness mutually exclusive at the shared battler-runtime layer
 - Made the first party member of every new round receive the same turn-start status processing as later party members
+- Routed player and enemy physical attacks through one status-aware physical damage path
+- Routed magical skill damage through target-side incoming-damage resolution
+- Made enemy physical accuracy use enemy `attackPercent` safely instead of inheriting actor-only weapon assumptions
 
 ### Documentation
 
@@ -89,6 +96,16 @@ docs/roadmap.md        High-level development direction
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 13 - Status Combat Modifiers v1
+
+- Added one shared target-side damage resolver for status-driven physical and magical mitigation
+- Connected Barrier, MBarrier, Sadness, Small, Shield, Berserk, Frog, Fury, and Darkness modifier data to reusable combat paths
+- Added Shield elemental-magic absorption and physical immunity
+- Added physical-damage wake rules for Sleep and Confuse
+- Added regression tests for modifier stacking, accuracy, wake rules, and absorption
 
 ---
 

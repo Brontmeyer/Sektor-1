@@ -139,9 +139,9 @@ events independent from battle-scene construction details.
 
 `DatabaseManager` loads JSON databases and exposes convenient accessors for loaded game definitions.
 
-At the current stage of development it loads system, map, item, actor, weapon, armor, skill, Essence, and enemy data.
+At the current stage of development it loads system, map, item, actor, weapon, armor, skill, Essence, status, enemy, and encounter data.
 
-`Statuses.json` already exists as a canonical database, but loading it through `DatabaseManager` is part of the upcoming Status System Runtime work.
+`Statuses.json` is runtime-active and is exposed through both numeric-ID and keyed status lookup helpers.
 
 ## DatabaseValidator
 
@@ -203,7 +203,7 @@ Game_Variables.js
 
 Battle behavior that is genuinely common to actors and enemies belongs at this level rather than being independently duplicated in both actor and enemy implementations.
 
-Status runtime behavior will eventually interact heavily with this layer because statuses affect battlers regardless of whether the target is an actor or enemy.
+Active status instances, status-effect queries, incoming physical/magical damage modifiers, elemental-magic absorption, and damage-triggered status removal live at this layer because those rules apply equally to actors and enemies. Action-facing systems can calculate an attack or spell, then delegate target-side damage resolution to the battler instead of reimplementing defensive status rules.
 
 ## Game_Actor
 
@@ -412,9 +412,9 @@ Battle systems consume Essence-granted abilities and passive effects where appro
 
 `Statuses.json` defines Status System v1.
 
-The upcoming Status Runtime will load those definitions and provide reusable application, removal, duration, countdown, derived-state, modifier, immunity/resistance, stacking, and interaction behavior.
+The active Status Runtime provides reusable application, removal, duration, countdown, derived-state, modifier, immunity/resistance, stacking, and interaction behavior. The shared damage path consumes data-driven incoming damage, outgoing physical damage, physical accuracy, wake-on-hit, and elemental absorption properties without checking individual status names.
 
-Battlers will own their active status state while battle systems will trigger and resolve status effects at the appropriate points in combat.
+Battlers own their active status state while battle systems trigger and coordinate status effects at the appropriate points in combat.
 
 UI systems will display the result without owning the underlying rules.
 

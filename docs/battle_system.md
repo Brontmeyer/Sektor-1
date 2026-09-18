@@ -260,6 +260,10 @@ The runtime currently supports:
 - Fury / Sadness mutual exclusivity
 - Turn-start damage and healing triggers
 - Generic action prevention through `effects.canAct`
+- Shared physical and magical incoming-damage modifiers
+- Shared outgoing physical-damage and physical-accuracy modifiers
+- Physical-damage status-removal triggers
+- Elemental magical absorption for defensive statuses
 - Party and enemy status indicators during battle
 
 Status behavior should be driven by properties in `Statuses.json` wherever practical rather than by checks for individual status names.
@@ -300,9 +304,11 @@ Regen and damaging-over-time statuses may coexist. Their turn-start effects reso
 
 Stop and Paralyze are intentionally distinct. Both currently prevent acting through the shared `canAct` runtime rule. Stop's additional `haltsTurnProgression` behavior remains part of the time-system work that will connect Haste, Slow, and Stop to turn scheduling.
 
-Sleep and Confuse can be removed by physical damage. Confuse also forces random targeting while active.
+Sleep and Confuse are removed when the afflicted battler actually takes physical damage. A miss or a fully nullified physical hit does not remove them. Confuse random targeting remains future runtime work.
 
-Frog restricts actions according to its allowed-action rules. When `allowedActions` is present, that restriction takes precedence over ordinary skill availability.
+Physical combat modifiers are read from status data rather than status names. Outgoing `physicalDamageMultiplier` values affect basic physical damage, `physicalAccuracyMultiplier` values affect physical hit chance, and target-side `physicalDamageTakenMultiplier` values are applied by the shared incoming-damage resolver. This makes the damage portions of Berserk, Fury, Darkness, Frog, Small, Sadness, Barrier, and Shield reusable even while their unrelated mechanics remain separate work.
+
+Frog's restricted-action behavior remains future work. When `allowedActions` is implemented, that restriction should take precedence over ordinary skill availability.
 
 Death-Sentence applies Death when its countdown expires. Slow-Numb applies Petrify when its countdown expires.
 
@@ -316,18 +322,18 @@ Battle presentation exposes active status names for both sides. Turn-based and c
 
 # 🛡️ Defensive Status Rules
 
-Barrier and MBarrier reduce their respective physical or magical incoming damage categories according to their data definitions.
+Barrier and MBarrier now reduce their respective physical or magical incoming damage categories through the shared battler damage resolver. Multiple compatible incoming-damage multipliers combine multiplicatively.
 
-Reflect is designed to redirect reflectable skills on a per-target basis and currently defines a maximum of one reflection.
+Reflect is designed to redirect reflectable skills on a per-target basis and currently defines a maximum of one reflection. Reflection itself remains future runtime work.
 
-Shield is a specialized defensive status. Its design calls for:
+Shield is a specialized defensive status. Its implemented damage rules are:
 
-- Physical damage to be nullified
-- Incoming elemental magical damage to be absorbed as HP recovery
-- Recovery to remain capped at Max HP
-- Non-elemental magical damage to resolve normally
+- Physical damage is nullified
+- Incoming elemental magical damage is absorbed as HP recovery
+- Recovery is capped at Max HP
+- Non-elemental magical damage resolves normally
 
-For elemental absorption, normal damage calculation should occur first. The resulting elemental damage is then converted into healing.
+Elemental absorption occurs after the normal magic formula, elemental rate, scope power, and incoming magical-damage modifiers have produced the damage amount. The resulting elemental damage is then converted into healing. An elemental immunity rate of `0` remains immunity rather than absorption.
 
 ---
 

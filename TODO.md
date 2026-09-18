@@ -37,25 +37,25 @@ Completed systems and design rules should be documented rather than duplicated h
 
 - [x] Poison / Dual damage-over-time
 - [x] Regen healing-over-time
-- [ ] Barrier / MBarrier damage reduction
+- [x] Barrier / MBarrier damage reduction
 - [ ] Reflect spell reflection
 - [ ] Haste / Slow turn-speed modifiers
 - [x] Stop / Paralyze action prevention
-- [ ] Sleep / Confuse physical-damage removal
+- [x] Sleep / Confuse physical-damage removal
 - [ ] Confuse random targeting
 - [ ] Silence skill-type restrictions
 - [ ] Petrify defeat-state handling
 - [ ] Death defeat / revival handling
 - [ ] Berserk forced physical attacks
 - [ ] Fury / Sadness Limit modifiers
-- [ ] Darkness physical accuracy reduction
+- [x] Darkness physical accuracy reduction
 - [ ] Frog restricted actions
-- [ ] Small physical damage modifiers
+- [x] Small physical damage modifiers
 - [x] Death-Sentence countdown → Death
 - [x] Slow-Numb countdown → Petrify
 - [x] Near-Death derived HP state
-- [ ] Shield physical immunity
-- [ ] Shield elemental magic absorption
+- [x] Shield physical immunity
+- [x] Shield elemental magic absorption
 
 ---
 

@@ -210,11 +210,31 @@ class Game_Actor extends Game_Battler {
         }
       }
 
-      target.loseHp(damage);
+      const damageResult =
+        typeof target.receiveDamage === "function"
+          ? target.receiveDamage(damage, {
+              category: "magical",
+              element: skill.element,
+            })
+          : null;
 
-      DebugManager.log(
-        `${this.name} used ${skill.name} on ${target.name} for ${damage} damage.`,
-      );
+      if (!damageResult) {
+        target.loseHp(damage);
+      }
+
+      const resolvedDamage = damageResult?.damage ?? damage;
+      const resolvedHealing = damageResult?.healing ?? 0;
+
+      if (damageResult?.absorbed) {
+        DebugManager.log(
+          `${this.name} used ${skill.name} on ${target.name}; ` +
+            `${target.name} absorbed it for ${resolvedHealing} HP.`,
+        );
+      } else {
+        DebugManager.log(
+          `${this.name} used ${skill.name} on ${target.name} for ${resolvedDamage} damage.`,
+        );
+      }
 
       return true;
     }
