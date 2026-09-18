@@ -38,6 +38,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added coding and data conventions
 - Added the Sektor 1 Design Bible
 - Added the high-level development roadmap
+- Added validated, data-driven battle encounters
+- Added map-event battle entry through `SceneManager.startBattle()`
 
 ### Changed
 
@@ -46,6 +48,7 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Standardized status terminology including `paralyze` and `confuse`
 - Clarified the separation between canonical data, runtime implementation, active TODO work, experimental ideas, and documentation
 - Established Status Runtime as the current major development focus
+- Removed hard-coded enemy construction from `Scene_Battle`
 
 ### Documentation
 

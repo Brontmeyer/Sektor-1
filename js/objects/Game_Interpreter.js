@@ -92,6 +92,8 @@ class Game_Interpreter {
         return this.commandGainExp(command);
       case "gainExpMessage":
         return this.commandGainExpMessage(command);
+      case "battle":
+        return this.commandBattle(command);
 
       default:
         console.warn(`Unknown event command: ${command.code}`);
@@ -440,6 +442,17 @@ class Game_Interpreter {
 
     this.index++;
 
+    return false;
+  }
+
+  commandBattle(command) {
+    const started = SceneManager.startBattle(command.encounterId);
+
+    if (!started) {
+      return true;
+    }
+
+    this.index++;
     return false;
   }
 

@@ -18,6 +18,7 @@ class DatabaseManager {
     this.essences = await this.loadJSON("data/Essences.json");
     this.statuses = await this.loadJSON("data/Statuses.json");
     this.enemies = await this.loadJSON("data/Enemies.json");
+    this.encounters = await this.loadJSON("data/Encounters.json");
 
     DatabaseValidator.validate(this);
 
@@ -80,6 +81,20 @@ class DatabaseManager {
     const enemy = this.enemy(id);
 
     return enemy ? enemy.name : "Unknown Enemy";
+  }
+
+  // =================================
+  // Encounters
+  // =================================
+
+  static encounter(id) {
+    return this.encounters?.[id] || null;
+  }
+
+  static encounterName(id) {
+    const encounter = this.encounter(id);
+
+    return encounter ? encounter.name : "Unknown Encounter";
   }
 
   // =================================

@@ -25,28 +25,40 @@ class SceneManager {
     this.currentScene.draw();
   }
 
-  static goto(sceneClass) {
+  static goto(sceneClass, ...args) {
     if (this.currentScene) {
       this.currentScene.terminate();
     }
 
-    this.currentScene = new sceneClass();
+    this.currentScene = new sceneClass(...args);
 
     this.currentScene.start();
 
     DebugManager.log("Scene changed to:", sceneClass.name);
   }
 
-  static push(sceneClass) {
+  static push(sceneClass, ...args) {
     if (this.currentScene) {
       this.sceneStack.push(this.currentScene);
     }
 
-    this.currentScene = new sceneClass();
+    this.currentScene = new sceneClass(...args);
 
     this.currentScene.start();
 
     DebugManager.log(`Scene pushed: ${sceneClass.name}`);
+  }
+
+  static startBattle(encounterId, onComplete = null) {
+    const encounter = DatabaseManager.encounter(encounterId);
+
+    if (!encounter) {
+      console.error(`Cannot start unknown encounter ${encounterId}.`);
+      return false;
+    }
+
+    this.push(Scene_Battle, encounter, onComplete);
+    return true;
   }
 
   static pop() {

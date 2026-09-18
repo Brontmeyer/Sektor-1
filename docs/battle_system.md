@@ -29,6 +29,27 @@ Battle data describes an action. Runtime systems decide how that action behaves.
 
 # 🔄 Battle Flow
 
+## Encounter Entry
+
+Canonical encounter definitions live in:
+
+```text
+data/Encounters.json
+```
+
+Each encounter defines its enemy members, formation slots, and whether the
+party may escape. Enemy IDs reference `Enemies.json`; formation slots are
+validated before the game begins.
+
+Map events start an encounter through the `battle` event command and an
+`encounterId`. `Game_Interpreter` delegates that request to
+`SceneManager.startBattle()`, which resolves the canonical encounter and pushes
+`Scene_Battle`. The paused map scene and event interpreter remain on the scene
+stack and resume after victory, defeat, or escape.
+
+`Scene_Battle` constructs fresh `Game_Enemy` runtime objects from the validated
+encounter members. It does not own hard-coded enemy composition.
+
 The current battle turn state model is:
 
 ```text

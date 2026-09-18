@@ -197,6 +197,37 @@
           ]
         }
       ]
+    },
+
+    {
+      "id": 3,
+      "name": "Battle Tester",
+
+      "x": 450,
+      "y": 400,
+
+      "width": 32,
+      "height": 32,
+
+      "solid": true,
+
+      "pages": [
+        {
+          "conditions": {},
+
+          "commands": [
+            {
+              "code": "battle",
+              "encounterId": 1
+            },
+            {
+              "code": "text",
+              "speaker": "System",
+              "text": "The test encounter has ended."
+            }
+          ]
+        }
+      ]
     }
   ]
 }

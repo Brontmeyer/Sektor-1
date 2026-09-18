@@ -63,6 +63,7 @@ Examples include:
 ```text
 data/Actors.json
 data/Armors.json
+data/Encounters.json
 data/Enemies.json
 data/Essences.json
 data/Items.json
@@ -129,6 +130,10 @@ It provides the heartbeat through which the active game state can continue updat
 `SceneManager` owns high-level scene transitions and the currently active scene.
 
 Scenes should not need to manually recreate the entire application lifecycle when moving between map, menu, battle, or other future game states.
+
+`SceneManager.startBattle(encounterId)` is the authoritative battle-entry API.
+It resolves validated encounter data before pushing `Scene_Battle`, keeping map
+events independent from battle-scene construction details.
 
 ## DatabaseManager
 

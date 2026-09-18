@@ -7,6 +7,7 @@ class DatabaseValidator {
     this.validateSystem(database.system, database.mapInfos, errors);
     this.validateIndexedDatabase("Actors", database.actors, errors);
     this.validateIndexedDatabase("Enemies", database.enemies, errors);
+    this.validateIndexedDatabase("Encounters", database.encounters, errors);
     this.validateIndexedDatabase("Items", database.items, errors);
     this.validateIndexedDatabase("Weapons", database.weapons, errors);
     this.validateIndexedDatabase("Armors", database.armors, errors);
@@ -16,6 +17,7 @@ class DatabaseValidator {
     this.validateMapInfos(database.mapInfos, errors);
     this.validateSkills(database.skills, errors);
     this.validateStatuses(database.statuses, errors);
+    this.validateEncounters(database.encounters, database.enemies, errors);
 
     if (errors.length > 0) {
       const details = errors.map((error) => `- ${error}`).join("\n");
@@ -152,6 +154,61 @@ class DatabaseValidator {
 
       if (!Number.isFinite(skill.mpCost) || skill.mpCost < 0) {
         errors.push(`Skill ${index} must have a non-negative numeric mpCost.`);
+      }
+    }
+  }
+
+  static validateEncounters(encounters, enemies, errors) {
+    if (!Array.isArray(encounters) || !Array.isArray(enemies)) {
+      return;
+    }
+
+    for (let index = 1; index < encounters.length; index++) {
+      const encounter = encounters[index];
+
+      if (!encounter) {
+        continue;
+      }
+
+      if (typeof encounter.canEscape !== "boolean") {
+        errors.push(`Encounter ${index} canEscape must be a boolean.`);
+      }
+
+      if (!Array.isArray(encounter.members) || encounter.members.length === 0) {
+        errors.push(`Encounter ${index} must define at least one member.`);
+        continue;
+      }
+
+      const slots = new Set();
+
+      for (
+        let memberIndex = 0;
+        memberIndex < encounter.members.length;
+        memberIndex++
+      ) {
+        const member = encounter.members[memberIndex];
+        const label = `Encounter ${index} member ${memberIndex + 1}`;
+
+        if (!member || typeof member !== "object" || Array.isArray(member)) {
+          errors.push(`${label} must be an object.`);
+          continue;
+        }
+
+        if (!Number.isInteger(member.enemyId) || !enemies[member.enemyId]) {
+          errors.push(`${label} references unknown enemy ID ${member.enemyId}.`);
+        }
+
+        if (
+          !Number.isInteger(member.slot) ||
+          member.slot < 0 ||
+          member.slot > 2
+        ) {
+          errors.push(`${label} slot must be an integer from 0 to 2.`);
+        } else if (slots.has(member.slot)) {
+          errors.push(`Encounter ${index} uses slot ${member.slot} more than once.`);
+        } else {
+          slots.add(member.slot);
+        }
       }
     }
   }

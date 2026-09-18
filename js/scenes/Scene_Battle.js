@@ -1,10 +1,19 @@
 "use strict";
 
 class Scene_Battle extends Scene_Base {
-  constructor() {
+  constructor(encounter, onComplete = null) {
     super();
 
-    this.enemies = [new Game_Enemy(1), new Game_Enemy(1)];
+    if (!encounter || !Array.isArray(encounter.members)) {
+      throw new Error("Scene_Battle requires a validated encounter.");
+    }
+
+    this.encounter = encounter;
+    this.onComplete = typeof onComplete === "function" ? onComplete : null;
+    this.result = null;
+    this.enemies = encounter.members.map(
+      (member) => new Game_Enemy(member.enemyId),
+    );
 
     // CURRENTLY SELECTED ENEMY
     this.enemy = this.enemies[0];
@@ -107,7 +116,7 @@ class Scene_Battle extends Scene_Base {
 
     this.battleManager.setTurnState(BattleManager.TURN_COMMAND);
 
-    DebugManager.log(`Battle started against ${this.enemy.name}.`);
+    DebugManager.log(`Battle started: ${this.encounter.name}.`);
   }
 
   update(deltaTime) {
@@ -129,7 +138,7 @@ class Scene_Battle extends Scene_Base {
         Input.isTriggered("Enter") ||
         Input.isTriggered("Escape")
       ) {
-        SceneManager.pop();
+        this.finishBattle(this.victory ? "victory" : "defeat");
       }
 
       return;
@@ -313,6 +322,26 @@ class Scene_Battle extends Scene_Base {
     }
 
     if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+      if (this.encounter.canEscape) {
+        this.finishBattle("escape");
+      } else {
+        this.addBattleMessage("You cannot escape!");
+      }
+    }
+  }
+
+  finishBattle(result) {
+    if (this.result) {
+      return;
+    }
+
+    this.result = result;
+
+    try {
+      if (this.onComplete) {
+        this.onComplete(result);
+      }
+    } finally {
       SceneManager.pop();
     }
   }
@@ -535,7 +564,9 @@ class Scene_Battle extends Scene_Base {
       },
     ];
 
-    return positions[index] || positions[positions.length - 1];
+    const slot = this.encounter.members[index]?.slot;
+
+    return positions[slot] || positions[0];
   }
 
   getEnemyPosition(enemy) {
