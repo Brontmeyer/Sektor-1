@@ -243,9 +243,9 @@ data/Statuses.json
 
 Status System v1 defines 25 initial statuses using reusable data structures.
 
-The status database is designed, but the complete runtime is not yet implemented.
+The core Status Runtime is implemented. `Game_Battler` owns active status instances, duration state, derived-state evaluation, application/removal rules, resistance checks, and reusable status-effect queries. Individual advanced mechanics are still being completed in later passes.
 
-The planned runtime must support:
+The runtime currently supports:
 
 - Status application and removal
 - Positive and negative statuses
@@ -255,15 +255,18 @@ The planned runtime must support:
 - Countdown durations
 - Derived states
 - Persistent-after-battle states
-- Damage and healing over time
-- Action restrictions
-- Accuracy and damage modifiers
-- Turn-speed modifiers
-- Status immunity and resistance
-- Status stacking and interactions
-- Status UI indicators
+- Status immunity and resistance multipliers
+- Non-stacking runtime instances with duration refresh on reapplication
+- Fury / Sadness mutual exclusivity
+- Turn-start damage and healing triggers
+- Generic action prevention through `effects.canAct`
+- Party and enemy status indicators during battle
 
 Status behavior should be driven by properties in `Statuses.json` wherever practical rather than by checks for individual status names.
+
+Battlers may optionally define `statusRates` for a specific status key and `statusFamilyRates` for a complete status family. A rate of `1.0` is normal susceptibility, values below `1.0` reduce the final application chance, values above `1.0` increase it up to the final 100% cap, and `0` grants immunity. Specific-status and family rates multiply together.
+
+Ordinary status application uses the calling effect's base chance multiplied by the target's effective status rate. Derived statuses are not rolled or manually inflicted; the runtime evaluates them from their conditions. The shared runtime API is ready for skills, while routing every `Skills.json` `inflictStatus` / `removeStatus` entry through it remains part of the unfinished Skills Runtime work.
 
 ---
 
@@ -271,13 +274,15 @@ Status behavior should be driven by properties in `Statuses.json` wherever pract
 
 Sektor 1's status architecture distinguishes multiple duration models.
 
-Turn-based statuses expire after their defined number of turns.
+Turn-based statuses expire after their defined number of battler turns. Reapplying a turn-based or countdown status refreshes its remaining turns instead of creating a duplicate runtime instance.
 
-Until-removed statuses remain until a valid removal condition occurs.
+Until-removed statuses remain until a valid removal condition occurs. Statuses marked `removable: false` reject ordinary removal attempts, while internal runtime maintenance can still remove them when their defining condition stops being true.
 
-Countdown statuses use a remaining-turn counter. Their countdown advances when the afflicted battler completes a turn, rather than after every global battle action.
+Countdown statuses use a remaining-turn counter. Their countdown advances when the afflicted battler completes or forfeits that battler's turn, rather than after every global battle action. This prevents action-blocking statuses such as Paralyze from becoming permanent simply because the battler could not choose an action.
 
-This means Haste and Slow naturally affect how quickly a battler reaches the end of a countdown through their influence on that battler's turn pace.
+Turn-start triggers are processed for the active party member and for enemies. When the enemy sequence finishes, the first party member of the next round receives the same turn-start processing as later party members.
+
+Haste and Slow are intended to alter how quickly battlers reach future turns once turn-speed modifiers are connected to the turn scheduler.
 
 Derived statuses are evaluated from current battle conditions instead of being manually applied and removed like ordinary statuses.
 
@@ -289,11 +294,11 @@ Near-Death is the initial derived example and is active at or below 25% Max HP.
 
 The initial status design establishes several rules that the runtime must preserve.
 
-Poison and Dual are distinct statuses even though both belong to the damage-over-time family. Poison-specific mechanics do not automatically apply to Dual.
+Poison and Dual are distinct statuses even though both belong to the damage-over-time family. Poison-specific mechanics do not automatically apply to Dual. Their current turn-start damage is resolved from each status's own `hpDamagePercent` data.
 
-Regen and damaging-over-time statuses may coexist. Their effects resolve independently according to their own definitions.
+Regen and damaging-over-time statuses may coexist. Their turn-start effects resolve independently according to their own definitions.
 
-Stop and Paralyze are intentionally distinct. Both prevent acting, while Stop additionally halts turn progression according to its status definition.
+Stop and Paralyze are intentionally distinct. Both currently prevent acting through the shared `canAct` runtime rule. Stop's additional `haltsTurnProgression` behavior remains part of the time-system work that will connect Haste, Slow, and Stop to turn scheduling.
 
 Sleep and Confuse can be removed by physical damage. Confuse also forces random targeting while active.
 
@@ -303,7 +308,9 @@ Death-Sentence applies Death when its countdown expires. Slow-Numb applies Petri
 
 Fury and Sadness are intended to be mutually exclusive. That relationship is an engine interaction rule rather than duplicated inside each status definition.
 
-Death is a battle defeat state that can be revived. Planned post-battle processing restores defeated party members to 1 HP after battle rather than encoding that behavior inside the Death status object.
+Death is a battle defeat state that can be revived. Post-battle processing restores defeated party members to 1 HP after battle rather than encoding that behavior inside the Death status object.
+
+Battle presentation exposes active status names for both sides. Turn-based and countdown statuses include their remaining-turn value, and compact summaries collapse additional statuses behind a `+N` suffix when space is limited.
 
 ---
 

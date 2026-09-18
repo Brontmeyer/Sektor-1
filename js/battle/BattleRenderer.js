@@ -213,12 +213,41 @@ class BattleRenderer {
       );
 
       context.restore();
+      this.drawStatusIndicator(context, enemy, x, y + 18);
       return;
     }
 
     context.strokeStyle = "#ffffff";
     context.lineWidth = 3;
     context.strokeRect(-width / 2, -height / 2, width, height);
+    context.restore();
+    this.drawStatusIndicator(context, enemy, x, y + 18);
+  }
+
+  drawStatusIndicator(context, battler, x, y, maxEntries = 2) {
+    if (!battler || typeof battler.statusSummary !== "function") {
+      return;
+    }
+
+    if (typeof battler.isDead === "function" && battler.isDead()) {
+      return;
+    }
+
+    const summary = battler.statusSummary(maxEntries);
+
+    if (!summary) {
+      return;
+    }
+
+    context.save();
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.font = "13px Arial";
+    context.fillStyle = "#ffffff";
+    context.strokeStyle = "#000000";
+    context.lineWidth = 3;
+    context.strokeText(summary, x, y);
+    context.fillText(summary, x, y);
     context.restore();
   }
 
@@ -321,6 +350,15 @@ class BattleRenderer {
       context.font = "18px Arial";
       context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 85);
       context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 120);
+
+      const summary =
+        typeof actor.statusSummary === "function" ? actor.statusSummary(3) : "";
+
+      if (summary) {
+        context.font = "14px Arial";
+        context.fillText(summary, statusX, hudY + 150);
+      }
+
       return;
     }
 
@@ -336,6 +374,14 @@ class BattleRenderer {
       context.font = "16px Arial";
       context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 82);
       context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 116);
+
+      const summary =
+        typeof actor.statusSummary === "function" ? actor.statusSummary(2) : "";
+
+      if (summary) {
+        context.font = "13px Arial";
+        context.fillText(summary, statusX, hudY + 147);
+      }
     });
   }
 

@@ -44,6 +44,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added enemy EXP rewards and active-battle-party EXP distribution
 - Added structured battle results returned to the originating map event
 - Added regression coverage for duplicate battle rewards and post-battle cleanup
+- Added Status Runtime Core v1 with reusable status lookup, application, removal, duration refresh, resistance/immunity rates, derived-state evaluation, and runtime summaries
+- Added battler-relative status timing for party and enemy turns, including skipped-turn duration progression
+- Added turn-start Poison / Dual damage and Regen healing processing
+- Added generic `canAct` enforcement for Stop, Paralyze, and other action-blocking statuses
+- Added battle HUD and enemy-field status indicators with remaining-turn summaries
+- Added dedicated status-runtime regression coverage
 
 ### Changed
 
@@ -55,6 +61,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Removed hard-coded enemy construction from `Scene_Battle`
 - Centralized terminal battle outcomes and final reward processing in `BattleManager`
 - Made post-battle status cleanup honor `persistsAfterBattle` and restore defeated participants to 1 HP
+- Made status reapplication refresh turn/countdown duration instead of creating duplicate runtime instances
+- Made Fury and Sadness mutually exclusive at the shared battler-runtime layer
+- Made the first party member of every new round receive the same turn-start status processing as later party members
 
 ### Documentation
 
@@ -80,6 +89,16 @@ docs/roadmap.md        High-level development direction
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 12 - Status Runtime Core v1
+
+- Audited the partially implemented status foundation and completed the reusable runtime core
+- Added status chance, resistance, immunity, refresh, interaction, and derived-state rules
+- Connected status timing to party and enemy turn flow
+- Added initial data-driven turn-start status mechanics and status presentation
+- Added regression tests for runtime behavior and turn-loop edge cases
 
 ---
 

@@ -100,6 +100,11 @@ class BattleManager {
     }
 
     this.endPartyTurn();
+
+    if (battle.outcome) {
+      return;
+    }
+
     this.finishPartyAction();
   }
 
@@ -224,6 +229,60 @@ class BattleManager {
     return this.scene.partyController;
   }
 
+  processTurnStartStatuses(battler) {
+    const battle = this.scene;
+
+    if (!battler || typeof battler.processStatusTrigger !== "function") {
+      return [];
+    }
+
+    const results = battler.processStatusTrigger(BattleManager.TURN_START);
+
+    for (const result of results) {
+      if (result.damage > 0) {
+        battle.addBattlePopup(battler, `-${result.damage}`, "damage");
+        battle.addBattleMessage(
+          `${battler.name} suffers ${result.damage} damage from ${result.name}!`,
+        );
+      }
+
+      if (result.healing > 0) {
+        battle.addBattlePopup(battler, `+${result.healing}`, "heal");
+        battle.addBattleMessage(
+          `${battler.name} recovers ${result.healing} HP from ${result.name}!`,
+        );
+      }
+    }
+
+    if (battler.isDead()) {
+      if ($gameParty.battleMembers().includes(battler)) {
+        battle.setActorState("defeat", 0, battler);
+      } else if (battle.enemies.includes(battler)) {
+        battle.setEnemyState("defeat", 0, battler);
+      }
+    }
+
+    const outcome = this.detectBattleOutcome();
+
+    if (outcome) {
+      this.declareBattleOutcome(outcome);
+    }
+
+    return results;
+  }
+
+  battlerCanAct(battler) {
+    if (!battler || battler.isDead()) {
+      return false;
+    }
+
+    if (typeof battler.canAct === "function") {
+      return battler.canAct();
+    }
+
+    return true;
+  }
+
   beginPartyTurn() {
     const party = this.party();
     const battler = party.activeBattler;
@@ -232,11 +291,16 @@ class BattleManager {
       return false;
     }
 
-    battler.processStatusTrigger(BattleManager.TURN_START);
+    this.processTurnStartStatuses(battler);
 
-    if (battler.isDead()) {
+    if (this.scene.outcome || !this.battlerCanAct(battler)) {
+      if (!this.scene.outcome && !battler.isDead()) {
+        this.scene.addBattleMessage(`${battler.name} cannot act!`);
+      }
+
       return false;
     }
+
     return true;
   }
 
@@ -250,6 +314,27 @@ class BattleManager {
 
     battler.tickStatusDurations();
 
+    const outcome = this.detectBattleOutcome();
+
+    if (outcome) {
+      this.declareBattleOutcome(outcome);
+    }
+
+    return true;
+  }
+
+  skipPartyTurn() {
+    if (this.scene.outcome) {
+      return false;
+    }
+
+    this.endPartyTurn();
+
+    if (this.scene.outcome) {
+      return false;
+    }
+
+    this.finishPartyAction();
     return true;
   }
 
@@ -263,7 +348,7 @@ class BattleManager {
       const canAct = this.beginPartyTurn();
 
       if (!canAct) {
-        return this.finishPartyAction();
+        return this.skipPartyTurn();
       }
 
       this.setTurnState(BattleManager.TURN_COMMAND);
@@ -977,27 +1062,81 @@ class BattleManager {
     battle.addBattleMessage(`${battler.name} defends!`);
 
     this.endPartyTurn();
+
+    if (battle.outcome) {
+      return;
+    }
+
     this.finishPartyAction();
+  }
+
+  advanceEnemyTurn(unlockInputAtRoundStart = false, remainingEnemyDelay = 0.6) {
+    const battle = this.scene;
+
+    battle.enemyTurnIndex++;
+
+    if (battle.enemyTurnIndex < battle.enemies.length) {
+      battle.pendingEnemyTurn = true;
+      battle.enemyTurnDelay = remainingEnemyDelay;
+      return;
+    }
+
+    battle.enemyTurnIndex = 0;
+    battle.pendingEnemyTurn = false;
+
+    this.party().resetPartyTurnQueue();
+
+    const canAct = this.beginPartyTurn();
+
+    if (!canAct) {
+      this.skipPartyTurn();
+      return;
+    }
+
+    this.setTurnState(BattleManager.TURN_COMMAND);
+
+    if (unlockInputAtRoundStart) {
+      battle.battleInputLocked = false;
+    }
+  }
+
+  completeEnemyTurn(enemy, unlockInputAtRoundStart = false) {
+    if (enemy && typeof enemy.tickStatusDurations === "function") {
+      enemy.tickStatusDurations();
+    }
+
+    const outcome = this.detectBattleOutcome();
+
+    if (outcome) {
+      this.declareBattleOutcome(outcome);
+      return;
+    }
+
+    this.advanceEnemyTurn(unlockInputAtRoundStart);
   }
 
   performEnemyTurn(enemy = this.scene.enemies[this.scene.enemyTurnIndex]) {
     const battle = this.scene;
+
     if (!enemy || enemy.isDead()) {
-      battle.enemyTurnIndex++;
+      this.advanceEnemyTurn(true, 0.2);
+      return;
+    }
 
-      if (battle.enemyTurnIndex < battle.enemies.length) {
-        battle.pendingEnemyTurn = true;
-        battle.enemyTurnDelay = 0.2;
-      } else {
-        battle.enemyTurnIndex = 0;
-        battle.pendingEnemyTurn = false;
+    this.processTurnStartStatuses(enemy);
 
-        this.party().resetPartyTurnQueue();
-        this.setTurnState(BattleManager.TURN_COMMAND);
+    if (battle.outcome) {
+      return;
+    }
 
-        battle.battleInputLocked = false;
-      }
+    if (enemy.isDead()) {
+      this.advanceEnemyTurn(true);
+      return;
+    }
 
+    if (!this.battlerCanAct(enemy)) {
+      battle.addBattleMessage(`${enemy.name} cannot act!`);
+      this.completeEnemyTurn(enemy, true);
       return;
     }
 
@@ -1041,20 +1180,6 @@ class BattleManager {
       return;
     }
 
-    battle.enemyTurnIndex++;
-
-    if (battle.enemyTurnIndex < battle.enemies.length) {
-      battle.pendingEnemyTurn = true;
-      battle.enemyTurnDelay = 0.6;
-    } else {
-      battle.enemyTurnIndex = 0;
-      battle.pendingEnemyTurn = false;
-
-      this.party().resetPartyTurnQueue();
-      this.setTurnState(BattleManager.TURN_COMMAND);
-
-      // Keep input locked until BattleAnimationController confirms
-      // that all battlers are idle and visually back at home.
-    }
+    this.completeEnemyTurn(enemy, false);
   }
 }

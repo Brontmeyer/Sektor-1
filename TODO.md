@@ -22,25 +22,25 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Define reusable status effect properties
 - [x] Define countdown statuses
 - [x] Define derived statuses
-- [ ] Load `Statuses.json` through the database system
-- [ ] Implement status application and removal
-- [ ] Implement status duration processing
-- [ ] Implement turn-based status countdowns
-- [ ] Implement derived status evaluation
-- [ ] Implement status immunity / resistance checks
-- [ ] Implement status stacking and interaction rules
-- [ ] Implement status UI indicators
-- [ ] Implement Fury / Sadness mutual exclusivity
+- [x] Load `Statuses.json` through the database system
+- [x] Implement status application and removal
+- [x] Implement status duration processing
+- [x] Implement turn-based status countdowns
+- [x] Implement derived status evaluation
+- [x] Implement status immunity / resistance checks
+- [x] Implement status stacking and interaction rules
+- [x] Implement status UI indicators
+- [x] Implement Fury / Sadness mutual exclusivity
 - [x] Implement post-battle Death recovery behavior
 
 ## Status Effect Mechanics
 
-- [ ] Poison / Dual damage-over-time
-- [ ] Regen healing-over-time
+- [x] Poison / Dual damage-over-time
+- [x] Regen healing-over-time
 - [ ] Barrier / MBarrier damage reduction
 - [ ] Reflect spell reflection
 - [ ] Haste / Slow turn-speed modifiers
-- [ ] Stop / Paralyze action prevention
+- [x] Stop / Paralyze action prevention
 - [ ] Sleep / Confuse physical-damage removal
 - [ ] Confuse random targeting
 - [ ] Silence skill-type restrictions
@@ -51,9 +51,9 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Darkness physical accuracy reduction
 - [ ] Frog restricted actions
 - [ ] Small physical damage modifiers
-- [ ] Death-Sentence countdown → Death
-- [ ] Slow-Numb countdown → Petrify
-- [ ] Near-Death derived HP state
+- [x] Death-Sentence countdown → Death
+- [x] Slow-Numb countdown → Petrify
+- [x] Near-Death derived HP state
 - [ ] Shield physical immunity
 - [ ] Shield elemental magic absorption
 

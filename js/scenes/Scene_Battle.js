@@ -112,7 +112,7 @@ class Scene_Battle extends Scene_Base {
     const canAct = this.battleManager.beginPartyTurn();
 
     if (!canAct) {
-      this.battleManager.finishPartyAction();
+      this.battleManager.skipPartyTurn();
       return;
     }
 

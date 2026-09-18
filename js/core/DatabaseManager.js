@@ -192,4 +192,18 @@ class DatabaseManager {
 
     return status ? status.name : "Unknown Status";
   }
+
+  static statusByKey(key) {
+    if (!key || !Array.isArray(this.statuses)) {
+      return null;
+    }
+
+    return this.statuses.find((status) => status?.key === key) || null;
+  }
+
+  static statusNameByKey(key) {
+    const status = this.statusByKey(key);
+
+    return status ? status.name : "Unknown Status";
+  }
 }

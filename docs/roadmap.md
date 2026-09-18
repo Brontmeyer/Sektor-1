@@ -75,25 +75,26 @@ These foundations allow the next phase of development to focus primarily on turn
 
 **Current development focus**
 
-The Status System is the next major runtime foundation.
+The Status System is the current major runtime foundation.
 
-The canonical status data is designed. The engine now needs to understand and execute it.
+The canonical status data is designed, and Status Runtime Core v1 now handles shared status instances, application/removal, duration refresh, resistance/immunity rates, derived-state evaluation, battler-relative turn timing, and basic battle presentation. The milestone remains active because several individual status mechanics still need to be connected.
 
-Primary work includes:
+Status Runtime Core v1 has established:
 
-- Load `Statuses.json` through the database system
-- Implement status application and removal
-- Implement duration processing
-- Implement battler-relative countdowns
-- Implement derived status evaluation
-- Implement immunity and resistance checks
-- Implement stacking and interaction rules
-- Implement status UI indicators
-- Implement Fury / Sadness mutual exclusivity
-- Implement post-battle Death recovery
-- Implement the mechanics required by all 25 initial statuses
+- `Statuses.json` database loading and keyed lookup
+- Status application and removal APIs
+- Turn and countdown duration processing
+- Derived status evaluation
+- Status immunity and resistance rates
+- Non-stacking reapplication with duration refresh
+- Fury / Sadness mutual exclusivity
+- Battle status indicators
+- Post-battle temporary-status cleanup and Death recovery
+- Initial turn-start and action-prevention mechanics
 
-This milestone should establish reusable status processing rather than twenty-five unrelated status scripts.
+Remaining milestone work is primarily the advanced mechanics required by the 25 initial statuses, including defensive multipliers, reflection, time-speed modifiers, physical-damage wake rules, random targeting, skill restrictions, Petrify defeat handling, revival, forced actions, accuracy/damage modifiers, and Shield absorption.
+
+This milestone should continue to establish reusable status processing rather than twenty-five unrelated status scripts.
 
 ## Milestone Exit Condition
 

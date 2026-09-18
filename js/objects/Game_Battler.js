@@ -41,6 +41,14 @@ class Game_Battler {
       ...(data.elementRates || {}),
     };
 
+    this.statusRates = {
+      ...(data.statusRates || {}),
+    };
+
+    this.statusFamilyRates = {
+      ...(data.statusFamilyRates || {}),
+    };
+
     this.statuses = [];
     this.defending = false;
   }
@@ -49,12 +57,142 @@ class Game_Battler {
   // Status Management
   // =====================================
 
+  statusDefinitions() {
+    return Array.isArray(DatabaseManager.statuses) ? DatabaseManager.statuses : [];
+  }
+
+  statusDefinition(statusKey) {
+    if (!statusKey) {
+      return null;
+    }
+
+    if (typeof DatabaseManager.statusByKey === "function") {
+      return DatabaseManager.statusByKey(statusKey);
+    }
+
+    return (
+      this.statusDefinitions().find((status) => status?.key === statusKey) || null
+    );
+  }
+
+  statusRuntime(statusKey) {
+    return this.statuses.find((status) => status.key === statusKey) || null;
+  }
+
   hasStatus(statusKey) {
-    return this.statuses.some((status) => status.key === statusKey);
+    return this.statusRuntime(statusKey) !== null;
+  }
+
+  activeStatusDefinitions() {
+    return this.statuses
+      .map((runtimeStatus) => this.statusDefinition(runtimeStatus.key))
+      .filter((definition) => definition !== null);
+  }
+
+  statusEffectMultiplier(effectKey) {
+    let multiplier = 1;
+
+    for (const definition of this.activeStatusDefinitions()) {
+      const value = Number(definition.effects?.[effectKey]);
+
+      if (Number.isFinite(value)) {
+        multiplier *= value;
+      }
+    }
+
+    return multiplier;
+  }
+
+  statusEffectValues(effectKey) {
+    return this.activeStatusDefinitions()
+      .map((definition) => definition.effects?.[effectKey])
+      .filter((value) => value !== undefined);
+  }
+
+  statusRate(statusKey) {
+    const definition = this.statusDefinition(statusKey);
+
+    if (!definition) {
+      return 0;
+    }
+
+    const directRate = Number(this.statusRates[statusKey]);
+    const family = definition.classification?.family;
+    const familyRate = Number(this.statusFamilyRates[family]);
+
+    const directMultiplier = Number.isFinite(directRate) ? directRate : 1;
+    const familyMultiplier = Number.isFinite(familyRate) ? familyRate : 1;
+
+    return Math.max(0, directMultiplier * familyMultiplier);
+  }
+
+  isStatusImmune(statusKey) {
+    return this.statusRate(statusKey) <= 0;
+  }
+
+  tryAddStatus(statusKey, baseChance = 1, random = Math.random) {
+    const definition = this.statusDefinition(statusKey);
+
+    if (!definition) {
+      return {
+        applied: false,
+        refreshed: false,
+        reason: "unknownStatus",
+        chance: 0,
+      };
+    }
+
+    if (definition.duration?.type === "derived") {
+      return {
+        applied: false,
+        refreshed: false,
+        reason: "derivedStatus",
+        chance: 0,
+      };
+    }
+
+    const validBaseChance = Number(baseChance);
+    const normalizedBaseChance = Number.isFinite(validBaseChance)
+      ? Math.max(0, Math.min(1, validBaseChance))
+      : 0;
+    const finalChance = Math.max(
+      0,
+      Math.min(1, normalizedBaseChance * this.statusRate(statusKey)),
+    );
+
+    if (finalChance <= 0) {
+      return {
+        applied: false,
+        refreshed: false,
+        reason: "immune",
+        chance: 0,
+      };
+    }
+
+    const roll = typeof random === "function" ? random() : Math.random();
+
+    if (roll >= finalChance) {
+      return {
+        applied: false,
+        refreshed: false,
+        reason: "resisted",
+        chance: finalChance,
+      };
+    }
+
+    const wasActive = this.hasStatus(statusKey);
+    const applied = this.addStatus(statusKey);
+
+    return {
+      applied,
+      refreshed: applied && wasActive,
+      reason: applied ? (wasActive ? "refreshed" : "applied") : "unchanged",
+      chance: finalChance,
+    };
   }
 
   updateDerivedStatuses() {
-    const derivedStatuses = DatabaseManager.statuses.filter(
+    const derivedStatuses = this.statusDefinitions().filter(
       (status) => status?.duration?.type === "derived",
     );
 
@@ -88,24 +226,65 @@ class Game_Battler {
       );
 
       if (!shouldBeActive) {
-        this.removeStatus(status.key);
+        this.removeStatus(status.key, { force: true });
       }
     }
 
     return activeDerivedStatuses;
   }
 
-  addStatus(statusKey) {
-    if (this.hasStatus(statusKey)) {
+  statusConflicts(statusKey) {
+    const conflicts = {
+      fury: ["sadness"],
+      sadness: ["fury"],
+    };
+
+    return conflicts[statusKey] || [];
+  }
+
+  removeStatusConflicts(statusKey) {
+    const removed = [];
+
+    for (const conflictingKey of this.statusConflicts(statusKey)) {
+      if (this.removeStatus(conflictingKey, { force: true })) {
+        removed.push(conflictingKey);
+      }
+    }
+
+    return removed;
+  }
+
+  refreshStatusDuration(runtimeStatus, definition) {
+    if (!runtimeStatus || !definition) {
       return false;
     }
 
-    const definition = DatabaseManager.statuses.find(
-      (status) => status?.key === statusKey,
-    );
+    if (
+      definition.duration?.type !== "turns" &&
+      definition.duration?.type !== "countdown"
+    ) {
+      return false;
+    }
+
+    runtimeStatus.turnsRemaining = definition.duration.turns;
+    return true;
+  }
+
+  addStatus(statusKey) {
+    const definition = this.statusDefinition(statusKey);
 
     if (!definition) {
       return false;
+    }
+
+    // Enforce interaction invariants even when loading or recovering from an
+    // invalid runtime state that already contains conflicting statuses.
+    this.removeStatusConflicts(statusKey);
+
+    const existingStatus = this.statusRuntime(statusKey);
+
+    if (existingStatus) {
+      return this.refreshStatusDuration(existingStatus, definition);
     }
 
     const runtimeStatus = {
@@ -127,9 +306,7 @@ class Game_Battler {
   }
 
   applyStatusEffects(statusKey) {
-    const definition = DatabaseManager.statuses.find(
-      (status) => status?.key === statusKey,
-    );
+    const definition = this.statusDefinition(statusKey);
 
     if (!definition) {
       return false;
@@ -143,12 +320,10 @@ class Game_Battler {
   }
 
   processStatusTrigger(trigger) {
-    let processedCount = 0;
+    const processed = [];
 
-    for (const runtimeStatus of this.statuses) {
-      const definition = DatabaseManager.statuses.find(
-        (status) => status?.key === runtimeStatus.key,
-      );
+    for (const runtimeStatus of [...this.statuses]) {
+      const definition = this.statusDefinition(runtimeStatus.key);
 
       if (!definition) {
         continue;
@@ -158,33 +333,65 @@ class Game_Battler {
         continue;
       }
 
-      this.applyTriggeredStatusEffects(definition);
-      processedCount++;
+      const result = this.applyTriggeredStatusEffects(definition);
+
+      processed.push({
+        key: definition.key,
+        name: definition.name,
+        ...result,
+      });
     }
-    return processedCount;
+
+    return processed;
   }
 
   applyTriggeredStatusEffects(definition) {
     if (!definition?.effects) {
-      return false;
+      return { damage: 0, healing: 0 };
     }
 
+    let damage = 0;
+    let healing = 0;
+
     if (typeof definition.effects.hpDamagePercent === "number") {
-      const damage = Math.floor(
-        this.maxHp * definition.effects.hpDamagePercent,
+      damage = Math.max(
+        0,
+        Math.floor(this.maxHp * definition.effects.hpDamagePercent),
       );
 
       const minimumHp = definition.effects.canKill === true ? 0 : 1;
+      const hpBefore = this.hp;
 
       this.setHp(Math.max(minimumHp, this.hp - damage));
+      damage = Math.max(0, hpBefore - this.hp);
     }
-    return true;
+
+    if (typeof definition.effects.hpHealPercent === "number") {
+      healing = Math.max(
+        0,
+        Math.floor(this.maxHp * definition.effects.hpHealPercent),
+      );
+
+      const hpBefore = this.hp;
+
+      this.setHp(this.hp + healing);
+      healing = Math.max(0, this.hp - hpBefore);
+    }
+
+    return { damage, healing };
   }
 
-  removeStatus(statusKey) {
+  removeStatus(statusKey, { force = false } = {}) {
     const index = this.statuses.findIndex((status) => status.key === statusKey);
 
     if (index === -1) {
+      return false;
+    }
+
+    const definition = this.statusDefinition(statusKey);
+    const removable = definition?.classification?.removable !== false;
+
+    if (!force && !removable) {
       return false;
     }
 
@@ -196,9 +403,7 @@ class Game_Battler {
     const removedStatuses = [];
 
     this.statuses = this.statuses.filter((runtimeStatus) => {
-      const definition = DatabaseManager.statuses.find(
-        (status) => status?.key === runtimeStatus.key,
-      );
+      const definition = this.statusDefinition(runtimeStatus.key);
 
       const persistsAfterBattle =
         definition?.classification?.persistsAfterBattle === true;
@@ -248,37 +453,49 @@ class Game_Battler {
   }
 
   tickStatusDurations() {
+    const expiredStatuses = [];
+
     for (let index = this.statuses.length - 1; index >= 0; index--) {
-      const status = this.statuses[index];
+      const runtimeStatus = this.statuses[index];
 
       if (
-        !Number.isInteger(status.turnsRemaining) ||
-        status.turnsRemaining <= 0
+        !Number.isInteger(runtimeStatus.turnsRemaining) ||
+        runtimeStatus.turnsRemaining <= 0
       ) {
         continue;
       }
 
-      status.turnsRemaining--;
+      runtimeStatus.turnsRemaining--;
 
-      if (status.turnsRemaining === 0) {
-        const definition = DatabaseManager.statuses.find(
-          (entry) => entry?.key === status.key,
-        );
+      if (runtimeStatus.turnsRemaining !== 0) {
+        continue;
+      }
 
-        if (definition?.duration?.type === "turns") {
-          this.statuses.splice(index, 1);
-        } else if (definition?.duration?.type === "countdown") {
-          this.resolveStatusExpiration(status.key);
-          this.statuses.splice(index, 1);
-        }
+      const definition = this.statusDefinition(runtimeStatus.key);
+
+      if (
+        definition?.duration?.type !== "turns" &&
+        definition?.duration?.type !== "countdown"
+      ) {
+        continue;
+      }
+
+      const expiredKey = runtimeStatus.key;
+      const durationType = definition.duration.type;
+
+      this.statuses.splice(index, 1);
+      expiredStatuses.push(expiredKey);
+
+      if (durationType === "countdown") {
+        this.resolveStatusExpiration(expiredKey);
       }
     }
+
+    return expiredStatuses;
   }
 
   resolveStatusExpiration(statusKey) {
-    const definition = DatabaseManager.statuses.find(
-      (status) => status?.key === statusKey,
-    );
+    const definition = this.statusDefinition(statusKey);
 
     if (!definition) {
       return false;
@@ -295,6 +512,56 @@ class Game_Battler {
     }
 
     return false;
+  }
+
+  canAct() {
+    if (this.isDead()) {
+      return false;
+    }
+
+    return !this.activeStatusDefinitions().some(
+      (definition) => definition.effects?.canAct === false,
+    );
+  }
+
+  statusDisplayEntries() {
+    return this.statuses.map((runtimeStatus) => {
+      const definition = this.statusDefinition(runtimeStatus.key);
+
+      return {
+        key: runtimeStatus.key,
+        name: definition?.name || runtimeStatus.key,
+        turnsRemaining: Number.isInteger(runtimeStatus.turnsRemaining)
+          ? runtimeStatus.turnsRemaining
+          : null,
+        countdown: definition?.duration?.type === "countdown",
+      };
+    });
+  }
+
+  statusSummary(maxEntries = 2) {
+    const entries = this.statusDisplayEntries();
+
+    if (entries.length === 0) {
+      return "";
+    }
+
+    const limit = Math.max(1, Math.floor(Number(maxEntries) || 1));
+    const visible = entries.slice(0, limit).map((entry) => {
+      if (entry.turnsRemaining === null) {
+        return entry.name;
+      }
+
+      return `${entry.name} ${entry.turnsRemaining}`;
+    });
+
+    const hiddenCount = entries.length - visible.length;
+
+    if (hiddenCount > 0) {
+      visible.push(`+${hiddenCount}`);
+    }
+
+    return visible.join(", ");
   }
 
   // =====================================
