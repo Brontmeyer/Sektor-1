@@ -27,9 +27,9 @@ async function startGame() {
 
   window.$gameParty = $gameSystem.party;
 
-  // Backward-compatible leader alias. Existing systems can keep using
-  // $gameActor while party-aware systems use $gameParty.battleMembers().
-  window.$gameActor = $gameParty.leader() || $gameSystem.actor;
+  // Backward-compatible leader alias for external/legacy integrations.
+  // Current engine runtime resolves actor ownership through $gameParty.
+  window.$gameActor = $gameParty.leader();
 
   // =====================================
   // START GAME

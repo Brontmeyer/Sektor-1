@@ -23,7 +23,9 @@ class Game_Actor extends Game_Battler {
     this.weaponId = 0;
     this.armorId = 0;
 
-    this.skills = [];
+    this.skills = Array.isArray(actorData.initialSkills)
+      ? [...actorData.initialSkills]
+      : [];
   }
 
   // =====================================
@@ -72,6 +74,30 @@ class Game_Actor extends Game_Battler {
 
     DebugManager.log(`${this.name} equipped ${armor.name}.`);
 
+    return true;
+  }
+
+  unequipWeapon() {
+    const weapon = this.weapon();
+
+    if (!weapon) {
+      return false;
+    }
+
+    this.weaponId = 0;
+    DebugManager.log(`${this.name} unequipped ${weapon.name}.`);
+    return true;
+  }
+
+  unequipArmor() {
+    const armor = this.armor();
+
+    if (!armor) {
+      return false;
+    }
+
+    this.armorId = 0;
+    DebugManager.log(`${this.name} unequipped ${armor.name}.`);
     return true;
   }
 

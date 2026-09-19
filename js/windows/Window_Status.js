@@ -1,7 +1,8 @@
 "use strict";
 
 class Window_Status {
-  constructor() {
+  constructor(actor) {
+    this.actor = actor;
     this.visible = false;
 
     this.width = 600;
@@ -60,7 +61,12 @@ class Window_Status {
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
 
-    const actor = $gameActor;
+    const actor = this.actor;
+
+    if (!actor) {
+      context.restore();
+      return;
+    }
     const leftX = this.x + 40;
     const rightX = this.x + 330;
 

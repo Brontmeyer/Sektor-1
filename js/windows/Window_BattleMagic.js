@@ -45,7 +45,7 @@ class Window_BattleMagic {
   }
 
   actor() {
-    return this.scene?.partyController?.currentBattler() || $gameActor;
+    return this.scene?.partyController?.currentBattler() || $gameParty.battleLeader();
   }
 
   skills() {

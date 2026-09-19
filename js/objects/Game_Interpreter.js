@@ -447,7 +447,14 @@ class Game_Interpreter {
       return true;
     }
 
-    $gameActor.gainExp(amount);
+    const actor = $gameParty.leader();
+
+    if (!actor) {
+      console.error("Cannot award EXP because the party has no leader.");
+      return true;
+    }
+
+    actor.gainExp(amount);
 
     return true;
   }
@@ -465,14 +472,21 @@ class Game_Interpreter {
       return true;
     }
 
-    const levelsGained = $gameActor.gainExp(amount);
+    const actor = $gameParty.leader();
+
+    if (!actor) {
+      console.error("Cannot award EXP because the party has no leader.");
+      return true;
+    }
+
+    const levelsGained = actor.gainExp(amount);
 
     let message = `You gained ${amount} EXP!`;
 
     if (levelsGained === 1) {
-      message += `\n${$gameActor.name} reached Level ${$gameActor.level}!`;
+      message += `\n${actor.name} reached Level ${actor.level}!`;
     } else if (levelsGained > 1) {
-      message += `\n${$gameActor.name} gained ${levelsGained} levels and reached Level ${$gameActor.level}!`;
+      message += `\n${actor.name} gained ${levelsGained} levels and reached Level ${actor.level}!`;
     }
 
     this.messageWindow.show(message, "System");

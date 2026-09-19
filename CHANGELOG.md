@@ -86,6 +86,7 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added Skills Runtime Completion v1 with data-driven Gravity damage, percentage healing, multi-hit/random-per-hit casting, Retreat escape, and Banish execution
 - Added battle-local Banish provenance so future currency rewards can honor the canonical no-Gil rule without skill-name checks
 - Added dedicated skill-runtime completion regression coverage
+- Added Actor / Party Ownership Cleanup v1 with data-driven actor construction, validated starter skills, explicit actor-context menus, and dedicated ownership regression coverage
 
 ### Changed
 
@@ -118,6 +119,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Hardened skill validation for current type/category/element vocabularies, power, scopePower, special percentage fields, and multi-hit metadata
 - Hardened the canonical status nested schema so unsupported condition/effect keys and malformed consumed values fail at database load
 - Reconciled the validation audit cluster from 10 fixed / 5 partial / 27 open to 23 fixed / 3 partial / 16 open
+- Replaced individually named `Game_System` actor ownership and temporary skill grants with a canonical actor collection plus `Actors.json` `initialSkills`
+- Removed active engine dependence on the `$gameActor` compatibility alias; party, interpreter, battle, and menu paths now resolve actor context through party ownership or explicit references
+- Centralized equipment removal through `Game_Actor.unequipWeapon()` / `unequipArmor()` and renamed the unused ambiguous party clear operation to `clearInventory()`
+- Reconciled the actor/party ownership audit cluster to 35 fixed / 1 partial / 6 open
 - Removed the stale roadmap task to implement Essence database loading because the current engine already loads it and Pass 21 now validates it
 - Made on-demand map loading validate the loaded map ID and runtime-consumed event contract before constructing world objects
 - Normalized item-gain and additive-variable arithmetic so numeric-looking strings cannot silently concatenate runtime state

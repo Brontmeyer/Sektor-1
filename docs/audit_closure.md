@@ -27,11 +27,11 @@ complete and normal new-feature development can become the primary focus.
 
 ## Current Reconciliation
 
-After Pass 23, the 42 actionable audit headings reconcile to:
+After Pass 24, the 42 actionable audit headings reconcile to:
 
-- **Fixed / superseded:** 30
+- **Fixed / superseded:** 35
 - **Partial:** 1
-- **Open:** 11
+- **Open:** 6
 
 The audit's later "Verified Behavior and Design Context" section is reference
 material, not a fix backlog, and is therefore not counted in the 42 actionable
@@ -47,16 +47,16 @@ headings.
 | 6 | Skill `status` metadata has no identified runtime consumer | Fixed | Pass 14 routes skill status payloads through the shared status runtime. |
 | 7 | Status and skill combat metadata are only partially integrated | Partial | Passes 11–19 connected cleanup, removability, duration, triggers, modifiers, Reflect, action restrictions, defeat/revival, forced control, and Haste/Slow. Stop turn-progression halt semantics and Fury/Sadness Limit gain remain intentionally unfinished. |
 | 8 | `allyStatusChance` currently has no runtime consumer | Fixed | Pass 14 applies ally-specific status chances through the shared skill/status resolver. |
-| 9 | Legacy `$gameActor` dependency remains widespread | Open | Pass 20 removes SaveManager's actor-state dependence on the alias, but menus/interpreter/equipment and other leader-centric paths still use it. |
+| 9 | Legacy `$gameActor` dependency remains widespread | Fixed | Pass 24 removes active engine dependencies on `$gameActor`; menu/interpreter/battle fallbacks resolve actors through `Game_Party` or explicit actor context. `main.js` retains only the compatibility alias for external/legacy integrations. |
 | 10 | Database accessor consistency | Open | Accessor fallback/optional-chaining conventions still vary. Low-risk cleanup decision remains. |
 | 11 | Status nested-schema validation is permissive | Fixed | Pass 21 validates the current classification/duration/condition/effect vocabularies, consumed field types/ranges, expiration references, and rejects unsupported nested keys. |
 | 12 | Essence level calculation assumes ordered progression data | Fixed | Pass 21 enforces strictly increasing Essence levels and Resonance thresholds, including the canonical level-1 / zero-Resonance start. |
 | 13 | Small validation duplication in duration rules | Fixed | Pass 21 consolidates turn/countdown positive-integer duration validation into one shared rule while hardening the surrounding nested schema. |
-| 14 | Game_System actor ownership is individually hard-coded | Open | `actor`, `actor2`, `actor3`, and `actor4` remain individually constructed. |
-| 15 | Temporary party skill setup lives in Game_System | Open | The explicit `TEMP` skill-learning block remains in `Game_System`. |
-| 16 | Game_Party.clear() clears inventory only | Open | Method remains inventory-only and apparently unused; dead-code/rename decision remains. |
+| 14 | Game_System actor ownership is individually hard-coded | Fixed | Pass 24 builds the actor collection from validated `Actors.json` records and gives that collection to `Game_Party`; individually named actor2/actor3/actor4 ownership is removed. |
+| 15 | Temporary party skill setup lives in Game_System | Fixed | Pass 24 moves current starter skills into validated actor `initialSkills` data and removes the constructor-time `TEMP` learning block. |
+| 16 | Game_Party.clear() clears inventory only | Fixed | Pass 24 removes the unused ambiguous `clear()` API and exposes the intent explicitly as `clearInventory()`, which leaves actor roster/battle composition untouched. |
 | 17 | Save version is written but not consumed during loading | Fixed | Pass 20 introduces version-aware Save Runtime v2 plus v1 migration and future/unknown-version rejection. |
-| 18 | Window_Equipment bypasses Game_Actor APIs when unequipping | Open | Window still assigns `weaponId = 0` / `armorId = 0` directly. |
+| 18 | Window_Equipment bypasses Game_Actor APIs when unequipping | Fixed | Pass 24 adds `Game_Actor.unequipWeapon()` / `unequipArmor()` and routes the equipment UI through those APIs instead of direct ID mutation. |
 | 19 | Skill validation covers only target, scope, and MP cost | Fixed | Pass 21 validates current type/category/element vocabularies plus power, scopePower, gravity/heal percentages, multi-hit metadata, canonical status references, and the previously added effect/status/revival/Reflect contracts. |
 | 20 | Gravity skill percentage metadata has no identified runtime consumer | Fixed | Pass 23 resolves configured Gravity percentages from target current HP and routes the result through shared elemental / incoming magical-damage handling. |
 | 21 | Multi-hit and per-hit random-target metadata have no identified runtime consumer | Fixed | Pass 23 consumes `hits` / `randomTargetPerHit` through one cast-level resolver that rebuilds legal candidates per hit and charges MP once. |
@@ -99,12 +99,7 @@ Before starting a new improvement pass:
 
 The remaining work clusters naturally into these areas:
 
-1. **Save / ownership cleanup aftermath** — reduce remaining `$gameActor`
-   assumptions and centralize actor/equipment ownership boundaries.
-2. **UI scalability / diagnostics** — scrolling list windows and sprite-load
-   diagnostics.
-3. **Battle rewards / Essence progression** — currency, drops, and Resonance.
-4. **Small correctness/cleanup findings** — accessor consistency, unused/ambiguous
-   APIs, equipment mutation ownership, and temporary setup code.
-5. **Status dependencies awaiting future systems** — Stop's turn-progression
-   semantics and Fury/Sadness Limit gain behavior.
+1. **UI scalability / diagnostics** — scrolling list windows and sprite-load diagnostics.
+2. **Battle rewards / Essence progression** — currency, drops, and Resonance.
+3. **Small correctness/cleanup finding** — standardize database accessor/fallback conventions.
+4. **Status dependency decision** — finish Stop's turn-progression semantics and explicitly defer Fury/Sadness Limit gain until the Limit system exists.

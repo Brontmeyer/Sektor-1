@@ -39,6 +39,7 @@ Completed engine foundations include:
 - Party foundation
 - Turn queue
 - Multi-character turns
+- Data-driven actor collection ownership with explicit party/leader context
 - Save / Load with version-aware multi-actor Save Runtime v2 and v1 migration
 - Equipment system
 - Inventory system
@@ -69,7 +70,7 @@ Completed canonical battle-data foundations include:
 
 These foundations allow the next phase of development to focus primarily on turning established data into complete runtime behavior.
 
-A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work. Pass 21 hardened the current core database contracts, Pass 22 added the on-demand map/event validation boundary plus event arithmetic/input normalization, and Pass 23 closed the remaining audit-listed Skills Runtime gaps. Remaining audit work is now concentrated in ownership cleanup, UI/diagnostics, rewards/Essence progression, and a smaller set of explicit cleanup decisions.
+A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work. Pass 21 hardened the current core database contracts, Pass 22 added the on-demand map/event validation boundary plus event arithmetic/input normalization, Pass 23 closed the remaining audit-listed Skills Runtime gaps, and Pass 24 removed the remaining active single-actor ownership assumptions while keeping `$gameActor` only as a compatibility alias. Remaining audit work is now concentrated in UI/diagnostics, rewards/Essence progression, database-accessor cleanup, and one explicit status-runtime decision.
 
 ---
 

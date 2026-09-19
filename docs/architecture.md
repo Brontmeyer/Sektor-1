@@ -215,7 +215,7 @@ Active status instances, status-effect queries, incoming physical/magical damage
 
 ## Game_Actor
 
-`Game_Actor` represents a playable combatant and actor-specific runtime state.
+`Game_Actor` represents a playable combatant and actor-specific runtime state. Canonical starter skills come from validated `Actors.json` `initialSkills` data rather than constructor-time setup in `Game_System`. Equipment mutation is owned here, including explicit equip and unequip APIs.
 
 Actor behavior should build on shared battler behavior while retaining responsibilities that only make sense for player-controlled characters.
 
@@ -227,7 +227,7 @@ Enemy-specific runtime behavior, including future AI integration, belongs here o
 
 ## Game_Party
 
-`Game_Party` owns the player's party-level state and party operations.
+`Game_Party` owns the player's party-level state, actor roster, leader resolution, active battle composition, inventory, and party operations. Leader-default actions resolve through party ownership rather than the legacy `$gameActor` global. Inventory-only reset behavior is exposed explicitly as `clearInventory()`.
 
 It forms the runtime foundation for multi-character gameplay and future party-management features.
 
@@ -245,7 +245,9 @@ The complete Essence Runtime system is still under development.
 
 `Game_Switches`, `Game_SelfSwitches`, and `Game_Variables` provide persistent or event-facing state used to drive game logic. Additive variable operations normalize numeric input, while direct variable assignment remains intentionally capable of storing non-numeric event state.
 
-`Game_System` stores broader runtime system state that belongs to the current game rather than to a single actor, map, or battle.
+`Game_System` stores broader runtime system state that belongs to the current game rather than to a single actor, map, or battle. It constructs the playable actor collection from canonical `Actors.json` records and passes that collection to `Game_Party` instead of owning individually named actor2/actor3/actor4 fields.
+
+`$gameActor` remains initialized in `main.js` only as a backward-compatible leader alias for external or legacy integrations. Current engine systems resolve actors through `Game_Party`, battle-party controllers, or explicit actor context passed into UI windows.
 
 ---
 
@@ -341,7 +343,7 @@ A scene may coordinate several systems, but it should avoid becoming the permane
 
 The `js/windows/` directory contains interactive menus and UI windows.
 
-Current windows include battle commands, battle items, battle magic, choices, equipment, inventory, magic, menu commands, messages, save slots, and status display.
+Current windows include battle commands, battle items, battle magic, choices, equipment, inventory, magic, menu commands, messages, save slots, and status display. Field-menu actor windows receive explicit leader context from `Scene_Menu`; battle magic resolves its current battler through the party controller with a party-owned battle-leader fallback.
 
 Windows should primarily be responsible for:
 

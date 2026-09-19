@@ -1,7 +1,8 @@
 "use strict";
 
 class Window_Equipment {
-  constructor() {
+  constructor(actor) {
+    this.actor = actor;
     this.visible = false;
 
     this.index = 0;
@@ -14,7 +15,7 @@ class Window_Equipment {
     this.x = (Graphics.width - this.width) / 2;
     this.y = (Graphics.height - this.height) / 2;
 
-    this.selectWindow = new Window_EquipSelect();
+    this.selectWindow = new Window_EquipSelect(actor);
   }
 
   update() {
@@ -35,29 +36,15 @@ class Window_Equipment {
 
       if (type === "weapon") {
         if (result.id === 0) {
-          const oldWeapon = $gameActor.weapon();
-
-          $gameActor.weaponId = 0;
-
-          if (oldWeapon) {
-            DebugManager.log(
-              `${$gameActor.name} unequipped ${oldWeapon.name}.`,
-            );
-          }
+          this.actor.unequipWeapon();
         } else {
-          $gameActor.equipWeapon(result.id);
+          this.actor.equipWeapon(result.id);
         }
       } else if (type === "armor") {
         if (result.id === 0) {
-          const oldArmor = $gameActor.armor();
-
-          $gameActor.armorId = 0;
-
-          if (oldArmor) {
-            DebugManager.log(`${$gameActor.name} unequipped ${oldArmor.name}.`);
-          }
+          this.actor.unequipArmor();
         } else {
-          $gameActor.equipArmor(result.id);
+          this.actor.equipArmor(result.id);
         }
       }
 
@@ -158,8 +145,8 @@ class Window_Equipment {
     // CURRENT EQUIPMENT
     // =====================================
 
-    const weapon = $gameActor.weapon();
-    const armor = $gameActor.armor();
+    const weapon = this.actor?.weapon() || null;
+    const armor = this.actor?.armor() || null;
 
     const weaponName = weapon ? weapon.name : "None";
     const armorName = armor ? armor.name : "None";
@@ -200,13 +187,13 @@ class Window_Equipment {
     context.font = "20px sans-serif";
 
     context.fillText(
-      `Attack    ${$gameActor.totalAttack()}`,
+      `Attack    ${this.actor?.totalAttack() ?? 0}`,
       this.x + this.padding,
       this.y + 270,
     );
 
     context.fillText(
-      `Defense   ${$gameActor.totalDefense()}`,
+      `Defense   ${this.actor?.totalDefense() ?? 0}`,
       this.x + this.padding,
       this.y + 315,
     );

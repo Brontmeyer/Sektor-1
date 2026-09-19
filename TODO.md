@@ -154,6 +154,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Save Runtime v2 multi-actor persistence and v1 migration
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
+- [x] Centralize actor/party ownership and retire active `$gameActor` dependencies
 - [ ] Complete repository-audit closure (`docs/audit_closure.md`)
 - [x] Equipment system
 - [x] Inventory system

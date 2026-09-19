@@ -1,7 +1,8 @@
 "use strict";
 
 class Window_EquipSelect {
-  constructor() {
+  constructor(actor) {
+    this.actor = actor;
     this.visible = false;
     this.type = null;
 
@@ -66,9 +67,9 @@ class Window_EquipSelect {
     let equippedId = 0;
 
     if (type === "weapon") {
-      equippedId = $gameActor.weaponId;
+      equippedId = this.actor?.weaponId ?? 0;
     } else if (type === "armor") {
-      equippedId = $gameActor.armorId;
+      equippedId = this.actor?.armorId ?? 0;
     }
 
     const equippedIndex = entries.findIndex((entry) => entry.id === equippedId);
@@ -173,11 +174,11 @@ class Window_EquipSelect {
     }
 
     if (this.type === "weapon") {
-      const current = $gameActor.totalAttack();
+      const current = this.actor?.totalAttack() ?? 0;
 
       const weapon = entry.id === 0 ? null : DatabaseManager.weapon(entry.id);
 
-      const preview = $gameActor.attackWithWeapon(weapon);
+      const preview = this.actor?.attackWithWeapon(weapon) ?? 0;
 
       return {
         name: "Attack",
@@ -187,11 +188,11 @@ class Window_EquipSelect {
     }
 
     if (this.type === "armor") {
-      const current = $gameActor.totalDefense();
+      const current = this.actor?.totalDefense() ?? 0;
 
       const armor = entry.id === 0 ? null : DatabaseManager.armor(entry.id);
 
-      const preview = $gameActor.defenseWithArmor(armor);
+      const preview = this.actor?.defenseWithArmor(armor) ?? 0;
 
       return {
         name: "Defense",
@@ -267,9 +268,9 @@ class Window_EquipSelect {
       let equippedId = 0;
 
       if (this.type === "weapon") {
-        equippedId = $gameActor.weaponId;
+        equippedId = this.actor?.weaponId ?? 0;
       } else if (this.type === "armor") {
-        equippedId = $gameActor.armorId;
+        equippedId = this.actor?.armorId ?? 0;
       }
 
       if (entry.id !== 0) {

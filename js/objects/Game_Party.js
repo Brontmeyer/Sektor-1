@@ -182,7 +182,7 @@ class Game_Party {
       .filter((itemId) => this.itemCount(itemId) > 0);
   }
 
-  useItem(itemId, target = $gameActor) {
+  useItem(itemId, target = null) {
     const item = DatabaseManager.item(itemId);
 
     if (!item) {
@@ -197,9 +197,16 @@ class Game_Party {
       return false;
     }
 
+    const resolvedTarget = target || this.leader();
+
+    if (!resolvedTarget) {
+      console.error(`${item.name} has no valid party target.`);
+      return false;
+    }
+
     switch (item.effect.type) {
       case "healHp":
-        if (target.isFullHp()) {
+        if (resolvedTarget.isFullHp()) {
           DebugManager.log(
             `${item.name} was not used because HP is already full.`,
           );
@@ -217,7 +224,7 @@ class Game_Party {
           return false;
         }
 
-        target.gainHp(healAmount);
+        resolvedTarget.gainHp(healAmount);
 
         break;
 
@@ -308,7 +315,7 @@ class Game_Party {
     return this.weaponCount(weaponId) > 0;
   }
 
-  clear() {
+  clearInventory() {
     this.items = {};
     this.weapons = {};
     this.armors = {};

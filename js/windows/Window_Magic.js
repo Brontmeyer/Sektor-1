@@ -1,7 +1,8 @@
 "use strict";
 
 class Window_Magic {
-  constructor() {
+  constructor(actor) {
+    this.actor = actor;
     this.visible = false;
     this.index = 0;
 
@@ -61,12 +62,12 @@ class Window_Magic {
         return;
       }
 
-      $gameActor.useSkill(skill.id, $gameActor);
+      this.actor.useSkill(skill.id, this.actor);
     }
   }
 
   skills() {
-    return $gameActor.knownSkills().filter((skill) => skill.type === "magic");
+    return this.actor.knownSkills().filter((skill) => skill.type === "magic");
   }
 
   currentSkill() {
@@ -90,7 +91,7 @@ class Window_Magic {
       return false;
     }
 
-    return $gameActor.canUseSkill(skill.id);
+    return this.actor.canUseSkill(skill.id);
   }
 
   show() {
@@ -188,7 +189,7 @@ class Window_Magic {
       context.font = "18px sans-serif";
 
       context.fillText(
-        `MP: ${$gameActor.mp} / ${$gameActor.maxMp}`,
+        `MP: ${this.actor.mp} / ${this.actor.maxMp}`,
         this.x + 24,
         this.y + this.height - 95,
       );

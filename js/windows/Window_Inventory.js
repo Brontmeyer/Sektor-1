@@ -1,7 +1,8 @@
 "use strict";
 
 class Window_Inventory {
-  constructor() {
+  constructor(actor) {
+    this.actor = actor;
     this.visible = false;
 
     this.index = 0;
@@ -53,7 +54,7 @@ class Window_Inventory {
       const selectedItemId = itemIds[this.index];
 
       if (selectedItemId !== undefined) {
-        const used = $gameParty.useItem(selectedItemId);
+        const used = $gameParty.useItem(selectedItemId, this.actor);
 
         if (used) {
           const updatedItemIds = this.itemIds();
@@ -201,8 +202,8 @@ class Window_Inventory {
     // HP DISPLAY
     // =====================================
 
-    const hp = $gameActor.hp;
-    const maxHp = $gameActor.maxHp;
+    const hp = this.actor?.hp ?? 0;
+    const maxHp = this.actor?.maxHp ?? 0;
 
     // Keep the ratio between 0 and 1.
 

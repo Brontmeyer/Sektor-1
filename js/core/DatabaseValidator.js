@@ -21,7 +21,7 @@ class DatabaseValidator {
     }
 
     this.validateMapInfos(database.mapInfos, errors);
-    this.validateActors(database.actors, errors);
+    this.validateActors(database.actors, errors, database.skills);
     this.validateEnemies(database.enemies, errors);
     this.validateItems(database.items, errors);
     this.validateWeapons(database.weapons, errors);
@@ -908,7 +908,7 @@ class DatabaseValidator {
     }
   }
 
-  static validateActors(actors, errors) {
+  static validateActors(actors, errors, skills = null) {
     if (!Array.isArray(actors)) {
       return;
     }
@@ -940,6 +940,29 @@ class DatabaseValidator {
       this.validateBattlerStats(actor, label, errors);
       this.validateBattleSprite(actor, label, "sideBattleSprite", errors);
       this.validateFiniteNumber(`${label} exp`, actor.exp, errors, { min: 0 });
+
+      if (!Array.isArray(actor.initialSkills)) {
+        errors.push(`${label} initialSkills must be an array.`);
+      } else {
+        const seenSkillIds = new Set();
+
+        for (const skillId of actor.initialSkills) {
+          if (!Number.isInteger(skillId) || skillId <= 0) {
+            errors.push(`${label} initialSkills entries must be positive integers.`);
+            continue;
+          }
+
+          if (seenSkillIds.has(skillId)) {
+            errors.push(`${label} initialSkills must not contain duplicate skill ID ${skillId}.`);
+          }
+
+          seenSkillIds.add(skillId);
+
+          if (Array.isArray(skills) && !skills[skillId]) {
+            errors.push(`${label} initialSkills references unknown skill ID ${skillId}.`);
+          }
+        }
+      }
 
       if (!this.isPlainObject(actor.growth)) {
         errors.push(`${label} growth must be an object.`);
