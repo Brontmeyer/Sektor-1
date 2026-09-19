@@ -92,13 +92,19 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 - Added Audit Runtime Cleanup v1 with completed Stop turn-progression semantics and a reusable Limit-gain multiplier contract
 - Added dedicated regression coverage for Stop personal-clock freezing, Limit multiplier composition, and database-accessor fallback consistency
+- Added Battle Rewards v1 with persistent Gil, validated enemy drop tables, exactly-once drop resolution, and battle Resonance rewards
+- Added actor-owned equipped Essence progression state with 1500-Resonance Mastery-Ready capping and Save Runtime v3 persistence
+- Added dedicated battle-reward regression coverage for Banish no-Gil behavior, drop aggregation, surviving-participant Resonance, Mastery Ready transitions, and duplicate-finalization protection
 
 ### Changed
 
+- Upgraded persistent saves to version 3 so Gil and equipped Essence progression survive save/load, with migration from v1 and v2 formats
+- Replaced Pass 11's currency/drop/Resonance reward extension stubs with live data-driven reward resolution
+- Marked the repository-audit closure phase complete after reconciling all 42 actionable findings
 - Standardized all indexed `DatabaseManager` record/name accessors behind one null-safe convention with diagnostic unknown-ID fallbacks
 - Made Stop freeze personal turn slots, turn-start triggers, fractional speed progress, and ordinary battler-relative timers while its own duration advances on the side-round clock
 - Reclassified Fury / Sadness / Near-Death Limit modifiers as a complete Status Runtime contract; future gauge accumulation remains owned by the future Limit system
-- Reconciled the audit tracker to 39 fixed / 0 partial / 3 open items after Pass 26
+- Reconciled the audit tracker to 42 fixed / 0 partial / 0 open items after Pass 27; repository-audit closure is complete
 - Expanded the project from single-character battle assumptions toward a multi-character party architecture
 - Established canonical terminology across Skills, Essences, and Statuses
 - Standardized status terminology including `paralyze` and `confuse`

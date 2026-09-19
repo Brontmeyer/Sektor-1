@@ -388,7 +388,7 @@ At 1500 Resonance, an Essence becomes **Mastery Ready** and stops gaining Resona
 
 Completing that Essence's future Mastery Trial promotes it to Level 5 MASTERED.
 
-The full Essence runtime, passive evaluation, battle Resonance awards, Mastery Trials, and Essence Evolution remain future implementation work.
+Battle Resonance awards and persistent equipped-Essence progression are now active. The remaining Essence Runtime work is player-facing equipping/slot rules, ability availability, passive evaluation, Mastery Trials, and Essence Evolution.
 
 ---
 
@@ -472,13 +472,20 @@ Escape is a third terminal outcome when the encounter permits it.
 
 `BattleManager` owns the authoritative finalization path. Finalization is idempotent: once a battle has produced its final result, later calls return that same result and cannot award rewards or perform post-battle restoration a second time.
 
-## Experience Rewards
+## Battle Rewards
 
 Victory totals `expReward` from every defeated enemy in the encounter. That full total is awarded once to every member of `$gameParty.battleMembers()` that participated in the battle.
 
 This includes active party members who were defeated when victory was earned. Reserve roster members who were not in the active battle party receive no battle EXP.
 
-Defeat and escape award no EXP. Currency, item drops, and Essence Resonance are represented in the reward result but intentionally remain zero or empty until their owning systems are implemented.
+Defeat and escape award no battle rewards. Victory resolves every reward exactly once through the same idempotent finalization path:
+
+- **EXP:** total `expReward` from every defeated enemy; awarded in full to every active battle-party participant, including defeated participants.
+- **Gil:** total `gilReward` from defeated enemies, except enemies removed by Banish contribute no Gil. The result is added to persistent `Game_Party` currency state.
+- **Item drops:** each defeated enemy resolves its validated `dropTable` independently. Successful rolls are aggregated by item ID and awarded through `Game_Party.gainItem()`.
+- **Essence Resonance:** total `resonanceReward` from defeated enemies. Every equipped Essence on each **surviving active battle-party participant** receives the full encounter Resonance amount. Defeated participants and reserve roster members receive none.
+
+Essence Resonance caps at the canonical Mastery threshold (1500 with the current data). Per-actor reward results report Essence level changes, awakened skill IDs, and Mastery-Ready transitions without automatically promoting an Essence to Level 5.
 
 ## Post-Battle State
 
@@ -561,7 +568,6 @@ Major battle features still planned include:
 - Dual Techniques
 - Additional enemy and encounter systems
 - Expanded item behavior
-- Currency, item-drop, and Essence Resonance reward integration
 
 These are planned architecture, not claims about currently completed runtime behavior.
 

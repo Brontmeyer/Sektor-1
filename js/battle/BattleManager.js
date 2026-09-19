@@ -116,11 +116,11 @@ class BattleManager {
     this.finishPartyAction();
   }
 
-  createRewardBundle(defeatedEnemies) {
+  createRewardBundle(defeatedEnemies, random = Math.random) {
     return {
       exp: this.calculateExperienceReward(defeatedEnemies),
       currency: this.calculateCurrencyReward(defeatedEnemies),
-      drops: this.calculateItemDrops(defeatedEnemies),
+      drops: this.calculateItemDrops(defeatedEnemies, random),
       resonance: this.calculateEssenceResonance(defeatedEnemies),
     };
   }
@@ -132,18 +132,65 @@ class BattleManager {
     }, 0);
   }
 
-  // Extension points for later reward passes. These intentionally return
-  // empty rewards until their owning systems exist.
-  calculateCurrencyReward(_defeatedEnemies) {
-    return 0;
+  calculateCurrencyReward(defeatedEnemies) {
+    return defeatedEnemies.reduce((total, enemy) => {
+      if (typeof enemy.isBanished === "function" && enemy.isBanished()) {
+        return total;
+      }
+
+      const reward = Number(enemy.gilReward);
+      return total + (Number.isInteger(reward) && reward > 0 ? reward : 0);
+    }, 0);
   }
 
-  calculateItemDrops(_defeatedEnemies) {
-    return [];
+  calculateItemDrops(defeatedEnemies, random = Math.random) {
+    const totals = new Map();
+    const roll = typeof random === "function" ? random : Math.random;
+
+    for (const enemy of defeatedEnemies) {
+      const dropTable = Array.isArray(enemy.dropTable) ? enemy.dropTable : [];
+
+      for (const drop of dropTable) {
+        const chance = Number(drop?.chance);
+        const itemId = Number(drop?.itemId);
+        const quantity = Number(drop?.quantity);
+
+        if (
+          !Number.isFinite(chance) ||
+          chance < 0 ||
+          chance > 1 ||
+          !Number.isInteger(itemId) ||
+          itemId <= 0 ||
+          !Number.isInteger(quantity) ||
+          quantity <= 0
+        ) {
+          continue;
+        }
+
+        if (roll() >= chance) {
+          continue;
+        }
+
+        totals.set(itemId, (totals.get(itemId) || 0) + quantity);
+      }
+    }
+
+    return [...totals.entries()].map(([itemId, quantity]) => ({
+      itemId,
+      name:
+        typeof DatabaseManager !== "undefined" &&
+        typeof DatabaseManager.itemName === "function"
+          ? DatabaseManager.itemName(itemId)
+          : `Item ${itemId}`,
+      quantity,
+    }));
   }
 
-  calculateEssenceResonance(_defeatedEnemies) {
-    return 0;
+  calculateEssenceResonance(defeatedEnemies) {
+    return defeatedEnemies.reduce((total, enemy) => {
+      const reward = Number(enemy.resonanceReward);
+      return total + (Number.isInteger(reward) && reward > 0 ? reward : 0);
+    }, 0);
   }
 
   finalizeBattle(outcome = this.scene.outcome) {
@@ -183,17 +230,40 @@ class BattleManager {
 
     const rewards =
       outcome === BattleManager.OUTCOME_VICTORY
-        ? this.createRewardBundle(defeatedEnemies)
+        ? this.createRewardBundle(
+            defeatedEnemies,
+            typeof this.rewardRandom === "function" ? this.rewardRandom : Math.random,
+          )
         : { exp: 0, currency: 0, drops: [], resonance: 0 };
+
+    if (outcome === BattleManager.OUTCOME_VICTORY) {
+      if (rewards.currency > 0 && typeof $gameParty.gainGil === "function") {
+        $gameParty.gainGil(rewards.currency);
+      }
+
+      for (const drop of rewards.drops) {
+        $gameParty.gainItem(drop.itemId, drop.quantity);
+      }
+    }
 
     const partyResults = partyMembers.map((actor) => {
       const snapshot = partySnapshots.get(actor);
       let levelsGained = 0;
       let expGained = 0;
+      let essenceRewards = [];
 
       if (outcome === BattleManager.OUTCOME_VICTORY && rewards.exp > 0) {
         levelsGained = actor.gainExp(rewards.exp);
         expGained = rewards.exp;
+      }
+
+      if (
+        outcome === BattleManager.OUTCOME_VICTORY &&
+        !snapshot.wasDefeated &&
+        rewards.resonance > 0 &&
+        typeof actor.gainEquippedEssenceResonance === "function"
+      ) {
+        essenceRewards = actor.gainEquippedEssenceResonance(rewards.resonance);
       }
 
       const postBattle = actor.restorePostBattleState(snapshot);
@@ -205,6 +275,7 @@ class BattleManager {
         levelsGained,
         levelBefore: snapshot.levelBefore,
         levelAfter: actor.level,
+        essenceRewards,
         ...postBattle,
       };
     });
@@ -220,6 +291,8 @@ class BattleManager {
         enemyId: enemy.enemyId,
         name: enemy.name,
         expReward: enemy.expReward,
+        gilReward: enemy.gilReward,
+        resonanceReward: enemy.resonanceReward,
         banished:
           typeof enemy.isBanished === "function" ? enemy.isBanished() : false,
       })),

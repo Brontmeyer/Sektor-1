@@ -40,7 +40,7 @@ Completed engine foundations include:
 - Turn queue
 - Multi-character turns
 - Data-driven actor collection ownership with explicit party/leader context
-- Save / Load with version-aware multi-actor Save Runtime v2 and v1 migration
+- Save / Load with version-aware multi-actor Save Runtime v3, persistent Gil / Essence state, and v1/v2 migration
 - Equipment system
 - Inventory system
 
@@ -70,7 +70,7 @@ Completed canonical battle-data foundations include:
 
 These foundations allow the next phase of development to focus primarily on turning established data into complete runtime behavior.
 
-A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work. Pass 21 hardened the current core database contracts, Pass 22 added the on-demand map/event validation boundary plus event arithmetic/input normalization, Pass 23 closed the remaining audit-listed Skills Runtime gaps, Pass 24 removed the remaining active single-actor ownership assumptions while keeping `$gameActor` only as a compatibility alias, and Pass 25 closed the remaining audit-listed UI scalability / sprite-diagnostic gaps. After Pass 26, remaining audit work is concentrated entirely in battle rewards / Essence progression: currency, item drops, and Resonance.
+The repository-audit closure track is complete. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` records how every actionable finding was reconciled against current code. Passes 20–27 closed the remaining save, validation, map/event, skill, ownership, UI, runtime-cleanup, and battle-reward findings. New passes should still verify the current repository before implementing overlapping work, but audit closure is no longer the primary development backlog.
 
 ---
 
@@ -141,16 +141,20 @@ Summon Magic and Limit Skills remain later design work and are not required to c
 
 The Essence data model, database loading, validation, and progression rules are established, but the player-facing runtime system remains to be built.
 
-Primary work includes:
+Completed runtime foundation now includes:
 
-- Implement Essence equipping
+- Equipped-Essence state APIs on actors
+- Battle Resonance gain for surviving active participants
+- Resonance-capped Essence leveling
+- Mastery Ready transition at 1500 Resonance
+- Save / Load persistence for equipped Essence state
+
+Primary remaining work includes:
+
+- Implement player-facing Essence equipping UI / slot rules
 - Implement ability availability from equipped Essences
-- Implement battle Resonance gain
-- Implement Essence leveling
-- Implement Mastery Ready at 1500 Resonance
 - Implement Level 4 passive effects
-- Implement Mastery state support
-- Integrate Essence state with Save / Load
+- Implement full Mastery state / Trial support
 - Expose required Essence information through UI
 
 Equipped Essences should gain full battle Resonance regardless of whether one of their abilities was cast.

@@ -26,6 +26,92 @@ class Game_Actor extends Game_Battler {
     this.skills = Array.isArray(actorData.initialSkills)
       ? [...actorData.initialSkills]
       : [];
+
+    // Runtime Essence equipment state. Player-facing slot rules / UI remain
+    // part of the future Essence Runtime milestone.
+    this._equippedEssences = [];
+  }
+
+  // =====================================
+  // Essence Equipment / Progression
+  // =====================================
+
+  equippedEssences() {
+    return [...this._equippedEssences];
+  }
+
+  equippedEssence(essenceId) {
+    const id = Number(essenceId);
+    return this._equippedEssences.find((essence) => essence.essenceId === id) || null;
+  }
+
+  equipEssence(essenceId, resonance = 0) {
+    const id = Number(essenceId);
+
+    if (!Number.isInteger(id) || id <= 0 || !DatabaseManager.essence(id)) {
+      return false;
+    }
+
+    if (this.equippedEssence(id)) {
+      return false;
+    }
+
+    this._equippedEssences.push(new Game_Essence(id, resonance));
+    return true;
+  }
+
+  unequipEssence(essenceId) {
+    const id = Number(essenceId);
+    const index = this._equippedEssences.findIndex(
+      (essence) => essence.essenceId === id,
+    );
+
+    if (index < 0) {
+      return false;
+    }
+
+    this._equippedEssences.splice(index, 1);
+    return true;
+  }
+
+  equippedEssenceStates() {
+    return this._equippedEssences.map((essence) => ({
+      essenceId: essence.essenceId,
+      resonance: essence.resonance,
+    }));
+  }
+
+  restoreEquippedEssenceStates(states) {
+    this._equippedEssences = [];
+
+    if (!Array.isArray(states)) {
+      return;
+    }
+
+    for (const state of states) {
+      this.equipEssence(state?.essenceId, state?.resonance ?? 0);
+    }
+  }
+
+  gainEquippedEssenceResonance(amount) {
+    const results = [];
+
+    for (const essence of this._equippedEssences) {
+      const progression = essence.addResonance(amount);
+
+      if (!progression) {
+        continue;
+      }
+
+      results.push({
+        essenceId: essence.essenceId,
+        name: essence.name(),
+        ...progression,
+        awakenedSkillIds: progression.awakenedSkills.map((skill) => skill.id),
+      });
+    }
+
+    return results;
   }
 
   // =====================================

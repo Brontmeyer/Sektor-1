@@ -22,7 +22,7 @@ class DatabaseValidator {
 
     this.validateMapInfos(database.mapInfos, errors);
     this.validateActors(database.actors, errors, database.skills);
-    this.validateEnemies(database.enemies, errors);
+    this.validateEnemies(database.enemies, database.items, errors);
     this.validateItems(database.items, errors);
     this.validateWeapons(database.weapons, errors);
     this.validateArmors(database.armors, errors);
@@ -979,7 +979,15 @@ class DatabaseValidator {
     }
   }
 
-  static validateEnemies(enemies, errors) {
+  static validateEnemies(enemies, items, errors = null) {
+    // Keep the direct helper backward-compatible with older tests/tools that
+    // passed only (enemies, errors). Full database validation supplies Items
+    // so drop-table references can be checked as well.
+    if (!Array.isArray(errors)) {
+      errors = items;
+      items = null;
+    }
+
     if (!Array.isArray(enemies)) {
       return;
     }
@@ -997,6 +1005,54 @@ class DatabaseValidator {
 
       if (!Number.isInteger(enemy.expReward) || enemy.expReward < 0) {
         errors.push(`${label} expReward must be a non-negative integer.`);
+      }
+
+      if (!Number.isInteger(enemy.gilReward) || enemy.gilReward < 0) {
+        errors.push(`${label} gilReward must be a non-negative integer.`);
+      }
+
+      if (
+        !Number.isInteger(enemy.resonanceReward) ||
+        enemy.resonanceReward < 0
+      ) {
+        errors.push(`${label} resonanceReward must be a non-negative integer.`);
+      }
+
+      if (!Array.isArray(enemy.dropTable)) {
+        errors.push(`${label} dropTable must be an array.`);
+      } else {
+        enemy.dropTable.forEach((drop, dropIndex) => {
+          const dropLabel = `${label} dropTable[${dropIndex}]`;
+
+          if (!this.isPlainObject(drop)) {
+            errors.push(`${dropLabel} must be an object.`);
+            return;
+          }
+
+          this.validateKnownKeys(
+            dropLabel,
+            drop,
+            new Set(["itemId", "quantity", "chance"]),
+            errors,
+          );
+
+          if (
+            !Number.isInteger(drop.itemId) ||
+            drop.itemId <= 0 ||
+            (Array.isArray(items) && !items[drop.itemId])
+          ) {
+            errors.push(`${dropLabel} itemId must reference a valid item.`);
+          }
+
+          if (!Number.isInteger(drop.quantity) || drop.quantity <= 0) {
+            errors.push(`${dropLabel} quantity must be a positive integer.`);
+          }
+
+          this.validateFiniteNumber(`${dropLabel} chance`, drop.chance, errors, {
+            min: 0,
+            max: 1,
+          });
+        });
       }
 
       if (

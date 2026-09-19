@@ -14,6 +14,7 @@ const items = readData("Items.json");
 const weapons = readData("Weapons.json");
 const armors = readData("Armors.json");
 const skills = readData("Skills.json");
+const essences = readData("Essences.json");
 const statuses = readData("Statuses.json");
 const mapInfos = readData("MapInfos.json");
 
@@ -45,6 +46,7 @@ function makeDatabaseManager() {
     weapons,
     armors,
     skills,
+    essences,
     statuses,
     mapInfos,
     actor(id) {
@@ -73,6 +75,12 @@ function makeDatabaseManager() {
     },
     skillName(id) {
       return skills[id]?.name || "Unknown Skill";
+    },
+    essence(id) {
+      return essences[id] || null;
+    },
+    essenceName(id) {
+      return essences[id]?.name || `Unknown Essence ${id}`;
     },
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
@@ -107,6 +115,7 @@ function createHarness() {
   });
   const source = [
     "js/objects/Game_Battler.js",
+    "js/objects/Game_Essence.js",
     "js/objects/Game_Actor.js",
     "js/objects/Game_Party.js",
     "js/core/SaveManager.js",
@@ -145,7 +154,7 @@ function rawSave(localStorage, SaveManager, slotId = 1) {
   return JSON.parse(localStorage.getItem(SaveManager.saveKey(slotId)));
 }
 
-function testV2SaveSerializesWholePartyAndPersistentStatuses() {
+function testV3SaveSerializesPartyCurrencyEssencesAndPersistentStatuses() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
 
@@ -155,17 +164,19 @@ function testV2SaveSerializesWholePartyAndPersistentStatuses() {
   second.learnSkill(1);
   second.addStatus("fury");
   second.addStatus("barrier");
+  assert.equal(second.equipEssence(1, 145), true);
 
   party.items = { 1: 2 };
   party.weapons = { 1: 1 };
   party.armors = { 1: 1 };
+  assert.equal(party.gainGil(77), true);
 
   assert.equal(SaveManager.save(1), true);
 
   const saveData = rawSave(localStorage, SaveManager);
   const savedSecond = saveData.actors.find((actor) => actor.actorId === 2);
 
-  assert.equal(saveData.version, 2);
+  assert.equal(saveData.version, 3);
   assert.equal(saveData.actors.length, 4);
   assert.equal(Object.hasOwn(saveData, "actor"), false);
   assert.equal(savedSecond.exp, 321);
@@ -176,9 +187,13 @@ function testV2SaveSerializesWholePartyAndPersistentStatuses() {
     ["fury"],
   );
   assert.deepEqual(saveData.party.battleActorIds, [1, 2, 3, 4]);
+  assert.equal(saveData.party.gil, 77);
+  assert.deepEqual(Array.from(savedSecond.essences), [
+    { essenceId: 1, resonance: 145 },
+  ]);
 }
 
-async function testV2LoadRestoresActorStateAndNormalizesInventory() {
+async function testV3LoadRestoresActorStateCurrencyEssencesAndNormalizesInventory() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
 
@@ -187,7 +202,9 @@ async function testV2LoadRestoresActorStateAndNormalizesInventory() {
   second.maxHp = 900;
   second.setHp(300);
   second.addStatus("sadness");
+  assert.equal(second.equipEssence(4, 299), true);
   party.items = { 1: 2 };
+  assert.equal(party.gainGil(120), true);
 
   assert.equal(SaveManager.save(1), true);
 
@@ -200,7 +217,9 @@ async function testV2LoadRestoresActorStateAndNormalizesInventory() {
   second.maxHp = 100;
   second.setHp(100);
   second.statuses = [];
+  second.restoreEquippedEssenceStates([]);
   party.items = {};
+  party.setGil(0);
 
   assert.equal(await SaveManager.load(1), true);
   assert.equal(second.exp, 450);
@@ -212,6 +231,35 @@ async function testV2LoadRestoresActorStateAndNormalizesInventory() {
   assert.equal(party.itemCount(1), 3);
   assert.equal(party.itemCount(2), 0);
   assert.equal(party.itemCount(999), 0);
+  assert.equal(party.gil(), 120);
+  assert.equal(second.equippedEssence(4).resonance, 299);
+}
+
+async function testVersionTwoSaveMigratesCurrencyAndEssenceDefaults() {
+  const { localStorage, party, partyActors, SaveManager } = createHarness();
+  const second = partyActors[1];
+  second.exp = 999;
+
+  const v2 = {
+    version: 2,
+    metadata: { actorName: party.leader().name, level: 1, timestamp: Date.now() },
+    actors: partyActors.map((actor) => SaveManager.serializeActor(actor)).map((actor) => {
+      const copy = { ...actor };
+      delete copy.essences;
+      return copy;
+    }),
+    party: { items: {}, weapons: {}, armors: {}, battleActorIds: [1, 2, 3, 4] },
+    switches: { data: {} },
+    variables: { data: {} },
+    selfSwitches: { data: {} },
+    location: { mapId: 1, x: 4, y: 5 },
+  };
+
+  localStorage.setItem(SaveManager.saveKey(1), JSON.stringify(v2));
+
+  assert.equal(await SaveManager.load(1), true);
+  assert.equal(party.gil(), 0);
+  assert.equal(second.equippedEssences().length, 0);
 }
 
 async function testVersionOneSaveMigratesLeaderWithoutOverwritingOtherActors() {
@@ -307,8 +355,9 @@ function testSaveStorageFailureReturnsFalse() {
 }
 
 async function run() {
-  testV2SaveSerializesWholePartyAndPersistentStatuses();
-  await testV2LoadRestoresActorStateAndNormalizesInventory();
+  testV3SaveSerializesPartyCurrencyEssencesAndPersistentStatuses();
+  await testV3LoadRestoresActorStateCurrencyEssencesAndNormalizesInventory();
+  await testVersionTwoSaveMigratesCurrencyAndEssenceDefaults();
   await testVersionOneSaveMigratesLeaderWithoutOverwritingOtherActors();
   await testMalformedAndFutureSavesFailWithoutThrowing();
   testSaveStorageFailureReturnsFalse();

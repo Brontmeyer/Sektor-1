@@ -3,6 +3,7 @@
 class Game_Party {
   constructor(initialActors = []) {
     this.items = {};
+    this._gil = 0;
 
     this.weapons = {};
     this.armors = {};
@@ -129,6 +130,48 @@ class Game_Party {
 
   livingBattleMembers() {
     return this.battleMembers().filter((actor) => actor.isAlive());
+  }
+
+  // =================================
+  // Currency
+  // =================================
+
+  gil() {
+    return this._gil;
+  }
+
+  gainGil(amount) {
+    const value = Number(amount);
+
+    if (!Number.isInteger(value) || value < 0) {
+      console.error(`Invalid Gil amount: ${amount}`);
+      return false;
+    }
+
+    this._gil += value;
+    return true;
+  }
+
+  spendGil(amount) {
+    const value = Number(amount);
+
+    if (!Number.isInteger(value) || value < 0 || value > this._gil) {
+      return false;
+    }
+
+    this._gil -= value;
+    return true;
+  }
+
+  setGil(amount) {
+    const value = Number(amount);
+
+    if (!Number.isInteger(value) || value < 0) {
+      return false;
+    }
+
+    this._gil = value;
+    return true;
   }
 
   // =================================

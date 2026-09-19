@@ -27,11 +27,11 @@ complete and normal new-feature development can become the primary focus.
 
 ## Current Reconciliation
 
-After Pass 26, the 42 actionable audit headings reconcile to:
+After Pass 27, the 42 actionable audit headings reconcile to:
 
-- **Fixed / superseded:** 39
+- **Fixed / superseded:** 42
 - **Partial:** 0
-- **Open:** 3
+- **Open:** 0
 
 The audit's later "Verified Behavior and Design Context" section is reference
 material, not a fix backlog, and is therefore not counted in the 42 actionable
@@ -78,9 +78,9 @@ headings.
 | 37 | Skill `scopePower` metadata is consumed but not validated | Fixed | Pass 21 validates scopePower as a supported-scope multiplier map with finite non-negative values. |
 | 38 | Skill `power` metadata is consumed but not validated | Fixed | Pass 21 validates configured skill power as a finite non-negative number before the damage/healing formulas consume it. |
 | 39 | Battle victories do not award experience | Fixed | Pass 11 awards defeated-enemy EXP exactly once to active battle-party members. |
-| 40 | Currency rewards are not implemented | Open | No currency state/API/reward path exists yet. |
-| 41 | Battle item drops are not implemented | Open | No enemy drop-table schema or victory drop resolver exists yet. |
-| 42 | Battle victories do not award Essence Resonance | Open | Essence Resonance is not yet connected to victory processing/equipped Essence progression. |
+| 40 | Currency rewards are not implemented | Fixed | Pass 27 adds persistent party Gil state/APIs and victory-time Gil rewards; Banished enemies contribute no Gil. |
+| 41 | Battle item drops are not implemented | Fixed | Pass 27 adds validated enemy drop tables, exactly-once victory resolution, aggregation, inventory awards, and structured drop results. |
+| 42 | Battle victories do not award Essence Resonance | Fixed | Pass 27 awards encounter Resonance exactly once to equipped Essences on surviving active battle participants, caps progression at Mastery Ready, reports transitions, and persists equipped Essence state in Save Runtime v3. |
 
 ## Pass Selection Gate
 
@@ -95,10 +95,10 @@ Before starting a new improvement pass:
 6. Update this tracker after the pass so the audit backlog always reflects the
    code that actually exists.
 
-## Current Highest-Value Audit Buckets
+## Audit Closure Complete
 
-Only one actionable audit cluster remains:
+All 42 actionable audit headings are now **Fixed**, **Superseded**, or otherwise closed by documented implementation. No Partial or Open audit item remains.
 
-1. **Battle rewards / Essence progression** — currency, drops, and Resonance.
+The historical audit remains valuable reference material, but it is no longer the primary pass-selection backlog. New Sektor 1 feature work may now be selected from `TODO.md`, `docs/roadmap.md`, and approved design priorities, while still checking the current repository before implementing overlapping work.
 
-The future Limit gauge is no longer an audit-closure dependency. Status Runtime now exposes the canonical `limitGainMultiplier()` contract that the eventual Limit system will consume.
+The future Limit gauge is not an audit-closure dependency. Status Runtime already exposes the canonical `limitGainMultiplier()` contract that the eventual Limit system will consume.

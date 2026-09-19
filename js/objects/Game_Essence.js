@@ -1,9 +1,10 @@
 "use strict";
 
 class Game_Essence {
-  constructor(essenceId) {
-    this.essenceId = essenceId;
+  constructor(essenceId, resonance = 0) {
+    this.essenceId = Number(essenceId);
     this.resonance = 0;
+    this.setResonance(resonance);
   }
 
   data() {
@@ -12,6 +13,26 @@ class Game_Essence {
 
   name() {
     return this.data()?.name || "Unknown Essence";
+  }
+
+  masteryThreshold() {
+    const threshold = Number(this.data()?.mastery?.resonanceRequired);
+    return Number.isFinite(threshold) && threshold >= 0 ? threshold : 1500;
+  }
+
+  setResonance(amount) {
+    const value = Number(amount);
+
+    if (!Number.isFinite(value) || value < 0) {
+      return false;
+    }
+
+    this.resonance = Math.min(this.masteryThreshold(), value);
+    return true;
+  }
+
+  isMasteryReady() {
+    return this.resonance >= this.masteryThreshold();
   }
 
   level() {
@@ -39,23 +60,29 @@ class Game_Essence {
       return null;
     }
 
+    const oldResonance = this.resonance;
     const oldLevel = this.level();
-
+    const masteryReadyBefore = this.isMasteryReady();
     const oldSkillIds = new Set(this.unlockedSkills().map((skill) => skill.id));
 
-    this.resonance += value;
+    this.resonance = Math.min(this.masteryThreshold(), this.resonance + value);
 
     const newLevel = this.level();
-
+    const masteryReadyAfter = this.isMasteryReady();
     const awakenedSkills = this.unlockedSkills().filter(
       (skill) => !oldSkillIds.has(skill.id),
     );
 
     return {
-      gained: value,
+      gained: this.resonance - oldResonance,
+      oldResonance,
+      newResonance: this.resonance,
       oldLevel,
       newLevel,
       leveledUp: newLevel > oldLevel,
+      masteryReadyBefore,
+      masteryReadyAfter,
+      becameMasteryReady: !masteryReadyBefore && masteryReadyAfter,
       awakenedSkills,
     };
   }

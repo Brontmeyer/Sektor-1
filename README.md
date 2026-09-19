@@ -13,13 +13,11 @@ systems are being designed and implemented specifically for Sektor 1.
 
 # ⚔️ Current Development Focus
 
-## Status System Runtime
+## Post-Audit Feature Development
 
-The first major versions of the game's Skills, Essence, and Status
-databases have been designed.
+The historical repository-audit backlog is now fully reconciled against the current codebase. Core battle resolution, status/skill runtime, persistence, validation, ownership, UI resilience, and battle rewards have dedicated runtime paths and regression coverage.
 
-Current development is focused on turning those definitions into fully
-functional battle mechanics.
+New development can now be selected primarily from the active roadmap and TODO priorities, while continuing to verify current code before implementing overlapping work.
 
 ### Recently Completed
 
@@ -32,6 +30,9 @@ functional battle mechanics.
 -   ✅ 25 initial status effects
 -   ✅ Reusable status families and duration models
 -   ✅ Countdown and derived status architecture
+-   ✅ Battle EXP / Gil / item-drop rewards
+-   ✅ Battle Essence Resonance progression
+-   ✅ Repository-audit closure
 
 ------------------------------------------------------------------------
 
@@ -47,7 +48,7 @@ Completed foundations include:
 -   ✅ Party foundation
 -   ✅ Multi-character turn system
 -   ✅ Turn queue
--   ✅ Save / Load
+-   ✅ Save / Load (version-aware Save Runtime v3)
 -   ✅ Equipment system
 -   ✅ Inventory system
 
@@ -68,12 +69,12 @@ Current battle features include:
 -   ✅ Battle effects
 -   ✅ Animation controller
 -   ✅ Magic foundation
+-   ✅ Idempotent battle resolution and structured rewards
+-   ✅ Gil, enemy item drops, and Essence Resonance rewards
 
 Systems currently being expanded include:
 
--   🚧 Status effect runtime
--   🚧 Essence runtime
--   🚧 Skill / status interactions
+-   🚧 Essence runtime and player-facing equipping
 -   🚧 Enemy AI
 -   🚧 Boss mechanics
 -   🚧 Limit Skills
@@ -202,7 +203,7 @@ docs/
 Each document has a specific purpose:
 
 -   **architecture.md** - Engine structure and system relationships
--   **audit_closure.md** - Current reconciliation of historical audit findings
+-   **audit_closure.md** - Completed reconciliation of historical audit findings
 -   **battle_system.md** - Canonical battle rules and mechanics
 -   **coding_style.md** - Project coding and data conventions
 -   **design_bible.md** - Core game-design principles and terminology

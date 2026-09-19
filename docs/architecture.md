@@ -151,7 +151,7 @@ All indexed database accessors share the same null-safe record helper. Name help
 
 `DatabaseValidator` protects the engine from malformed or inconsistent loaded data.
 
-The current validator establishes field-level contracts for runtime-active actor and enemy combat data, battle-sprite metadata, item/equipment schemas, skill targeting/effect/combat metadata, the canonical nested status schema, encounters, Essence progression/ability/mastery definitions, and on-demand map/event data. Essence progression ordering and database references are validated before `Game_Essence` can consume them. Map validation recursively checks event pages and supported interpreter commands before world runtime objects are constructed.
+The current validator establishes field-level contracts for runtime-active actor and enemy combat data, enemy EXP/Gil/Resonance/drop rewards, battle-sprite metadata, item/equipment schemas, skill targeting/effect/combat metadata, the canonical nested status schema, encounters, Essence progression/ability/mastery definitions, and on-demand map/event data. Essence progression ordering and database references are validated before `Game_Essence` can consume them. Map validation recursively checks event pages and supported interpreter commands before world runtime objects are constructed.
 
 Validation describes the shape and references of canonical data; it does not imply that every designed mechanic is runtime-complete. Gravity, percentage healing, and multi-hit skill metadata are now runtime-active; Essence passive metadata still belongs to later runtime passes. As new database systems become runtime-active, their validation rules should be extended here or delegated to appropriately focused helpers.
 
@@ -167,9 +167,9 @@ Validation describes the shape and references of canonical data; it does not imp
 
 `SaveManager` owns serialization, migration, validation, and restoration of persistent game progress.
 
-Save Runtime v2 serializes the full `Game_Party` actor roster rather than only the legacy leader alias. Actor state includes mutable progression, HP/MP, combat stats, equipment, learned skills, and save-eligible runtime statuses. Status restoration does not re-run initial application effects; canonical derived statuses are recomputed from restored battler state.
+Save Runtime v3 serializes the full `Game_Party` actor roster rather than only the legacy leader alias. Actor state includes mutable progression, HP/MP, combat stats, equipment, learned skills, save-eligible runtime statuses, and equipped Essence progression state. Party state also persists Gil alongside inventory and active battle composition. Status restoration does not re-run initial application effects; canonical derived statuses are recomputed from restored battler state.
 
-The loader recognizes the legacy version-1 leader-only shape and migrates it into the version-2 structure before validation. Unknown/future save versions and malformed structures fail through a normal error result instead of flowing directly into state mutation. Inventory quantities and location values are normalized at the save boundary, and storage-write failures are caught by the save layer.
+The loader recognizes both the legacy version-1 leader-only shape and version-2 full-party saves, migrating either into the version-3 structure before validation. Unknown/future save versions and malformed structures fail through a normal error result instead of flowing directly into state mutation. Inventory quantities and location values are normalized at the save boundary, and storage-write failures are caught by the save layer.
 
 Save data should represent runtime state that must survive between sessions rather than duplicating canonical database definitions unnecessarily.
 
@@ -217,7 +217,7 @@ Active status instances, status-effect queries, incoming physical/magical damage
 
 ## Game_Actor
 
-`Game_Actor` represents a playable combatant and actor-specific runtime state. Canonical starter skills come from validated `Actors.json` `initialSkills` data rather than constructor-time setup in `Game_System`. Equipment mutation is owned here, including explicit equip and unequip APIs.
+`Game_Actor` represents a playable combatant and actor-specific runtime state. Canonical starter skills come from validated `Actors.json` `initialSkills` data rather than constructor-time setup in `Game_System`. Equipment mutation is owned here, including explicit equip and unequip APIs. Actors also own the currently equipped `Game_Essence` runtime instances used by battle Resonance; player-facing Essence slot rules and UI remain future Essence Runtime work.
 
 Actor behavior should build on shared battler behavior while retaining responsibilities that only make sense for player-controlled characters.
 
@@ -229,17 +229,17 @@ Enemy-specific runtime behavior, including future AI integration, belongs here o
 
 ## Game_Party
 
-`Game_Party` owns the player's party-level state, actor roster, leader resolution, active battle composition, inventory, and party operations. Leader-default actions resolve through party ownership rather than the legacy `$gameActor` global. Inventory-only reset behavior is exposed explicitly as `clearInventory()`.
+`Game_Party` owns the player's party-level state, actor roster, leader resolution, active battle composition, inventory, Gil currency, and party operations. Leader-default actions resolve through party ownership rather than the legacy `$gameActor` global. Inventory-only reset behavior is exposed explicitly as `clearInventory()`.
 
 It forms the runtime foundation for multi-character gameplay and future party-management features.
 
 ## Game_Essence
 
-`Game_Essence` represents runtime Essence state.
+`Game_Essence` represents runtime Essence progression state.
 
-The canonical Essence definitions live in `data/Essences.json`; runtime information such as owned Essence progression should be represented through game state rather than by modifying the canonical database definitions during play.
+The canonical Essence definitions live in `data/Essences.json`; mutable Resonance lives on `Game_Essence` instances instead of modifying database definitions. Resonance is capped at the canonical Mastery threshold, level progression is derived from validated thresholds, and the runtime reports when an Essence becomes Mastery Ready. Equipped Essence state is serialized through the owning actor in Save Runtime v3.
 
-The complete Essence Runtime system is still under development.
+The complete player-facing Essence Runtime is still under development: slot/UI rules, ability grants, passives, Mastery Trials, and evolution remain later work.
 
 ## World Runtime Objects
 
@@ -414,7 +414,7 @@ Several major systems intentionally cross architectural boundaries while retaini
 
 `BattleTargetManager` asks the acting actor's shared skill-target contract whether a battler is selectable. This allows ordinary actions to continue targeting active battlers while revival can select revivable defeated battlers and status cleansing can select a defeated battler when the chosen skill can remove that defeat status.
 
-`BattleManager` coordinates battle targeting and presentation, then consumes the status-resolution results produced by the caster so status feedback is shown without making individual skill names part of battle-flow logic. Battle outcome and reward paths consume the shared `isDefeated()` contract rather than assuming every defeated battler must have zero HP.
+`BattleManager` coordinates battle targeting and presentation, then consumes the status-resolution results produced by the caster so status feedback is shown without making individual skill names part of battle-flow logic. Battle outcome and reward paths consume the shared `isDefeated()` contract rather than assuming every defeated battler must have zero HP. Victory finalization owns exactly-once aggregation of EXP, Gil, item drops, and encounter Resonance; party/inventory/Essence objects own the resulting persistent state mutations.
 
 Windows present available commands and skills to the player. `Window_BattleCommand` reads the active battler's shared action-availability rules so forbidden commands are dimmed and skipped, while `BattleManager` rechecks the same rule before execution.
 
@@ -422,9 +422,9 @@ Windows present available commands and skills to the player. `Window_BattleComma
 
 `Essences.json` defines Essence content, ability assignments, progression thresholds, passives, and mastery metadata.
 
-`Game_Essence` and the future Essence Runtime system own active progression and runtime interpretation of those definitions.
+`Game_Essence` owns mutable Resonance progression and Mastery-Ready state, while `Game_Actor` owns the currently equipped Essence instances. Victory finalization awards the encounter's Resonance to every equipped Essence on each surviving active battle participant exactly once.
 
-Battle systems consume Essence-granted abilities and passive effects where appropriate.
+Future Essence Runtime work will add player-facing equipment rules, Essence-granted ability availability, passives, Mastery Trials, and evolution without moving progression state back into canonical data.
 
 ## Statuses
 

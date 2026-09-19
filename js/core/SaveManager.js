@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 2;
+    return 3;
   }
 
   static clearError() {
@@ -62,23 +62,40 @@ class SaveManager {
         ? 1
         : null;
 
+    const upgradeToCurrent = (data) => ({
+      ...data,
+      version: this.currentVersion(),
+      actors: Array.isArray(data.actors)
+        ? data.actors.map((actor) => ({
+            ...actor,
+            essences: Array.isArray(actor?.essences) ? actor.essences : [],
+          }))
+        : [],
+      party: {
+        ...(this.isPlainObject(data.party) ? data.party : {}),
+        gil: Number.isInteger(Number(data.party?.gil))
+          ? Math.max(0, Number(data.party.gil))
+          : 0,
+      },
+    });
+
     if (inferredVersion === this.currentVersion()) {
-      return {
-        ...saveData,
-        version: this.currentVersion(),
-      };
+      return upgradeToCurrent(saveData);
+    }
+
+    if (inferredVersion === 2) {
+      return upgradeToCurrent(saveData);
     }
 
     if (inferredVersion === 1) {
       const legacyActor = this.isPlainObject(saveData.actor)
-        ? { ...saveData.actor }
+        ? { ...saveData.actor, essences: [] }
         : null;
 
-      return {
+      return upgradeToCurrent({
         ...saveData,
-        version: this.currentVersion(),
         actors: legacyActor ? [legacyActor] : [],
-      };
+      });
     }
 
     return null;
@@ -169,6 +186,42 @@ class SaveManager {
         ) {
           errors.push(`Actor ${actorId} statuses must be an array.`);
         }
+
+        if (actorData.essences !== undefined && !Array.isArray(actorData.essences)) {
+          errors.push(`Actor ${actorId} essences must be an array.`);
+        } else if (Array.isArray(actorData.essences)) {
+          const seenEssenceIds = new Set();
+
+          for (const essenceState of actorData.essences) {
+            if (!this.isPlainObject(essenceState)) {
+              errors.push(`Actor ${actorId} Essence state must be an object.`);
+              continue;
+            }
+
+            const essenceId = Number(essenceState.essenceId);
+            const resonance = Number(essenceState.resonance);
+            const essenceData = DatabaseManager.essence?.(essenceId) || null;
+
+            if (!Number.isInteger(essenceId) || essenceId <= 0 || !essenceData) {
+              errors.push(`Actor ${actorId} references unknown Essence ${essenceState.essenceId}.`);
+              continue;
+            }
+
+            if (seenEssenceIds.has(essenceId)) {
+              errors.push(`Actor ${actorId} equips Essence ${essenceId} more than once.`);
+            }
+            seenEssenceIds.add(essenceId);
+
+            const cap = Number(essenceData.mastery?.resonanceRequired);
+            const maximum = Number.isFinite(cap) && cap >= 0 ? cap : 1500;
+
+            if (!Number.isFinite(resonance) || resonance < 0 || resonance > maximum) {
+              errors.push(
+                `Actor ${actorId} Essence ${essenceId} resonance must be between 0 and ${maximum}.`,
+              );
+            }
+          }
+        }
       }
     }
 
@@ -189,6 +242,12 @@ class SaveManager {
         !Array.isArray(saveData.party.battleActorIds)
       ) {
         errors.push("Party battleActorIds must be an array.");
+      }
+
+
+      const gil = Number(saveData.party.gil);
+      if (!Number.isInteger(gil) || gil < 0) {
+        errors.push("Party gil must be a non-negative integer.");
       }
     }
 
@@ -269,6 +328,10 @@ class SaveManager {
         typeof actor.persistentStatusState === "function"
           ? actor.persistentStatusState()
           : [],
+      essences:
+        typeof actor.equippedEssenceStates === "function"
+          ? actor.equippedEssenceStates()
+          : [],
     };
   }
 
@@ -346,6 +409,10 @@ class SaveManager {
     if (typeof actor.restorePersistentStatusState === "function") {
       actor.restorePersistentStatusState(actorData.statuses || []);
     }
+
+    if (typeof actor.restoreEquippedEssenceStates === "function") {
+      actor.restoreEquippedEssenceStates(actorData.essences || []);
+    }
   }
 
   static normalizeInventory(source, lookup) {
@@ -388,6 +455,10 @@ class SaveManager {
       partyData.armors,
       (id) => DatabaseManager.armor(id),
     );
+
+    if (typeof $gameParty.setGil === "function") {
+      $gameParty.setGil(Number(partyData.gil) || 0);
+    }
 
     if (Array.isArray(partyData.battleActorIds)) {
       $gameParty.setBattleActorIds(partyData.battleActorIds);
@@ -558,6 +629,7 @@ class SaveManager {
           items: { ...$gameParty.items },
           weapons: { ...$gameParty.weapons },
           armors: { ...$gameParty.armors },
+          gil: typeof $gameParty.gil === "function" ? $gameParty.gil() : 0,
           battleActorIds: $gameParty.battleActorIds(),
         },
 

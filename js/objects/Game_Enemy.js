@@ -12,6 +12,11 @@ class Game_Enemy extends Game_Battler {
 
     this.enemyId = enemyId;
     this.expReward = enemyData.expReward ?? 0;
+    this.gilReward = enemyData.gilReward ?? 0;
+    this.resonanceReward = enemyData.resonanceReward ?? 0;
+    this.dropTable = Array.isArray(enemyData.dropTable)
+      ? enemyData.dropTable.map((drop) => ({ ...drop }))
+      : [];
     this.banished = false;
     this.battleSprite = enemyData.battleSprite || null;
     this.battleSpriteWidth = enemyData.battleSpriteWidth || 128;
