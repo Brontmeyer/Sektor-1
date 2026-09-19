@@ -69,6 +69,7 @@ function loadBattleClasses(random = Math.random) {
       "js/objects/Game_Battler.js",
       "js/objects/Game_Actor.js",
       "js/battle/BattleTargetManager.js",
+      "js/battle/BattleEnemyAI.js",
       "js/battle/BattleManager.js",
     ],
     "{ Game_Battler, Game_Actor, BattleTargetManager, BattleManager }",
@@ -96,6 +97,7 @@ function makeBattleFixture({ random = () => 0, partyCount = 2, enemyCount = 2 } 
     "js/objects/Game_Actor.js",
     "js/objects/Game_Enemy.js",
     "js/battle/BattleTargetManager.js",
+    "js/battle/BattleEnemyAI.js",
     "js/battle/BattleManager.js",
   ]
     .map((relativePath) =>

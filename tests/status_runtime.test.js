@@ -24,6 +24,23 @@ function loadClass(relativePath, className, globals = {}) {
   return context.__loadedClass;
 }
 
+function loadClasses(relativePaths, exportExpression, globals = {}) {
+  const context = vm.createContext({ console, ...globals });
+  const source = relativePaths
+    .map((relativePath) =>
+      fs.readFileSync(path.join(projectRoot, relativePath), "utf8"),
+    )
+    .join("\n");
+
+  vm.runInContext(
+    `${source}\nglobalThis.__loadedClasses = ${exportExpression};`,
+    context,
+    { filename: relativePaths.join(", ") },
+  );
+
+  return context.__loadedClasses;
+}
+
 function makeDatabaseManager() {
   return {
     statuses,
@@ -229,10 +246,14 @@ function testBattleManagerTicksSkippedTurnsAndStartsNewRoundStatuses() {
     livingBattleMembers: () => partyMembers.filter((battler) => battler.isAlive()),
   };
 
-  const BattleManager = loadClass("js/battle/BattleManager.js", "BattleManager", {
-    DebugManager: { log() {} },
-    $gameParty: gameParty,
-  });
+  const { BattleManager } = loadClasses(
+    ["js/battle/BattleEnemyAI.js", "js/battle/BattleManager.js"],
+    "{ BattleManager }",
+    {
+      DebugManager: { log() {} },
+      $gameParty: gameParty,
+    },
+  );
 
   const scene = {
     partyController,
@@ -316,10 +337,14 @@ function testEnemyActionPreventionTicksAndSkipsDamage() {
     livingBattleMembers: () => partyMembers.filter((battler) => battler.isAlive()),
   };
 
-  const BattleManager = loadClass("js/battle/BattleManager.js", "BattleManager", {
-    DebugManager: { log() {} },
-    $gameParty: gameParty,
-  });
+  const { BattleManager } = loadClasses(
+    ["js/battle/BattleEnemyAI.js", "js/battle/BattleManager.js"],
+    "{ BattleManager }",
+    {
+      DebugManager: { log() {} },
+      $gameParty: gameParty,
+    },
+  );
 
   const messages = [];
   const scene = {
@@ -378,10 +403,14 @@ function testCountdownOutcomeStopsActionSequence() {
     battleMembers: () => partyMembers,
     livingBattleMembers: () => partyMembers.filter((battler) => battler.isAlive()),
   };
-  const BattleManager = loadClass("js/battle/BattleManager.js", "BattleManager", {
-    DebugManager: { log() {} },
-    $gameParty: gameParty,
-  });
+  const { BattleManager } = loadClasses(
+    ["js/battle/BattleEnemyAI.js", "js/battle/BattleManager.js"],
+    "{ BattleManager }",
+    {
+      DebugManager: { log() {} },
+      $gameParty: gameParty,
+    },
+  );
   const scene = {
     partyController,
     enemies: [enemy],

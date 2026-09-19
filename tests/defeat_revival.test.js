@@ -255,7 +255,7 @@ function testPetrifyAppliedByMagickDeclaresVictoryWithoutHpZero() {
   };
 
   const { BattleManager } = loadClasses(
-    ["js/battle/BattleManager.js"],
+    ["js/battle/BattleEnemyAI.js", "js/battle/BattleManager.js"],
     "{ BattleManager }",
     {
       $gameParty: party,
@@ -316,7 +316,7 @@ function testReflectedRevivalUsesARevivableOpposingTarget() {
   };
 
   const { BattleManager } = loadClasses(
-    ["js/battle/BattleManager.js"],
+    ["js/battle/BattleEnemyAI.js", "js/battle/BattleManager.js"],
     "{ BattleManager }",
     {
       $gameParty: party,
@@ -372,7 +372,7 @@ function testBattleOutcomeAndRewardsTreatPetrifyAsDefeat() {
   };
 
   const { BattleManager } = loadClasses(
-    ["js/battle/BattleManager.js"],
+    ["js/battle/BattleEnemyAI.js", "js/battle/BattleManager.js"],
     "{ BattleManager }",
     {
       $gameParty: party,
@@ -405,7 +405,7 @@ function testBattleOutcomeAndRewardsTreatPetrifyAsDefeat() {
     addBattleMessage() {},
   };
   const { BattleManager: DefeatBattleManager } = loadClasses(
-    ["js/battle/BattleManager.js"],
+    ["js/battle/BattleEnemyAI.js", "js/battle/BattleManager.js"],
     "{ BattleManager }",
     {
       $gameParty: defeatedParty,

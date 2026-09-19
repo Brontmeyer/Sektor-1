@@ -40,6 +40,7 @@ function makeBattleFixture() {
   const loaded = loadClasses(
     [
       "js/objects/Game_Battler.js",
+      "js/battle/BattleEnemyAI.js",
       "js/battle/BattleManager.js",
       "js/battle/BattlePartyController.js",
     ],

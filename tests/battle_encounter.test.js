@@ -393,10 +393,14 @@ function makeResolutionEnemy(enemyId, name, expReward, dead = true) {
 }
 
 function loadBattleManagerForParty(party) {
-  return loadClass("js/battle/BattleManager.js", "BattleManager", {
-    DebugManager: { log() {} },
-    $gameParty: party,
-  }).Class;
+  return loadClasses(
+    ["js/battle/BattleEnemyAI.js", "js/battle/BattleManager.js"],
+    "{ BattleManager }",
+    {
+      DebugManager: { log() {} },
+      $gameParty: party,
+    },
+  ).classes.BattleManager;
 }
 
 function testBattleResolutionAwardsActivePartyExactlyOnce() {
@@ -516,6 +520,7 @@ function testRealActorBattleResolutionPreservesPostBattleState() {
     [
       "js/objects/Game_Battler.js",
       "js/objects/Game_Actor.js",
+      "js/battle/BattleEnemyAI.js",
       "js/battle/BattleManager.js",
     ],
     "{ Game_Actor, BattleManager }",

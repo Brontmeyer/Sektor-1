@@ -12,6 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Enemy Actions & AI v1 with validated, data-driven enemy action lists, weighted action selection, conditional decisions, target strategies, and safe Attack fallback
+- Added `BattleEnemyAI` as the decision layer for enemy action eligibility, target selection, HP-based conditions, and weighted choice while `BattleManager` remains responsible for effect execution and presentation
+- Added enemy Magick execution through the same shared battler Magick runtime used by actors, including MP costs, action restrictions, status payloads, Reflect, elemental damage, healing, and legal targeting
+- Added dedicated Enemy AI regression coverage for weighted choices, HP conditions, Magick costs, healing priorities, fallback behavior, Confuse targeting, and schema validation
 - Added Character Menu Navigation Consistency v1 with shared left/right party-member switching across Magick, Status, Equipment, and Essence
 - Added `Window_ActorNavigator` to centralize party-member indexing, wraparound navigation, A/D and arrow-key input, and the shared `◀ Actor ▶` header
 - Added dedicated character-menu navigation regression coverage for actor switching, selection resets, equipment-selector synchronization, header rendering, and Scene_Menu party-context wiring
@@ -120,6 +124,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Changed
 
+- Moved reusable Magick execution and relative ally/enemy target legality from `Game_Actor` to `Game_Battler` so actors and enemies share one Magick engine instead of duplicating spell logic
+- Upgraded the Test Slime from basic-attack-only behavior to a weighted Attack / Ember / conditional Mend action profile while preserving basic Attack as the universal fallback when configured actions are unusable
 - Updated `Scene_Menu` so Magick, Status, Equipment, and Essence receive explicit `Game_Party` context instead of fixed leader references
 - Refactored Essence actor switching onto the same reusable navigation helper now used by the other character-specific field menus
 - Upgraded persistent saves to version 6 so actor accessory equipment and party accessory inventory persist, with compatibility migration from save versions 1 through 5

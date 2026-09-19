@@ -444,7 +444,7 @@ Bosses should be able to introduce additional structure such as phases, threshol
 
 Boss encounters should use the reusable battle engine wherever possible so their unusuality feels like the system being pushed creatively rather than the rules being discarded.
 
-Enemy AI and boss scripting remain future runtime systems.
+Enemy Actions & AI v1 now lets ordinary enemies express weighted and conditional combat personalities through data while reusing the same battle vocabulary as the party. Boss scripting, phases, threshold reactions, and richer encounter-specific logic remain future extensions of that foundation.
 
 ---
 

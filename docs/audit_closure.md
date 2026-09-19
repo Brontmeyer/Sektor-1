@@ -12,6 +12,8 @@ Pass 32 likewise adds no reopened audit item. Shops & Gil Spending v1 consumes t
 
 Pass 33 likewise adds no reopened audit item. Character Menu Navigation Consistency v1 replaces fixed leader context in Magick, Status, and Equipment with the same explicit party-context navigation contract already established by Essence, using one shared UI helper without changing gameplay state or persistence.
 
+Pass 34 likewise adds no reopened audit item. Enemy Actions & AI v1 is new post-audit gameplay development built on the already-closed battle, validation, action-restriction, targeting, and Magick boundaries. The pass moves shared Magick execution from actor-only ownership to `Game_Battler` so enemies reuse the same runtime rather than duplicating it; Save Runtime remains v6 because enemy AI state is defined by canonical battle data rather than persisted per-save state.
+
 This document reconciles the historical static review in `docs/repo_audit.md`
 against the **current repository**.
 

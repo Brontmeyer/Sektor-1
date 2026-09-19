@@ -79,6 +79,7 @@ function loadCombatClasses(randomValue = 0) {
       "js/objects/Game_Battler.js",
       "js/objects/Game_Actor.js",
       "js/objects/Game_Enemy.js",
+      "js/battle/BattleEnemyAI.js",
       "js/battle/BattleManager.js",
     ],
     "{ Game_Battler, Game_Actor, Game_Enemy, BattleManager }",

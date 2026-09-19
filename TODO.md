@@ -147,10 +147,10 @@ Completed systems and design rules should be documented rather than duplicated h
 
 # 🤖 Enemies
 
-- [ ] Enemy AI
+- [x] Enemy Actions & AI v1
 - [ ] Boss scripting system
 - [ ] Status resistance / immunity data
-- [ ] Enemy action-selection rules
+- [x] Enemy action-selection rules
 - [ ] Boss-specific mechanics
 
 ---
@@ -186,7 +186,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Standardize left/right party-member navigation in Magick, Status, Equipment, and Essence menus
 - [x] Complete status runtime
 - [ ] Complete Essence runtime
-- [ ] Enemy AI
+- [x] Enemy Actions & AI v1
 - [ ] Boss scripting
 - [ ] Event scripting
 - [ ] Cutscene system

@@ -15,7 +15,7 @@
     "level": 1,
     "expReward": 50,
     "maxHp": 250,
-    "maxMp": 0,
+    "maxMp": 12,
     "strength": 16,
     "vitality": 6,
     "dexterity": 5,
@@ -37,6 +37,33 @@
         "itemId": 1,
         "quantity": 1,
         "chance": 0.25
+      }
+    ],
+    "actions": [
+      {
+        "type": "attack",
+        "weight": 4,
+        "targetStrategy": "random"
+      },
+      {
+        "type": "magick",
+        "magickId": 10,
+        "weight": 2,
+        "targetGroup": "enemy",
+        "targetStrategy": "random",
+        "scope": "single"
+      },
+      {
+        "type": "magick",
+        "magickId": 1,
+        "weight": 3,
+        "targetGroup": "ally",
+        "targetStrategy": "lowestHpRate",
+        "scope": "single",
+        "condition": {
+          "type": "selfHpBelow",
+          "value": 0.5
+        }
       }
     ]
   }

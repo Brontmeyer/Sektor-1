@@ -36,6 +36,7 @@ class BattleManager {
     // an opening turn before fractional carry begins.
     this.turnProgress = new Map();
     this.enemyTurnQueue = [];
+    this.enemyAI = new BattleEnemyAI(this);
 
     // Pass 11 - Battle Resolution v1
     this.finalResult = null;
@@ -2084,56 +2085,21 @@ class BattleManager {
     this.advanceEnemyTurn(unlockInputAtRoundStart);
   }
 
-  performEnemyTurn(enemy = this.currentEnemyTurnBattler()) {
+  performEnemyPhysicalAction(enemy, target, random = Math.random) {
     const battle = this.scene;
 
-    if (!enemy || this.battlerIsDefeated(enemy)) {
-      this.advanceEnemyTurn(true, 0.2);
-      return;
-    }
-
-    if (this.battlerHaltsTurnProgression(enemy)) {
-      battle.addBattleMessage(`${enemy.name} is stopped!`);
-      this.completeEnemyTurn(enemy, true);
-      return;
-    }
-
-    this.processTurnStartStatuses(enemy);
-
-    if (battle.outcome) {
-      return;
-    }
-
-    if (this.battlerIsDefeated(enemy)) {
-      this.advanceEnemyTurn(true);
-      return;
-    }
-
-    if (!this.battlerCanAct(enemy)) {
-      battle.addBattleMessage(`${enemy.name} cannot act!`);
-      this.completeEnemyTurn(enemy, true);
-      return;
+    if (!enemy || !target) {
+      return false;
     }
 
     battle.setEnemyState("attack", 0.4, enemy);
 
-    const target = this.battlerForcesRandomTarget(enemy)
-      ? this.randomBattleTarget(this.physicalAttackCandidates(enemy))
-      : $gameParty.livingBattleMembers()[0];
-
-    if (!target) {
-      battle.enemyTurnIndex = 0;
-
-      const outcome = this.detectBattleOutcome();
-      if (outcome) {
-        this.declareBattleOutcome(outcome);
-      }
-
-      return;
-    }
-
     const hitChance = this.physicalHitChance(enemy);
-    const hitRoll = Math.random() * 100;
+    const roll = typeof random === "function" ? Number(random()) : Math.random();
+    const normalizedRoll = Number.isFinite(roll)
+      ? Math.max(0, Math.min(0.999999999, roll))
+      : 0;
+    const hitRoll = normalizedRoll * 100;
 
     if (hitRoll >= hitChance) {
       battle.addBattlePopup(target, "MISS", "miss");
@@ -2141,7 +2107,7 @@ class BattleManager {
         `${enemy.name} attacks! ${enemy.name} misses ${target.name}!`,
       );
       this.completeEnemyTurn(enemy, false);
-      return;
+      return true;
     }
 
     const damageResult = this.applyPhysicalDamage(enemy, target);
@@ -2179,9 +2145,202 @@ class BattleManager {
     if (outcome) {
       battle.enemyTurnIndex = 0;
       this.declareBattleOutcome(outcome);
-      return;
+      return true;
     }
 
     this.completeEnemyTurn(enemy, false);
+    return true;
   }
+
+  performEnemyMagickAction(enemy, action, random = Math.random) {
+    const battle = this.scene;
+    const magick = DatabaseManager.magick(action?.magickId);
+
+    if (!enemy || !magick) {
+      return false;
+    }
+
+    const scope = action.scope || "single";
+    battle.setEnemyState("attack", 0.4, enemy);
+
+    let resolutions = [];
+
+    if (this.magickUsesRandomTargetPerHit(magick)) {
+      let paidCost = false;
+      const hitCount = this.magickHitCount(magick);
+
+      for (let hitIndex = 0; hitIndex < hitCount; hitIndex++) {
+        const target = this.enemyAI.selectTarget(enemy, action, random);
+
+        if (!target) {
+          break;
+        }
+
+        const resolution = this.resolveMagickEffectOnTarget(
+          enemy,
+          magick,
+          target,
+          !paidCost,
+          "single",
+          random,
+        );
+
+        if (!resolution.success) {
+          if (!paidCost) {
+            break;
+          }
+          continue;
+        }
+
+        paidCost = true;
+        resolutions.push(resolution);
+      }
+    } else if (scope === "all") {
+      let paidCost = false;
+      const targets = this.enemyAI.targetCandidates(enemy, action);
+
+      for (const target of targets) {
+        const resolution = this.resolveMagickEffectOnTarget(
+          enemy,
+          magick,
+          target,
+          !paidCost,
+          "all",
+          random,
+        );
+
+        if (!resolution.success) {
+          continue;
+        }
+
+        paidCost = true;
+        resolutions.push(resolution);
+      }
+    } else {
+      const target = this.enemyAI.selectTarget(enemy, action, random);
+
+      if (target) {
+        const resolution = this.resolveMagickEffectOnTarget(
+          enemy,
+          magick,
+          target,
+          true,
+          "single",
+          random,
+        );
+
+        if (resolution.success) {
+          resolutions.push(resolution);
+        }
+      }
+    }
+
+    const visualTargets = [
+      ...new Set(resolutions.map((resolution) => resolution.target).filter(Boolean)),
+    ];
+
+    if (visualTargets.length > 0) {
+      if (magick.element === "fire") {
+        battle.startBattleEffect(
+          "fire",
+          visualTargets.length === 1 ? visualTargets[0] : visualTargets,
+          0.4,
+        );
+      }
+
+      if (magick.effect === "heal") {
+        battle.startBattleEffect(
+          "cure",
+          visualTargets.length === 1 ? visualTargets[0] : visualTargets,
+          0.5,
+        );
+      }
+    }
+
+    if (battle.outcome) {
+      battle.enemyTurnIndex = 0;
+      return true;
+    }
+
+    if (resolutions.length === 0) {
+      battle.addBattleMessage(`${enemy.name} cannot use ${magick.name}!`);
+    }
+
+    this.completeEnemyTurn(enemy, false);
+    return resolutions.length > 0;
+  }
+
+  performEnemyTurn(
+    enemy = this.currentEnemyTurnBattler(),
+    random = Math.random,
+  ) {
+    const battle = this.scene;
+
+    if (!enemy || this.battlerIsDefeated(enemy)) {
+      this.advanceEnemyTurn(true, 0.2);
+      return;
+    }
+
+    if (this.battlerHaltsTurnProgression(enemy)) {
+      battle.addBattleMessage(`${enemy.name} is stopped!`);
+      this.completeEnemyTurn(enemy, true);
+      return;
+    }
+
+    this.processTurnStartStatuses(enemy);
+
+    if (battle.outcome) {
+      return;
+    }
+
+    if (this.battlerIsDefeated(enemy)) {
+      this.advanceEnemyTurn(true);
+      return;
+    }
+
+    if (!this.battlerCanAct(enemy)) {
+      battle.addBattleMessage(`${enemy.name} cannot act!`);
+      this.completeEnemyTurn(enemy, true);
+      return;
+    }
+
+    if (this.battlerForcesPhysicalAttack(enemy)) {
+      const candidates = this.physicalAttackCandidates(enemy);
+      const target = this.battlerForcesRandomTarget(enemy)
+        ? this.randomBattleTarget(candidates, random)
+        : candidates[0] || null;
+
+      if (!target) {
+        this.completeEnemyTurn(enemy, true);
+        return;
+      }
+
+      this.performEnemyPhysicalAction(enemy, target, random);
+      return;
+    }
+
+    const action = this.enemyAI.selectAction(enemy, random);
+
+    if (!action) {
+      battle.addBattleMessage(`${enemy.name} has no usable action!`);
+      this.completeEnemyTurn(enemy, true);
+      return;
+    }
+
+    if (action.type === "magick") {
+      this.performEnemyMagickAction(enemy, action, random);
+      return;
+    }
+
+    const target = this.enemyAI.selectTarget(enemy, action, random);
+
+    if (!target) {
+      battle.addBattleMessage(`${enemy.name} has no valid target!`);
+      this.completeEnemyTurn(enemy, true);
+      return;
+    }
+
+    this.performEnemyPhysicalAction(enemy, target, random);
+  }
+
 }

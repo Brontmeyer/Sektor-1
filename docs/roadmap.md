@@ -179,17 +179,23 @@ Mastery Trial quest content and Essence Evolution can remain later systems while
 
 Once the player's core battle vocabulary is reliable, enemies need systems capable of using and responding to that vocabulary.
 
-Primary work includes:
+Enemy Actions & AI v1 now provides:
 
-- Implement Enemy AI
-- Define enemy action-selection rules
+- Data-driven enemy action lists
+- Weighted action selection
+- HP / ally conditional decisions
+- Legal target selection and reusable target strategies
+- Physical Attack and shared-runtime Magick execution
+- Basic Attack fallback when configured actions become unusable
+
+Remaining work includes:
+
 - Add status resistance / immunity data
-- Implement legal target selection for enemy actions
-- Support conditional and weighted decisions
-- Establish the boss scripting foundation
+- Expand condition/target vocabulary only as encounter design requires it
+- Establish boss scripting / phase state on top of the same AI boundary
 - Support boss-specific mechanics through reusable battle systems
 
-Enemy AI should decide what an enemy attempts to do. Shared battle systems should remain responsible for legality and effect resolution.
+Enemy AI decides what an enemy attempts to do. Shared battle systems remain responsible for legality and effect resolution.
 
 ## Milestone Exit Condition
 

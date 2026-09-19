@@ -79,7 +79,7 @@ Systems currently being expanded include:
 
 -   ✅ Essence Equipment & Menu v1
 -   🚧 Essence ability grants and passive runtime
--   🚧 Enemy AI
+-   ✅ Enemy Actions & AI v1
 -   🚧 Boss mechanics
 -   🚧 Limit Skills
 
@@ -154,6 +154,16 @@ The first shop version buys one unit at a time and intentionally does not define
 
 ------------------------------------------------------------------------
 
+# 🤖 Enemy Actions & AI
+
+Enemy Actions & AI v1 gives enemy definitions validated action lists in `data/Enemies.json`. Actions can be weighted, gated by HP/ally conditions, choose legal targets through reusable strategies, and execute either physical Attack or canonical Magick. If every configured action is unusable, the AI falls back to a normal Attack when legal.
+
+`BattleEnemyAI` decides **what** an enemy attempts and **who** it targets. `BattleManager` and the shared `Game_Battler` Magick runtime still own action legality, MP costs, damage, healing, status resolution, Reflect, elemental handling, and battle outcomes. This keeps enemy personalities data-driven without creating a second combat engine.
+
+The current Test Slime demonstrates the contract with weighted Attack and Ember choices plus a conditional Mend option below half HP. Boss phases, scripted threshold reactions, and richer enemy condition types remain future extensions of this same foundation.
+
+------------------------------------------------------------------------
+
 # 👥 Character Menu Navigation
 
 Magick, Status, Equipment, and Essence now share the same party-member navigation contract. Each window receives `Game_Party` context, displays a shared `◀ Actor ▶` header, and uses A/D or left/right to move through the party roster.
@@ -214,7 +224,7 @@ underlying engine maintainable.
 
 Major systems still planned include:
 
--   Enemy AI
+-   Advanced enemy / boss scripting
 -   Boss scripting
 -   Party switching
 -   Limit Skills

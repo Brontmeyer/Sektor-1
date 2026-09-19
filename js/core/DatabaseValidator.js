@@ -23,7 +23,12 @@ class DatabaseValidator {
 
     this.validateMapInfos(database.mapInfos, errors);
     this.validateActors(database.actors, errors, database.magickData);
-    this.validateEnemies(database.enemies, database.items, errors);
+    this.validateEnemies(
+      database.enemies,
+      database.items,
+      errors,
+      database.magickData,
+    );
     this.validateItems(database.items, errors);
     this.validateWeapons(database.weapons, errors);
     this.validateArmors(database.armors, errors);
@@ -1060,7 +1065,7 @@ class DatabaseValidator {
     }
   }
 
-  static validateEnemies(enemies, items, errors = null) {
+  static validateEnemies(enemies, items, errors = null, magickDatabase = null) {
     // Keep the direct helper backward-compatible with older tests/tools that
     // passed only (enemies, errors). Full database validation supplies Items
     // so drop-table references can be checked as well.
@@ -1134,6 +1139,163 @@ class DatabaseValidator {
             max: 1,
           });
         });
+      }
+
+      if (enemy.actions !== undefined) {
+        if (!Array.isArray(enemy.actions)) {
+          errors.push(`${label} actions must be an array when provided.`);
+        } else {
+          const validActionTypes = new Set(["attack", "magick"]);
+          const validTargetStrategies = new Set([
+            "first",
+            "random",
+            "lowestHp",
+            "lowestHpRate",
+          ]);
+          const validTargetGroups = new Set(["ally", "enemy", "self"]);
+          const validConditions = new Set([
+            "always",
+            "selfHpBelow",
+            "selfHpAbove",
+            "allyHpBelow",
+            "allyDefeated",
+          ]);
+
+          enemy.actions.forEach((action, actionIndex) => {
+            const actionLabel = `${label} actions[${actionIndex}]`;
+
+            if (!this.isPlainObject(action)) {
+              errors.push(`${actionLabel} must be an object.`);
+              return;
+            }
+
+            this.validateKnownKeys(
+              actionLabel,
+              action,
+              [
+                "type",
+                "magickId",
+                "weight",
+                "targetGroup",
+                "targetStrategy",
+                "scope",
+                "condition",
+              ],
+              errors,
+            );
+
+            if (!validActionTypes.has(action.type)) {
+              errors.push(`${actionLabel} has unsupported type "${action.type}".`);
+            }
+
+            this.validateFiniteNumber(`${actionLabel}.weight`, action.weight, errors, {
+              min: Number.MIN_VALUE,
+            });
+
+            if (
+              action.targetStrategy !== undefined &&
+              !validTargetStrategies.has(action.targetStrategy)
+            ) {
+              errors.push(
+                `${actionLabel}.targetStrategy has unsupported value "${action.targetStrategy}".`,
+              );
+            }
+
+            if (action.type === "magick") {
+              const magickIdValid =
+                Number.isInteger(action.magickId) && action.magickId > 0;
+              const magick =
+                magickIdValid && Array.isArray(magickDatabase)
+                  ? magickDatabase[action.magickId]
+                  : null;
+
+              if (!magickIdValid) {
+                errors.push(
+                  `${actionLabel}.magickId must be a positive integer.`,
+                );
+              } else if (Array.isArray(magickDatabase) && !magick) {
+                errors.push(
+                  `${actionLabel}.magickId must reference valid Magick.`,
+                );
+              }
+
+              if (action.targetGroup !== undefined) {
+                if (!validTargetGroups.has(action.targetGroup)) {
+                  errors.push(
+                    `${actionLabel}.targetGroup has unsupported value "${action.targetGroup}".`,
+                  );
+                } else if (
+                  magick &&
+                  (!Array.isArray(magick.target) ||
+                    !magick.target.includes(action.targetGroup))
+                ) {
+                  errors.push(
+                    `${actionLabel}.targetGroup must be allowed by ${magick.name}.`,
+                  );
+                }
+              }
+
+              if (
+                action.scope !== undefined &&
+                magick &&
+                (!Array.isArray(magick.scope) ||
+                  !magick.scope.includes(action.scope))
+              ) {
+                errors.push(
+                  `${actionLabel}.scope must be allowed by ${magick.name}.`,
+                );
+              }
+            } else {
+              if (action.magickId !== undefined) {
+                errors.push(`${actionLabel}.magickId is only valid for Magick actions.`);
+              }
+
+              if (action.targetGroup !== undefined) {
+                errors.push(`${actionLabel}.targetGroup is only valid for Magick actions.`);
+              }
+
+              if (action.scope !== undefined) {
+                errors.push(`${actionLabel}.scope is only valid for Magick actions.`);
+              }
+            }
+
+            if (action.condition !== undefined && action.condition !== null) {
+              if (!this.isPlainObject(action.condition)) {
+                errors.push(`${actionLabel}.condition must be an object.`);
+              } else {
+                this.validateKnownKeys(
+                  `${actionLabel}.condition`,
+                  action.condition,
+                  ["type", "value"],
+                  errors,
+                );
+
+                if (!validConditions.has(action.condition.type)) {
+                  errors.push(
+                    `${actionLabel}.condition has unsupported type "${action.condition.type}".`,
+                  );
+                }
+
+                if (
+                  ["selfHpBelow", "selfHpAbove", "allyHpBelow"].includes(
+                    action.condition.type,
+                  )
+                ) {
+                  this.validateFiniteNumber(
+                    `${actionLabel}.condition.value`,
+                    action.condition.value,
+                    errors,
+                    { min: 0, max: 1 },
+                  );
+                } else if (action.condition.value !== undefined) {
+                  errors.push(
+                    `${actionLabel}.condition.value is not used by ${action.condition.type}.`,
+                  );
+                }
+              }
+            }
+          });
+        }
       }
 
       if (

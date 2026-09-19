@@ -416,9 +416,9 @@ Several major systems intentionally cross architectural boundaries while retaini
 
 `Magick.json` defines the current Essence-linked supernatural ability system. The **Skills** namespace is intentionally reserved for future non-Magick techniques and should not reuse Magick storage, APIs, or terminology unless a future design deliberately establishes a shared abstraction.
 
-`Game_Actor` owns reusable Magick execution details that belong to the acting battler, including MP payment, damage/healing/revival formulas, and routing a Magick's `status` payload into the shared Status Runtime. Status application, refresh, removal, toggle behavior, resistance, immunity, defeated-state evaluation, revivability, and status-driven Magick availability remain owned by `Game_Battler`; Magick execution does not duplicate those rules.
+`Game_Battler` owns the reusable Magick runtime shared by actors and enemies, including MP payment, damage/healing/revival formulas, status-payload routing, and relative ally/enemy target legality. `Game_Actor` keeps actor-specific learned-Magick ownership, while `Game_Enemy` exposes Magick knowledge from its validated action definitions. Status application, refresh, removal, toggle behavior, resistance, immunity, defeated-state evaluation, and revivability remain on the same shared battler layer so enemy spellcasting does not create a second Magick engine.
 
-`BattleTargetManager` asks the acting actor's shared Magick-target contract whether a battler is selectable. This allows ordinary actions to continue targeting active battlers while revival can select revivable defeated battlers and status cleansing can select a defeated battler when the chosen Magick can remove that defeat status.
+`BattleTargetManager` asks the acting player's shared Magick-target contract whether a battler is selectable. Enemy AI uses the same `Game_Battler.isValidMagickTarget()` contract through `BattleEnemyAI`, so ally/enemy labels remain relative to the caster on either side of battle. Revival can select revivable defeated battlers and status cleansing can select a defeated battler when the chosen Magick can remove that defeat status.
 
 `BattleManager` coordinates battle targeting and presentation, then consumes the status-resolution results produced by the caster so status feedback is shown without making individual Magick names part of battle-flow logic. Battle outcome and reward paths consume the shared `isDefeated()` contract rather than assuming every defeated battler must have zero HP. Victory finalization owns exactly-once aggregation of EXP, Gil, item drops, and encounter Resonance; party/inventory/Essence objects own the resulting persistent state mutations.
 
@@ -518,7 +518,9 @@ Future Essence work will connect the completed Essence design to gameplay system
 
 ## Enemy AI and Boss Systems
 
-Enemy decision-making and boss-specific mechanics should build on the existing battler and battle foundations without requiring separate battle engines.
+Enemy Actions & AI v1 is active. `Enemies.json` supplies validated action definitions; `BattleEnemyAI` owns weighted/conditional decision-making and target strategy; `BattleManager` executes the chosen action through shared physical and Magick resolution. Unusable configured actions are filtered before selection, and legal basic Attack remains the safe fallback.
+
+Boss phases, scripted threshold reactions, encounter-specific state machines, status resistance/immunity data, and richer condition vocabulary remain future work. They should extend the same action-selection boundary rather than creating a separate boss battle engine.
 
 ## Event and Cutscene Expansion
 

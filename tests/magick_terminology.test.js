@@ -118,10 +118,11 @@ function testCurrentRuntimeHasNoLegacySkillAbilityApi() {
   assert.doesNotMatch(databaseManager, /static skill\(|static skillName\(/);
 
   const actor = read("js/objects/Game_Actor.js");
+  const battler = read("js/objects/Game_Battler.js");
   assert.match(actor, /learnMagick\(/);
-  assert.match(actor, /canUseMagick\(/);
-  assert.match(actor, /useMagick\(/);
   assert.match(actor, /this\.magickIds/);
+  assert.match(battler, /canUseMagick\(/);
+  assert.match(battler, /useMagick\(/);
 
   const commandWindow = read("js/windows/Window_BattleCommand.js");
   assert.match(commandWindow, /"Magick"/);

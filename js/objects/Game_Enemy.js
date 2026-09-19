@@ -17,12 +17,32 @@ class Game_Enemy extends Game_Battler {
     this.dropTable = Array.isArray(enemyData.dropTable)
       ? enemyData.dropTable.map((drop) => ({ ...drop }))
       : [];
+    this.actions = Array.isArray(enemyData.actions)
+      ? enemyData.actions.map((action) => ({
+          ...action,
+          condition: action.condition ? { ...action.condition } : null,
+        }))
+      : [];
     this.banished = false;
     this.battleSprite = enemyData.battleSprite || null;
     this.battleSpriteWidth = enemyData.battleSpriteWidth || 128;
     this.battleSpriteHeight = enemyData.battleSpriteHeight || 128;
     this.battleSpriteFrames = enemyData.battleSpriteFrames || 1;
     this.battleSpriteRows = enemyData.battleSpriteRows || 1;
+  }
+
+  actionDefinitions() {
+    return this.actions.map((action) => ({
+      ...action,
+      condition: action.condition ? { ...action.condition } : null,
+    }));
+  }
+
+  knowsMagick(magickId) {
+    const id = Number(magickId);
+    return this.actions.some(
+      (action) => action.type === "magick" && Number(action.magickId) === id,
+    );
   }
 
   banish() {

@@ -74,6 +74,7 @@ function createBattleHarness() {
     "js/objects/Game_Actor.js",
     "js/objects/Game_Enemy.js",
     "js/objects/Game_Party.js",
+    "js/battle/BattleEnemyAI.js",
     "js/battle/BattleManager.js",
   ]
     .map((relativePath) =>

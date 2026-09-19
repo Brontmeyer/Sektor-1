@@ -538,19 +538,22 @@ Conceptually:
 
 # 🤖 Enemy Turns and AI
 
-The current engine has an enemy-turn foundation and can queue an enemy turn after the party finishes acting.
+Enemy Actions & AI v1 is data-driven through each enemy's `actions` list in `Enemies.json`. Ordinary enemy turns no longer assume a basic physical attack: `BattleEnemyAI` filters unusable actions, checks conditions, chooses by positive weights, and selects a legal target through the configured strategy.
 
-The complete Enemy AI system remains unfinished.
+Current action types are:
 
-Future AI should be responsible for decisions such as:
+```text
+attack
+magick
+```
 
-- Selecting actions
-- Selecting legal targets
-- Responding to battle conditions
-- Weighted or conditional Magick selection
-- Boss-specific behavior
+Current target strategies are `first`, `random`, `lowestHp`, and `lowestHpRate`. Magick actions may constrain their relative target group (`ally`, `enemy`, or `self`) and legal scope (`single` / `all`) according to the referenced Magick definition. Current condition types include `always`, `selfHpBelow`, `selfHpAbove`, `allyHpBelow`, and `allyDefeated`.
 
-AI chooses what an enemy attempts to do. Shared battle systems should still resolve targeting legality, damage, statuses, and effects.
+Enemy Magick uses the same `Game_Battler` runtime as actor Magick. MP payment, Silence/action restrictions, damage, healing, status payloads, Reflect, elemental rules, defeated-state handling, and target legality therefore stay shared rather than being reimplemented in AI. If every configured action is unusable, AI falls back to a normal Attack when Attack itself remains legal. Confuse still overrides ordinary target preference through the shared forced-random-target contract.
+
+The Test Slime currently demonstrates weighted Attack / Ember behavior and conditionally considers Mend while below half HP.
+
+AI chooses what an enemy attempts to do. Shared battle systems remain responsible for mechanical legality and effect resolution.
 
 ---
 
@@ -577,7 +580,7 @@ Major battle features still planned include:
 
 - Complete Status Runtime
 - Complete Essence Runtime
-- Enemy AI
+- Advanced enemy / boss behavior
 - Boss mechanics
 - Summon Magick
 - Limit Skills

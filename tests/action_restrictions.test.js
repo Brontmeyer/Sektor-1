@@ -207,7 +207,7 @@ function testBattleManagerRejectsRestrictedCommandWithoutConsumingTurn() {
   };
 
   const BattleManager = loadClasses(
-    ["js/battle/BattleManager.js"],
+    ["js/battle/BattleEnemyAI.js", "js/battle/BattleManager.js"],
     "BattleManager",
     {
       DebugManager: { log() {} },
