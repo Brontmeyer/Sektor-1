@@ -71,6 +71,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added Forced Action Control v1 with data-driven Confuse target randomization and Berserk automatic physical attacks
 - Added cross-side Confuse targeting for basic attacks, legal-target randomization for single-target skills, and enemy friendly-fire support
 - Added forced-control metadata validation and dedicated regression coverage
+- Added Turn Speed Runtime v1 with data-driven Haste / Slow scheduling for party and enemy turns
+- Added fractional turn progress, interleaved bonus slots, and battler-relative countdown pacing under Haste / Slow
+- Added turn-speed metadata validation and dedicated scheduler regression coverage
 
 ### Changed
 
@@ -122,6 +125,17 @@ docs/roadmap.md        High-level development direction
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 19 - Turn Speed Runtime v1
+
+- Connected Haste / Slow `turnSpeedMultiplier` metadata to shared party and enemy turn scheduling
+- Added battle-local fractional turn progress with an opening-turn fairness seed for sub-normal speed
+- Interleaved extra Haste slots after each battler's first available slot instead of stacking consecutive bonus turns
+- Made battler-relative countdown pacing naturally accelerate under Haste and decelerate under Slow
+- Added turn-speed metadata validation and dedicated regression tests
+- Kept Stop's separate `haltsTurnProgression` semantics explicitly unfinished pending a deliberate expiration rule
 
 ---
 

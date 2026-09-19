@@ -293,7 +293,11 @@ Countdown statuses use a remaining-turn counter. Their countdown advances when t
 
 Turn-start triggers are processed for the active party member and for enemies. When the enemy sequence finishes, the first party member of the next round receives the same turn-start processing as later party members.
 
-Haste and Slow are intended to alter how quickly battlers reach future turns once turn-speed modifiers are connected to the turn scheduler.
+Haste and Slow alter how quickly battlers receive future turn slots through the shared battle scheduler. Each side accumulates fractional turn progress at its round boundary using the battler's combined `turnSpeedMultiplier`. Normal speed produces one slot per side round, Haste's `2.0` produces two, and Slow's `0.5` carries fractional progress so the battler acts every other side round after receiving an opening turn.
+
+Turn slots are interleaved in formation order: every battler's first available slot is placed before any battler's second slot. This prevents a Hasted battler from consuming both actions consecutively ahead of otherwise-ready allies or enemies. Speed changes affect the next side schedule that is built rather than rewriting a queue that is already in progress.
+
+Because status durations and countdowns advance when the afflicted battler completes or forfeits one of its scheduled turns, Haste naturally advances battler-relative timers more quickly while Slow advances them more slowly.
 
 Derived statuses are evaluated from current battle conditions instead of being manually applied and removed like ordinary statuses.
 
@@ -309,7 +313,7 @@ Poison and Dual are distinct statuses even though both belong to the damage-over
 
 Regen and damaging-over-time statuses may coexist. Their turn-start effects resolve independently according to their own definitions.
 
-Stop and Paralyze are intentionally distinct. Both currently prevent acting through the shared `canAct` runtime rule. Stop's additional `haltsTurnProgression` behavior remains part of the time-system work that will connect Haste, Slow, and Stop to turn scheduling.
+Stop and Paralyze are intentionally distinct. Both currently prevent acting through the shared `canAct` runtime rule. Haste and Slow now participate in turn-slot scheduling, but Stop's additional `haltsTurnProgression` behavior remains separate unfinished work because a halted personal clock needs an explicit expiration rule rather than being treated as an ordinary speed multiplier.
 
 Sleep and Confuse are removed when the afflicted battler actually takes physical damage. A miss or a fully nullified physical hit does not remove them. Confuse reads `effects.forceRandomTarget` through the shared battler runtime: a chosen basic Attack targets a random living battler on either side, enemy basic attacks can likewise redirect to either side, and a chosen single-target skill selects randomly from the targets that are legal for that skill. If a future skill only supports all-target scope, Confuse instead chooses a random legal target group and resolves the skill against that side. Confuse changes target authority rather than choosing a different action for the battler.
 

@@ -486,6 +486,17 @@ class DatabaseValidator {
           );
         }
 
+        if (
+          effects.turnSpeedMultiplier !== undefined &&
+          (typeof effects.turnSpeedMultiplier !== "number" ||
+            !Number.isFinite(effects.turnSpeedMultiplier) ||
+            effects.turnSpeedMultiplier <= 0)
+        ) {
+          errors.push(
+            `Status ${index} effects.turnSpeedMultiplier must be a positive finite number when provided.`,
+          );
+        }
+
         for (const effectKey of ["allowedActions", "blockedSkillTypes"]) {
           const values = effects[effectKey];
 

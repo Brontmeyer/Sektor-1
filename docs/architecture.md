@@ -203,7 +203,7 @@ Game_Variables.js
 
 Battle behavior that is genuinely common to actors and enemies belongs at this level rather than being independently duplicated in both actor and enemy implementations.
 
-Active status instances, status-effect queries, incoming physical/magical damage modifiers, elemental-magic absorption, Reflect capability/limits, damage-triggered status removal, shared action/skill availability rules, and forced-action control flags live at this layer because those rules apply equally to actors and enemies. Action-facing systems can calculate an attack or spell, then delegate target-side status, damage, restriction, and control-authority questions to the battler instead of reimplementing status rules.
+Active status instances, status-effect queries, incoming physical/magical damage modifiers, elemental-magic absorption, Reflect capability/limits, damage-triggered status removal, shared action/skill availability rules, forced-action control flags, and the combined turn-speed multiplier live at this layer because those rules apply equally to actors and enemies. Action-facing systems can calculate an attack or spell, then delegate target-side status, damage, restriction, control-authority, and speed questions to the battler instead of reimplementing status rules.
 
 ## Game_Actor
 
@@ -262,13 +262,13 @@ The battle layer should coordinate combat without turning one file into a contai
 
 `BattleManager` coordinates the overall battle state and battle flow.
 
-It also owns battle-relative effect routing that requires knowledge of both sides of the encounter. Reflect is resolved here because redirecting a skill requires identifying the Reflect holder's side, choosing a living battler on the opposing side, preserving the original cast cost, and presenting the redirected result without turning reflection into a second cast. Forced-action control is coordinated here for the same reason: Berserk can begin a party action without player input, while Confuse may need a legal random target drawn from one or both battle sides.
+It also owns battle-relative effect routing that requires knowledge of both sides of the encounter. Reflect is resolved here because redirecting a skill requires identifying the Reflect holder's side, choosing a living battler on the opposing side, preserving the original cast cost, and presenting the redirected result without turning reflection into a second cast. Forced-action control is coordinated here for the same reason: Berserk can begin a party action without player input, while Confuse may need a legal random target drawn from one or both battle sides. Battle-local fractional turn progress also lives here so party and enemy scheduling consume one shared Haste/Slow speed contract rather than implementing separate timing rules.
 
 It should orchestrate battle systems rather than permanently absorbing every specialized mechanic into itself.
 
 ## BattlePartyController
 
-`BattlePartyController` handles battle-facing party coordination and supports the multi-character battle structure.
+`BattlePartyController` handles battle-facing party coordination and supports the multi-character battle structure. It asks `BattleManager` for the party's scheduled turn-slot queue at the start of each party side round, then advances through those slots while preserving formation order and repeated Haste turns.
 
 ## BattleTargetManager
 

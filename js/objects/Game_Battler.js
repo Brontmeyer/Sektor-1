@@ -297,6 +297,10 @@ class Game_Battler {
     );
   }
 
+  turnSpeedMultiplier() {
+    return Math.max(0, this.statusEffectMultiplier("turnSpeedMultiplier"));
+  }
+
   incomingDamageMultiplier(category) {
     if (category === "physical") {
       return Math.max(

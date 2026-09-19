@@ -39,8 +39,9 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Regen healing-over-time
 - [x] Barrier / MBarrier damage reduction
 - [x] Reflect spell reflection
-- [ ] Haste / Slow turn-speed modifiers
+- [x] Haste / Slow turn-speed modifiers
 - [x] Stop / Paralyze action prevention
+- [ ] Stop turn-progression halt semantics
 - [x] Sleep / Confuse physical-damage removal
 - [x] Confuse random targeting
 - [x] Silence skill-type restrictions

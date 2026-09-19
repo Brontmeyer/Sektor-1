@@ -643,7 +643,7 @@ class Scene_Battle extends Scene_Base {
     return this.battleManager.performItemEffect();
   }
 
-  performEnemyTurn(enemy = this.enemies[this.enemyTurnIndex]) {
+  performEnemyTurn(enemy) {
     return this.battleManager.performEnemyTurn(enemy);
   }
 

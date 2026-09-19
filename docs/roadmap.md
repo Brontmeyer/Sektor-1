@@ -79,7 +79,7 @@ The Status System is the current major runtime foundation.
 
 The canonical status data is designed, and the runtime now handles shared status instances, application/removal, duration refresh, resistance/immunity rates, derived-state evaluation, battler-relative turn timing, battle presentation, reusable status-driven combat modifiers, per-target Reflect redirection, data-driven action restrictions, and shared defeat/revival semantics. The milestone remains active because several advanced control-flow mechanics still need to be connected.
 
-Status Runtime Core v1, Status Combat Modifiers v1, Reflect Runtime v1, Action Restrictions v1, and Defeat & Revival Runtime v1 have established:
+Status Runtime Core v1, Status Combat Modifiers v1, Reflect Runtime v1, Action Restrictions v1, Defeat & Revival Runtime v1, Forced Action Control v1, and Turn Speed Runtime v1 have established:
 
 - `Statuses.json` database loading and keyed lookup
 - Status application and removal APIs
@@ -98,10 +98,12 @@ Status Runtime Core v1, Status Combat Modifiers v1, Reflect Runtime v1, Action R
 - Per-target Reflect routing with one-bounce protection and single-cost all-target casting
 - Shared action/skill restrictions for Silence and Frog, including command-window availability
 - Data-driven forced action control for Confuse random targeting and Berserk auto-attacks
+- Shared fractional turn progress for Haste / Slow scheduling on both party and enemy sides
+- Interleaved bonus turn slots so Haste adds frequency without bypassing normal side ordering
 - Shared `isDefeated()` semantics for HP-zero and status-defined defeat, including Petrify
 - Data-driven Death/KO revival with defeated-target selection and cleansing-aware Petrify handling
 
-Remaining milestone work is primarily the advanced mechanics required by the 25 initial statuses, including time-speed modifiers and Fury / Sadness Limit behavior.
+Remaining milestone work is primarily the advanced mechanics required by the 25 initial statuses, especially Stop's separate turn-progression halt semantics and Fury / Sadness Limit behavior. The latter still depends on the future Limit system.
 
 This milestone should continue to establish reusable status processing rather than twenty-five unrelated status scripts.
 

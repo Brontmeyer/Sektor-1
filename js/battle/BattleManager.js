@@ -29,6 +29,14 @@ class BattleManager {
 
     this.turnState = BattleManager.TURN_START;
 
+    // Pass 19 - Turn Speed Runtime v1
+    // Fractional progress is battle-local. A normal battler earns one turn slot
+    // per side round, Haste earns two, and Slow carries half a slot between
+    // rounds. The first schedule seeds sub-normal battlers so everyone receives
+    // an opening turn before fractional carry begins.
+    this.turnProgress = new Map();
+    this.enemyTurnQueue = [];
+
     // Pass 11 - Battle Resolution v1
     this.finalResult = null;
   }
@@ -219,6 +227,86 @@ class BattleManager {
     this.scene.result = this.finalResult;
 
     return this.finalResult;
+  }
+
+  // =================================
+  // Turn Speed Scheduling
+  // =================================
+
+  battlerTurnSpeedMultiplier(battler) {
+    if (!battler || typeof battler.turnSpeedMultiplier !== "function") {
+      return 1;
+    }
+
+    const multiplier = Number(battler.turnSpeedMultiplier());
+
+    if (!Number.isFinite(multiplier) || multiplier <= 0) {
+      return 1;
+    }
+
+    return multiplier;
+  }
+
+  initialTurnProgress(multiplier) {
+    return multiplier < 1 ? 1 - multiplier : 0;
+  }
+
+  turnSlotsForRound(battler) {
+    if (!battler || this.battlerIsDefeated(battler)) {
+      return 0;
+    }
+
+    const multiplier = this.battlerTurnSpeedMultiplier(battler);
+    let progress = this.turnProgress.has(battler)
+      ? this.turnProgress.get(battler)
+      : this.initialTurnProgress(multiplier);
+
+    progress += multiplier;
+
+    // Small epsilon prevents floating-point residue from turning an exact
+    // accumulated whole turn into a missed slot.
+    const slots = Math.max(0, Math.floor(progress + 1e-9));
+    this.turnProgress.set(battler, Math.max(0, progress - slots));
+
+    return slots;
+  }
+
+  buildTurnQueue(battlers) {
+    const candidates = Array.isArray(battlers)
+      ? battlers.filter((battler) => battler && !this.battlerIsDefeated(battler))
+      : [];
+    const slotCounts = candidates.map((battler) => ({
+      battler,
+      slots: this.turnSlotsForRound(battler),
+    }));
+    const maxSlots = slotCounts.reduce(
+      (maximum, entry) => Math.max(maximum, entry.slots),
+      0,
+    );
+    const queue = [];
+
+    // Interleave additional turns so a Hasted battler receives its normal
+    // formation-order turn before its bonus turn rather than acting twice in
+    // a row ahead of the rest of its side.
+    for (let slotIndex = 0; slotIndex < maxSlots; slotIndex++) {
+      for (const entry of slotCounts) {
+        if (entry.slots > slotIndex) {
+          queue.push(entry.battler);
+        }
+      }
+    }
+
+    return queue;
+  }
+
+  prepareEnemyTurnQueue() {
+    this.enemyTurnQueue = this.buildTurnQueue(this.scene.enemies);
+    this.scene.enemyTurnIndex = 0;
+    return this.enemyTurnQueue;
+  }
+
+  currentEnemyTurnBattler() {
+    return this.enemyTurnQueue[this.scene.enemyTurnIndex] || null;
   }
 
   // =================================
@@ -994,9 +1082,19 @@ class BattleManager {
 
   queueEnemyTurn(delay = 0.5) {
     const battle = this.scene;
+
+    this.prepareEnemyTurnQueue();
+    battle.battleInputLocked = true;
+
+    if (this.enemyTurnQueue.length === 0) {
+      battle.pendingEnemyTurn = false;
+      battle.enemyTurnDelay = 0;
+      this.startNextPartyRound(true);
+      return;
+    }
+
     battle.pendingEnemyTurn = true;
     battle.enemyTurnDelay = delay;
-    battle.battleInputLocked = true;
   }
 
   // =================================
@@ -1657,21 +1755,21 @@ class BattleManager {
     this.finishPartyAction();
   }
 
-  advanceEnemyTurn(unlockInputAtRoundStart = false, remainingEnemyDelay = 0.6) {
+  startNextPartyRound(unlockInputAtRoundStart = false) {
     const battle = this.scene;
-
-    battle.enemyTurnIndex++;
-
-    if (battle.enemyTurnIndex < battle.enemies.length) {
-      battle.pendingEnemyTurn = true;
-      battle.enemyTurnDelay = remainingEnemyDelay;
-      return;
-    }
 
     battle.enemyTurnIndex = 0;
     battle.pendingEnemyTurn = false;
+    battle.enemyTurnDelay = 0;
+    this.enemyTurnQueue = [];
 
     this.party().resetPartyTurnQueue();
+
+    if (!this.party().currentBattler()) {
+      this.setTurnState(BattleManager.TURN_END);
+      this.queueEnemyTurn(0.1);
+      return;
+    }
 
     const canAct = this.beginPartyTurn();
 
@@ -1691,6 +1789,20 @@ class BattleManager {
     }
   }
 
+  advanceEnemyTurn(unlockInputAtRoundStart = false, remainingEnemyDelay = 0.6) {
+    const battle = this.scene;
+
+    battle.enemyTurnIndex++;
+
+    if (battle.enemyTurnIndex < this.enemyTurnQueue.length) {
+      battle.pendingEnemyTurn = true;
+      battle.enemyTurnDelay = remainingEnemyDelay;
+      return;
+    }
+
+    this.startNextPartyRound(unlockInputAtRoundStart);
+  }
+
   completeEnemyTurn(enemy, unlockInputAtRoundStart = false) {
     if (enemy && typeof enemy.tickStatusDurations === "function") {
       enemy.tickStatusDurations();
@@ -1706,7 +1818,7 @@ class BattleManager {
     this.advanceEnemyTurn(unlockInputAtRoundStart);
   }
 
-  performEnemyTurn(enemy = this.scene.enemies[this.scene.enemyTurnIndex]) {
+  performEnemyTurn(enemy = this.currentEnemyTurnBattler()) {
     const battle = this.scene;
 
     if (!enemy || this.battlerIsDefeated(enemy)) {

@@ -14,9 +14,32 @@ class BattlePartyController {
   // =================================
 
   initializePartyTurnQueue() {
-    this.partyTurnQueue = $gameParty.livingBattleMembers();
+    this.partyTurnQueue = this.buildScheduledPartyQueue();
     this.currentPartyTurn = 0;
     this.activeBattler = this.partyTurnQueue[0] || null;
+  }
+
+  buildScheduledPartyQueue() {
+    const battlers = $gameParty.livingBattleMembers();
+    const manager = this.scene?.battleManager;
+
+    if (!manager || typeof manager.buildTurnQueue !== "function") {
+      return battlers;
+    }
+
+    return manager.buildTurnQueue(battlers);
+  }
+
+  battlerAvailableForTurn(battler) {
+    if (!battler) {
+      return false;
+    }
+
+    if (typeof battler.isDefeated === "function") {
+      return !battler.isDefeated();
+    }
+
+    return typeof battler.isAlive === "function" && battler.isAlive();
   }
 
   battleContext() {
@@ -75,7 +98,7 @@ class BattlePartyController {
 
       const battler = this.partyTurnQueue[this.currentPartyTurn] || null;
 
-      if (battler && battler.isAlive()) {
+      if (this.battlerAvailableForTurn(battler)) {
         this.activeBattler = battler;
         return battler;
       }
@@ -93,7 +116,7 @@ class BattlePartyController {
     ) {
       const battler = this.partyTurnQueue[i];
 
-      if (battler && battler.isAlive()) {
+      if (this.battlerAvailableForTurn(battler)) {
         return true;
       }
     }
@@ -106,7 +129,7 @@ class BattlePartyController {
       battler.stopDefending();
     }
 
-    this.partyTurnQueue = $gameParty.livingBattleMembers();
+    this.partyTurnQueue = this.buildScheduledPartyQueue();
     this.currentPartyTurn = 0;
     this.activeBattler = this.partyTurnQueue[0] || null;
   }
