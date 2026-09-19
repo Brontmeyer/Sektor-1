@@ -27,11 +27,11 @@ complete and normal new-feature development can become the primary focus.
 
 ## Current Reconciliation
 
-After Pass 24, the 42 actionable audit headings reconcile to:
+After Pass 25, the 42 actionable audit headings reconcile to:
 
-- **Fixed / superseded:** 35
+- **Fixed / superseded:** 37
 - **Partial:** 1
-- **Open:** 6
+- **Open:** 4
 
 The audit's later "Verified Behavior and Design Context" section is reference
 material, not a fix backlog, and is therefore not counted in the 42 actionable
@@ -65,13 +65,13 @@ headings.
 | 24 | Battle-sprite metadata is runtime-consumed but not specifically validated | Fixed | Pass 21 validates configured actor/enemy sprite names, positive dimensions, and positive integer frame/row counts before rendering code sees them. |
 | 25 | Actor `growth` data is runtime-consumed but not specifically validated | Fixed | Pass 21 requires the complete current growth-stat contract and finite non-negative values before `Game_Actor.levelUp()` can consume it. |
 | 26 | Actor initial `exp` data is runtime-consumed but not specifically validated | Fixed | Pass 21 validates initial actor EXP as a finite non-negative number at database load. |
-| 27 | Battle-sprite asset failures are handled safely but silently | Open | No explicit image-load error diagnostic/fallback is present. |
+| 27 | Battle-sprite asset failures are handled safely but silently | Fixed | Pass 25 reports actor/enemy battle-sprite load failures through explicit warnings, tracks failed paths, and renders a named outline fallback without affecting battle mechanics. |
 | 28 | Save data declares a version but is not schema- or version-validated during load | Fixed | Pass 20 establishes migration, structural validation, numeric normalization, safe failure, and menu-facing failure handling. |
 | 29 | Save writes do not handle storage failures | Fixed | Pass 20 catches serialization/storage failures and returns a normal failure result with diagnostic text. |
 | 30 | Item gain commands do not validate quantities consistently with equipment gain commands | Fixed | Pass 22 normalizes item quantities in both interpreter commands and `Game_Party.gainItem()`, rejects invalid direct input, and preserves numeric inventory arithmetic. |
 | 31 | Item runtime schema is not specifically validated at database load time | Fixed | Pass 21 validates the current item type/consumable/price contract plus the runtime-supported `healHp` effect and positive value. |
 | 32 | Weapon and armor combat schemas are not specifically validated at database load time | Fixed | Pass 21 validates current weapon price/attack/accuracy/magic/critical fields and armor price/defense values as finite non-negative numbers. |
-| 33 | Several selectable list windows do not support more entries than their fixed layouts | Open | Inventory, equipment-select, field magic, battle item, and battle magic still render full lists without scrolling/paging. |
+| 33 | Several selectable list windows do not support more entries than their fixed layouts | Fixed | Pass 25 adds one shared five-row viewport with automatic selection scrolling and overflow indicators to inventory, equipment-select, field magic, battle item, and battle magic windows. |
 | 34 | The battle scene has no identified runtime entry path and hardcodes its encounter | Fixed | `SceneManager.startBattle()` / interpreter battle commands provide runtime entry and `Scene_Battle` consumes validated encounter data. |
 | 35 | `addVariable` performs arithmetic without numeric normalization | Fixed | Pass 22 normalizes additive variable input at the interpreter boundary and again in `Game_Variables.addValue()`, preventing string concatenation while leaving direct `setVariable` values unrestricted. |
 | 36 | Individual map data is loaded without an identified schema-validation boundary | Fixed | Pass 22 validates each loaded map before runtime construction, including identity, geometry, transfers, event pages/conditions, recursive command payloads, and current database references. |
@@ -99,7 +99,6 @@ Before starting a new improvement pass:
 
 The remaining work clusters naturally into these areas:
 
-1. **UI scalability / diagnostics** — scrolling list windows and sprite-load diagnostics.
-2. **Battle rewards / Essence progression** — currency, drops, and Resonance.
-3. **Small correctness/cleanup finding** — standardize database accessor/fallback conventions.
-4. **Status dependency decision** — finish Stop's turn-progression semantics and explicitly defer Fury/Sadness Limit gain until the Limit system exists.
+1. **Battle rewards / Essence progression** — currency, drops, and Resonance.
+2. **Small correctness/cleanup finding** — standardize database accessor/fallback conventions.
+3. **Status dependency decision** — finish Stop's turn-progression semantics and explicitly defer Fury/Sadness Limit gain until the Limit system exists.

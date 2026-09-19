@@ -31,6 +31,7 @@ class Scene_Battle extends Scene_Base {
 
     this.actorImage = null;
     this.enemyImages = new Map();
+    this.battleSpriteLoadFailures = new Set();
 
     this.actorVisualX = 0;
     this.actorVisualY = 0;
@@ -439,8 +440,8 @@ class Scene_Battle extends Scene_Base {
         continue;
       }
 
-      const image = new Image();
-      image.src = `js/sprites/actors/${actor.sideBattleSprite}`;
+      const path = `js/sprites/actors/${actor.sideBattleSprite}`;
+      const image = this.createBattleSpriteImage(path, `actor ${actor.name}`);
 
       this.partyImages.set(actor, image);
     }
@@ -456,10 +457,28 @@ class Scene_Battle extends Scene_Base {
         continue;
       }
 
-      const image = new Image();
-      image.src = `js/sprites/enemies/${enemy.battleSprite}`;
+      const path = `js/sprites/enemies/${enemy.battleSprite}`;
+      const image = this.createBattleSpriteImage(path, `enemy ${enemy.name}`);
       this.enemyImages.set(enemy.battleSprite, image);
     }
+  }
+
+  createBattleSpriteImage(path, battlerLabel) {
+    const image = new Image();
+
+    image.loadFailed = false;
+    image.onerror = () => {
+      image.loadFailed = true;
+      this.battleSpriteLoadFailures.add(path);
+      console.warn(`Failed to load battle sprite for ${battlerLabel}: ${path}`);
+    };
+    image.onload = () => {
+      image.loadFailed = false;
+      this.battleSpriteLoadFailures.delete(path);
+    };
+    image.src = path;
+
+    return image;
   }
 
   initializePartyBattleData() {

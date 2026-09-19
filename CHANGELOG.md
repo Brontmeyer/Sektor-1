@@ -87,6 +87,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added battle-local Banish provenance so future currency rewards can honor the canonical no-Gil rule without skill-name checks
 - Added dedicated skill-runtime completion regression coverage
 - Added Actor / Party Ownership Cleanup v1 with data-driven actor construction, validated starter skills, explicit actor-context menus, and dedicated ownership regression coverage
+- Added UI Resilience v1 with shared scrolling list viewports for inventory, equipment selection, field magic, battle items, and battle magic
+- Added explicit battle-sprite load diagnostics plus named visual fallbacks and dedicated UI-resilience regression coverage
 
 ### Changed
 
@@ -123,6 +125,7 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Removed active engine dependence on the `$gameActor` compatibility alias; party, interpreter, battle, and menu paths now resolve actor context through party ownership or explicit references
 - Centralized equipment removal through `Game_Actor.unequipWeapon()` / `unequipArmor()` and renamed the unused ambiguous party clear operation to `clearInventory()`
 - Reconciled the actor/party ownership audit cluster to 35 fixed / 1 partial / 6 open
+- Reconciled the UI scalability / sprite-diagnostics audit cluster to 37 fixed / 1 partial / 4 open
 - Removed the stale roadmap task to implement Essence database loading because the current engine already loads it and Pass 21 now validates it
 - Made on-demand map loading validate the loaded map ID and runtime-consumed event contract before constructing world objects
 - Normalized item-gain and additive-variable arithmetic so numeric-looking strings cannot silently concatenate runtime state

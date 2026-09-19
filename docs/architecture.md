@@ -343,7 +343,7 @@ A scene may coordinate several systems, but it should avoid becoming the permane
 
 The `js/windows/` directory contains interactive menus and UI windows.
 
-Current windows include battle commands, battle items, battle magic, choices, equipment, inventory, magic, menu commands, messages, save slots, and status display. Field-menu actor windows receive explicit leader context from `Scene_Menu`; battle magic resolves its current battler through the party controller with a party-owned battle-leader fallback.
+Current windows include battle commands, battle items, battle magic, choices, equipment, inventory, magic, menu commands, messages, save slots, and status display. Field-menu actor windows receive explicit leader context from `Scene_Menu`; battle magic resolves its current battler through the party controller with a party-owned battle-leader fallback. Selectable list windows that can outgrow their fixed layout use the shared `Window_ListViewport` helper so keyboard selection remains visible without drawing into reserved detail regions.
 
 Windows should primarily be responsible for:
 
@@ -362,7 +362,7 @@ For example, a magic window may display whether a skill is usable, but the under
 
 Visual assets are stored under `js/sprites/`, currently including actor and enemy battle sprites.
 
-Presentation code may use these assets through scenes, battle rendering, windows, or other future rendering systems.
+Presentation code may use these assets through scenes, battle rendering, windows, or other future rendering systems. `Scene_Battle` reports configured battle-sprite load failures explicitly, while `BattleRenderer` falls back to a named outline placeholder so a missing visual remains diagnosable without changing combat state.
 
 Game mechanics should not depend on a particular sprite existing in order to determine their mechanical result.
 

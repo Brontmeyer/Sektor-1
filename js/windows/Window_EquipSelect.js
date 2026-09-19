@@ -13,6 +13,7 @@ class Window_EquipSelect {
     this.height = 360;
     this.padding = 30;
     this.lineHeight = 40;
+    this.listViewport = new Window_ListViewport(5);
 
     this.x = (Graphics.width - this.width) / 2;
     this.y = (Graphics.height - this.height) / 2;
@@ -47,6 +48,8 @@ class Window_EquipSelect {
       }
     }
 
+    this.listViewport.ensureVisible(this.index, entries.length);
+
     if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
       this.result = this.currentEntry();
 
@@ -79,6 +82,8 @@ class Window_EquipSelect {
     } else {
       this.index = 0;
     }
+
+    this.listViewport.reset(this.index, entries.length);
   }
 
   hide() {
@@ -203,6 +208,23 @@ class Window_EquipSelect {
     return null;
   }
 
+  drawScrollIndicators(context, totalEntries) {
+    context.save();
+    context.fillStyle = "#ffffff";
+    context.font = "16px sans-serif";
+    context.textAlign = "right";
+
+    if (this.listViewport.hasPrevious()) {
+      context.fillText("▲", this.x + this.width - 8, this.y + 110);
+    }
+
+    if (this.listViewport.hasNext(totalEntries)) {
+      context.fillText("▼", this.x + this.width - 8, this.y + 285);
+    }
+
+    context.restore();
+  }
+
   draw() {
     if (!this.visible) {
       return;
@@ -249,9 +271,10 @@ class Window_EquipSelect {
 
     context.font = "20px sans-serif";
 
+    const range = this.listViewport.visibleRange(this.index, entries.length);
     let drawY = this.y + 110;
 
-    for (let i = 0; i < entries.length; i++) {
+    for (let i = range.start; i < range.end; i++) {
       const entry = entries[i];
       const prefix = i === this.index ? "▶ " : "  ";
 
@@ -288,6 +311,8 @@ class Window_EquipSelect {
       context.fillText(text, this.x + this.padding, drawY);
       drawY += this.lineHeight;
     }
+
+    this.drawScrollIndicators(context, entries.length);
 
     // =====================================
     // PREVIEW STAT

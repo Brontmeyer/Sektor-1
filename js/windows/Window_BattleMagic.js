@@ -11,6 +11,7 @@ class Window_BattleMagic {
 
     this.padding = 20;
     this.lineHeight = 40;
+    this.listViewport = new Window_ListViewport(5);
 
     this.x = 290;
     this.y = Graphics.height - this.height - 40;
@@ -42,6 +43,8 @@ class Window_BattleMagic {
         this.index = 0;
       }
     }
+
+    this.listViewport.ensureVisible(this.index, skills.length);
   }
 
   actor() {
@@ -63,6 +66,7 @@ class Window_BattleMagic {
   show() {
     this.visible = true;
     this.index = 0;
+    this.listViewport.reset(this.index, this.skills().length);
   }
 
   hide() {
@@ -71,6 +75,27 @@ class Window_BattleMagic {
 
   isOpen() {
     return this.visible;
+  }
+
+  drawScrollIndicators(context, totalEntries) {
+    context.save();
+    context.fillStyle = "#ffffff";
+    context.font = "16px Arial";
+    context.textAlign = "right";
+
+    if (this.listViewport.hasPrevious()) {
+      context.fillText("▲", this.x + this.width - 8, this.y + 76);
+    }
+
+    if (this.listViewport.hasNext(totalEntries)) {
+      context.fillText(
+        "▼",
+        this.x + this.width - 8,
+        this.y + this.height - 10,
+      );
+    }
+
+    context.restore();
   }
 
   draw() {
@@ -106,14 +131,17 @@ class Window_BattleMagic {
       return;
     }
 
-    for (let i = 0; i < skills.length; i++) {
+    const range = this.listViewport.visibleRange(this.index, skills.length);
+
+    for (let i = range.start; i < range.end; i++) {
       const skill = skills[i];
 
       const prefix = i === this.index ? "▶ " : "   ";
-      const drawY = this.y + 75 + i * this.lineHeight;
+      const visibleRow = i - range.start;
+      const drawY = this.y + 75 + visibleRow * this.lineHeight;
 
       const usable = this.actor().canUseSkill(skill.id);
-      
+
       context.globalAlpha = usable ? 1.0 : 0.4;
       context.fillText(`${prefix}${skill.name}`, this.x + this.padding, drawY);
       context.textAlign = "right";
@@ -127,6 +155,8 @@ class Window_BattleMagic {
       context.textAlign = "left";
       context.globalAlpha = 1.0;
     }
+
+    this.drawScrollIndicators(context, skills.length);
 
     context.restore();
   }

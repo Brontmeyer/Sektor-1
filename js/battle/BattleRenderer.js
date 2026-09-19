@@ -162,10 +162,7 @@ class BattleRenderer {
       return;
     }
 
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 3;
-
-    context.strokeRect(-width / 2, -height / 2, width, height);
+    this.drawMissingSpriteFallback(context, width, height, actor.name);
 
     context.restore();
   }
@@ -217,11 +214,21 @@ class BattleRenderer {
       return;
     }
 
+    this.drawMissingSpriteFallback(context, width, height, enemy.name);
+    context.restore();
+    this.drawStatusIndicator(context, enemy, x, y + 18);
+  }
+
+  drawMissingSpriteFallback(context, width, height, name) {
     context.strokeStyle = "#ffffff";
     context.lineWidth = 3;
     context.strokeRect(-width / 2, -height / 2, width, height);
-    context.restore();
-    this.drawStatusIndicator(context, enemy, x, y + 18);
+
+    context.fillStyle = "#ffffff";
+    context.font = "14px sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(name || "Missing Sprite", 0, 0, Math.max(0, width - 10));
   }
 
   drawStatusIndicator(context, battler, x, y, maxEntries = 2) {

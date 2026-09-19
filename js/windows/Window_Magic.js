@@ -11,6 +11,7 @@ class Window_Magic {
 
     this.padding = 24;
     this.itemHeight = 40;
+    this.listViewport = new Window_ListViewport(5);
 
     this.x = (Graphics.width - this.width) / 2;
     this.y = (Graphics.height - this.height) / 2;
@@ -47,6 +48,8 @@ class Window_Magic {
         this.index = 0;
       }
     }
+
+    this.listViewport.ensureVisible(this.index, skills.length);
 
     if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
       const skill = this.currentSkill();
@@ -97,6 +100,7 @@ class Window_Magic {
   show() {
     this.visible = true;
     this.index = 0;
+    this.listViewport.reset(this.index, this.skills().length);
   }
 
   hide() {
@@ -105,6 +109,23 @@ class Window_Magic {
 
   isOpen() {
     return this.visible;
+  }
+
+  drawScrollIndicators(context, totalEntries) {
+    context.save();
+    context.fillStyle = "#ffffff";
+    context.font = "16px sans-serif";
+    context.textAlign = "right";
+
+    if (this.listViewport.hasPrevious()) {
+      context.fillText("▲", this.x + this.width - 8, this.y + 105);
+    }
+
+    if (this.listViewport.hasNext(totalEntries)) {
+      context.fillText("▼", this.x + this.width - 8, this.y + 285);
+    }
+
+    context.restore();
   }
 
   draw() {
@@ -155,9 +176,10 @@ class Window_Magic {
       return;
     }
 
+    const range = this.listViewport.visibleRange(this.index, skills.length);
     let drawY = this.y + 105;
 
-    for (let i = 0; i < skills.length; i++) {
+    for (let i = range.start; i < range.end; i++) {
       const skill = skills[i];
 
       const prefix = i === this.index ? "▶ " : "   ";
@@ -178,6 +200,8 @@ class Window_Magic {
 
       drawY += this.itemHeight;
     }
+
+    this.drawScrollIndicators(context, skills.length);
 
     // =====================================
     // CURRENT SKILL DETAILS

@@ -12,6 +12,7 @@ class Window_Inventory {
 
     this.padding = 24;
     this.lineHeight = 40;
+    this.listViewport = new Window_ListViewport(5);
 
     this.x = (Graphics.width - this.width) / 2;
     this.y = (Graphics.height - this.height) / 2;
@@ -50,6 +51,8 @@ class Window_Inventory {
       }
     }
 
+    this.listViewport.ensureVisible(this.index, itemIds.length);
+
     if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
       const selectedItemId = itemIds[this.index];
 
@@ -62,6 +65,8 @@ class Window_Inventory {
           if (this.index >= updatedItemIds.length) {
             this.index = Math.max(0, updatedItemIds.length - 1);
           }
+
+          this.listViewport.ensureVisible(this.index, updatedItemIds.length);
         }
       }
     }
@@ -78,6 +83,7 @@ class Window_Inventory {
     this.visible = true;
 
     this.index = 0;
+    this.listViewport.reset(this.index, this.itemIds().length);
   }
 
   hide() {
@@ -86,6 +92,23 @@ class Window_Inventory {
 
   isOpen() {
     return this.visible;
+  }
+
+  drawScrollIndicators(context, totalEntries) {
+    context.save();
+    context.fillStyle = "#ffffff";
+    context.font = "16px sans-serif";
+    context.textAlign = "right";
+
+    if (this.listViewport.hasPrevious()) {
+      context.fillText("▲", this.x + this.width - 8, this.y + 105);
+    }
+
+    if (this.listViewport.hasNext(totalEntries)) {
+      context.fillText("▼", this.x + this.width - 8, this.y + 285);
+    }
+
+    context.restore();
   }
 
   draw() {
@@ -153,9 +176,10 @@ class Window_Inventory {
     // Draw owned items
     // -------------------------
 
+    const range = this.listViewport.visibleRange(this.index, itemIds.length);
     let drawY = this.y + 105;
 
-    for (let i = 0; i < itemIds.length; i++) {
+    for (let i = range.start; i < range.end; i++) {
       const itemId = itemIds[i];
       const item = DatabaseManager.item(itemId);
 
@@ -178,6 +202,8 @@ class Window_Inventory {
       );
       drawY += this.lineHeight;
     }
+
+    this.drawScrollIndicators(context, itemIds.length);
 
     const selectedItemId = itemIds[this.index];
     const selectedItem = DatabaseManager.item(selectedItemId);

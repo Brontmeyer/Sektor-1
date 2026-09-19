@@ -10,6 +10,7 @@ class Window_BattleItem {
 
     this.padding = 20;
     this.lineHeight = 40;
+    this.listViewport = new Window_ListViewport(5);
 
     this.x = 290;
     this.y = Graphics.height - this.height - 40;
@@ -41,6 +42,8 @@ class Window_BattleItem {
         this.index = 0;
       }
     }
+
+    this.listViewport.ensureVisible(this.index, items.length);
   }
 
   items() {
@@ -59,6 +62,7 @@ class Window_BattleItem {
   show() {
     this.visible = true;
     this.index = 0;
+    this.listViewport.reset(this.index, this.items().length);
   }
 
   hide() {
@@ -67,6 +71,27 @@ class Window_BattleItem {
 
   isOpen() {
     return this.visible;
+  }
+
+  drawScrollIndicators(context, totalEntries) {
+    context.save();
+    context.fillStyle = "#ffffff";
+    context.font = "16px Arial";
+    context.textAlign = "right";
+
+    if (this.listViewport.hasPrevious()) {
+      context.fillText("▲", this.x + this.width - 8, this.y + 76);
+    }
+
+    if (this.listViewport.hasNext(totalEntries)) {
+      context.fillText(
+        "▼",
+        this.x + this.width - 8,
+        this.y + this.height - 10,
+      );
+    }
+
+    context.restore();
   }
 
   draw() {
@@ -102,11 +127,14 @@ class Window_BattleItem {
       return;
     }
 
-    for (let i = 0; i < items.length; i++) {
+    const range = this.listViewport.visibleRange(this.index, items.length);
+
+    for (let i = range.start; i < range.end; i++) {
       const item = items[i];
 
       const prefix = i === this.index ? "▶ " : "   ";
-      const drawY = this.y + 75 + i * this.lineHeight;
+      const visibleRow = i - range.start;
+      const drawY = this.y + 75 + visibleRow * this.lineHeight;
 
       context.fillText(`${prefix}${item.name}`, this.x + this.padding, drawY);
       context.textAlign = "right";
@@ -119,6 +147,8 @@ class Window_BattleItem {
 
       context.textAlign = "left";
     }
+
+    this.drawScrollIndicators(context, items.length);
 
     context.restore();
   }
