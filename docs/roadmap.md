@@ -69,7 +69,7 @@ Completed canonical battle-data foundations include:
 
 These foundations allow the next phase of development to focus primarily on turning established data into complete runtime behavior.
 
-A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work.
+A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work. Pass 21 hardened the current core database contracts and retired the audit's Essence, actor/enemy combat-data, item/equipment, skill power/scope, and nested-status validation cluster; map/event validation remains a separate load-boundary task.
 
 ---
 
@@ -141,11 +141,10 @@ Summon Magic and Limit Skills remain later design work and are not required to c
 
 # 💎 Milestone 3: Essence Runtime
 
-The Essence data model and progression rules are established, but the runtime system remains to be built.
+The Essence data model, database loading, validation, and progression rules are established, but the player-facing runtime system remains to be built.
 
 Primary work includes:
 
-- Implement Essence database loading
 - Implement Essence equipping
 - Implement ability availability from equipped Essences
 - Implement battle Resonance gain

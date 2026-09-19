@@ -262,6 +262,8 @@ function testSkillStatusMetadataValidation() {
       id: 1,
       name: "Broken",
       type: "magic",
+      category: "indirect",
+      element: "none",
       effect: "inflictStatus",
       target: ["enemy"],
       scope: ["single"],

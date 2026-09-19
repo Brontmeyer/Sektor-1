@@ -147,7 +147,9 @@ At the current stage of development it loads system, map, item, actor, weapon, a
 
 `DatabaseValidator` protects the engine from malformed or inconsistent loaded data.
 
-As new database systems become runtime-active, their validation rules should be added here or delegated to appropriately focused validation helpers.
+The current validator establishes field-level contracts for runtime-active actor and enemy combat data, battle-sprite metadata, item/equipment schemas, skill targeting/effect/combat metadata, the canonical nested status schema, encounters, and Essence progression/ability/mastery definitions. Essence progression ordering and database references are validated before `Game_Essence` can consume them.
+
+Validation describes the shape and references of canonical data; it does not imply that every designed mechanic is runtime-complete. For example, validated Gravity, multi-hit, and Essence passive metadata may still belong to later runtime passes. As new database systems become runtime-active, their validation rules should be extended here or delegated to appropriately focused helpers.
 
 ## Input
 

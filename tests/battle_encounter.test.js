@@ -88,9 +88,13 @@ function testEnemyRewardValidation() {
     "js/core/DatabaseValidator.js",
     "DatabaseValidator",
   );
+  const readData = (filename) =>
+    JSON.parse(fs.readFileSync(path.join(projectRoot, "data", filename), "utf8"));
+  const baseEnemy = readData("Enemies.json")[1];
   const validErrors = [];
+
   DatabaseValidator.validateEnemies(
-    [null, { id: 1, name: "Slime", expReward: 25 }],
+    [null, { ...baseEnemy, expReward: 25 }],
     validErrors,
   );
   assert.deepEqual(validErrors, []);
@@ -99,14 +103,17 @@ function testEnemyRewardValidation() {
   DatabaseValidator.validateEnemies(
     [
       null,
-      { id: 1, name: "Missing" },
-      { id: 2, name: "Negative", expReward: -1 },
-      { id: 3, name: "String", expReward: "50" },
-      { id: 4, name: "Fractional", expReward: 2.5 },
+      { ...baseEnemy, id: 1, expReward: undefined },
+      { ...baseEnemy, id: 2, expReward: -1 },
+      { ...baseEnemy, id: 3, expReward: "50" },
+      { ...baseEnemy, id: 4, expReward: 2.5 },
     ],
     invalidErrors,
   );
-  assert.equal(invalidErrors.length, 4);
+  assert.equal(
+    invalidErrors.filter((error) => error.includes("expReward")).length,
+    4,
+  );
 }
 
 function testProjectDatabaseValidation() {
@@ -127,6 +134,7 @@ function testProjectDatabaseValidation() {
     weapons: readData("Weapons.json"),
     armors: readData("Armors.json"),
     skills: readData("Skills.json"),
+    essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),
   };
 

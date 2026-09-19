@@ -152,6 +152,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Multi-character turns
 - [x] Save / Load
 - [x] Save Runtime v2 multi-actor persistence and v1 migration
+- [x] Harden current core database runtime contracts
 - [ ] Complete repository-audit closure (`docs/audit_closure.md`)
 - [x] Equipment system
 - [x] Inventory system

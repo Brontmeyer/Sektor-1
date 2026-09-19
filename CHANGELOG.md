@@ -78,6 +78,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added save-schema validation, inventory normalization, safe malformed/future-save rejection, and storage-write failure handling
 - Added menu-facing save/load failure feedback and dedicated save-runtime regression coverage
 - Added `docs/audit_closure.md` to reconcile the historical repository audit against current code before selecting future passes
+- Added Database Contract Hardening v1 with field-level validation for actors, enemies, battle sprites, items, equipment, skills, statuses, and Essences
+- Added Essence progression/reference validation, including monotonic Resonance thresholds and canonical skill/status references
+- Added dedicated database-contract regression coverage for malformed runtime-consumed data
 
 ### Changed
 
@@ -107,6 +110,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Moved persistent save ownership from the legacy `$gameActor` alias to the full `Game_Party` actor roster
 - Made persistent status restoration bypass initial application effects and recompute derived states from restored HP
 - Marked Essence database loading complete in `TODO.md` because current `DatabaseManager` already loads `Essences.json`
+- Hardened skill validation for current type/category/element vocabularies, power, scopePower, special percentage fields, and multi-hit metadata
+- Hardened the canonical status nested schema so unsupported condition/effect keys and malformed consumed values fail at database load
+- Reconciled the validation audit cluster from 10 fixed / 5 partial / 27 open to 23 fixed / 3 partial / 16 open
+- Removed the stale roadmap task to implement Essence database loading because the current engine already loads it and Pass 21 now validates it
 
 ### Documentation
 
@@ -133,6 +140,19 @@ docs/audit_closure.md  Current reconciliation of historical audit findings
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 21 - Database Contract Hardening v1
+
+- Cross-referenced the validation-related audit findings against the current runtime before changing schemas
+- Added field-level actor/enemy combat-data validation, including actor growth/EXP and enemy element-rate contracts
+- Added actor/enemy battle-sprite metadata validation plus item, weapon, and armor runtime-schema checks
+- Expanded skill validation across category, element, power, scopePower, special percentage fields, multi-hit metadata, and canonical status references
+- Hardened Statuses.json nested classification/duration/condition/effect validation and rejected unsupported nested keys
+- Added Essence-specific validation for ordered progression, skill references, passive/common metadata, mastery data, and canonical status references
+- Consolidated duplicated turn/countdown duration validation
+- Added dedicated database-contract regression tests and updated audit closure status
 
 ---
 
