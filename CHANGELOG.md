@@ -95,6 +95,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added Battle Rewards v1 with persistent Gil, validated enemy drop tables, exactly-once drop resolution, and battle Resonance rewards
 - Added actor-owned equipped Essence progression state with 1500-Resonance Mastery-Ready capping and Save Runtime v3 persistence
 - Added dedicated battle-reward regression coverage for Banish no-Gil behavior, drop aggregation, surviving-participant Resonance, Mastery Ready transitions, and duplicate-finalization protection
+- Added Battle Results Screen v1 with victory summaries for EXP, Gil, item drops, party level-ups, Essence Resonance, awakened skills, and Mastery Ready transitions
+- Added scrollable battle-results progression details while preserving exactly-once reward finalization
+- Added dedicated battle-results regression coverage for presentation data, overflow scrolling, and finalize-before-exit scene flow
 
 ### Changed
 

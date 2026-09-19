@@ -487,6 +487,23 @@ Defeat and escape award no battle rewards. Victory resolves every reward exactly
 
 Essence Resonance caps at the canonical Mastery threshold (1500 with the current data). Per-actor reward results report Essence level changes, awakened skill IDs, and Mastery-Ready transitions without automatically promoting an Essence to Level 5.
 
+## Battle Results Presentation
+
+On victory, `Scene_Battle` finalizes the authoritative result before leaving the scene and opens `Window_BattleResults`. The window is presentation-only: it reads `scene.result` and does not recalculate EXP, reroll drops, mutate Gil, or award Resonance. This preserves the idempotent reward contract established by `BattleManager.finalizeBattle()`.
+
+The initial results screen presents:
+
+- Total EXP, Gil, and encounter Resonance
+- Aggregated item drops
+- Per-participant EXP
+- Character level-up transitions
+- Equipped-Essence Resonance gains
+- Essence level-up transitions
+- Newly awakened Essence skills
+- Mastery Ready transitions
+
+Long progression output scrolls inside the results panel while the battle scene remains visible underneath. `E` / `Enter` confirms the results and completes the existing callback / scene-pop handoff to the originating map event. Defeat and escape retain their existing no-reward completion behavior.
+
 ## Post-Battle State
 
 Battle finalization deliberately restores map-safe party state:

@@ -43,6 +43,7 @@ Completed engine foundations include:
 - Save / Load with version-aware multi-actor Save Runtime v3, persistent Gil / Essence state, and v1/v2 migration
 - Equipment system
 - Inventory system
+- Battle Results Screen v1 for visible EXP, Gil, drop, level-up, and Essence progression feedback
 
 Completed canonical battle-data foundations include:
 

@@ -335,7 +335,7 @@ Scene_Menu.js
 
 ## Scene_Battle
 
-`Scene_Battle` coordinates the battle experience between battle systems, player commands, windows, and presentation.
+`Scene_Battle` coordinates the battle experience between battle systems, player commands, windows, and presentation. Victory now finalizes the authoritative battle result before presenting `Window_BattleResults`; the scene remains open until the player confirms, while the completion callback and scene pop still occur only once at exit.
 
 A scene may coordinate several systems, but it should avoid becoming the permanent implementation home for mechanics that logically belong to battlers, targeting, effects, data, or other dedicated modules.
 
@@ -345,7 +345,7 @@ A scene may coordinate several systems, but it should avoid becoming the permane
 
 The `js/windows/` directory contains interactive menus and UI windows.
 
-Current windows include battle commands, battle items, battle magic, choices, equipment, inventory, magic, menu commands, messages, save slots, and status display. Field-menu actor windows receive explicit leader context from `Scene_Menu`; battle magic resolves its current battler through the party controller with a party-owned battle-leader fallback. Selectable list windows that can outgrow their fixed layout use the shared `Window_ListViewport` helper so keyboard selection remains visible without drawing into reserved detail regions.
+Current windows include battle commands, battle items, battle magic, battle results, choices, equipment, inventory, magic, menu commands, messages, save slots, and status display. Field-menu actor windows receive explicit leader context from `Scene_Menu`; battle magic resolves its current battler through the party controller with a party-owned battle-leader fallback. Selectable list windows that can outgrow their fixed layout use the shared `Window_ListViewport` helper so keyboard selection remains visible without drawing into reserved detail regions. `Window_BattleResults` consumes the already-finalized structured battle result and never owns reward mutation, preserving the exactly-once reward boundary in `BattleManager`.
 
 Windows should primarily be responsible for:
 

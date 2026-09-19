@@ -66,6 +66,11 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement enemy item drop tables and award resolution
 - [x] Implement battle Essence Resonance rewards
 
+## Battle Presentation
+
+- [x] Implement Battle Results Screen v1
+- [x] Present EXP, Gil, item drops, level-ups, Essence Resonance, awakened skills, and Mastery Ready transitions
+
 ---
 
 # 💎 Essence System

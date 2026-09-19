@@ -240,6 +240,7 @@ function testBattleSceneConstructionAndExit() {
       Window_BattleCommand: EmptySystem,
       Window_BattleMagic: EmptySystem,
       Window_BattleItem: EmptySystem,
+      Window_BattleResults: EmptySystem,
       BattleTargetManager: EmptySystem,
       BattleEffects: EmptySystem,
       BattleAnimationController: EmptySystem,

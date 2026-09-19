@@ -47,6 +47,7 @@ class Scene_Battle extends Scene_Base {
     this.commandWindow = new Window_BattleCommand(this);
     this.magicWindow = new Window_BattleMagic(this);
     this.itemWindow = new Window_BattleItem();
+    this.resultsWindow = new Window_BattleResults(this);
 
     this.battleMessages = [];
     this.battlePopups = [];
@@ -138,6 +139,11 @@ class Scene_Battle extends Scene_Base {
     // -----------------------------
 
     if (this.outcome) {
+      if (this.outcome === BattleManager.OUTCOME_VICTORY) {
+        this.prepareBattleResults();
+        this.resultsWindow.update();
+      }
+
       if (
         Input.isTriggered("KeyE") ||
         Input.isTriggered("Enter") ||
@@ -343,6 +349,22 @@ class Scene_Battle extends Scene_Base {
         this.addBattleMessage("You cannot escape!");
       }
     }
+  }
+
+  prepareBattleResults() {
+    if (this.outcome !== BattleManager.OUTCOME_VICTORY) {
+      return this.result;
+    }
+
+    if (!this.result) {
+      this.result = this.battleManager.finalizeBattle(this.outcome);
+    }
+
+    if (this.result && !this.resultsWindow.isOpen()) {
+      this.resultsWindow.show(this.result);
+    }
+
+    return this.result;
   }
 
   finishBattle(outcome = this.outcome) {
@@ -712,6 +734,7 @@ class Scene_Battle extends Scene_Base {
 
   draw() {
     this.renderer.draw();
+    this.resultsWindow.draw();
   }
 
   terminate() {
