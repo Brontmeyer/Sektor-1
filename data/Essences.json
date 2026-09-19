@@ -161,7 +161,7 @@
     }
   },
   {
-    "_comment": "ID 4:🔥 Flame Essence",
+    "_comment": "ID 4: 🔥 Flame Essence",
     "id": 4,
     "name": "Flame Essence",
     "description": "An Essence infused with elemental fire.",
@@ -330,7 +330,7 @@
     }
   },
   {
-    "_comment": "ID 7: 🌎 Earth Essence",
+    "_comment": "ID 7: 🪨 Earth Essence",
     "id": 7,
     "name": "Earth Essence",
     "description": "An Essence infused with elemental earth.",
@@ -681,10 +681,7 @@
       "unlockLevel": 4,
       "type": "lowHpSelfStatuses",
       "hpThreshold": 0.25,
-      "statuses": [
-        "barrier",
-        "mbarrier"
-      ],
+      "statuses": ["barrier", "mbarrier"],
       "oncePerBattle": true
     },
     "levels": [

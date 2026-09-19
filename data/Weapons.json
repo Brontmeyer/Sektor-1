@@ -1,7 +1,7 @@
 [
   null,
   {
-    "_comment": "A simple iron sword",
+    "_comment": "ID 1: A simple iron sword",
     "id": 1,
     "name": "Iron Sword",
     "description": "A simple iron Sword.",
@@ -12,7 +12,7 @@
     "criticalBonus": 0
   },
   {
-    "_comment": "A stronger sword forged from steel",
+    "_comment": "ID 2: A stronger sword forged from steel",
     "id": 2,
     "name": "Steel Sword",
     "description": "A stronger sword forged from steel.",

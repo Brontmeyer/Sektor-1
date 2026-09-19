@@ -1,6 +1,7 @@
 [
   null,
-  { "_comment": "Potion",
+  {
+    "_comment": "ID 1: Potion",
     "id": 1,
     "article": "a",
     "name": "Potion",
@@ -16,7 +17,8 @@
       "value": 50
     }
   },
-  { "_comment": "Hi-Potion",
+  {
+    "_comment": "ID 2: Hi-Potion",
     "id": 2,
     "article": "a",
     "name": "Hi-Potion",

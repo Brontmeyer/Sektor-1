@@ -1,6 +1,7 @@
 [
   null,
   {
+    "_comment": "ID 1: 🫟 Slime Pair",
     "id": 1,
     "name": "Test Slime Pair",
     "canEscape": true,

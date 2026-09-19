@@ -205,7 +205,7 @@
     }
   },
   {
-    "_comment": "ID 11: 🌀 Confuse",
+    "_comment": "ID 11: 😵‍💫 Confuse",
     "id": 11,
     "key": "confuse",
     "name": "Confuse",
@@ -240,9 +240,7 @@
       "type": "untilRemoved"
     },
     "effects": {
-      "blockedActionTypes": [
-        "magick"
-      ]
+      "blockedActionTypes": ["magick"]
     }
   },
   {
@@ -385,9 +383,7 @@
     },
     "effects": {
       "physicalDamageMultiplier": 0.1,
-      "allowedActions": [
-        "attack"
-      ]
+      "allowedActions": ["attack"]
     }
   },
   {

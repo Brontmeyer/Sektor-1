@@ -1,6 +1,7 @@
 [
   null,
   {
+    "_comment": "Tyler",
     "id": 1,
     "name": "Tyler",
     "sideBattleSprite": "Player_Battle.png",
@@ -41,11 +42,12 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": []
+    "initialMagickIds": [1, 10]
   },
   {
+    "_comment": "Sarah",
     "id": 2,
-    "name": "Super Sexy Sarah",
+    "name": "Sarah",
     "sideBattleSprite": "Player_Battle.png",
     "battleSpriteWidth": 190,
     "battleSpriteHeight": 166,
@@ -84,12 +86,10 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": [
-      1,
-      10
-    ]
+    "initialMagickIds": [1, 10]
   },
   {
+    "_comment": "Aboo",
     "id": 3,
     "name": "Aboo",
     "sideBattleSprite": "Player_Battle.png",
@@ -130,12 +130,10 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": [
-      1,
-      10
-    ]
+    "initialMagickIds": [1, 10]
   },
   {
+    "_comment": "G Prime",
     "id": 4,
     "name": "G Prime",
     "sideBattleSprite": "Player_Battle.png",
@@ -176,9 +174,6 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": [
-      1,
-      10
-    ]
+    "initialMagickIds": [1, 10]
   }
 ]
