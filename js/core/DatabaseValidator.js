@@ -13,6 +13,7 @@ class DatabaseValidator {
       ["Items", database.items],
       ["Weapons", database.weapons],
       ["Armors", database.armors],
+      ["Accessories", database.accessories],
       ["Magick", database.magickData],
       ["Essences", database.essences],
       ["Statuses", database.statuses],
@@ -26,6 +27,7 @@ class DatabaseValidator {
     this.validateItems(database.items, errors);
     this.validateWeapons(database.weapons, errors);
     this.validateArmors(database.armors, errors);
+    this.validateAccessories(database.accessories, errors);
     this.validateMagick(database.magickData, database.statuses, errors);
     this.validateStatuses(database.statuses, errors);
     this.validateEssences(
@@ -673,6 +675,8 @@ class DatabaseValidator {
       gainArmorMessage: ["code", "armorId", "amount", "source"],
       gainWeapon: ["code", "weaponId", "amount"],
       gainWeaponMessage: ["code", "weaponId", "amount", "source"],
+      gainAccessory: ["code", "accessoryId", "amount"],
+      gainAccessoryMessage: ["code", "accessoryId", "amount", "source"],
       gainExp: ["code", "amount"],
       gainExpMessage: ["code", "amount"],
       battle: ["code", "encounterId"],
@@ -814,6 +818,19 @@ class DatabaseValidator {
           command.weaponId,
           database?.weapons,
           "weapon",
+          errors,
+        );
+        validatePositiveAmount();
+        validateOptionalString("source");
+        break;
+
+      case "gainAccessory":
+      case "gainAccessoryMessage":
+        this.validateDatabaseReference(
+          `${label}.accessoryId`,
+          command.accessoryId,
+          database?.accessories,
+          "accessory",
           errors,
         );
         validatePositiveAmount();
@@ -1169,6 +1186,64 @@ class DatabaseValidator {
       const label = `Armor ${index}`;
       this.validateFiniteNumber(`${label} price`, armor.price, errors, { min: 0 });
       this.validateFiniteNumber(`${label} defense`, armor.defense, errors, { min: 0 });
+    }
+  }
+
+  static validateAccessories(accessories, errors) {
+    if (!Array.isArray(accessories)) {
+      return;
+    }
+
+    const bonusKeys = [
+      "attack",
+      "defense",
+      "magicAttack",
+      "magicDefense",
+      "criticalBonus",
+    ];
+
+    for (let index = 1; index < accessories.length; index++) {
+      const accessory = accessories[index];
+
+      if (!accessory) {
+        continue;
+      }
+
+      const label = `Accessory ${index}`;
+      this.validateKnownKeys(
+        label,
+        accessory,
+        ["_comment", "id", "name", "description", "price", "bonuses"],
+        errors,
+      );
+      this.validateFiniteNumber(`${label} price`, accessory.price, errors, {
+        min: 0,
+      });
+
+      if (!this.isPlainObject(accessory.bonuses)) {
+        errors.push(`${label} bonuses must be an object.`);
+        continue;
+      }
+
+      this.validateKnownKeys(
+        `${label} bonuses`,
+        accessory.bonuses,
+        bonusKeys,
+        errors,
+      );
+
+      for (const key of bonusKeys) {
+        if (accessory.bonuses[key] === undefined) {
+          continue;
+        }
+
+        this.validateFiniteNumber(
+          `${label} bonuses.${key}`,
+          accessory.bonuses[key],
+          errors,
+          { min: 0 },
+        );
+      }
     }
   }
 

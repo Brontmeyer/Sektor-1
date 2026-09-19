@@ -6,16 +6,62 @@ class Window_Equipment {
     this.visible = false;
 
     this.index = 0;
-    this.slots = ["Weapon", "Armor"];
+    this.slots = [
+      { type: "weapon", label: "Weapon" },
+      { type: "armor", label: "Armor" },
+      { type: "accessory", label: "Accessory" },
+    ];
 
-    this.width = 600;
-    this.height = 420;
+    this.width = 660;
+    this.height = 500;
     this.padding = 30;
 
     this.x = (Graphics.width - this.width) / 2;
     this.y = (Graphics.height - this.height) / 2;
 
     this.selectWindow = new Window_EquipSelect(actor);
+  }
+
+  slotEquipment(type) {
+    if (type === "weapon") {
+      return this.actor?.weapon?.() || null;
+    }
+
+    if (type === "armor") {
+      return this.actor?.armor?.() || null;
+    }
+
+    if (type === "accessory") {
+      return this.actor?.accessory?.() || null;
+    }
+
+    return null;
+  }
+
+  applySelection(type, equipmentId) {
+    if (!this.actor) {
+      return false;
+    }
+
+    if (type === "weapon") {
+      return equipmentId === 0
+        ? this.actor.unequipWeapon()
+        : this.actor.equipWeapon(equipmentId);
+    }
+
+    if (type === "armor") {
+      return equipmentId === 0
+        ? this.actor.unequipArmor()
+        : this.actor.equipArmor(equipmentId);
+    }
+
+    if (type === "accessory") {
+      return equipmentId === 0
+        ? this.actor.unequipAccessory()
+        : this.actor.equipAccessory(equipmentId);
+    }
+
+    return false;
   }
 
   update() {
@@ -25,70 +71,45 @@ class Window_Equipment {
 
     if (this.selectWindow.isOpen()) {
       this.selectWindow.update();
-
       return;
     }
 
     if (this.selectWindow.hasResult()) {
       const type = this.selectWindow.type;
-
       const result = this.selectWindow.takeResult();
 
-      if (type === "weapon") {
-        if (result.id === 0) {
-          this.actor.unequipWeapon();
-        } else {
-          this.actor.equipWeapon(result.id);
-        }
-      } else if (type === "armor") {
-        if (result.id === 0) {
-          this.actor.unequipArmor();
-        } else {
-          this.actor.equipArmor(result.id);
-        }
+      if (result) {
+        this.applySelection(type, result.id);
       }
 
       this.selectWindow.hide();
-
       return;
     }
 
     if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
       this.hide();
-
       return;
     }
 
     if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
-      this.index--;
-
-      if (this.index < 0) {
-        this.index = this.slots.length - 1;
-      }
+      this.index = (this.index - 1 + this.slots.length) % this.slots.length;
     }
 
     if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
-      this.index++;
-
-      if (this.index >= this.slots.length) {
-        this.index = 0;
-      }
+      this.index = (this.index + 1) % this.slots.length;
     }
 
     if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
-      if (this.index === 0) {
-        this.selectWindow.show("weapon");
-      } else if (this.index === 1) {
-        this.selectWindow.show("armor");
-      }
+      const slot = this.slots[this.index];
 
-      return;
+      if (slot) {
+        this.selectWindow.show(slot.type);
+      }
     }
   }
 
   show() {
     this.visible = true;
-
     this.index = 0;
   }
 
@@ -108,28 +129,15 @@ class Window_Equipment {
     const context = Graphics.context;
 
     context.save();
-
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
-
-    // =====================================
-    // BACKGROUND
-    // =====================================
 
     context.fillStyle = "rgba(0, 0, 0, 0.95)";
     context.fillRect(this.x, this.y, this.width, this.height);
 
-    // =====================================
-    // BORDER
-    // =====================================
-
     context.strokeStyle = "#ffffff";
     context.lineWidth = 2;
     context.strokeRect(this.x, this.y, this.width, this.height);
-
-    // =====================================
-    // TITLE
-    // =====================================
 
     context.fillStyle = "#ffffff";
     context.font = "28px sans-serif";
@@ -138,68 +146,72 @@ class Window_Equipment {
     context.beginPath();
     context.moveTo(this.x + this.padding, this.y + 65);
     context.lineTo(this.x + this.width - this.padding, this.y + 65);
-
     context.stroke();
-
-    // =====================================
-    // CURRENT EQUIPMENT
-    // =====================================
-
-    const weapon = this.actor?.weapon() || null;
-    const armor = this.actor?.armor() || null;
-
-    const weaponName = weapon ? weapon.name : "None";
-    const armorName = armor ? armor.name : "None";
 
     context.font = "22px sans-serif";
 
-    // =====================================
-    // WEAPON & ARMOR SELECTION
-    // =====================================
+    for (let index = 0; index < this.slots.length; index++) {
+      const slot = this.slots[index];
+      const equipment = this.slotEquipment(slot.type);
+      const prefix = this.index === index ? "▶ " : "  ";
+      const drawY = this.y + 125 + index * 50;
 
-    const weaponPrefix = this.index === 0 ? "▶ " : "  ";
-
-    context.fillText(
-      `${weaponPrefix}Weapon`,
-      this.x + this.padding,
-      this.y + 125,
-    );
-    context.fillText(weaponName, this.x + 200, this.y + 125);
-
-    const armorPrefix = this.index === 1 ? "▶ " : "  ";
-
-    context.fillText(
-      `${armorPrefix}Armor`,
-      this.x + this.padding,
-      this.y + 175,
-    );
-    context.fillText(armorName, this.x + 200, this.y + 175);
-
-    // =====================================
-    // STATS
-    // =====================================
+      context.fillText(
+        `${prefix}${slot.label}`,
+        this.x + this.padding,
+        drawY,
+      );
+      context.fillText(
+        equipment?.name || "None",
+        this.x + 220,
+        drawY,
+      );
+    }
 
     context.beginPath();
-    context.moveTo(this.x + this.padding, this.y + 215);
-    context.lineTo(this.x + this.width - this.padding, this.y + 215);
-
+    context.moveTo(this.x + this.padding, this.y + 275);
+    context.lineTo(this.x + this.width - this.padding, this.y + 275);
     context.stroke();
+
     context.font = "20px sans-serif";
+    const leftX = this.x + this.padding;
+    const rightX = this.x + 340;
 
     context.fillText(
-      `Attack    ${this.actor?.totalAttack() ?? 0}`,
-      this.x + this.padding,
-      this.y + 270,
+      `Attack          ${this.actor?.totalAttack() ?? 0}`,
+      leftX,
+      this.y + 325,
+    );
+    context.fillText(
+      `Defense         ${this.actor?.totalDefense() ?? 0}`,
+      leftX,
+      this.y + 365,
+    );
+    context.fillText(
+      `Critical        ${this.actor?.totalCritical() ?? 0}`,
+      leftX,
+      this.y + 405,
     );
 
     context.fillText(
-      `Defense   ${this.actor?.totalDefense() ?? 0}`,
-      this.x + this.padding,
-      this.y + 315,
+      `Magic Attack    ${this.actor?.totalMagicAttack() ?? 0}`,
+      rightX,
+      this.y + 325,
+    );
+    context.fillText(
+      `Magic Defense   ${this.actor?.totalMagicDefense() ?? 0}`,
+      rightX,
+      this.y + 365,
+    );
+
+    context.font = "16px sans-serif";
+    context.fillText(
+      "Enter: Change    Q/Esc: Back",
+      leftX,
+      this.y + this.height - 28,
     );
 
     context.restore();
-
     this.selectWindow.draw();
   }
 }

@@ -91,6 +91,11 @@ class Game_Interpreter {
       case "gainWeaponMessage":
         return this.commandGainWeaponMessage(command);
 
+      case "gainAccessory":
+        return this.commandGainAccessory(command);
+      case "gainAccessoryMessage":
+        return this.commandGainAccessoryMessage(command);
+
       case "gainExp":
         return this.commandGainExp(command);
       case "gainExpMessage":
@@ -435,6 +440,49 @@ class Game_Interpreter {
 
     this.index++;
 
+    return false;
+  }
+
+  commandGainAccessory(command) {
+    const amount = Number(command.amount ?? 1);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid accessory amount: ${command.amount}`);
+      return true;
+    }
+
+    $gameParty.gainAccessory(command.accessoryId, amount);
+    return true;
+  }
+
+  commandGainAccessoryMessage(command) {
+    if (this.messageWindow.isOpen()) {
+      return false;
+    }
+
+    const accessory = DatabaseManager.accessory(command.accessoryId);
+
+    if (!accessory) {
+      console.error(`Unknown accessory ID: ${command.accessoryId}`);
+      return true;
+    }
+
+    const amount = Number(command.amount ?? 1);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid accessory amount: ${command.amount}`);
+      return true;
+    }
+
+    $gameParty.gainAccessory(command.accessoryId, amount);
+
+    const source = command.source || "System";
+    const quantity =
+      amount === 1 ? `a ${accessory.name}` : `${amount} ${accessory.name}s`;
+    const verb = source === "Chest" ? "found" : "obtained";
+
+    this.messageWindow.show(`You ${verb} ${quantity}!`, source);
+    this.index++;
     return false;
   }
 

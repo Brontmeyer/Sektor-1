@@ -16,6 +16,7 @@ function databaseContext() {
     items: readData("Items.json"),
     weapons: readData("Weapons.json"),
     armors: readData("Armors.json"),
+    accessories: readData("Accessories.json"),
     encounters: readData("Encounters.json"),
   };
 }
@@ -83,6 +84,7 @@ function testNestedEventContractsRejectMalformedCommands() {
     { code: "setSwitch", id: "BadBool", value: "false" },
     { code: "addVariable", id: "Visits", value: "3" },
     { code: "gainItem", itemId: 999, amount: 1 },
+    { code: "gainAccessory", accessoryId: 999, amount: 1 },
     { code: "mysteryCommand" },
   );
   map.events[2].pages[0].commands[0].encounterId = 999;
@@ -93,6 +95,7 @@ function testNestedEventContractsRejectMalformedCommands() {
       assert.match(error.message, /value must be true or false/);
       assert.match(error.message, /value must be a finite number/);
       assert.match(error.message, /unknown item ID 999/);
+      assert.match(error.message, /unknown accessory ID 999/);
       assert.match(error.message, /unsupported command code "mysteryCommand"/);
       assert.match(error.message, /unknown encounter ID 999/);
       return true;

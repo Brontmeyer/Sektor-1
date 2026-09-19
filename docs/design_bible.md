@@ -262,6 +262,22 @@ Future evolution possibilities
 
 ---
 
+# 💍 Conventional Equipment
+
+Each actor currently has three conventional equipment slots:
+
+```text
+Weapon
+Armor
+Accessory
+```
+
+Accessories are a distinct data-driven equipment category rather than a special-case item. Accessories Equipment v1 gives each actor one accessory slot and supports additive Attack, Defense, Magic Attack, Magic Defense, and Critical bonuses. More exotic accessory behavior such as status resistance, elemental rules, or Essence interaction should be added only when those effects have an approved runtime contract.
+
+Owned accessories live in party inventory, while the equipped accessory ID belongs to the actor. Equipment changes must continue through actor equip / unequip APIs rather than direct field mutation.
+
+---
+
 # 💠 Essence Equipment
 
 Current playable actors have **3 Essence slots**, with the count defined in actor data so later characters can differ without changing menu or runtime code.

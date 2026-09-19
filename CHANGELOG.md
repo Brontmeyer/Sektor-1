@@ -12,6 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Accessories Equipment v1 with a canonical `Accessories.json` database, one actor accessory slot, inventory ownership, equipment-menu selection, and additive combat-stat bonuses
+- Added `Game_Actor` accessory equip/unequip APIs and shared equipment-inventory helpers in `Game_Party` so weapons, armor, and accessories follow the same party storage contract
+- Added validated `gainAccessory` / `gainAccessoryMessage` event commands and a test-chest accessory pickup path
+- Added dedicated accessory regression coverage for ownership, combat bonuses, shared selector behavior, UI rendering, validation, and persistence
 - Added Essence Equipment & Menu v1 with party-member switching, data-driven actor slot counts, a scrollable Essence catalog, and progression / Magick-awakening details
 - Added slot-aware Essence APIs that preserve Resonance when unequipped and prevent duplicate Essence assignment within the same actor loadout
 - Added dedicated Essence equipment regression coverage for slot rules, progression preservation, menu integration, actor switching, and validation
@@ -109,6 +113,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Changed
 
+- Upgraded persistent saves to version 6 so actor accessory equipment and party accessory inventory persist, with compatibility migration from save versions 1 through 5
+- Extended the equipment selector and equipment overview to handle Weapon, Armor, and Accessory through the same UI path, including accessory stat previews
 - Upgraded persistent saves to version 5 so Essence progression and equipped slot IDs persist independently, with compatibility migration from save versions 1 through 4
 - Reconciled the stale actor-ownership regression with canonical `Actors.json` starter-Magick data instead of hard-coding a previous actor setup
 - Made the defeat/revival regression deterministic by disabling unrelated random item-drop resolution inside that test

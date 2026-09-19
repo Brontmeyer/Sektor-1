@@ -34,6 +34,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Battle Essence Resonance progression
 -   ✅ Repository-audit closure
 -   ✅ Magick Terminology Migration v1
+-   ✅ Accessories Equipment v1
 
 ------------------------------------------------------------------------
 
@@ -49,8 +50,8 @@ Completed foundations include:
 -   ✅ Party foundation
 -   ✅ Multi-character turn system
 -   ✅ Turn queue
--   ✅ Save / Load (version-aware Save Runtime v5)
--   ✅ Equipment system
+-   ✅ Save / Load (version-aware Save Runtime v6)
+-   ✅ Equipment system (Weapon / Armor / Accessory)
 -   ✅ Inventory system
 
 ------------------------------------------------------------------------
@@ -129,6 +130,16 @@ The system is also designed to support future **Essence Evolution**.
 Essence Equipment & Menu v1 gives every current actor **3 data-driven Essence slots**, party-member switching in the menu, progression details, and a scrollable canonical Essence catalog. Resonance belongs to the actor's Essence progression state rather than to the slot, so unequipping and re-equipping an Essence preserves its growth.
 
 The v1 selector intentionally exposes the canonical Essence catalog while long-term acquisition / ownership rules remain undecided. Future acquisition can filter that catalog without changing the actor slot API.
+
+------------------------------------------------------------------------
+
+# 💍 Equipment Accessories
+
+Accessories Equipment v1 adds a third conventional equipment slot beside Weapon and Armor. Accessory definitions live in `data/Accessories.json`, owned copies live in `Game_Party`, and each actor owns one `accessoryId` through explicit equip / unequip APIs.
+
+The initial accessory contract supports additive Attack, Defense, Magic Attack, Magic Defense, and Critical bonuses. This keeps the first runtime small while leaving status, elemental, and more specialized accessory effects for later data/runtime extensions.
+
+Save Runtime v6 persists both equipped accessory IDs and party accessory inventory. The existing test chest can award a Power Wrist through the validated accessory event-command path so the system can be exercised before Shops are implemented.
 
 ------------------------------------------------------------------------
 

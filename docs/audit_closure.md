@@ -6,6 +6,8 @@ Pass 29 does not reopen any audit finding. It renames the current supernatural a
 
 Pass 30 likewise does not reopen the audit. Essence Equipment & Menu v1 builds on the already-closed Essence reward/persistence foundation, and Save Runtime v5 migrates v1-v4 saves into slot-aware Essence progression without changing any historical audit classification.
 
+Pass 31 likewise adds no reopened audit item. Accessories Equipment v1 extends the already-closed equipment/database/save boundaries with a third conventional equipment type, and Save Runtime v6 migrates v1-v5 saves without changing any historical finding status.
+
 This document reconciles the historical static review in `docs/repo_audit.md`
 against the **current repository**.
 

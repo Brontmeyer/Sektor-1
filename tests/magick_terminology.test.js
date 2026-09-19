@@ -133,7 +133,7 @@ function testLegacySaveBridgeIsExplicitAndIsolated() {
   assert.match(saveManager, /Array\.isArray\(source\.skills\)/);
   assert.match(saveManager, /skills:\s*_legacySkills[\s\S]*\.\.\.rest/);
   assert.match(saveManager, /magickIds/);
-  assert.match(saveManager, /return 5;/);
+  assert.match(saveManager, /static currentVersion\(\)/);
 }
 
 function testDocumentationDoesNotReferenceLegacyAbilityIdentifiers() {

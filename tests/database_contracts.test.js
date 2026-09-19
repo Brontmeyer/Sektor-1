@@ -37,6 +37,7 @@ function projectDatabase() {
     items: readData("Items.json"),
     weapons: readData("Weapons.json"),
     armors: readData("Armors.json"),
+    accessories: readData("Accessories.json"),
     magickData: readData("Magick.json"),
     essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),
@@ -95,18 +96,23 @@ function testItemAndEquipmentContracts() {
   const items = clone(readData("Items.json"));
   const weapons = clone(readData("Weapons.json"));
   const armors = clone(readData("Armors.json"));
+  const accessories = clone(readData("Accessories.json"));
   const itemErrors = [];
   const weaponErrors = [];
   const armorErrors = [];
+  const accessoryErrors = [];
 
   items[1].effect.type = "mystery";
   items[2].effect.value = 0;
   weapons[1].attackPercent = "90";
   armors[1].defense = -1;
+  accessories[1].bonuses.attack = -1;
+  accessories[2].bonuses.typoBonus = 5;
 
   DatabaseValidator.validateItems(items, itemErrors);
   DatabaseValidator.validateWeapons(weapons, weaponErrors);
   DatabaseValidator.validateArmors(armors, armorErrors);
+  DatabaseValidator.validateAccessories(accessories, accessoryErrors);
 
   assert.equal(
     itemErrors.some((error) => error.includes("unsupported effect type")),
@@ -122,6 +128,14 @@ function testItemAndEquipmentContracts() {
   );
   assert.equal(
     armorErrors.some((error) => error.includes("defense")),
+    true,
+  );
+  assert.equal(
+    accessoryErrors.some((error) => error.includes("bonuses.attack")),
+    true,
+  );
+  assert.equal(
+    accessoryErrors.some((error) => error.includes('unsupported property "typoBonus"')),
     true,
   );
 }

@@ -177,6 +177,12 @@
               "source": "Quest Reward"
             },
             {
+              "code": "gainAccessoryMessage",
+              "accessoryId": 1,
+              "amount": 1,
+              "source": "Chest"
+            },
+            {
               "code": "setSelfSwitch",
               "letter": "A",
               "value": true

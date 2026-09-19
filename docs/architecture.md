@@ -61,6 +61,7 @@ The `data/` directory contains definitions used by the engine to construct and o
 Examples include:
 
 ```text
+data/Accessories.json
 data/Actors.json
 data/Armors.json
 data/Encounters.json
@@ -139,7 +140,7 @@ events independent from battle-scene construction details.
 
 `DatabaseManager` loads JSON databases and exposes convenient accessors for loaded game definitions.
 
-At the current stage of development it loads system, map, item, actor, weapon, armor, Magick, Essence, status, enemy, and encounter data.
+At the current stage of development it loads system, map, item, actor, weapon, armor, accessory, Magick, Essence, status, enemy, and encounter data.
 
 On-demand map files pass through `DatabaseValidator.validateMapData()` before `Game_Map` or the event runtime can consume them. The requested map ID must match the loaded map, and current map geometry, transfers, events, pages, conditions, commands, and database references are validated at this boundary.
 
@@ -151,7 +152,7 @@ All indexed database accessors share the same null-safe record helper. Name help
 
 `DatabaseValidator` protects the engine from malformed or inconsistent loaded data.
 
-The current validator establishes field-level contracts for runtime-active actor and enemy combat data, enemy EXP/Gil/Resonance/drop rewards, battle-sprite metadata, item/equipment schemas, Magick targeting/effect/combat metadata, the canonical nested status schema, encounters, Essence progression/ability/mastery definitions, and on-demand map/event data. Essence progression ordering and database references are validated before `Game_Essence` can consume them. Map validation recursively checks event pages and supported interpreter commands before world runtime objects are constructed.
+The current validator establishes field-level contracts for runtime-active actor and enemy combat data, enemy EXP/Gil/Resonance/drop rewards, battle-sprite metadata, item/weapon/armor/accessory schemas, Magick targeting/effect/combat metadata, the canonical nested status schema, encounters, Essence progression/ability/mastery definitions, and on-demand map/event data. Essence progression ordering and database references are validated before `Game_Essence` can consume them. Map validation recursively checks event pages and supported interpreter commands before world runtime objects are constructed.
 
 Validation describes the shape and references of canonical data; it does not imply that every designed mechanic is runtime-complete. Gravity, percentage healing, and multi-hit Magick metadata are now runtime-active; Essence passive metadata still belongs to later runtime passes. As new database systems become runtime-active, their validation rules should be extended here or delegated to appropriately focused helpers.
 
@@ -167,9 +168,9 @@ Validation describes the shape and references of canonical data; it does not imp
 
 `SaveManager` owns serialization, migration, validation, and restoration of persistent game progress.
 
-Save Runtime v5 serializes the full `Game_Party` actor roster rather than only the legacy leader alias. Actor state includes mutable progression, HP/MP, combat stats, equipment, learned Magick, save-eligible runtime statuses, persistent Essence progression, and explicit Essence slot assignments. Party state also persists Gil alongside inventory and active battle composition. Status restoration does not re-run initial application effects; canonical derived statuses are recomputed from restored battler state. Save versions 1 through 4 migrate into the current schema.
+Save Runtime v6 serializes the full `Game_Party` actor roster rather than only the legacy leader alias. Actor state includes mutable progression, HP/MP, combat stats, Weapon / Armor / Accessory equipment, learned Magick, save-eligible runtime statuses, persistent Essence progression, and explicit Essence slot assignments. Party state persists Gil plus item, weapon, armor, and accessory inventory alongside active battle composition. Status restoration does not re-run initial application effects; canonical derived statuses are recomputed from restored battler state. Save versions 1 through 5 migrate into the current schema.
 
-The loader recognizes both the legacy version-1 leader-only shape and version-2 and version-3 full-party saves, migrating legacy save shapes into the version-4 structure before validation. Unknown/future save versions and malformed structures fail through a normal error result instead of flowing directly into state mutation. Inventory quantities and location values are normalized at the save boundary, and storage-write failures are caught by the save layer.
+The loader recognizes the legacy version-1 leader-only shape plus later full-party save generations, filling newly introduced fields through versioned migration before validation. Unknown/future save versions and malformed structures fail through a normal error result instead of flowing directly into state mutation. Inventory quantities and location values are normalized at the save boundary, and storage-write failures are caught by the save layer.
 
 Save data should represent runtime state that must survive between sessions rather than duplicating canonical database definitions unnecessarily.
 
@@ -217,7 +218,7 @@ Active status instances, status-effect queries, incoming physical/magical damage
 
 ## Game_Actor
 
-`Game_Actor` represents a playable combatant and actor-specific runtime state. Canonical starter Magick come from validated `Actors.json` `initialMagickIds` data rather than constructor-time setup in `Game_System`. Equipment mutation is owned here, including explicit equip and unequip APIs. Actor data also defines the Essence slot count. Essence progression is stored separately from slot assignment so unequipping does not destroy Resonance; slot APIs validate IDs, prevent duplicate assignment on the same actor, and expose the equipped `Game_Essence` instances used by battle Resonance.
+`Game_Actor` represents a playable combatant and actor-specific runtime state. Canonical starter Magick come from validated `Actors.json` `initialMagickIds` data rather than constructor-time setup in `Game_System`. Conventional equipment mutation is owned here through explicit Weapon, Armor, and Accessory equip / unequip APIs. Accessory combat bonuses flow through the actor's derived-stat methods instead of mutating base stats. Actor data also defines the Essence slot count. Essence progression is stored separately from slot assignment so unequipping does not destroy Resonance; slot APIs validate IDs, prevent duplicate assignment on the same actor, and expose the equipped `Game_Essence` instances used by battle Resonance.
 
 Actor behavior should build on shared battler behavior while retaining responsibilities that only make sense for player-controlled characters.
 
@@ -229,7 +230,7 @@ Enemy-specific runtime behavior, including future AI integration, belongs here o
 
 ## Game_Party
 
-`Game_Party` owns the player's party-level state, actor roster, leader resolution, active battle composition, inventory, Gil currency, and party operations. Leader-default actions resolve through party ownership rather than the legacy `$gameActor` global. Inventory-only reset behavior is exposed explicitly as `clearInventory()`.
+`Game_Party` owns the player's party-level state, actor roster, leader resolution, active battle composition, inventory, Gil currency, and party operations. Weapon, armor, and accessory inventory use one shared equipment-count / mutation path while retaining type-specific public APIs. Leader-default actions resolve through party ownership rather than the legacy `$gameActor` global. Inventory-only reset behavior is exposed explicitly as `clearInventory()`.
 
 It forms the runtime foundation for multi-character gameplay and future party-management features.
 
@@ -237,7 +238,7 @@ It forms the runtime foundation for multi-character gameplay and future party-ma
 
 `Game_Essence` represents runtime Essence progression state.
 
-The canonical Essence definitions live in `data/Essences.json`; mutable Resonance lives on `Game_Essence` instances instead of modifying database definitions. Resonance is capped at the canonical Mastery threshold, level progression is derived from validated thresholds, and the runtime reports the next progression milestone and when an Essence becomes Mastery Ready. Actor-owned Essence progression and slot assignments are serialized independently through Save Runtime v5 so unequipping preserves progression.
+The canonical Essence definitions live in `data/Essences.json`; mutable Resonance lives on `Game_Essence` instances instead of modifying database definitions. Resonance is capped at the canonical Mastery threshold, level progression is derived from validated thresholds, and the runtime reports the next progression milestone and when an Essence becomes Mastery Ready. Actor-owned Essence progression and slot assignments are serialized independently through Save Runtime v6 so unequipping preserves progression.
 
 `Window_Essence` provides the first player-facing equipment surface: party-member switching, data-driven slots, a scrollable canonical Essence catalog, and progression / Magick-awakening details. The v1 catalog is intentionally not an ownership system; long-term acquisition rules can later filter the selectable catalog without changing the slot API. Ability grants, passives, Mastery Trials, and evolution remain later work.
 

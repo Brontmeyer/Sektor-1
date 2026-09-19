@@ -22,6 +22,7 @@ class Game_Actor extends Game_Battler {
 
     this.weaponId = 0;
     this.armorId = 0;
+    this.accessoryId = 0;
 
     this.magickIds = Array.isArray(actorData.initialMagickIds)
       ? [...actorData.initialMagickIds]
@@ -275,6 +276,19 @@ class Game_Actor extends Game_Battler {
     return DatabaseManager.armor(this.armorId);
   }
 
+  accessory() {
+    if (this.accessoryId <= 0) {
+      return null;
+    }
+
+    return DatabaseManager.accessory(this.accessoryId);
+  }
+
+  accessoryBonus(key, accessory = this.accessory()) {
+    const value = Number(accessory?.bonuses?.[key]);
+    return Number.isFinite(value) ? value : 0;
+  }
+
   equipWeapon(weaponId) {
     const weapon = DatabaseManager.weapon(weaponId);
 
@@ -305,6 +319,19 @@ class Game_Actor extends Game_Battler {
     return true;
   }
 
+  equipAccessory(accessoryId) {
+    const accessory = DatabaseManager.accessory(accessoryId);
+
+    if (!accessory) {
+      console.error(`Accessory ID ${accessoryId} does not exist.`);
+      return false;
+    }
+
+    this.accessoryId = accessoryId;
+    DebugManager.log(`${this.name} equipped ${accessory.name}.`);
+    return true;
+  }
+
   unequipWeapon() {
     const weapon = this.weapon();
 
@@ -326,6 +353,18 @@ class Game_Actor extends Game_Battler {
 
     this.armorId = 0;
     DebugManager.log(`${this.name} unequipped ${armor.name}.`);
+    return true;
+  }
+
+  unequipAccessory() {
+    const accessory = this.accessory();
+
+    if (!accessory) {
+      return false;
+    }
+
+    this.accessoryId = 0;
+    DebugManager.log(`${this.name} unequipped ${accessory.name}.`);
     return true;
   }
 
@@ -1041,14 +1080,19 @@ class Game_Actor extends Game_Battler {
   // Combat Stat Calculations
   // =====================================
 
-  attackWithWeapon(weapon) {
+  attackWithWeapon(weapon, accessory = this.accessory()) {
     const weaponAttack = weapon ? weapon.attack || 0 : 0;
 
-    return this.attack + this.strength + weaponAttack;
+    return (
+      this.attack +
+      this.strength +
+      weaponAttack +
+      this.accessoryBonus("attack", accessory)
+    );
   }
 
   totalAttack() {
-    return this.attackWithWeapon(this.weapon());
+    return this.attackWithWeapon(this.weapon(), this.accessory());
   }
 
   attackPercentWithWeapon(weapon) {
@@ -1061,37 +1105,58 @@ class Game_Actor extends Game_Battler {
     return this.attackPercentWithWeapon(this.weapon());
   }
 
-  defenseWithArmor(armor) {
+  defenseWithArmor(armor, accessory = this.accessory()) {
     const armorDefense = armor ? armor.defense || 0 : 0;
 
-    return this.defense + this.vitality + armorDefense;
+    return (
+      this.defense +
+      this.vitality +
+      armorDefense +
+      this.accessoryBonus("defense", accessory)
+    );
   }
 
   totalDefense() {
-    return this.defenseWithArmor(this.armor());
+    return this.defenseWithArmor(this.armor(), this.accessory());
   }
 
   // =====================================
   // Magic Attack Calculations
   // =====================================
 
-  magicAttackWithWeapon(weapon) {
+  magicAttackWithWeapon(weapon, accessory = this.accessory()) {
     const weaponMagicAttack = weapon ? weapon.magicAttack || 0 : 0;
 
-    return this.magicAttack + this.magic + weaponMagicAttack;
+    return (
+      this.magicAttack +
+      this.magic +
+      weaponMagicAttack +
+      this.accessoryBonus("magicAttack", accessory)
+    );
   }
 
   totalMagicAttack() {
-    return this.magicAttackWithWeapon(this.weapon());
+    return this.magicAttackWithWeapon(this.weapon(), this.accessory());
   }
 
-  criticalWithWeapon(weapon) {
+  magicDefenseWithAccessory(accessory) {
+    return (
+      super.totalMagicDefense() +
+      this.accessoryBonus("magicDefense", accessory)
+    );
+  }
+
+  totalMagicDefense() {
+    return this.magicDefenseWithAccessory(this.accessory());
+  }
+
+  criticalWithWeapon(weapon, accessory = this.accessory()) {
     const weaponCritical = weapon ? weapon.criticalBonus || 0 : 0;
 
-    return weaponCritical;
+    return weaponCritical + this.accessoryBonus("criticalBonus", accessory);
   }
 
   totalCritical() {
-    return this.criticalWithWeapon(this.weapon());
+    return this.criticalWithWeapon(this.weapon(), this.accessory());
   }
 }

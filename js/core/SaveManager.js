@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 5;
+    return 6;
   }
 
   static clearError() {
@@ -95,8 +95,12 @@ class SaveManager {
               ...rest
             } = source;
 
+            const accessoryId = Number(source.accessoryId);
+
             return {
               ...rest,
+              accessoryId:
+                Number.isInteger(accessoryId) && accessoryId > 0 ? accessoryId : 0,
               magickIds,
               essenceProgress,
               equippedEssenceIds,
@@ -105,6 +109,9 @@ class SaveManager {
         : [],
       party: {
         ...(this.isPlainObject(data.party) ? data.party : {}),
+        accessories: this.isPlainObject(data.party?.accessories)
+          ? data.party.accessories
+          : {},
         gil: Number.isInteger(Number(data.party?.gil))
           ? Math.max(0, Number(data.party.gil))
           : 0,
@@ -115,7 +122,7 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if ([4, 3, 2].includes(inferredVersion)) {
+    if ([5, 4, 3, 2].includes(inferredVersion)) {
       return upgradeToCurrent(saveData);
     }
 
@@ -195,8 +202,6 @@ class SaveManager {
           "magicAttack",
           "magicDefense",
           "magicDefensePercent",
-          "weaponId",
-          "armorId",
         ];
 
         for (const field of numericFields) {
@@ -205,6 +210,25 @@ class SaveManager {
             !Number.isFinite(Number(actorData[field]))
           ) {
             errors.push(`Actor ${actorId} field ${field} must be numeric.`);
+          }
+        }
+
+        for (const [field, lookup, label] of [
+          ["weaponId", (id) => DatabaseManager.weapon?.(id), "Weapon"],
+          ["armorId", (id) => DatabaseManager.armor?.(id), "Armor"],
+          ["accessoryId", (id) => DatabaseManager.accessory?.(id), "Accessory"],
+        ]) {
+          const equipmentId = Number(actorData[field] ?? 0);
+
+          if (!Number.isInteger(equipmentId) || equipmentId < 0) {
+            errors.push(
+              `Actor ${actorId} field ${field} must be a non-negative integer.`,
+            );
+            continue;
+          }
+
+          if (equipmentId > 0 && !lookup(equipmentId)) {
+            errors.push(`Actor ${actorId} equips unknown ${label} ${equipmentId}.`);
           }
         }
 
@@ -313,7 +337,7 @@ class SaveManager {
     if (!this.isPlainObject(saveData.party)) {
       errors.push("Save data must contain a party object.");
     } else {
-      for (const key of ["items", "weapons", "armors"]) {
+      for (const key of ["items", "weapons", "armors", "accessories"]) {
         if (
           saveData.party[key] !== undefined &&
           !this.isPlainObject(saveData.party[key])
@@ -408,6 +432,7 @@ class SaveManager {
 
       weaponId: actor.weaponId,
       armorId: actor.armorId,
+      accessoryId: actor.accessoryId,
       magickIds: [...actor.magickIds],
       statuses:
         typeof actor.persistentStatusState === "function"
@@ -468,11 +493,16 @@ class SaveManager {
 
     const weaponId = integer(actorData.weaponId, actor.weaponId, 0);
     const armorId = integer(actorData.armorId, actor.armorId, 0);
+    const accessoryId = integer(actorData.accessoryId, actor.accessoryId, 0);
 
     actor.weaponId =
       weaponId === 0 || DatabaseManager.weapon(weaponId) ? weaponId : 0;
     actor.armorId =
       armorId === 0 || DatabaseManager.armor(armorId) ? armorId : 0;
+    actor.accessoryId =
+      accessoryId === 0 || DatabaseManager.accessory?.(accessoryId)
+        ? accessoryId
+        : 0;
 
     if (Array.isArray(actorData.magickIds)) {
       actor.magickIds = [
@@ -546,6 +576,10 @@ class SaveManager {
     $gameParty.armors = this.normalizeInventory(
       partyData.armors,
       (id) => DatabaseManager.armor(id),
+    );
+    $gameParty.accessories = this.normalizeInventory(
+      partyData.accessories,
+      (id) => DatabaseManager.accessory?.(id),
     );
 
     if (typeof $gameParty.setGil === "function") {
@@ -721,6 +755,7 @@ class SaveManager {
           items: { ...$gameParty.items },
           weapons: { ...$gameParty.weapons },
           armors: { ...$gameParty.armors },
+          accessories: { ...$gameParty.accessories },
           gil: typeof $gameParty.gil === "function" ? $gameParty.gil() : 0,
           battleActorIds: $gameParty.battleActorIds(),
         },

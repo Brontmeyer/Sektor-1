@@ -7,6 +7,7 @@ class Game_Party {
 
     this.weapons = {};
     this.armors = {};
+    this.accessories = {};
 
     // Party roster and active battle party are intentionally separate.
     // This lets the project grow into a larger roster later while keeping
@@ -287,80 +288,110 @@ class Game_Party {
   }
 
   // =================================
-  // Armors
+  // Equipment Inventory
   // =================================
 
+  equipmentCount(collection, equipmentId) {
+    return collection[equipmentId] || 0;
+  }
+
+  gainEquipment(collection, lookup, equipmentId, amount = 1) {
+    const equipment = lookup(equipmentId);
+
+    if (!equipment) {
+      console.error(`Unknown equipment ID: ${equipmentId}`);
+      return false;
+    }
+
+    const numericAmount = Number(amount);
+
+    if (!Number.isFinite(numericAmount) || numericAmount === 0) {
+      console.error(`Invalid equipment amount: ${amount}`);
+      return false;
+    }
+
+    const newAmount =
+      this.equipmentCount(collection, equipmentId) + numericAmount;
+
+    if (newAmount <= 0) {
+      delete collection[equipmentId];
+    } else {
+      collection[equipmentId] = newAmount;
+    }
+
+    DebugManager.log(
+      `${equipment.name}: ${this.equipmentCount(collection, equipmentId)}`,
+    );
+    return true;
+  }
+
   armorCount(armorId) {
-    return this.armors[armorId] || 0;
+    return this.equipmentCount(this.armors, armorId);
   }
 
   gainArmor(armorId, amount = 1) {
-    const armor = DatabaseManager.armor(armorId);
-
-    if (!armor) {
-      console.error(`Unknown armor ID: ${armorId}`);
-
-      return;
-    }
-
-    const newAmount = this.armorCount(armorId) + Number(amount);
-
-    if (newAmount <= 0) {
-      delete this.armors[armorId];
-    } else {
-      this.armors[armorId] = newAmount;
-    }
-
-    DebugManager.log(`${armor.name}: ${this.armorCount(armorId)}`);
+    return this.gainEquipment(
+      this.armors,
+      (id) => DatabaseManager.armor(id),
+      armorId,
+      amount,
+    );
   }
 
   loseArmor(armorId, amount = 1) {
-    this.gainArmor(armorId, -amount);
+    return this.gainArmor(armorId, -amount);
   }
 
   hasArmor(armorId) {
     return this.armorCount(armorId) > 0;
   }
 
-  // =================================
-  // Weapons
-  // =================================
-
   weaponCount(weaponId) {
-    return this.weapons[weaponId] || 0;
+    return this.equipmentCount(this.weapons, weaponId);
   }
 
   gainWeapon(weaponId, amount = 1) {
-    const weapon = DatabaseManager.weapon(weaponId);
-
-    if (!weapon) {
-      console.error(`Unknown weapon ID: ${weaponId}`);
-
-      return;
-    }
-
-    const newAmount = this.weaponCount(weaponId) + Number(amount);
-
-    if (newAmount <= 0) {
-      delete this.weapons[weaponId];
-    } else {
-      this.weapons[weaponId] = newAmount;
-    }
-
-    DebugManager.log(`${weapon.name}: ${this.weaponCount(weaponId)}`);
+    return this.gainEquipment(
+      this.weapons,
+      (id) => DatabaseManager.weapon(id),
+      weaponId,
+      amount,
+    );
   }
 
   loseWeapon(weaponId, amount = 1) {
-    this.gainWeapon(weaponId, -amount);
+    return this.gainWeapon(weaponId, -amount);
   }
 
   hasWeapon(weaponId) {
     return this.weaponCount(weaponId) > 0;
   }
 
+  accessoryCount(accessoryId) {
+    return this.equipmentCount(this.accessories, accessoryId);
+  }
+
+  gainAccessory(accessoryId, amount = 1) {
+    return this.gainEquipment(
+      this.accessories,
+      (id) => DatabaseManager.accessory(id),
+      accessoryId,
+      amount,
+    );
+  }
+
+  loseAccessory(accessoryId, amount = 1) {
+    return this.gainAccessory(accessoryId, -amount);
+  }
+
+  hasAccessory(accessoryId) {
+    return this.accessoryCount(accessoryId) > 0;
+  }
+
   clearInventory() {
     this.items = {};
     this.weapons = {};
     this.armors = {};
+    this.accessories = {};
   }
 }

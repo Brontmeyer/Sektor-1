@@ -40,8 +40,8 @@ Completed engine foundations include:
 - Turn queue
 - Multi-character turns
 - Data-driven actor collection ownership with explicit party/leader context
-- Save / Load with version-aware multi-actor Save Runtime v5, persistent Gil / slot-aware Essence state, and v1-v4 migration
-- Equipment system
+- Save / Load with version-aware multi-actor Save Runtime v6, persistent Gil / accessory equipment / slot-aware Essence state, and v1-v5 migration
+- Equipment system with Weapon, Armor, and Accessory slots
 - Inventory system
 - Battle Results Screen v1 for visible EXP, Gil, drop, level-up, and Essence progression feedback
 

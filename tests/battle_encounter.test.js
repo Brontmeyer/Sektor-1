@@ -133,6 +133,7 @@ function testProjectDatabaseValidation() {
     items: readData("Items.json"),
     weapons: readData("Weapons.json"),
     armors: readData("Armors.json"),
+    accessories: readData("Accessories.json"),
     magickData: readData("Magick.json"),
     essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),

@@ -14,6 +14,7 @@ const actors = readData("Actors.json");
 const items = readData("Items.json");
 const weapons = readData("Weapons.json");
 const armors = readData("Armors.json");
+const accessories = readData("Accessories.json");
 const magick = readData("Magick.json");
 const statuses = readData("Statuses.json");
 
@@ -23,6 +24,7 @@ function makeDatabaseManager() {
     items,
     weapons,
     armors,
+    accessories,
     magick,
     statuses,
     actor(id) {
@@ -36,6 +38,9 @@ function makeDatabaseManager() {
     },
     armor(id) {
       return armors[id] || null;
+    },
+    accessory(id) {
+      return accessories[id] || null;
     },
     magick(id) {
       return magick[id] || null;
@@ -115,6 +120,7 @@ function testPartyOwnedDefaultItemTargetAndExplicitInventoryClear() {
   party.gainItem(1, 1);
   party.gainWeapon(1, 1);
   party.gainArmor(1, 1);
+  party.gainAccessory(1, 1);
 
   assert.equal(party.useItem(1), true);
   assert.equal(leader.hp > 100, true);
@@ -125,6 +131,7 @@ function testPartyOwnedDefaultItemTargetAndExplicitInventoryClear() {
   assert.equal(party.itemCount(1), 0);
   assert.equal(party.weaponCount(1), 0);
   assert.equal(party.armorCount(1), 0);
+  assert.equal(party.accessoryCount(1), 0);
   assert.equal(party.members().length, 4);
   assert.equal(typeof party.clear, "undefined");
 }
@@ -144,6 +151,12 @@ function testEquipmentMutationStaysOnGameActorApi() {
   assert.equal(actor.unequipArmor(), true);
   assert.equal(actor.armorId, 0);
   assert.equal(actor.unequipArmor(), false);
+
+  assert.equal(actor.equipAccessory(1), true);
+  assert.equal(actor.accessoryId, 1);
+  assert.equal(actor.unequipAccessory(), true);
+  assert.equal(actor.accessoryId, 0);
+  assert.equal(actor.unequipAccessory(), false);
 }
 
 function testInterpreterExpUsesPartyLeaderWithoutGameActorAlias() {

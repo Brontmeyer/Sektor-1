@@ -3,6 +3,7 @@
 This file tracks unfinished development work only.
 
 Canonical game data belongs in the appropriate database files:
+- `data/Accessories.json`
 - `data/Magick.json`
 - `data/Essences.json`
 - `data/Statuses.json`
@@ -70,6 +71,14 @@ Completed systems and design rules should be documented rather than duplicated h
 
 - [x] Implement Battle Results Screen v1
 - [x] Present EXP, Gil, item drops, level-ups, Essence Resonance, awakened Magick abilities, and Mastery Ready transitions
+
+---
+
+# 💰 Economy
+
+- [x] Persistent Gil rewards
+- [x] Price metadata for items, weapons, armor, and accessories
+- [ ] Shops / Gil Spending v1
 
 ---
 
@@ -165,12 +174,13 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v5 with slot-aware Essence progression persistence and v1-v4 migration
+- [x] Save Runtime v6 with accessory inventory/equipment, slot-aware Essence progression persistence, and v1-v5 migration
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies
 - [x] Complete repository-audit closure (`docs/audit_closure.md`)
 - [x] Equipment system
+- [x] Accessories Equipment v1
 - [x] Inventory system
 - [x] Complete status runtime
 - [ ] Complete Essence runtime
