@@ -4,40 +4,46 @@
   "width": 2400,
   "height": 1600,
   "playerStart": {
-    "x": 300,
-    "y": 300
+    "x": 610,
+    "y": 400
   },
 
   "obstacles": [
     {
-      "x": 900,
-      "y": 500,
-      "width": 300,
-      "height": 100
+      "x": 200,
+      "y": 550,
+      "width": 800,
+      "height": 50
     },
     {
-      "x": 1400,
-      "y": 800,
-      "width": 150,
-      "height": 400
+      "x": 200,
+      "y": 50,
+      "width": 800,
+      "height": 50
     },
     {
-      "x": 500,
-      "y": 1000,
-      "width": 500,
-      "height": 80
+      "x": 950,
+      "y": 50,
+      "width": 50,
+      "height": 500
+    },
+    {
+      "x": 200,
+      "y": 50,
+      "width": 50,
+      "height": 500
     }
   ],
 
   "transfers": [
     {
-      "x": 600,
-      "y": 300,
+      "x": 575,
+      "y": 150,
       "width": 100,
       "height": 100,
       "targetMapId": 2,
-      "targetX": 300,
-      "targetY": 300
+      "targetX": 610,
+      "targetY": 400
     }
   ],
 
@@ -134,7 +140,7 @@
       "name": "Test Chest",
 
       "x": 750,
-      "y": 450,
+      "y": 300,
 
       "width": 32,
       "height": 32,
@@ -203,8 +209,8 @@
       "id": 3,
       "name": "Battle Tester",
 
-      "x": 450,
-      "y": 400,
+      "x": 610,
+      "y": 300,
 
       "width": 32,
       "height": 32,
