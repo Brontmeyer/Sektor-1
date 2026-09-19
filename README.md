@@ -190,20 +190,24 @@ Technical and design documentation lives in the `docs/` directory.
 ``` text
 docs/
 ├── architecture.md
+├── audit_closure.md
 ├── battle_system.md
 ├── coding_style.md
 ├── design_bible.md
 ├── ideas.md
+├── repo_audit.md
 └── roadmap.md
 ```
 
 Each document has a specific purpose:
 
 -   **architecture.md** - Engine structure and system relationships
+-   **audit_closure.md** - Current reconciliation of historical audit findings
 -   **battle_system.md** - Canonical battle rules and mechanics
 -   **coding_style.md** - Project coding and data conventions
 -   **design_bible.md** - Core game-design principles and terminology
 -   **ideas.md** - Experimental and unapproved concepts
+-   **repo_audit.md** - Historical static repository audit
 -   **roadmap.md** - High-level development milestones
 
 `TODO.md` tracks active unfinished development work.

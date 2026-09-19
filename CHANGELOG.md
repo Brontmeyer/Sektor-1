@@ -74,6 +74,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added Turn Speed Runtime v1 with data-driven Haste / Slow scheduling for party and enemy turns
 - Added fractional turn progress, interleaved bonus slots, and battler-relative countdown pacing under Haste / Slow
 - Added turn-speed metadata validation and dedicated scheduler regression coverage
+- Added Save Runtime v2 with full-party actor serialization, save-eligible status persistence, version-aware loading, and version-1 migration
+- Added save-schema validation, inventory normalization, safe malformed/future-save rejection, and storage-write failure handling
+- Added menu-facing save/load failure feedback and dedicated save-runtime regression coverage
+- Added `docs/audit_closure.md` to reconcile the historical repository audit against current code before selecting future passes
 
 ### Changed
 
@@ -100,6 +104,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Distinguished HP-zero death from the broader `isDefeated()` battle state so status-defined defeat can participate in outcome, targeting, animation, and reward logic
 - Made skill validation enforce the current effect vocabulary and validate `revivePercent` plus defeat/revival status metadata
 - Corrected the stale `Game_Party` comment to the canonical four-member active battle limit
+- Moved persistent save ownership from the legacy `$gameActor` alias to the full `Game_Party` actor roster
+- Made persistent status restoration bypass initial application effects and recompute derived states from restored HP
+- Marked Essence database loading complete in `TODO.md` because current `DatabaseManager` already loads `Essences.json`
 
 ### Documentation
 
@@ -116,6 +123,7 @@ docs/coding_style.md   Coding and data conventions
 docs/design_bible.md   Design identity and principles
 docs/ideas.md          Experimental, non-canonical concepts
 docs/roadmap.md        High-level development direction
+docs/audit_closure.md  Current reconciliation of historical audit findings
 ```
 
 `docs/ideas.md` remains intentionally non-canonical so experimental concepts have somewhere to develop before becoming established design.
@@ -125,6 +133,19 @@ docs/roadmap.md        High-level development direction
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 20 - Save Runtime v2 & Audit Reconciliation
+
+- Reconciled all 42 actionable `repo_audit.md` headings against the current repository before selecting implementation work
+- Added a persistent audit-closure tracker so future passes check current code/tests before rebuilding historical findings
+- Replaced leader-only save serialization with full-party actor state persistence
+- Persisted canonical post-battle statuses without re-running initial status application effects on load
+- Added explicit Save Runtime v2 schema handling and migration from version-1 leader-only saves
+- Added safe validation/normalization for actor state, inventories, location data, and malformed/future save versions
+- Added save-write error handling and user-facing save/load failure messages
+- Added dedicated Save Runtime regression tests
 
 ---
 

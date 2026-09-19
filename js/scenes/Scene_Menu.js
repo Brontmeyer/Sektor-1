@@ -42,22 +42,34 @@ class Scene_Menu extends Scene_Base {
 
         if (success) {
           this.saveMessage = `Game saved to Slot ${slotId}!`;
-
-          this.saveMessageTimer = 3;
+        } else {
+          this.saveMessage = `Save failed: ${SaveManager.errorMessage()}`;
         }
+
+        this.saveMessageTimer = 3;
       } else if (mode === "load") {
         if (!SaveManager.exists(slotId)) {
           this.saveMessage = `Slot ${slotId} is empty.`;
 
           this.saveMessageTimer = 3;
         } else {
-          SaveManager.load(slotId).then((success) => {
-            if (success) {
-              SceneManager.pop();
+          SaveManager.load(slotId)
+            .then((success) => {
+              if (success) {
+                SceneManager.pop();
 
-              DebugManager.log(`Loaded from slot ${slotId}.`);
-            }
-          });
+                DebugManager.log(`Loaded from slot ${slotId}.`);
+                return;
+              }
+
+              this.saveMessage = `Load failed: ${SaveManager.errorMessage()}`;
+              this.saveMessageTimer = 3;
+            })
+            .catch((error) => {
+              console.error(`Unexpected load failure for slot ${slotId}:`, error);
+              this.saveMessage = `Load failed: ${SaveManager.errorMessage()}`;
+              this.saveMessageTimer = 3;
+            });
         }
       }
 

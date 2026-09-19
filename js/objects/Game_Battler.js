@@ -89,6 +89,86 @@ class Game_Battler {
       .filter((definition) => definition !== null);
   }
 
+  persistentStatusState() {
+    const serialized = [];
+
+    for (const runtimeStatus of this.statuses) {
+      const definition = this.statusDefinition(runtimeStatus.key);
+
+      if (
+        !definition ||
+        definition.duration?.type === "derived" ||
+        definition.classification?.persistsAfterBattle !== true
+      ) {
+        continue;
+      }
+
+      const entry = { key: definition.key };
+
+      if (Number.isInteger(runtimeStatus.turnsRemaining)) {
+        entry.turnsRemaining = runtimeStatus.turnsRemaining;
+      }
+
+      serialized.push(entry);
+    }
+
+    return serialized;
+  }
+
+  restorePersistentStatusState(serializedStatuses = []) {
+    this.statuses = [];
+
+    if (!Array.isArray(serializedStatuses)) {
+      this.updateDerivedStatuses();
+      return [];
+    }
+
+    const restored = [];
+
+    for (const savedStatus of serializedStatuses) {
+      if (!savedStatus || typeof savedStatus !== "object") {
+        continue;
+      }
+
+      const definition = this.statusDefinition(savedStatus.key);
+
+      if (
+        !definition ||
+        definition.duration?.type === "derived" ||
+        definition.classification?.persistsAfterBattle !== true
+      ) {
+        continue;
+      }
+
+      this.removeStatusConflicts(definition.key);
+
+      if (this.hasStatus(definition.key)) {
+        continue;
+      }
+
+      const runtimeStatus = { key: definition.key };
+
+      if (
+        definition.duration?.type === "turns" ||
+        definition.duration?.type === "countdown"
+      ) {
+        const maximumTurns = Number(definition.duration.turns);
+        const savedTurns = Number(savedStatus.turnsRemaining);
+
+        runtimeStatus.turnsRemaining =
+          Number.isInteger(savedTurns) && savedTurns > 0
+            ? Math.min(savedTurns, maximumTurns)
+            : maximumTurns;
+      }
+
+      this.statuses.push(runtimeStatus);
+      restored.push(definition.key);
+    }
+
+    this.updateDerivedStatuses();
+    return restored;
+  }
+
   activeDefeatStatusDefinitions() {
     return this.activeStatusDefinitions().filter(
       (definition) => definition.effects?.countsAsDefeated === true,

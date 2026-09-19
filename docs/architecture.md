@@ -159,7 +159,11 @@ As new database systems become runtime-active, their validation rules should be 
 
 ## SaveManager
 
-`SaveManager` owns serialization and restoration of persistent game progress.
+`SaveManager` owns serialization, migration, validation, and restoration of persistent game progress.
+
+Save Runtime v2 serializes the full `Game_Party` actor roster rather than only the legacy leader alias. Actor state includes mutable progression, HP/MP, combat stats, equipment, learned skills, and save-eligible runtime statuses. Status restoration does not re-run initial application effects; canonical derived statuses are recomputed from restored battler state.
+
+The loader recognizes the legacy version-1 leader-only shape and migrates it into the version-2 structure before validation. Unknown/future save versions and malformed structures fail through a normal error result instead of flowing directly into state mutation. Inventory quantities and location values are normalized at the save boundary, and storage-write failures are caught by the save layer.
 
 Save data should represent runtime state that must survive between sessions rather than duplicating canonical database definitions unnecessarily.
 

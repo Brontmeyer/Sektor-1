@@ -39,7 +39,7 @@ Completed engine foundations include:
 - Party foundation
 - Turn queue
 - Multi-character turns
-- Save / Load
+- Save / Load with version-aware multi-actor Save Runtime v2 and v1 migration
 - Equipment system
 - Inventory system
 
@@ -68,6 +68,8 @@ Completed canonical battle-data foundations include:
 - Reusable status-effect properties
 
 These foundations allow the next phase of development to focus primarily on turning established data into complete runtime behavior.
+
+A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work.
 
 ---
 

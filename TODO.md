@@ -78,7 +78,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Define Level 4 passive abilities
 - [x] Define Mastery Trial concept
 - [x] Define Essence Evolution eligibility
-- [ ] Implement Essence database loading
+- [x] Implement Essence database loading
 - [ ] Implement Essence equipping
 - [ ] Implement Resonance gain
 - [ ] Implement Essence leveling
@@ -151,6 +151,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
+- [x] Save Runtime v2 multi-actor persistence and v1 migration
+- [ ] Complete repository-audit closure (`docs/audit_closure.md`)
 - [x] Equipment system
 - [x] Inventory system
 - [ ] Complete status runtime
