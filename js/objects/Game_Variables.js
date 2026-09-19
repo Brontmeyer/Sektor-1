@@ -14,9 +14,18 @@ class Game_Variables {
   }
 
   addValue(id, amount) {
-    const newValue = this.value(id) + amount;
+    const currentValue = Number(this.value(id));
+    const numericAmount = Number(amount);
 
-    this.setValue(id, newValue);
+    if (!Number.isFinite(currentValue) || !Number.isFinite(numericAmount)) {
+      console.error(
+        `Cannot add non-numeric value to variable "${id}": ${amount}`,
+      );
+      return false;
+    }
+
+    this.setValue(id, currentValue + numericAmount);
+    return true;
   }
 
   setValue(id, value) {

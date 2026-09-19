@@ -81,6 +81,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added Database Contract Hardening v1 with field-level validation for actors, enemies, battle sprites, items, equipment, skills, statuses, and Essences
 - Added Essence progression/reference validation, including monotonic Resonance thresholds and canonical skill/status references
 - Added dedicated database-contract regression coverage for malformed runtime-consumed data
+- Added Map & Event Contract v1 with load-time validation for map geometry, transfers, events, pages, conditions, recursive commands, and database references
+- Added dedicated map/event contract regression coverage for malformed world/event data and runtime input normalization
 
 ### Changed
 
@@ -114,6 +116,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Hardened the canonical status nested schema so unsupported condition/effect keys and malformed consumed values fail at database load
 - Reconciled the validation audit cluster from 10 fixed / 5 partial / 27 open to 23 fixed / 3 partial / 16 open
 - Removed the stale roadmap task to implement Essence database loading because the current engine already loads it and Pass 21 now validates it
+- Made on-demand map loading validate the loaded map ID and runtime-consumed event contract before constructing world objects
+- Normalized item-gain and additive-variable arithmetic so numeric-looking strings cannot silently concatenate runtime state
+- Reconciled the map/event audit cluster from 23 fixed / 3 partial / 16 open to 26 fixed / 3 partial / 13 open
 
 ### Documentation
 
@@ -140,6 +145,19 @@ docs/audit_closure.md  Current reconciliation of historical audit findings
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 22 - Map & Event Contract v1
+
+- Cross-referenced the map/event and runtime-input audit findings against the current repository before implementation
+- Added a `DatabaseValidator.validateMapData()` boundary to every on-demand map load
+- Validated map identity, dimensions, player start, obstacles, transfers, event geometry, event pages, and page conditions
+- Added recursive schema validation for every currently supported interpreter command, including nested choices and switch branches
+- Validated item/weapon/armor/encounter references used by event commands before runtime execution
+- Normalized item-gain quantities in both the interpreter and `Game_Party`, eliminating string-concatenation inventory arithmetic
+- Normalized additive variable arithmetic in both the interpreter and `Game_Variables` while preserving unrestricted direct variable assignment
+- Added dedicated map/event contract regression tests and updated audit closure status
 
 ---
 

@@ -171,9 +171,14 @@ class Game_Interpreter {
   }
 
   commandIfSwitch(command) {
+    if (typeof command.value !== "boolean") {
+      console.error(`Invalid switch value: ${command.value}`);
+      return true;
+    }
+
     const currentValue = $gameSwitches.value(command.id);
 
-    const expectedValue = command.value === true;
+    const expectedValue = command.value;
 
     const branch =
       currentValue === expectedValue
@@ -188,6 +193,11 @@ class Game_Interpreter {
   }
 
   commandSetSwitch(command) {
+    if (typeof command.value !== "boolean") {
+      console.error(`Invalid switch value: ${command.value}`);
+      return true;
+    }
+
     $gameSwitches.setValue(command.id, command.value);
 
     return true;
@@ -197,6 +207,11 @@ class Game_Interpreter {
     if (!this.event) {
       console.error("setSelfSwitch command requires an active event.");
 
+      return true;
+    }
+
+    if (typeof command.value !== "boolean") {
+      console.error(`Invalid self-switch value: ${command.value}`);
       return true;
     }
 
@@ -217,7 +232,14 @@ class Game_Interpreter {
   }
 
   commandAddVariable(command) {
-    $gameVariables.addValue(command.id, command.value);
+    const amount = Number(command.value);
+
+    if (!Number.isFinite(amount)) {
+      console.error(`Invalid variable amount: ${command.value}`);
+      return true;
+    }
+
+    $gameVariables.addValue(command.id, amount);
 
     return true;
   }
@@ -227,7 +249,14 @@ class Game_Interpreter {
   // =================================
 
   commandGainItem(command) {
-    $gameParty.gainItem(command.itemId, command.amount || 1);
+    const amount = Number(command.amount ?? 1);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid item amount: ${command.amount}`);
+      return true;
+    }
+
+    $gameParty.gainItem(command.itemId, amount);
 
     return true;
   }
@@ -245,7 +274,12 @@ class Game_Interpreter {
       return true;
     }
 
-    const amount = command.amount || 1;
+    const amount = Number(command.amount ?? 1);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      console.error(`Invalid item amount: ${command.amount}`);
+      return true;
+    }
 
     $gameParty.gainItem(command.itemId, amount);
 

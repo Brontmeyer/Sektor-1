@@ -141,13 +141,15 @@ events independent from battle-scene construction details.
 
 At the current stage of development it loads system, map, item, actor, weapon, armor, skill, Essence, status, enemy, and encounter data.
 
+On-demand map files pass through `DatabaseValidator.validateMapData()` before `Game_Map` or the event runtime can consume them. The requested map ID must match the loaded map, and current map geometry, transfers, events, pages, conditions, commands, and database references are validated at this boundary.
+
 `Statuses.json` is runtime-active and is exposed through both numeric-ID and keyed status lookup helpers.
 
 ## DatabaseValidator
 
 `DatabaseValidator` protects the engine from malformed or inconsistent loaded data.
 
-The current validator establishes field-level contracts for runtime-active actor and enemy combat data, battle-sprite metadata, item/equipment schemas, skill targeting/effect/combat metadata, the canonical nested status schema, encounters, and Essence progression/ability/mastery definitions. Essence progression ordering and database references are validated before `Game_Essence` can consume them.
+The current validator establishes field-level contracts for runtime-active actor and enemy combat data, battle-sprite metadata, item/equipment schemas, skill targeting/effect/combat metadata, the canonical nested status schema, encounters, Essence progression/ability/mastery definitions, and on-demand map/event data. Essence progression ordering and database references are validated before `Game_Essence` can consume them. Map validation recursively checks event pages and supported interpreter commands before world runtime objects are constructed.
 
 Validation describes the shape and references of canonical data; it does not imply that every designed mechanic is runtime-complete. For example, validated Gravity, multi-hit, and Essence passive metadata may still belong to later runtime passes. As new database systems become runtime-active, their validation rules should be extended here or delegated to appropriately focused helpers.
 
@@ -239,9 +241,9 @@ The complete Essence Runtime system is still under development.
 
 ## World Runtime Objects
 
-`Game_Map`, `Game_Player`, `Game_Event`, and `Game_Interpreter` form the foundation of world exploration and event execution.
+`Game_Map`, `Game_Player`, `Game_Event`, and `Game_Interpreter` form the foundation of world exploration and event execution. Loaded map/event JSON is validated before these objects receive it, including nested event conditions and command payloads. The interpreter still performs runtime checks at mutation boundaries so direct or future callers cannot rely solely on file validation.
 
-`Game_Switches`, `Game_SelfSwitches`, and `Game_Variables` provide persistent or event-facing state used to drive game logic.
+`Game_Switches`, `Game_SelfSwitches`, and `Game_Variables` provide persistent or event-facing state used to drive game logic. Additive variable operations normalize numeric input, while direct variable assignment remains intentionally capable of storing non-numeric event state.
 
 `Game_System` stores broader runtime system state that belongs to the current game rather than to a single actor, map, or battle.
 

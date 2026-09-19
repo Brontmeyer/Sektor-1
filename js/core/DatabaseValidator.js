@@ -186,6 +186,673 @@ class DatabaseValidator {
     }
   }
 
+  // =================================
+  // Map / Event Validation
+  // =================================
+
+  static validateMapData(mapData, database, expectedMapId = null) {
+    const errors = [];
+
+    this.validateMap(mapData, database, expectedMapId, errors);
+
+    if (errors.length > 0) {
+      const details = errors.map((error) => `- ${error}`).join("\n");
+      throw new Error(`Map validation failed:\n${details}`);
+    }
+
+    DebugManager.log(
+      `Map validation passed${expectedMapId === null ? "." : ` for map ${expectedMapId}.`}`,
+    );
+    return true;
+  }
+
+  static validateMap(mapData, database, expectedMapId, errors) {
+    if (!this.isPlainObject(mapData)) {
+      errors.push("Map data must contain an object.");
+      return;
+    }
+
+    this.validateKnownKeys(
+      "Map",
+      mapData,
+      [
+        "id",
+        "name",
+        "width",
+        "height",
+        "playerStart",
+        "obstacles",
+        "transfers",
+        "events",
+      ],
+      errors,
+    );
+
+    if (!Number.isInteger(mapData.id) || mapData.id <= 0) {
+      errors.push("Map id must be a positive integer.");
+    } else if (expectedMapId !== null && mapData.id !== expectedMapId) {
+      errors.push(
+        `Map id ${mapData.id} does not match requested map id ${expectedMapId}.`,
+      );
+    }
+
+    if (typeof mapData.name !== "string" || mapData.name.trim() === "") {
+      errors.push("Map name must be a non-empty string.");
+    }
+
+    const widthValid = this.validateFiniteNumber(
+      "Map width",
+      mapData.width,
+      errors,
+      { min: 1 },
+    );
+    const heightValid = this.validateFiniteNumber(
+      "Map height",
+      mapData.height,
+      errors,
+      { min: 1 },
+    );
+
+    if (!this.isPlainObject(mapData.playerStart)) {
+      errors.push("Map playerStart must be an object.");
+    } else {
+      this.validateKnownKeys(
+        "Map playerStart",
+        mapData.playerStart,
+        ["x", "y"],
+        errors,
+      );
+      this.validateMapPoint(
+        "Map playerStart",
+        mapData.playerStart,
+        mapData.width,
+        mapData.height,
+        widthValid && heightValid,
+        errors,
+      );
+    }
+
+    this.validateMapRectangles(
+      "Map obstacle",
+      mapData.obstacles,
+      mapData.width,
+      mapData.height,
+      widthValid && heightValid,
+      errors,
+    );
+
+    if (mapData.transfers !== undefined && !Array.isArray(mapData.transfers)) {
+      errors.push("Map transfers must be an array when provided.");
+    } else if (Array.isArray(mapData.transfers)) {
+      for (let index = 0; index < mapData.transfers.length; index++) {
+        const transfer = mapData.transfers[index];
+        const label = `Map transfer ${index + 1}`;
+
+        if (!this.isPlainObject(transfer)) {
+          errors.push(`${label} must be an object.`);
+          continue;
+        }
+
+        this.validateKnownKeys(
+          label,
+          transfer,
+          ["x", "y", "width", "height", "targetMapId", "targetX", "targetY"],
+          errors,
+        );
+        this.validateMapRectangle(
+          label,
+          transfer,
+          mapData.width,
+          mapData.height,
+          widthValid && heightValid,
+          errors,
+        );
+
+        if (!Number.isInteger(transfer.targetMapId) || transfer.targetMapId <= 0) {
+          errors.push(`${label} targetMapId must be a positive integer.`);
+        } else if (
+          Array.isArray(database?.mapInfos) &&
+          !database.mapInfos.some((mapInfo) => mapInfo?.id === transfer.targetMapId)
+        ) {
+          errors.push(
+            `${label} references unknown target map ID ${transfer.targetMapId}.`,
+          );
+        }
+
+        for (const key of ["targetX", "targetY"]) {
+          this.validateFiniteNumber(`${label} ${key}`, transfer[key], errors, {
+            min: 0,
+          });
+        }
+      }
+    }
+
+    if (mapData.events !== undefined && !Array.isArray(mapData.events)) {
+      errors.push("Map events must be an array when provided.");
+    } else if (Array.isArray(mapData.events)) {
+      const eventIds = new Set();
+
+      for (let index = 0; index < mapData.events.length; index++) {
+        const event = mapData.events[index];
+        const label = `Map event ${index + 1}`;
+
+        this.validateMapEvent(
+          event,
+          label,
+          mapData.width,
+          mapData.height,
+          widthValid && heightValid,
+          database,
+          errors,
+        );
+
+        if (Number.isInteger(event?.id)) {
+          if (eventIds.has(event.id)) {
+            errors.push(`Map contains duplicate event id ${event.id}.`);
+          }
+          eventIds.add(event.id);
+        }
+      }
+    }
+  }
+
+  static validateMapPoint(label, point, mapWidth, mapHeight, boundsValid, errors) {
+    const xValid = this.validateFiniteNumber(`${label}.x`, point.x, errors, {
+      min: 0,
+    });
+    const yValid = this.validateFiniteNumber(`${label}.y`, point.y, errors, {
+      min: 0,
+    });
+
+    if (boundsValid && xValid && point.x >= mapWidth) {
+      errors.push(`${label}.x must be inside the map width.`);
+    }
+
+    if (boundsValid && yValid && point.y >= mapHeight) {
+      errors.push(`${label}.y must be inside the map height.`);
+    }
+  }
+
+  static validateMapRectangles(label, rectangles, mapWidth, mapHeight, boundsValid, errors) {
+    if (rectangles === undefined) {
+      return;
+    }
+
+    if (!Array.isArray(rectangles)) {
+      errors.push(`${label}s must be an array when provided.`);
+      return;
+    }
+
+    for (let index = 0; index < rectangles.length; index++) {
+      const rectangle = rectangles[index];
+      const rectangleLabel = `${label} ${index + 1}`;
+
+      if (!this.isPlainObject(rectangle)) {
+        errors.push(`${rectangleLabel} must be an object.`);
+        continue;
+      }
+
+      this.validateKnownKeys(
+        rectangleLabel,
+        rectangle,
+        ["x", "y", "width", "height"],
+        errors,
+      );
+      this.validateMapRectangle(
+        rectangleLabel,
+        rectangle,
+        mapWidth,
+        mapHeight,
+        boundsValid,
+        errors,
+      );
+    }
+  }
+
+  static validateMapRectangle(label, rectangle, mapWidth, mapHeight, boundsValid, errors) {
+    const xValid = this.validateFiniteNumber(`${label}.x`, rectangle.x, errors, {
+      min: 0,
+    });
+    const yValid = this.validateFiniteNumber(`${label}.y`, rectangle.y, errors, {
+      min: 0,
+    });
+    const widthValid = this.validateFiniteNumber(
+      `${label}.width`,
+      rectangle.width,
+      errors,
+      { min: Number.MIN_VALUE },
+    );
+    const heightValid = this.validateFiniteNumber(
+      `${label}.height`,
+      rectangle.height,
+      errors,
+      { min: Number.MIN_VALUE },
+    );
+
+    if (
+      boundsValid &&
+      xValid &&
+      widthValid &&
+      rectangle.x + rectangle.width > mapWidth
+    ) {
+      errors.push(`${label} extends beyond the map width.`);
+    }
+
+    if (
+      boundsValid &&
+      yValid &&
+      heightValid &&
+      rectangle.y + rectangle.height > mapHeight
+    ) {
+      errors.push(`${label} extends beyond the map height.`);
+    }
+  }
+
+  static validateMapEvent(event, label, mapWidth, mapHeight, boundsValid, database, errors) {
+    if (!this.isPlainObject(event)) {
+      errors.push(`${label} must be an object.`);
+      return;
+    }
+
+    this.validateKnownKeys(
+      label,
+      event,
+      ["id", "name", "x", "y", "width", "height", "solid", "pages", "commands"],
+      errors,
+    );
+
+    if (!Number.isInteger(event.id) || event.id <= 0) {
+      errors.push(`${label} id must be a positive integer.`);
+    }
+
+    if (event.name !== undefined && typeof event.name !== "string") {
+      errors.push(`${label} name must be a string when provided.`);
+    }
+
+    const runtimeRectangle = {
+      x: event.x ?? 0,
+      y: event.y ?? 0,
+      width: event.width ?? 32,
+      height: event.height ?? 32,
+    };
+    this.validateMapRectangle(
+      label,
+      runtimeRectangle,
+      mapWidth,
+      mapHeight,
+      boundsValid,
+      errors,
+    );
+
+    if (event.solid !== undefined && typeof event.solid !== "boolean") {
+      errors.push(`${label} solid must be true or false when provided.`);
+    }
+
+    if (event.pages !== undefined && event.commands !== undefined) {
+      errors.push(`${label} cannot define both pages and legacy commands.`);
+    }
+
+    if (event.pages !== undefined) {
+      if (!Array.isArray(event.pages)) {
+        errors.push(`${label} pages must be an array when provided.`);
+      } else {
+        for (let pageIndex = 0; pageIndex < event.pages.length; pageIndex++) {
+          this.validateEventPage(
+            event.pages[pageIndex],
+            `${label} page ${pageIndex + 1}`,
+            database,
+            errors,
+          );
+        }
+      }
+    } else if (event.commands !== undefined) {
+      this.validateEventCommands(
+        event.commands,
+        `${label} legacy commands`,
+        database,
+        errors,
+      );
+    }
+  }
+
+  static validateEventPage(page, label, database, errors) {
+    if (!this.isPlainObject(page)) {
+      errors.push(`${label} must be an object.`);
+      return;
+    }
+
+    this.validateKnownKeys(label, page, ["conditions", "commands"], errors);
+    this.validateEventConditions(page.conditions ?? {}, `${label} conditions`, errors);
+    this.validateEventCommands(page.commands ?? [], `${label} commands`, database, errors);
+  }
+
+  static validateEventConditions(conditions, label, errors) {
+    if (!this.isPlainObject(conditions)) {
+      errors.push(`${label} must be an object.`);
+      return;
+    }
+
+    this.validateKnownKeys(
+      label,
+      conditions,
+      ["switches", "selfSwitches", "variables"],
+      errors,
+    );
+
+    for (const key of ["switches", "selfSwitches", "variables"]) {
+      if (conditions[key] !== undefined && !Array.isArray(conditions[key])) {
+        errors.push(`${label}.${key} must be an array when provided.`);
+      }
+    }
+
+    if (Array.isArray(conditions.switches)) {
+      for (let index = 0; index < conditions.switches.length; index++) {
+        const condition = conditions.switches[index];
+        const conditionLabel = `${label}.switches[${index}]`;
+
+        if (!this.isPlainObject(condition)) {
+          errors.push(`${conditionLabel} must be an object.`);
+          continue;
+        }
+
+        this.validateKnownKeys(conditionLabel, condition, ["id", "value"], errors);
+        this.validateEventIdentifier(`${conditionLabel}.id`, condition.id, errors);
+        if (typeof condition.value !== "boolean") {
+          errors.push(`${conditionLabel}.value must be true or false.`);
+        }
+      }
+    }
+
+    if (Array.isArray(conditions.selfSwitches)) {
+      for (let index = 0; index < conditions.selfSwitches.length; index++) {
+        const condition = conditions.selfSwitches[index];
+        const conditionLabel = `${label}.selfSwitches[${index}]`;
+
+        if (!this.isPlainObject(condition)) {
+          errors.push(`${conditionLabel} must be an object.`);
+          continue;
+        }
+
+        this.validateKnownKeys(conditionLabel, condition, ["letter", "value"], errors);
+        if (typeof condition.letter !== "string" || condition.letter.trim() === "") {
+          errors.push(`${conditionLabel}.letter must be a non-empty string.`);
+        }
+        if (typeof condition.value !== "boolean") {
+          errors.push(`${conditionLabel}.value must be true or false.`);
+        }
+      }
+    }
+
+    if (Array.isArray(conditions.variables)) {
+      const validOperators = new Set(["==", "!=", ">", ">=", "<", "<="]);
+
+      for (let index = 0; index < conditions.variables.length; index++) {
+        const condition = conditions.variables[index];
+        const conditionLabel = `${label}.variables[${index}]`;
+
+        if (!this.isPlainObject(condition)) {
+          errors.push(`${conditionLabel} must be an object.`);
+          continue;
+        }
+
+        this.validateKnownKeys(
+          conditionLabel,
+          condition,
+          ["id", "value", "operator"],
+          errors,
+        );
+        this.validateEventIdentifier(`${conditionLabel}.id`, condition.id, errors);
+        if (
+          condition.operator !== undefined &&
+          !validOperators.has(condition.operator)
+        ) {
+          errors.push(
+            `${conditionLabel}.operator has unsupported value "${condition.operator}".`,
+          );
+        }
+      }
+    }
+  }
+
+  static validateEventIdentifier(label, value, errors) {
+    const validString = typeof value === "string" && value.trim() !== "";
+    const validInteger = Number.isInteger(value) && value >= 0;
+
+    if (!validString && !validInteger) {
+      errors.push(`${label} must be a non-empty string or non-negative integer.`);
+      return false;
+    }
+
+    return true;
+  }
+
+  static validateEventCommands(commands, label, database, errors, depth = 0) {
+    if (!Array.isArray(commands)) {
+      errors.push(`${label} must be an array.`);
+      return;
+    }
+
+    if (depth > 32) {
+      errors.push(`${label} exceeds the maximum nested command depth.`);
+      return;
+    }
+
+    for (let index = 0; index < commands.length; index++) {
+      this.validateEventCommand(
+        commands[index],
+        `${label}[${index}]`,
+        database,
+        errors,
+        depth,
+      );
+    }
+  }
+
+  static validateEventCommand(command, label, database, errors, depth) {
+    if (!this.isPlainObject(command)) {
+      errors.push(`${label} must be an object.`);
+      return;
+    }
+
+    if (typeof command.code !== "string" || command.code.trim() === "") {
+      errors.push(`${label}.code must be a non-empty string.`);
+      return;
+    }
+
+    const commandKeys = {
+      text: ["code", "text", "speaker"],
+      choice: ["code", "speaker", "prompt", "choices"],
+      ifSwitch: ["code", "id", "value", "trueCommands", "falseCommands"],
+      setSwitch: ["code", "id", "value"],
+      setSelfSwitch: ["code", "letter", "value"],
+      setVariable: ["code", "id", "value"],
+      addVariable: ["code", "id", "value"],
+      gainItem: ["code", "itemId", "amount"],
+      gainItemMessage: ["code", "itemId", "amount", "source"],
+      gainArmor: ["code", "armorId", "amount"],
+      gainArmorMessage: ["code", "armorId", "amount", "source"],
+      gainWeapon: ["code", "weaponId", "amount"],
+      gainWeaponMessage: ["code", "weaponId", "amount", "source"],
+      gainExp: ["code", "amount"],
+      gainExpMessage: ["code", "amount"],
+      battle: ["code", "encounterId"],
+    };
+
+    const allowedKeys = commandKeys[command.code];
+    if (!allowedKeys) {
+      errors.push(`${label} has unsupported command code "${command.code}".`);
+      return;
+    }
+
+    this.validateKnownKeys(label, command, allowedKeys, errors);
+
+    const validateOptionalString = (key) => {
+      if (command[key] !== undefined && typeof command[key] !== "string") {
+        errors.push(`${label}.${key} must be a string when provided.`);
+      }
+    };
+
+    const validatePositiveAmount = (key = "amount") => {
+      if (command[key] === undefined) {
+        return;
+      }
+
+      this.validateFiniteNumber(`${label}.${key}`, command[key], errors, {
+        min: Number.MIN_VALUE,
+      });
+    };
+
+    switch (command.code) {
+      case "text":
+        if (typeof command.text !== "string") {
+          errors.push(`${label}.text must be a string.`);
+        }
+        validateOptionalString("speaker");
+        break;
+
+      case "choice":
+        validateOptionalString("speaker");
+        validateOptionalString("prompt");
+        if (!Array.isArray(command.choices) || command.choices.length === 0) {
+          errors.push(`${label}.choices must be a non-empty array.`);
+          break;
+        }
+        for (let index = 0; index < command.choices.length; index++) {
+          const choice = command.choices[index];
+          const choiceLabel = `${label}.choices[${index}]`;
+          if (!this.isPlainObject(choice)) {
+            errors.push(`${choiceLabel} must be an object.`);
+            continue;
+          }
+          this.validateKnownKeys(choiceLabel, choice, ["text", "commands"], errors);
+          if (typeof choice.text !== "string") {
+            errors.push(`${choiceLabel}.text must be a string.`);
+          }
+          this.validateEventCommands(
+            choice.commands ?? [],
+            `${choiceLabel}.commands`,
+            database,
+            errors,
+            depth + 1,
+          );
+        }
+        break;
+
+      case "ifSwitch":
+        this.validateEventIdentifier(`${label}.id`, command.id, errors);
+        if (typeof command.value !== "boolean") {
+          errors.push(`${label}.value must be true or false.`);
+        }
+        for (const key of ["trueCommands", "falseCommands"]) {
+          if (command[key] !== undefined) {
+            this.validateEventCommands(
+              command[key],
+              `${label}.${key}`,
+              database,
+              errors,
+              depth + 1,
+            );
+          }
+        }
+        break;
+
+      case "setSwitch":
+        this.validateEventIdentifier(`${label}.id`, command.id, errors);
+        if (typeof command.value !== "boolean") {
+          errors.push(`${label}.value must be true or false.`);
+        }
+        break;
+
+      case "setSelfSwitch":
+        if (typeof command.letter !== "string" || command.letter.trim() === "") {
+          errors.push(`${label}.letter must be a non-empty string.`);
+        }
+        if (typeof command.value !== "boolean") {
+          errors.push(`${label}.value must be true or false.`);
+        }
+        break;
+
+      case "setVariable":
+        this.validateEventIdentifier(`${label}.id`, command.id, errors);
+        break;
+
+      case "addVariable":
+        this.validateEventIdentifier(`${label}.id`, command.id, errors);
+        this.validateFiniteNumber(`${label}.value`, command.value, errors);
+        break;
+
+      case "gainItem":
+      case "gainItemMessage":
+        this.validateDatabaseReference(
+          `${label}.itemId`,
+          command.itemId,
+          database?.items,
+          "item",
+          errors,
+        );
+        validatePositiveAmount();
+        validateOptionalString("source");
+        break;
+
+      case "gainArmor":
+      case "gainArmorMessage":
+        this.validateDatabaseReference(
+          `${label}.armorId`,
+          command.armorId,
+          database?.armors,
+          "armor",
+          errors,
+        );
+        validatePositiveAmount();
+        validateOptionalString("source");
+        break;
+
+      case "gainWeapon":
+      case "gainWeaponMessage":
+        this.validateDatabaseReference(
+          `${label}.weaponId`,
+          command.weaponId,
+          database?.weapons,
+          "weapon",
+          errors,
+        );
+        validatePositiveAmount();
+        validateOptionalString("source");
+        break;
+
+      case "gainExp":
+      case "gainExpMessage":
+        this.validateFiniteNumber(`${label}.amount`, command.amount, errors, {
+          min: Number.MIN_VALUE,
+        });
+        break;
+
+      case "battle":
+        this.validateDatabaseReference(
+          `${label}.encounterId`,
+          command.encounterId,
+          database?.encounters,
+          "encounter",
+          errors,
+        );
+        break;
+    }
+  }
+
+  static validateDatabaseReference(label, id, records, recordName, errors) {
+    if (!Number.isInteger(id) || id <= 0) {
+      errors.push(`${label} must be a positive integer.`);
+      return false;
+    }
+
+    if (Array.isArray(records) && !records[id]) {
+      errors.push(`${label} references unknown ${recordName} ID ${id}.`);
+      return false;
+    }
+
+    return true;
+  }
+
   static validateBattleSprite(record, label, spriteKey, errors) {
     if (
       record[spriteKey] !== undefined &&

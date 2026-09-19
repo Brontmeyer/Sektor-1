@@ -27,11 +27,11 @@ complete and normal new-feature development can become the primary focus.
 
 ## Current Reconciliation
 
-After Pass 21, the 42 actionable audit headings reconcile to:
+After Pass 22, the 42 actionable audit headings reconcile to:
 
-- **Fixed / superseded:** 23
+- **Fixed / superseded:** 26
 - **Partial:** 3
-- **Open:** 16
+- **Open:** 13
 
 The audit's later "Verified Behavior and Design Context" section is reference
 material, not a fix backlog, and is therefore not counted in the 42 actionable
@@ -68,13 +68,13 @@ headings.
 | 27 | Battle-sprite asset failures are handled safely but silently | Open | No explicit image-load error diagnostic/fallback is present. |
 | 28 | Save data declares a version but is not schema- or version-validated during load | Fixed | Pass 20 establishes migration, structural validation, numeric normalization, safe failure, and menu-facing failure handling. |
 | 29 | Save writes do not handle storage failures | Fixed | Pass 20 catches serialization/storage failures and returns a normal failure result with diagnostic text. |
-| 30 | Item gain commands do not validate quantities consistently with equipment gain commands | Open | Item event commands and `Game_Party.gainItem()` still accept unnormalized arithmetic input. |
+| 30 | Item gain commands do not validate quantities consistently with equipment gain commands | Fixed | Pass 22 normalizes item quantities in both interpreter commands and `Game_Party.gainItem()`, rejects invalid direct input, and preserves numeric inventory arithmetic. |
 | 31 | Item runtime schema is not specifically validated at database load time | Fixed | Pass 21 validates the current item type/consumable/price contract plus the runtime-supported `healHp` effect and positive value. |
 | 32 | Weapon and armor combat schemas are not specifically validated at database load time | Fixed | Pass 21 validates current weapon price/attack/accuracy/magic/critical fields and armor price/defense values as finite non-negative numbers. |
 | 33 | Several selectable list windows do not support more entries than their fixed layouts | Open | Inventory, equipment-select, field magic, battle item, and battle magic still render full lists without scrolling/paging. |
 | 34 | The battle scene has no identified runtime entry path and hardcodes its encounter | Fixed | `SceneManager.startBattle()` / interpreter battle commands provide runtime entry and `Scene_Battle` consumes validated encounter data. |
-| 35 | `addVariable` performs arithmetic without numeric normalization | Open | `commandAddVariable()` still passes unnormalized input to additive variable arithmetic. |
-| 36 | Individual map data is loaded without an identified schema-validation boundary | Open | `DatabaseManager.loadMap()` still returns parsed map JSON without map/event schema validation. |
+| 35 | `addVariable` performs arithmetic without numeric normalization | Fixed | Pass 22 normalizes additive variable input at the interpreter boundary and again in `Game_Variables.addValue()`, preventing string concatenation while leaving direct `setVariable` values unrestricted. |
+| 36 | Individual map data is loaded without an identified schema-validation boundary | Fixed | Pass 22 validates each loaded map before runtime construction, including identity, geometry, transfers, event pages/conditions, recursive command payloads, and current database references. |
 | 37 | Skill `scopePower` metadata is consumed but not validated | Fixed | Pass 21 validates scopePower as a supported-scope multiplier map with finite non-negative values. |
 | 38 | Skill `power` metadata is consumed but not validated | Fixed | Pass 21 validates configured skill power as a finite non-negative number before the damage/healing formulas consume it. |
 | 39 | Battle victories do not award experience | Fixed | Pass 11 awards defeated-enemy EXP exactly once to active battle-party members. |
@@ -101,14 +101,12 @@ The remaining work clusters naturally into these areas:
 
 1. **Save / ownership cleanup aftermath** — reduce remaining `$gameActor`
    assumptions and centralize actor/equipment ownership boundaries.
-2. **Map / event validation** — core database contracts are now hardened; individual
-   map/event JSON still needs a load-time schema boundary.
-3. **Remaining skill runtime** — Gravity, multi-hit/random-per-hit, escape, and
+2. **Remaining skill runtime** — Gravity, multi-hit/random-per-hit, escape, and
    banish.
-4. **UI scalability / diagnostics** — scrolling list windows and sprite-load
+3. **UI scalability / diagnostics** — scrolling list windows and sprite-load
    diagnostics.
-5. **Battle rewards / Essence progression** — currency, drops, and Resonance.
-6. **Small correctness/cleanup findings** — item/addVariable normalization,
-   accessor consistency, unused/ambiguous APIs, and temporary setup code.
-7. **Status dependencies awaiting future systems** — Stop's turn-progression
+4. **Battle rewards / Essence progression** — currency, drops, and Resonance.
+5. **Small correctness/cleanup findings** — accessor consistency, unused/ambiguous
+   APIs, equipment mutation ownership, and temporary setup code.
+6. **Status dependencies awaiting future systems** — Stop's turn-progression
    semantics and Fury/Sadness Limit gain behavior.

@@ -69,7 +69,7 @@ Completed canonical battle-data foundations include:
 
 These foundations allow the next phase of development to focus primarily on turning established data into complete runtime behavior.
 
-A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work. Pass 21 hardened the current core database contracts and retired the audit's Essence, actor/enemy combat-data, item/equipment, skill power/scope, and nested-status validation cluster; map/event validation remains a separate load-boundary task.
+A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work. Pass 21 hardened the current core database contracts, and Pass 22 added the on-demand map/event validation boundary plus event arithmetic/input normalization. Remaining audit work is now concentrated in ownership cleanup, skill-runtime gaps, UI/diagnostics, rewards/Essence progression, and a smaller set of explicit cleanup decisions.
 
 ---
 

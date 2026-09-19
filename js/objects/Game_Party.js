@@ -136,9 +136,23 @@ class Game_Party {
   // =================================
 
   gainItem(itemId, amount = 1) {
-    const currentAmount = this.itemCount(itemId);
+    const item = DatabaseManager.item(itemId);
 
-    const newAmount = currentAmount + amount;
+    if (!item) {
+      console.error(`Unknown item ID: ${itemId}`);
+      return false;
+    }
+
+    const numericAmount = Number(amount);
+
+    if (!Number.isFinite(numericAmount) || numericAmount === 0) {
+      console.error(`Invalid item amount: ${amount}`);
+      return false;
+    }
+
+    const currentAmount = Number(this.itemCount(itemId));
+    const safeCurrentAmount = Number.isFinite(currentAmount) ? currentAmount : 0;
+    const newAmount = safeCurrentAmount + numericAmount;
 
     if (newAmount <= 0) {
       delete this.items[itemId];
@@ -146,9 +160,8 @@ class Game_Party {
       this.items[itemId] = newAmount;
     }
 
-    const itemName = DatabaseManager.itemName(itemId);
-
-    DebugManager.log(`${itemName}: ${this.itemCount(itemId)}`);
+    DebugManager.log(`${item.name}: ${this.itemCount(itemId)}`);
+    return true;
   }
 
   loseItem(itemId, amount = 1) {

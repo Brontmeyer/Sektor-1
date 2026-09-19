@@ -46,6 +46,8 @@ class DatabaseManager {
 
     const mapData = await this.loadJSON(`data/${mapInfo.file}`);
 
+    DatabaseValidator.validateMapData(mapData, this, mapId);
+
     DebugManager.log(`Map ${mapId} loaded.`);
 
     return mapData;
