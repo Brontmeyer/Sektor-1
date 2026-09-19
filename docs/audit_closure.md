@@ -27,11 +27,11 @@ complete and normal new-feature development can become the primary focus.
 
 ## Current Reconciliation
 
-After Pass 22, the 42 actionable audit headings reconcile to:
+After Pass 23, the 42 actionable audit headings reconcile to:
 
-- **Fixed / superseded:** 26
-- **Partial:** 3
-- **Open:** 13
+- **Fixed / superseded:** 30
+- **Partial:** 1
+- **Open:** 11
 
 The audit's later "Verified Behavior and Design Context" section is reference
 material, not a fix backlog, and is therefore not counted in the 42 actionable
@@ -43,7 +43,7 @@ headings.
 | 2 | Game_Party battle-member comment disagrees with implementation | Fixed | Pass 17 corrected the comment to the canonical four-member limit. |
 | 3 | SaveManager persists only the legacy leader actor | Fixed | Pass 20 Save Runtime v2 serializes/restores every actor owned by `Game_Party`. |
 | 4 | Runtime battler statuses are not persisted by SaveManager | Fixed | Pass 20 persists/restores status runtime state whose canonical status is allowed to persist after battle; derived states are recomputed. |
-| 5 | Skills.json defines effects that Game_Actor.useSkill() cannot execute | Partial | Heal, damage, status application/removal, and revive execute. Escape and banish remain unsupported; specialized damage metadata is tracked separately below. |
+| 5 | Skills.json defines effects that Game_Actor.useSkill() cannot execute | Fixed | Pass 23 completes the current effect vocabulary: escape is battle-owned, banish uses the shared Death/defeat bridge, and the previously completed heal/damage/status/revive effects remain on their reusable paths. |
 | 6 | Skill `status` metadata has no identified runtime consumer | Fixed | Pass 14 routes skill status payloads through the shared status runtime. |
 | 7 | Status and skill combat metadata are only partially integrated | Partial | Passes 11–19 connected cleanup, removability, duration, triggers, modifiers, Reflect, action restrictions, defeat/revival, forced control, and Haste/Slow. Stop turn-progression halt semantics and Fury/Sadness Limit gain remain intentionally unfinished. |
 | 8 | `allyStatusChance` currently has no runtime consumer | Fixed | Pass 14 applies ally-specific status chances through the shared skill/status resolver. |
@@ -58,9 +58,9 @@ headings.
 | 17 | Save version is written but not consumed during loading | Fixed | Pass 20 introduces version-aware Save Runtime v2 plus v1 migration and future/unknown-version rejection. |
 | 18 | Window_Equipment bypasses Game_Actor APIs when unequipping | Open | Window still assigns `weaponId = 0` / `armorId = 0` directly. |
 | 19 | Skill validation covers only target, scope, and MP cost | Fixed | Pass 21 validates current type/category/element vocabularies plus power, scopePower, gravity/heal percentages, multi-hit metadata, canonical status references, and the previously added effect/status/revival/Reflect contracts. |
-| 20 | Gravity skill percentage metadata has no identified runtime consumer | Open | `gravityPercent` still has no runtime consumer. |
-| 21 | Multi-hit and per-hit random-target metadata have no identified runtime consumer | Open | `hits` / `randomTargetPerHit` still have no runtime consumer. |
-| 22 | Skill effect vocabulary exceeds the implemented runtime dispatcher | Partial | Status and revive effects are now implemented. Escape and banish remain unsupported. |
+| 20 | Gravity skill percentage metadata has no identified runtime consumer | Fixed | Pass 23 resolves configured Gravity percentages from target current HP and routes the result through shared elemental / incoming magical-damage handling. |
+| 21 | Multi-hit and per-hit random-target metadata have no identified runtime consumer | Fixed | Pass 23 consumes `hits` / `randomTargetPerHit` through one cast-level resolver that rebuilds legal candidates per hit and charges MP once. |
+| 22 | Skill effect vocabulary exceeds the implemented runtime dispatcher | Fixed | Pass 23 adds reusable escape and banish execution, completing the current seven-value effect vocabulary. |
 | 23 | Enemy `elementRates` is runtime-consumed but not specifically validated | Fixed | Pass 21 validates enemy element-rate objects and requires every configured multiplier to be a finite non-negative number. |
 | 24 | Battle-sprite metadata is runtime-consumed but not specifically validated | Fixed | Pass 21 validates configured actor/enemy sprite names, positive dimensions, and positive integer frame/row counts before rendering code sees them. |
 | 25 | Actor `growth` data is runtime-consumed but not specifically validated | Fixed | Pass 21 requires the complete current growth-stat contract and finite non-negative values before `Game_Actor.levelUp()` can consume it. |
@@ -101,12 +101,10 @@ The remaining work clusters naturally into these areas:
 
 1. **Save / ownership cleanup aftermath** — reduce remaining `$gameActor`
    assumptions and centralize actor/equipment ownership boundaries.
-2. **Remaining skill runtime** — Gravity, multi-hit/random-per-hit, escape, and
-   banish.
-3. **UI scalability / diagnostics** — scrolling list windows and sprite-load
+2. **UI scalability / diagnostics** — scrolling list windows and sprite-load
    diagnostics.
-4. **Battle rewards / Essence progression** — currency, drops, and Resonance.
-5. **Small correctness/cleanup findings** — accessor consistency, unused/ambiguous
+3. **Battle rewards / Essence progression** — currency, drops, and Resonance.
+4. **Small correctness/cleanup findings** — accessor consistency, unused/ambiguous
    APIs, equipment mutation ownership, and temporary setup code.
-6. **Status dependencies awaiting future systems** — Stop's turn-progression
+5. **Status dependencies awaiting future systems** — Stop's turn-progression
    semantics and Fury/Sadness Limit gain behavior.

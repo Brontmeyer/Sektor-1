@@ -341,6 +341,49 @@ class Game_Actor extends Game_Battler {
       return this.payMpCost(skill.mpCost || 0);
     };
 
+    // BATTLE-LEVEL ESCAPE EFFECT
+    // The actor owns skill legality and MP payment. BattleManager owns the
+    // actual battle outcome so this branch intentionally performs no scene
+    // transition itself.
+    if (skill.effect === "escape") {
+      if (!paySkillCost()) {
+        return false;
+      }
+
+      DebugManager.log(`${this.name} used ${skill.name}.`);
+      return true;
+    }
+
+    // BANISH EFFECT
+    // Banish is enemy-owned state because later reward systems need to know
+    // that this defeat came from banishment (for example, no currency reward)
+    // without re-parsing the skill that caused it.
+    if (skill.effect === "banish") {
+      if (!target || typeof target.banish !== "function") {
+        console.warn(`${skill.name} has no valid banish target.`);
+        return false;
+      }
+
+      if (!paySkillCost()) {
+        return false;
+      }
+
+      const banishment = target.banish();
+
+      if (!banishment?.success) {
+        return false;
+      }
+
+      this._lastSkillStatusResults = this.resolveSkillStatusEffects(
+        skill,
+        target,
+        random,
+      );
+
+      DebugManager.log(`${this.name} used ${skill.name} on ${target.name}.`);
+      return true;
+    }
+
     // REVIVAL EFFECT
     if (skill.effect === "revive") {
       if (!target || typeof target.canBeRevived !== "function") {
@@ -400,7 +443,7 @@ class Game_Actor extends Game_Battler {
         return false;
       }
 
-      const healAmount = this.magicHealing(skill, scope);
+      const healAmount = this.magicHealing(skill, scope, target);
 
       if (!paySkillCost()) {
         return false;
@@ -500,9 +543,26 @@ class Game_Actor extends Game_Battler {
     return Number.isFinite(multiplier) ? multiplier : 1;
   }
 
-  magicHealing(skill, scope = "single") {
+  magicHealing(skill, scope = "single", target = null) {
     if (!skill) {
       return 0;
+    }
+
+    const scopeMultiplier = this.skillScopeMultiplier(skill, scope);
+    const healPercent = Number(skill.healPercent);
+
+    // Percentage healing is resolved from the target's maximum HP. This keeps
+    // effects such as Perfect Renewal data-driven instead of turning them into
+    // skill-name checks.
+    if (Number.isFinite(healPercent) && healPercent > 0 && target) {
+      const maximumHp = Number(target.maxHp);
+
+      if (Number.isFinite(maximumHp) && maximumHp > 0) {
+        return Math.max(
+          1,
+          Math.floor(maximumHp * healPercent * scopeMultiplier),
+        );
+      }
     }
 
     const power = skill.power || 0;
@@ -512,8 +572,6 @@ class Game_Actor extends Game_Battler {
     // FF7 restorative magic formula:
     // (Spell Power × 22) + [(Level + Magic Attack) × 6]
     const rawHealing = power * 22 + (level + magicAttack) * 6;
-
-    const scopeMultiplier = this.skillScopeMultiplier(skill, scope);
 
     return Math.max(1, Math.floor(rawHealing * scopeMultiplier));
   }
@@ -550,6 +608,20 @@ class Game_Actor extends Game_Battler {
         : 1;
 
     const scopeMultiplier = this.skillScopeMultiplier(skill, scope);
+    const gravityPercent = Number(skill.gravityPercent);
+
+    // Gravity-style damage uses the target's current HP instead of the normal
+    // spell-power / Magic Defense formula. Elemental rate and normal incoming
+    // magical-damage handling still apply afterward through the shared battle
+    // damage path.
+    if (Number.isFinite(gravityPercent) && gravityPercent > 0) {
+      return Math.max(
+        0,
+        Math.floor(
+          target.hp * gravityPercent * elementMultiplier * scopeMultiplier,
+        ),
+      );
+    }
 
     return Math.max(
       0,

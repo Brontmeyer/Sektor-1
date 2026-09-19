@@ -151,7 +151,7 @@ On-demand map files pass through `DatabaseValidator.validateMapData()` before `G
 
 The current validator establishes field-level contracts for runtime-active actor and enemy combat data, battle-sprite metadata, item/equipment schemas, skill targeting/effect/combat metadata, the canonical nested status schema, encounters, Essence progression/ability/mastery definitions, and on-demand map/event data. Essence progression ordering and database references are validated before `Game_Essence` can consume them. Map validation recursively checks event pages and supported interpreter commands before world runtime objects are constructed.
 
-Validation describes the shape and references of canonical data; it does not imply that every designed mechanic is runtime-complete. For example, validated Gravity, multi-hit, and Essence passive metadata may still belong to later runtime passes. As new database systems become runtime-active, their validation rules should be extended here or delegated to appropriately focused helpers.
+Validation describes the shape and references of canonical data; it does not imply that every designed mechanic is runtime-complete. Gravity, percentage healing, and multi-hit skill metadata are now runtime-active; Essence passive metadata still belongs to later runtime passes. As new database systems become runtime-active, their validation rules should be extended here or delegated to appropriately focused helpers.
 
 ## Input
 

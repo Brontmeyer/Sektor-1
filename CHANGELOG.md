@@ -83,6 +83,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added dedicated database-contract regression coverage for malformed runtime-consumed data
 - Added Map & Event Contract v1 with load-time validation for map geometry, transfers, events, pages, conditions, recursive commands, and database references
 - Added dedicated map/event contract regression coverage for malformed world/event data and runtime input normalization
+- Added Skills Runtime Completion v1 with data-driven Gravity damage, percentage healing, multi-hit/random-per-hit casting, Retreat escape, and Banish execution
+- Added battle-local Banish provenance so future currency rewards can honor the canonical no-Gil rule without skill-name checks
+- Added dedicated skill-runtime completion regression coverage
 
 ### Changed
 
@@ -119,6 +122,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Made on-demand map loading validate the loaded map ID and runtime-consumed event contract before constructing world objects
 - Normalized item-gain and additive-variable arithmetic so numeric-looking strings cannot silently concatenate runtime state
 - Reconciled the map/event audit cluster from 23 fixed / 3 partial / 16 open to 26 fixed / 3 partial / 13 open
+- Made Gravity damage derive from target current HP while continuing through shared elemental and incoming magical-damage handling
+- Made percentage-healing metadata restore target HP through the shared healing path
+- Made random-per-hit skills own target selection at cast resolution and pay MP only once per cast
+- Reconciled the remaining skill-runtime audit cluster from 26 fixed / 3 partial / 13 open to 30 fixed / 1 partial / 11 open
 
 ### Documentation
 
@@ -145,6 +152,18 @@ docs/audit_closure.md  Current reconciliation of historical audit findings
 # 🏺 Development History
 
 The following entries preserve Sektor 1's original development-pass history.
+
+---
+
+## Pass 23 - Skills Runtime Completion v1
+
+- Cross-referenced the remaining skill-runtime audit findings against current `Skills.json`, battle execution, and regression coverage before implementation
+- Connected `gravityPercent` to current-HP magical damage without skill-name checks
+- Connected `healPercent` to target maximum-HP restoration, closing an additional current-data gap that the historical audit did not explicitly list
+- Implemented generic multi-hit / random-target-per-hit casting with one MP payment per cast and candidate rebuilding between hits
+- Implemented the reusable `escape` effect through BattleManager's authoritative escape outcome, preserving zero-reward finalization
+- Implemented the reusable `banish` effect through the canonical Death/defeat bridge and preserved banishment provenance for future no-Gil currency handling
+- Added dedicated skill-runtime completion regression tests and updated audit closure status
 
 ---
 

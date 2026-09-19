@@ -69,7 +69,7 @@ Completed canonical battle-data foundations include:
 
 These foundations allow the next phase of development to focus primarily on turning established data into complete runtime behavior.
 
-A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work. Pass 21 hardened the current core database contracts, and Pass 22 added the on-demand map/event validation boundary plus event arithmetic/input normalization. Remaining audit work is now concentrated in ownership cleanup, skill-runtime gaps, UI/diagnostics, rewards/Essence progression, and a smaller set of explicit cleanup decisions.
+A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work. Pass 21 hardened the current core database contracts, Pass 22 added the on-demand map/event validation boundary plus event arithmetic/input normalization, and Pass 23 closed the remaining audit-listed Skills Runtime gaps. Remaining audit work is now concentrated in ownership cleanup, UI/diagnostics, rewards/Essence progression, and a smaller set of explicit cleanup decisions.
 
 ---
 
@@ -119,17 +119,12 @@ Status Runtime is complete when the engine can load the canonical status databas
 
 Skills v1 already defines the initial 54 abilities, but some mechanics still depend on systems that are unfinished.
 
-The first Status Runtime dependencies are now connected: skill `status` payloads can apply, refresh, toggle, or remove canonical runtime statuses, including status payloads attached to damaging spells, reflectable skills can be redirected by the shared Reflect runtime, and the two initial revival skills now execute through the shared defeated-state/revival contract. Ally-specific status chances, target resistance/immunity, per-target reflection, defeated-target selection, and revival HP percentages all flow through reusable rules.
+The current `Skills.json` runtime vocabulary is now connected through reusable execution paths: power-based damage/healing, status application/removal, revival, Gravity current-HP damage, percentage healing, multi-hit/random-per-hit casting, Retreat escape, and Banish all execute without skill-name patches. Ally-specific status chances, target resistance/immunity, per-target reflection, defeated-target selection, revival HP percentages, scope-dependent power, and one-cost multi-target / multi-hit casting all flow through shared rules.
 
 Primary remaining work includes:
 
-- Implement remaining mechanics required by `Skills.json`
-- Verify single-target and all-target behavior
-- Verify scope-dependent power behavior
-- Complete multi-hit and random-target-per-hit behavior
-- Complete remaining special HP interactions
-- Implement undead restorative-damage interaction
-- Validate every initial skill against its canonical data
+- Verify every initial skill against its canonical data through broader playtest/content coverage
+- Implement undead restorative-damage interaction once undead battler identity/data is established
 
 ## Milestone Exit Condition
 

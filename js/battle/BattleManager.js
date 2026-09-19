@@ -220,6 +220,8 @@ class BattleManager {
         enemyId: enemy.enemyId,
         name: enemy.name,
         expReward: enemy.expReward,
+        banished:
+          typeof enemy.isBanished === "function" ? enemy.isBanished() : false,
       })),
       party: partyResults,
     };
@@ -754,6 +756,91 @@ class BattleManager {
     return reflection.reflections;
   }
 
+  skillHitCount(skill) {
+    const hits = Number(skill?.hits);
+
+    return Number.isInteger(hits) && hits > 0 ? hits : 1;
+  }
+
+  skillUsesRandomTargetPerHit(skill) {
+    return (
+      skill?.randomTargetPerHit === true &&
+      this.skillHitCount(skill) > 1
+    );
+  }
+
+  resolveRandomMultiHitMagic(caster, skill, random = Math.random) {
+    if (!caster || !skill || !this.skillUsesRandomTargetPerHit(skill)) {
+      return [];
+    }
+
+    const resolutions = [];
+    let paidCost = false;
+    const hitCount = this.skillHitCount(skill);
+
+    for (let hitIndex = 0; hitIndex < hitCount; hitIndex++) {
+      // Rebuild candidates every hit so a target defeated by an earlier strike
+      // is not selected again while another legal target remains.
+      const candidates = this.randomSkillTargetCandidates(skill);
+      const target = this.randomBattleTarget(candidates, random);
+
+      if (!target) {
+        break;
+      }
+
+      const resolution = this.resolveMagicEffectOnTarget(
+        caster,
+        skill,
+        target,
+        !paidCost,
+        "single",
+        random,
+      );
+
+      if (!resolution.success) {
+        if (!paidCost) {
+          break;
+        }
+
+        continue;
+      }
+
+      paidCost = true;
+      resolutions.push({
+        hit: hitIndex + 1,
+        ...resolution,
+      });
+    }
+
+    return resolutions;
+  }
+
+  performEscapeSkill(caster, skill) {
+    const battle = this.scene;
+
+    if (!caster || !skill || skill.effect !== "escape") {
+      return false;
+    }
+
+    const success = caster.useSkill(
+      skill.id,
+      caster,
+      true,
+      "all",
+    );
+
+    if (!success) {
+      return false;
+    }
+
+    battle.addBattleMessage(
+      `${caster.name} casts ${skill.name}! The party escapes!`,
+    );
+    this.declareBattleOutcome(BattleManager.OUTCOME_ESCAPE);
+
+    return true;
+  }
+
   resolveMagicEffectOnTarget(
     caster,
     skill,
@@ -838,6 +925,13 @@ class BattleManager {
       this.scene.addBattleMessage(
         `${caster.name} casts ${skill.name}! ` +
           `${target.name} returns with ${target.hp} HP!`,
+      );
+    }
+
+    if (skill.effect === "banish") {
+      this.scene.addBattlePopup(target, "BANISHED", "status");
+      this.scene.addBattleMessage(
+        `${caster.name} casts ${skill.name}! ${target.name} is banished!`,
       );
     }
 
@@ -1326,6 +1420,34 @@ class BattleManager {
     // Store the selected skill before entering target selection.
     battle.pendingMagicSkill = skill;
 
+    // Start on the first valid scope defined by the skill.
+    battle.targetScope = scopes.includes("single")
+      ? "single"
+      : scopes[0] || "single";
+
+    // Cast-level effects and per-hit random-target skills own their targeting
+    // at resolution time. They should not ask the player to select a target
+    // that will immediately be ignored.
+    if (skill.effect === "escape" || this.skillUsesRandomTargetPerHit(skill)) {
+      if (
+        this.skillUsesRandomTargetPerHit(skill) &&
+        this.randomSkillTargetCandidates(skill).length === 0
+      ) {
+        battle.addBattleMessage(`${skill.name} has no valid targets.`);
+        battle.pendingMagicSkill = null;
+        return;
+      }
+
+      battle.pendingMagicTarget = null;
+      battle.enemyTargetAction = null;
+      battle.selectingEnemyTarget = false;
+      battle.battleInputLocked = true;
+      battle.setActorState("magic", 0.9);
+      battle.setActionPhase("magicCast", 0.4);
+      battle.magicWindow.hide();
+      return;
+    }
+
     // Start on the first allowed group that actually contains a legal target.
     // Enemy-first preserves the established offensive targeting preference,
     // while revive/cleanse skills can select defeated allies through the same
@@ -1352,11 +1474,6 @@ class BattleManager {
       battle.pendingMagicSkill = null;
       return;
     }
-
-    // Start on the first valid scope defined by the skill.
-    battle.targetScope = scopes.includes("single")
-      ? "single"
-      : scopes[0] || "single";
 
     // Confuse preserves the chosen action/skill but takes target selection away
     // from the player. Single-target skills choose randomly from every target
@@ -1596,6 +1713,41 @@ class BattleManager {
     const caster = this.party().currentBattler();
 
     if (!caster || !skill) {
+      return;
+    }
+
+    // =====================================
+    // CAST-LEVEL ESCAPE EFFECT
+    // =====================================
+
+    if (skill.effect === "escape") {
+      const success = this.performEscapeSkill(caster, skill);
+
+      if (success) {
+        battle.magicEffectSkill = skill;
+        battle.magicEffectTarget = caster;
+      }
+
+      battle.pendingMagicSkill = null;
+      battle.pendingMagicTarget = null;
+      return;
+    }
+
+    // =====================================
+    // RANDOM PER-HIT MAGIC EFFECT
+    // =====================================
+
+    if (this.skillUsesRandomTargetPerHit(skill)) {
+      const resolutions = this.resolveRandomMultiHitMagic(caster, skill);
+      const lastResolution = resolutions[resolutions.length - 1] || null;
+
+      if (lastResolution) {
+        battle.magicEffectSkill = skill;
+        battle.magicEffectTarget = lastResolution.target;
+      }
+
+      battle.pendingMagicSkill = null;
+      battle.pendingMagicTarget = null;
       return;
     }
 

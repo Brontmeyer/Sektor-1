@@ -191,7 +191,13 @@ Skills can describe behavior such as:
 
 The engine should interpret reusable skill properties rather than hard-code individual spell names whenever practical.
 
-For all-target magic, MP cost is paid once for the cast even though the effect is resolved against multiple targets.
+For all-target magic, MP cost is paid once for the cast even though the effect is resolved against multiple targets. Multi-hit skills follow the same cast-cost rule: `hits` controls the number of effect resolutions, and `randomTargetPerHit: true` rebuilds the legal target pool before each hit so defeated targets do not remain selectable when another legal target exists.
+
+Gravity-style skills use `gravityPercent` against the target's **current HP** rather than the normal spell-power / Magic Defense formula. The resulting amount still passes through shared elemental and incoming magical-damage handling. Because the percentage is floored from current HP, the current Gravity definitions naturally stop dealing damage at the final sliver of HP rather than requiring a skill-name exception.
+
+Percentage-healing skills use `healPercent` against the target's maximum HP. This is the data-driven path used by Perfect Renewal's full restoration.
+
+The `escape` effect is battle-owned: a successful cast declares the authoritative escape outcome and finalizes with no rewards. The `banish` effect routes through the canonical Death/defeat state while preserving a separate banished marker so future currency rewards can exclude Gil from that enemy without re-parsing the originating skill.
 
 The current battle presentation can report elemental outcomes such as:
 
