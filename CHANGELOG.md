@@ -90,8 +90,15 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added UI Resilience v1 with shared scrolling list viewports for inventory, equipment selection, field magic, battle items, and battle magic
 - Added explicit battle-sprite load diagnostics plus named visual fallbacks and dedicated UI-resilience regression coverage
 
+- Added Audit Runtime Cleanup v1 with completed Stop turn-progression semantics and a reusable Limit-gain multiplier contract
+- Added dedicated regression coverage for Stop personal-clock freezing, Limit multiplier composition, and database-accessor fallback consistency
+
 ### Changed
 
+- Standardized all indexed `DatabaseManager` record/name accessors behind one null-safe convention with diagnostic unknown-ID fallbacks
+- Made Stop freeze personal turn slots, turn-start triggers, fractional speed progress, and ordinary battler-relative timers while its own duration advances on the side-round clock
+- Reclassified Fury / Sadness / Near-Death Limit modifiers as a complete Status Runtime contract; future gauge accumulation remains owned by the future Limit system
+- Reconciled the audit tracker to 39 fixed / 0 partial / 3 open items after Pass 26
 - Expanded the project from single-character battle assumptions toward a multi-character party architecture
 - Established canonical terminology across Skills, Essences, and Statuses
 - Standardized status terminology including `paralyze` and `confuse`

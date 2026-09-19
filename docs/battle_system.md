@@ -319,7 +319,7 @@ Poison and Dual are distinct statuses even though both belong to the damage-over
 
 Regen and damaging-over-time statuses may coexist. Their turn-start effects resolve independently according to their own definitions.
 
-Stop and Paralyze are intentionally distinct. Both currently prevent acting through the shared `canAct` runtime rule. Haste and Slow now participate in turn-slot scheduling, but Stop's additional `haltsTurnProgression` behavior remains separate unfinished work because a halted personal clock needs an explicit expiration rule rather than being treated as an ordinary speed multiplier.
+Stop and Paralyze are intentionally distinct. Both prevent acting through the shared `canAct` runtime rule, but Stop additionally freezes personal turn progression through `effects.haltsTurnProgression`. A stopped battler receives no scheduled turn slots, does not process turn-start triggers, does not advance ordinary battler-relative status timers, and preserves any fractional Haste/Slow turn progress already accumulated. Stop's own duration advances once per side round after that round's queue is determined; when it expires, the battler resumes eligibility on the next side round rather than gaining a turn immediately in the expiration round.
 
 Sleep and Confuse are removed when the afflicted battler actually takes physical damage. A miss or a fully nullified physical hit does not remove them. Confuse reads `effects.forceRandomTarget` through the shared battler runtime: a chosen basic Attack targets a random living battler on either side, enemy basic attacks can likewise redirect to either side, and a chosen single-target skill selects randomly from the targets that are legal for that skill. If a future skill only supports all-target scope, Confuse instead chooses a random legal target group and resolves the skill against that side. Confuse changes target authority rather than choosing a different action for the battler.
 
@@ -332,6 +332,8 @@ Forced action ownership is also data-driven. `effects.playerControl: false` remo
 Death-Sentence applies Death when its countdown expires. Slow-Numb applies Petrify when its countdown expires.
 
 Fury and Sadness are intended to be mutually exclusive. That relationship is an engine interaction rule rather than duplicated inside each status definition.
+
+Fury, Sadness, and Near-Death expose their data-driven Limit modifiers through `Game_Battler.limitGainMultiplier()`. The Status Runtime owns this multiplier contract; the future Limit-gauge system will own actual gauge accumulation and will consume the multiplier when that feature is implemented.
 
 Death is a battle defeat state that can be revived. Post-battle processing restores defeated party members to 1 HP after battle rather than encoding that behavior inside the Death status object.
 

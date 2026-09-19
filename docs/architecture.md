@@ -145,6 +145,8 @@ On-demand map files pass through `DatabaseValidator.validateMapData()` before `G
 
 `Statuses.json` is runtime-active and is exposed through both numeric-ID and keyed status lookup helpers.
 
+All indexed database accessors share the same null-safe record helper. Name helpers use one diagnostic fallback convention (`Unknown <Type> <ID>`), while keyed status lookup includes the missing key in its fallback. This keeps missing-data behavior consistent regardless of which database collection a caller uses.
+
 ## DatabaseValidator
 
 `DatabaseValidator` protects the engine from malformed or inconsistent loaded data.
@@ -428,7 +430,7 @@ Battle systems consume Essence-granted abilities and passive effects where appro
 
 `Statuses.json` defines Status System v1.
 
-The active Status Runtime provides reusable application, removal, duration, countdown, derived-state, modifier, immunity/resistance, stacking, interaction, defeat-state, and revival behavior. `effects.countsAsDefeated` contributes to the shared defeated-state contract, while `effects.canBeRevived` controls whether a status-defined defeat can be removed through revival. The shared damage path consumes data-driven incoming damage, outgoing physical damage, physical accuracy, wake-on-hit, and elemental absorption properties without checking individual status names.
+The active Status Runtime provides reusable application, removal, duration, countdown, derived-state, modifier, immunity/resistance, stacking, interaction, defeat-state, revival, and turn-progression behavior. `effects.countsAsDefeated` contributes to the shared defeated-state contract, while `effects.canBeRevived` controls whether a status-defined defeat can be removed through revival. `effects.haltsTurnProgression` freezes scheduled personal turns and ordinary battler-relative status progression while the halting status advances on the side-round clock so it can expire. The shared damage path consumes data-driven incoming damage, outgoing physical damage, physical accuracy, wake-on-hit, and elemental absorption properties without checking individual status names. `Game_Battler.limitGainMultiplier()` exposes the canonical Fury/Sadness/Near-Death modifier contract for the future Limit system without making Status Runtime own Limit-gauge state.
 
 Battlers own their active status state while battle systems trigger and coordinate status effects at the appropriate points in combat.
 

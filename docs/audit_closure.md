@@ -27,11 +27,11 @@ complete and normal new-feature development can become the primary focus.
 
 ## Current Reconciliation
 
-After Pass 25, the 42 actionable audit headings reconcile to:
+After Pass 26, the 42 actionable audit headings reconcile to:
 
-- **Fixed / superseded:** 37
-- **Partial:** 1
-- **Open:** 4
+- **Fixed / superseded:** 39
+- **Partial:** 0
+- **Open:** 3
 
 The audit's later "Verified Behavior and Design Context" section is reference
 material, not a fix backlog, and is therefore not counted in the 42 actionable
@@ -45,10 +45,10 @@ headings.
 | 4 | Runtime battler statuses are not persisted by SaveManager | Fixed | Pass 20 persists/restores status runtime state whose canonical status is allowed to persist after battle; derived states are recomputed. |
 | 5 | Skills.json defines effects that Game_Actor.useSkill() cannot execute | Fixed | Pass 23 completes the current effect vocabulary: escape is battle-owned, banish uses the shared Death/defeat bridge, and the previously completed heal/damage/status/revive effects remain on their reusable paths. |
 | 6 | Skill `status` metadata has no identified runtime consumer | Fixed | Pass 14 routes skill status payloads through the shared status runtime. |
-| 7 | Status and skill combat metadata are only partially integrated | Partial | Passes 11–19 connected cleanup, removability, duration, triggers, modifiers, Reflect, action restrictions, defeat/revival, forced control, and Haste/Slow. Stop turn-progression halt semantics and Fury/Sadness Limit gain remain intentionally unfinished. |
+| 7 | Status and skill combat metadata are only partially integrated | Fixed | Pass 26 finishes Stop's `haltsTurnProgression` contract by freezing scheduled turns, personal turn progress, turn-start triggers, and ordinary battler-relative status timers while advancing Stop itself once per side round so it can expire. `Game_Battler.limitGainMultiplier()` now consumes Fury/Sadness/Near-Death modifier data as the reusable boundary for the future Limit gauge; actual Limit accumulation remains a future feature rather than unfinished Status Runtime. |
 | 8 | `allyStatusChance` currently has no runtime consumer | Fixed | Pass 14 applies ally-specific status chances through the shared skill/status resolver. |
 | 9 | Legacy `$gameActor` dependency remains widespread | Fixed | Pass 24 removes active engine dependencies on `$gameActor`; menu/interpreter/battle fallbacks resolve actors through `Game_Party` or explicit actor context. `main.js` retains only the compatibility alias for external/legacy integrations. |
-| 10 | Database accessor consistency | Open | Accessor fallback/optional-chaining conventions still vary. Low-risk cleanup decision remains. |
+| 10 | Database accessor consistency | Fixed | Pass 26 routes all indexed database accessors through one null-safe helper and standardizes unknown-name fallbacks to include the requested ID; keyed status-name fallback likewise includes the missing key. |
 | 11 | Status nested-schema validation is permissive | Fixed | Pass 21 validates the current classification/duration/condition/effect vocabularies, consumed field types/ranges, expiration references, and rejects unsupported nested keys. |
 | 12 | Essence level calculation assumes ordered progression data | Fixed | Pass 21 enforces strictly increasing Essence levels and Resonance thresholds, including the canonical level-1 / zero-Resonance start. |
 | 13 | Small validation duplication in duration rules | Fixed | Pass 21 consolidates turn/countdown positive-integer duration validation into one shared rule while hardening the surrounding nested schema. |
@@ -97,8 +97,8 @@ Before starting a new improvement pass:
 
 ## Current Highest-Value Audit Buckets
 
-The remaining work clusters naturally into these areas:
+Only one actionable audit cluster remains:
 
 1. **Battle rewards / Essence progression** — currency, drops, and Resonance.
-2. **Small correctness/cleanup finding** — standardize database accessor/fallback conventions.
-3. **Status dependency decision** — finish Stop's turn-progression semantics and explicitly defer Fury/Sadness Limit gain until the Limit system exists.
+
+The future Limit gauge is no longer an audit-closure dependency. Status Runtime now exposes the canonical `limitGainMultiplier()` contract that the eventual Limit system will consume.

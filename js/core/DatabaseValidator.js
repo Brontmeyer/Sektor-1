@@ -1913,6 +1913,15 @@ class DatabaseValidator {
         errors.push(`Status ${index} with effects.canBeRevived must also set effects.countsAsDefeated to true.`);
       }
 
+      if (
+        effects.haltsTurnProgression === true &&
+        !["turns", "countdown"].includes(status.duration?.type)
+      ) {
+        errors.push(
+          `Status ${index} with effects.haltsTurnProgression must use a finite turns/countdown duration.`,
+        );
+      }
+
       if (effects.turnSpeedMultiplier !== undefined) {
         this.validateFiniteNumber(
           `Status ${index} effects.turnSpeedMultiplier`,

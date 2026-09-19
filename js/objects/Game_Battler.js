@@ -381,6 +381,14 @@ class Game_Battler {
     return Math.max(0, this.statusEffectMultiplier("turnSpeedMultiplier"));
   }
 
+  haltsTurnProgression() {
+    return this.hasStatusEffectFlag("haltsTurnProgression");
+  }
+
+  limitGainMultiplier() {
+    return Math.max(0, this.statusEffectMultiplier("limitGainMultiplier"));
+  }
+
   incomingDamageMultiplier(category) {
     if (category === "physical") {
       return Math.max(
@@ -800,7 +808,7 @@ class Game_Battler {
     };
   }
 
-  tickStatusDurations() {
+  tickStatusDurations({ mode = "all" } = {}) {
     const expiredStatuses = [];
 
     for (let index = this.statuses.length - 1; index >= 0; index--) {
@@ -813,13 +821,23 @@ class Game_Battler {
         continue;
       }
 
+      const definition = this.statusDefinition(runtimeStatus.key);
+      const haltsTurnProgression =
+        definition?.effects?.haltsTurnProgression === true;
+
+      if (mode === "turn" && haltsTurnProgression) {
+        continue;
+      }
+
+      if (mode === "haltedRound" && !haltsTurnProgression) {
+        continue;
+      }
+
       runtimeStatus.turnsRemaining--;
 
       if (runtimeStatus.turnsRemaining !== 0) {
         continue;
       }
-
-      const definition = this.statusDefinition(runtimeStatus.key);
 
       if (
         definition?.duration?.type !== "turns" &&

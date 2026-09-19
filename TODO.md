@@ -41,14 +41,14 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Reflect spell reflection
 - [x] Haste / Slow turn-speed modifiers
 - [x] Stop / Paralyze action prevention
-- [ ] Stop turn-progression halt semantics
+- [x] Stop turn-progression halt semantics
 - [x] Sleep / Confuse physical-damage removal
 - [x] Confuse random targeting
 - [x] Silence skill-type restrictions
 - [x] Petrify defeat-state handling
 - [x] Death defeat / revival handling
 - [x] Berserk forced physical attacks
-- [ ] Fury / Sadness Limit modifiers
+- [x] Fury / Sadness / Near-Death Limit multiplier runtime contract
 - [x] Darkness physical accuracy reduction
 - [x] Frog restricted actions
 - [x] Small physical damage modifiers
@@ -104,6 +104,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Implement undead restorative-damage interaction
 - [ ] Design Summon Magic
 - [ ] Design Limit Skills
+- [ ] Implement Limit gauge/runtime and consume status Limit multipliers
 
 ---
 
@@ -158,7 +159,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Complete repository-audit closure (`docs/audit_closure.md`)
 - [x] Equipment system
 - [x] Inventory system
-- [ ] Complete status runtime
+- [x] Complete status runtime
 - [ ] Complete Essence runtime
 - [ ] Enemy AI
 - [ ] Boss scripting

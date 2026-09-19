@@ -70,17 +70,17 @@ Completed canonical battle-data foundations include:
 
 These foundations allow the next phase of development to focus primarily on turning established data into complete runtime behavior.
 
-A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work. Pass 21 hardened the current core database contracts, Pass 22 added the on-demand map/event validation boundary plus event arithmetic/input normalization, Pass 23 closed the remaining audit-listed Skills Runtime gaps, Pass 24 removed the remaining active single-actor ownership assumptions while keeping `$gameActor` only as a compatibility alias, and Pass 25 closed the remaining audit-listed UI scalability / sprite-diagnostic gaps. Remaining audit work is now concentrated in rewards/Essence progression, database-accessor cleanup, and one explicit status-runtime decision.
+A repository-audit closure track is also active. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` reconciles each actionable finding against the current repository so completed work is not accidentally rebuilt. New passes should check the closure tracker before choosing work. Pass 21 hardened the current core database contracts, Pass 22 added the on-demand map/event validation boundary plus event arithmetic/input normalization, Pass 23 closed the remaining audit-listed Skills Runtime gaps, Pass 24 removed the remaining active single-actor ownership assumptions while keeping `$gameActor` only as a compatibility alias, and Pass 25 closed the remaining audit-listed UI scalability / sprite-diagnostic gaps. After Pass 26, remaining audit work is concentrated entirely in battle rewards / Essence progression: currency, item drops, and Resonance.
 
 ---
 
-# 🚩 Milestone 1: Status Runtime
+# ✅ Milestone 1: Status Runtime
 
-**Current development focus**
+**Runtime foundation complete**
 
 The Status System is the current major runtime foundation.
 
-The canonical status data is designed, and the runtime now handles shared status instances, application/removal, duration refresh, resistance/immunity rates, derived-state evaluation, battler-relative turn timing, battle presentation, reusable status-driven combat modifiers, per-target Reflect redirection, data-driven action restrictions, and shared defeat/revival semantics. The milestone remains active because several advanced control-flow mechanics still need to be connected.
+The canonical status data is designed, and the runtime now handles shared status instances, application/removal, duration refresh, resistance/immunity rates, derived-state evaluation, battler-relative turn timing, Stop-specific turn-progression freezing, battle presentation, reusable status-driven combat modifiers, per-target Reflect redirection, data-driven action restrictions, forced action control, and shared defeat/revival semantics.
 
 Status Runtime Core v1, Status Combat Modifiers v1, Reflect Runtime v1, Action Restrictions v1, Defeat & Revival Runtime v1, Forced Action Control v1, and Turn Speed Runtime v1 have established:
 
@@ -105,10 +105,12 @@ Status Runtime Core v1, Status Combat Modifiers v1, Reflect Runtime v1, Action R
 - Interleaved bonus turn slots so Haste adds frequency without bypassing normal side ordering
 - Shared `isDefeated()` semantics for HP-zero and status-defined defeat, including Petrify
 - Data-driven Death/KO revival with defeated-target selection and cleansing-aware Petrify handling
+- Stop-specific personal-clock freezing with side-round expiration
+- A reusable `limitGainMultiplier()` status contract for Fury / Sadness / Near-Death
 
-Remaining milestone work is primarily the advanced mechanics required by the 25 initial statuses, especially Stop's separate turn-progression halt semantics and Fury / Sadness Limit behavior. The latter still depends on the future Limit system.
+The initial Status Runtime milestone is complete. The future Limit system will consume the already-exposed status multiplier contract when Limit-gauge mechanics are designed; that work belongs to the Limit feature rather than to Status Runtime.
 
-This milestone should continue to establish reusable status processing rather than twenty-five unrelated status scripts.
+Further status expansion should continue to use reusable metadata-driven processing rather than status-name-specific scripts.
 
 ## Milestone Exit Condition
 

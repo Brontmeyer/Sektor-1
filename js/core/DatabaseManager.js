@@ -54,21 +54,33 @@ class DatabaseManager {
   }
 
   // =================================
+  // Indexed Accessor Helpers
+  // =================================
+
+  static indexedRecord(collection, id) {
+    if (!Array.isArray(collection)) {
+      return null;
+    }
+
+    return collection[id] || null;
+  }
+
+  static indexedRecordName(collection, id, label) {
+    const record = this.indexedRecord(collection, id);
+
+    return record ? record.name : `Unknown ${label} ${id}`;
+  }
+
+  // =================================
   // Actors
   // =================================
 
   static actor(actorId) {
-    return this.actors[actorId] || null;
+    return this.indexedRecord(this.actors, actorId);
   }
 
   static actorName(actorId) {
-    const actor = this.actor(actorId);
-
-    if (!actor) {
-      return `Unknown Actor ${actorId}`;
-    }
-
-    return actor.name;
+    return this.indexedRecordName(this.actors, actorId, "Actor");
   }
 
   // =================================
@@ -76,13 +88,11 @@ class DatabaseManager {
   // =================================
 
   static enemy(id) {
-    return this.enemies?.[id] || null;
+    return this.indexedRecord(this.enemies, id);
   }
 
   static enemyName(id) {
-    const enemy = this.enemy(id);
-
-    return enemy ? enemy.name : "Unknown Enemy";
+    return this.indexedRecordName(this.enemies, id, "Enemy");
   }
 
   // =================================
@@ -90,13 +100,11 @@ class DatabaseManager {
   // =================================
 
   static encounter(id) {
-    return this.encounters?.[id] || null;
+    return this.indexedRecord(this.encounters, id);
   }
 
   static encounterName(id) {
-    const encounter = this.encounter(id);
-
-    return encounter ? encounter.name : "Unknown Encounter";
+    return this.indexedRecordName(this.encounters, id, "Encounter");
   }
 
   // =================================
@@ -104,17 +112,11 @@ class DatabaseManager {
   // =================================
 
   static item(itemId) {
-    return this.items[itemId] || null;
+    return this.indexedRecord(this.items, itemId);
   }
 
   static itemName(itemId) {
-    const item = this.item(itemId);
-
-    if (!item) {
-      return `Unknown Item ${itemId}`;
-    }
-
-    return item.name;
+    return this.indexedRecordName(this.items, itemId, "Item");
   }
 
   // =================================
@@ -122,17 +124,11 @@ class DatabaseManager {
   // =================================
 
   static weapon(weaponId) {
-    return this.weapons[weaponId] || null;
+    return this.indexedRecord(this.weapons, weaponId);
   }
 
   static weaponName(weaponId) {
-    const weapon = this.weapon(weaponId);
-
-    if (!weapon) {
-      return `Unknown Weapon ${weaponId}`;
-    }
-
-    return weapon.name;
+    return this.indexedRecordName(this.weapons, weaponId, "Weapon");
   }
 
   // =================================
@@ -140,17 +136,11 @@ class DatabaseManager {
   // =================================
 
   static armor(armorId) {
-    return this.armors[armorId] || null;
+    return this.indexedRecord(this.armors, armorId);
   }
 
   static armorName(armorId) {
-    const armor = this.armor(armorId);
-
-    if (!armor) {
-      return `Unknown Armor ${armorId}`;
-    }
-
-    return armor.name;
+    return this.indexedRecordName(this.armors, armorId, "Armor");
   }
 
   // =================================
@@ -158,13 +148,11 @@ class DatabaseManager {
   // =================================
 
   static skill(id) {
-    return this.skills?.[id] || null;
+    return this.indexedRecord(this.skills, id);
   }
 
   static skillName(id) {
-    const skill = this.skill(id);
-
-    return skill ? skill.name : "Unknown Skill";
+    return this.indexedRecordName(this.skills, id, "Skill");
   }
 
   // =================================
@@ -172,13 +160,11 @@ class DatabaseManager {
   // =================================
 
   static essence(id) {
-    return this.essences?.[id] || null;
+    return this.indexedRecord(this.essences, id);
   }
 
   static essenceName(id) {
-    const essence = this.essence(id);
-
-    return essence ? essence.name : "Unknown Essence";
+    return this.indexedRecordName(this.essences, id, "Essence");
   }
 
   // =================================
@@ -186,13 +172,11 @@ class DatabaseManager {
   // =================================
 
   static status(id) {
-    return this.statuses?.[id] || null;
+    return this.indexedRecord(this.statuses, id);
   }
 
   static statusName(id) {
-    const status = this.status(id);
-
-    return status ? status.name : "Unknown Status";
+    return this.indexedRecordName(this.statuses, id, "Status");
   }
 
   static statusByKey(key) {
@@ -206,6 +190,6 @@ class DatabaseManager {
   static statusNameByKey(key) {
     const status = this.statusByKey(key);
 
-    return status ? status.name : "Unknown Status";
+    return status ? status.name : `Unknown Status ${key}`;
   }
 }

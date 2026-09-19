@@ -249,12 +249,24 @@ class BattleManager {
     return multiplier;
   }
 
+  battlerHaltsTurnProgression(battler) {
+    return Boolean(
+      battler &&
+        typeof battler.haltsTurnProgression === "function" &&
+        battler.haltsTurnProgression(),
+    );
+  }
+
   initialTurnProgress(multiplier) {
     return multiplier < 1 ? 1 - multiplier : 0;
   }
 
   turnSlotsForRound(battler) {
-    if (!battler || this.battlerIsDefeated(battler)) {
+    if (
+      !battler ||
+      this.battlerIsDefeated(battler) ||
+      this.battlerHaltsTurnProgression(battler)
+    ) {
       return 0;
     }
 
@@ -277,10 +289,15 @@ class BattleManager {
     const candidates = Array.isArray(battlers)
       ? battlers.filter((battler) => battler && !this.battlerIsDefeated(battler))
       : [];
-    const slotCounts = candidates.map((battler) => ({
-      battler,
-      slots: this.turnSlotsForRound(battler),
-    }));
+    const slotCounts = candidates.map((battler) => {
+      const haltedAtRoundStart = this.battlerHaltsTurnProgression(battler);
+
+      return {
+        battler,
+        haltedAtRoundStart,
+        slots: haltedAtRoundStart ? 0 : this.turnSlotsForRound(battler),
+      };
+    });
     const maxSlots = slotCounts.reduce(
       (maximum, entry) => Math.max(maximum, entry.slots),
       0,
@@ -295,6 +312,19 @@ class BattleManager {
         if (entry.slots > slotIndex) {
           queue.push(entry.battler);
         }
+      }
+    }
+
+    // A halted battler receives no personal turn slots, so its ordinary
+    // turn-start effects and battler-relative status timers remain frozen.
+    // The halting status itself advances once per side round so Stop can
+    // expire without granting the battler a turn in that same round.
+    for (const entry of slotCounts) {
+      if (
+        entry.haltedAtRoundStart &&
+        typeof entry.battler.tickStatusDurations === "function"
+      ) {
+        entry.battler.tickStatusDurations({ mode: "haltedRound" });
       }
     }
 
@@ -1090,6 +1120,11 @@ class BattleManager {
       return false;
     }
 
+    if (this.battlerHaltsTurnProgression(battler)) {
+      this.scene.addBattleMessage(`${battler.name} is stopped!`);
+      return false;
+    }
+
     this.processTurnStartStatuses(battler);
 
     if (this.scene.outcome || !this.battlerCanAct(battler)) {
@@ -1111,7 +1146,9 @@ class BattleManager {
       return false;
     }
 
-    battler.tickStatusDurations();
+    if (!this.battlerHaltsTurnProgression(battler)) {
+      battler.tickStatusDurations({ mode: "turn" });
+    }
 
     const outcome = this.detectBattleOutcome();
 
@@ -1956,8 +1993,12 @@ class BattleManager {
   }
 
   completeEnemyTurn(enemy, unlockInputAtRoundStart = false) {
-    if (enemy && typeof enemy.tickStatusDurations === "function") {
-      enemy.tickStatusDurations();
+    if (
+      enemy &&
+      !this.battlerHaltsTurnProgression(enemy) &&
+      typeof enemy.tickStatusDurations === "function"
+    ) {
+      enemy.tickStatusDurations({ mode: "turn" });
     }
 
     const outcome = this.detectBattleOutcome();
@@ -1975,6 +2016,12 @@ class BattleManager {
 
     if (!enemy || this.battlerIsDefeated(enemy)) {
       this.advanceEnemyTurn(true, 0.2);
+      return;
+    }
+
+    if (this.battlerHaltsTurnProgression(enemy)) {
+      battle.addBattleMessage(`${enemy.name} is stopped!`);
+      this.completeEnemyTurn(enemy, true);
       return;
     }
 
