@@ -23,8 +23,8 @@ class Game_Actor extends Game_Battler {
     this.weaponId = 0;
     this.armorId = 0;
 
-    this.skills = Array.isArray(actorData.initialSkills)
-      ? [...actorData.initialSkills]
+    this.magickIds = Array.isArray(actorData.initialMagickIds)
+      ? [...actorData.initialMagickIds]
       : [];
 
     // Runtime Essence equipment state. Player-facing slot rules / UI remain
@@ -107,7 +107,7 @@ class Game_Actor extends Game_Battler {
         essenceId: essence.essenceId,
         name: essence.name(),
         ...progression,
-        awakenedSkillIds: progression.awakenedSkills.map((skill) => skill.id),
+        awakenedMagickIds: progression.awakenedMagick.map((magick) => magick.id),
       });
     }
 
@@ -188,70 +188,70 @@ class Game_Actor extends Game_Battler {
   }
 
   // =====================================
-  // Skill Management
+  // Magick Management
   // =====================================
 
-  learnSkill(skillId) {
-    if (!DatabaseManager.skill(skillId)) {
-      console.warn(`Cannot learn skill ${skillId}: skill does not exist.`);
+  learnMagick(magickId) {
+    if (!DatabaseManager.magick(magickId)) {
+      console.warn(`Cannot learn magick ${magickId}: magick does not exist.`);
       return false;
     }
 
-    if (this.knowsSkill(skillId)) {
+    if (this.knowsMagick(magickId)) {
       return false;
     }
 
-    this.skills.push(skillId);
+    this.magickIds.push(magickId);
 
     DebugManager.log(
-      `${this.name} learned ${DatabaseManager.skillName(skillId)}.`,
+      `${this.name} learned ${DatabaseManager.magickName(magickId)}.`,
     );
 
     return true;
   }
 
-  forgetSkill(skillId) {
-    const index = this.skills.indexOf(skillId);
+  forgetMagick(magickId) {
+    const index = this.magickIds.indexOf(magickId);
 
     if (index === -1) {
       return false;
     }
 
-    this.skills.splice(index, 1);
+    this.magickIds.splice(index, 1);
 
     DebugManager.log(
-      `${this.name} forgot ${DatabaseManager.skillName(skillId)}.`,
+      `${this.name} forgot ${DatabaseManager.magickName(magickId)}.`,
     );
 
     return true;
   }
 
-  knowsSkill(skillId) {
-    return this.skills.includes(skillId);
+  knowsMagick(magickId) {
+    return this.magickIds.includes(magickId);
   }
 
-  knownSkills() {
-    return this.skills
-      .map((skillId) => DatabaseManager.skill(skillId))
-      .filter((skill) => skill !== null);
+  knownMagick() {
+    return this.magickIds
+      .map((magickId) => DatabaseManager.magick(magickId))
+      .filter((magick) => magick !== null);
   }
 
-  canUseSkill(skillId) {
-    const skill = DatabaseManager.skill(skillId);
+  canUseMagick(magickId) {
+    const magick = DatabaseManager.magick(magickId);
 
-    if (!skill) {
+    if (!magick) {
       return false;
     }
 
-    if (!this.knowsSkill(skillId)) {
+    if (!this.knowsMagick(magickId)) {
       return false;
     }
 
-    if (!this.canUseSkillDefinition(skill)) {
+    if (!this.canUseMagickDefinition(magick)) {
       return false;
     }
 
-    const mpCost = skill.mpCost || 0;
+    const mpCost = magick.mpCost || 0;
 
     if (!this.canPayMpCost(mpCost)) {
       return false;
@@ -260,22 +260,22 @@ class Game_Actor extends Game_Battler {
     return true;
   }
 
-  skillStatusChance(skill, target, baseChance) {
+  magickStatusChance(magick, target, baseChance) {
     const fallbackChance = Number(baseChance);
     let chance = Number.isFinite(fallbackChance) ? fallbackChance : 0;
 
     if (
       target instanceof Game_Actor &&
-      Number.isFinite(Number(skill?.allyStatusChance))
+      Number.isFinite(Number(magick?.allyStatusChance))
     ) {
-      chance = Number(skill.allyStatusChance);
+      chance = Number(magick.allyStatusChance);
     }
 
     return Math.max(0, Math.min(1, chance));
   }
 
-  resolveSkillStatusEffects(skill, target, random = Math.random) {
-    const statusPayload = skill?.status;
+  resolveMagickStatusEffects(magick, target, random = Math.random) {
+    const statusPayload = magick?.status;
 
     if (
       !target ||
@@ -289,7 +289,7 @@ class Game_Actor extends Game_Battler {
     const results = [];
 
     for (const [statusKey, baseChance] of Object.entries(statusPayload)) {
-      const chance = this.skillStatusChance(skill, target, baseChance);
+      const chance = this.magickStatusChance(magick, target, baseChance);
       const definition =
         typeof target.statusDefinition === "function"
           ? target.statusDefinition(statusKey)
@@ -309,7 +309,7 @@ class Game_Actor extends Game_Battler {
         continue;
       }
 
-      if (skill.effect === "removeStatus") {
+      if (magick.effect === "removeStatus") {
         const roll = typeof random === "function" ? random() : Math.random();
 
         if (chance <= 0 || roll >= chance) {
@@ -343,7 +343,7 @@ class Game_Actor extends Game_Battler {
       }
 
       if (
-        skill.toggleStatus === true &&
+        magick.toggleStatus === true &&
         typeof target.hasStatus === "function" &&
         target.hasStatus(statusKey)
       ) {
@@ -405,78 +405,78 @@ class Game_Actor extends Game_Battler {
     return results;
   }
 
-  skillStatusResults() {
-    return Array.isArray(this._lastSkillStatusResults)
-      ? this._lastSkillStatusResults.map((result) => ({ ...result }))
+  magickStatusResults() {
+    return Array.isArray(this._lastMagickStatusResults)
+      ? this._lastMagickStatusResults.map((result) => ({ ...result }))
       : [];
   }
 
-  useSkill(
-    skillId,
+  useMagick(
+    magickId,
     target = this,
     payCost = true,
     scope = "single",
     random = Math.random,
     options = {},
   ) {
-    const skill = DatabaseManager.skill(skillId);
+    const magick = DatabaseManager.magick(magickId);
 
-    this._lastSkillStatusResults = [];
+    this._lastMagickStatusResults = [];
 
-    if (!skill) {
-      console.warn(`Cannot use skill ${skillId}: skill does not exist.`);
+    if (!magick) {
+      console.warn(`Cannot use magick ${magickId}: magick does not exist.`);
 
       return false;
     }
 
-    if (payCost && !this.canUseSkill(skillId)) {
-      console.warn(`${this.name} cannot use ${skill.name}.`);
+    if (payCost && !this.canUseMagick(magickId)) {
+      console.warn(`${this.name} cannot use ${magick.name}.`);
 
       return false;
     }
 
     const reflected = options?.reflected === true;
 
-    if (!reflected && !this.isValidSkillTarget(skill, target)) {
+    if (!reflected && !this.isValidMagickTarget(magick, target)) {
       console.warn(
-        `${target?.name || "Target"} is not a valid target for ${skill.name}.`,
+        `${target?.name || "Target"} is not a valid target for ${magick.name}.`,
       );
 
       return false;
     }
 
-    const paySkillCost = () => {
+    const payMagickCost = () => {
       if (!payCost) {
         return true;
       }
 
-      return this.payMpCost(skill.mpCost || 0);
+      return this.payMpCost(magick.mpCost || 0);
     };
 
     // BATTLE-LEVEL ESCAPE EFFECT
-    // The actor owns skill legality and MP payment. BattleManager owns the
+    // The actor owns magick legality and MP payment. BattleManager owns the
     // actual battle outcome so this branch intentionally performs no scene
     // transition itself.
-    if (skill.effect === "escape") {
-      if (!paySkillCost()) {
+    if (magick.effect === "escape") {
+      if (!payMagickCost()) {
         return false;
       }
 
-      DebugManager.log(`${this.name} used ${skill.name}.`);
+      DebugManager.log(`${this.name} used ${magick.name}.`);
       return true;
     }
 
     // BANISH EFFECT
     // Banish is enemy-owned state because later reward systems need to know
     // that this defeat came from banishment (for example, no currency reward)
-    // without re-parsing the skill that caused it.
-    if (skill.effect === "banish") {
+    // without re-parsing the magick that caused it.
+    if (magick.effect === "banish") {
       if (!target || typeof target.banish !== "function") {
-        console.warn(`${skill.name} has no valid banish target.`);
+        console.warn(`${magick.name} has no valid banish target.`);
         return false;
       }
 
-      if (!paySkillCost()) {
+      if (!payMagickCost()) {
         return false;
       }
 
@@ -486,40 +486,40 @@ class Game_Actor extends Game_Battler {
         return false;
       }
 
-      this._lastSkillStatusResults = this.resolveSkillStatusEffects(
-        skill,
+      this._lastMagickStatusResults = this.resolveMagickStatusEffects(
+        magick,
         target,
         random,
       );
 
-      DebugManager.log(`${this.name} used ${skill.name} on ${target.name}.`);
+      DebugManager.log(`${this.name} used ${magick.name} on ${target.name}.`);
       return true;
     }
 
     // REVIVAL EFFECT
-    if (skill.effect === "revive") {
+    if (magick.effect === "revive") {
       if (!target || typeof target.canBeRevived !== "function") {
-        console.warn(`${skill.name} has no valid revival target.`);
+        console.warn(`${magick.name} has no valid revival target.`);
         return false;
       }
 
       if (!target.canBeRevived()) {
-        DebugManager.log(`${target.name} cannot be revived by ${skill.name}.`);
+        DebugManager.log(`${target.name} cannot be revived by ${magick.name}.`);
         return false;
       }
 
-      const revivePercent = Number(skill.revivePercent);
+      const revivePercent = Number(magick.revivePercent);
 
       if (
         !Number.isFinite(revivePercent) ||
         revivePercent <= 0 ||
         revivePercent > 1
       ) {
-        console.warn(`${skill.name} has an invalid revivePercent.`);
+        console.warn(`${magick.name} has an invalid revivePercent.`);
         return false;
       }
 
-      if (!paySkillCost()) {
+      if (!payMagickCost()) {
         return false;
       }
 
@@ -529,14 +529,14 @@ class Game_Actor extends Game_Battler {
         return false;
       }
 
-      this._lastSkillStatusResults = this.resolveSkillStatusEffects(
-        skill,
+      this._lastMagickStatusResults = this.resolveMagickStatusEffects(
+        magick,
         target,
         random,
       );
 
       DebugManager.log(
-        `${this.name} used ${skill.name} on ${target.name}; ` +
+        `${this.name} used ${magick.name} on ${target.name}; ` +
           `${target.name} revived with ${target.hp} HP.`,
       );
 
@@ -544,7 +544,7 @@ class Game_Actor extends Game_Battler {
     }
 
     // HEALING EFFECT
-    if (skill.effect === "heal") {
+    if (magick.effect === "heal") {
       if (
         !reflected &&
         typeof target.isFullHp === "function" &&
@@ -555,35 +555,35 @@ class Game_Actor extends Game_Battler {
         return false;
       }
 
-      const healAmount = this.magicHealing(skill, scope, target);
+      const healAmount = this.magickHealing(magick, scope, target);
 
-      if (!paySkillCost()) {
+      if (!payMagickCost()) {
         return false;
       }
 
       target.gainHp(healAmount);
-      this._lastSkillStatusResults = this.resolveSkillStatusEffects(
-        skill,
+      this._lastMagickStatusResults = this.resolveMagickStatusEffects(
+        magick,
         target,
         random,
       );
 
-      DebugManager.log(`${this.name} used ${skill.name} on ${target.name}.`);
+      DebugManager.log(`${this.name} used ${magick.name} on ${target.name}.`);
 
       return true;
     }
 
     // DAMAGE EFFECT
-    if (skill.effect === "damage") {
+    if (magick.effect === "damage") {
       if (!target || typeof target.loseHp !== "function") {
-        console.warn(`${skill.name} has no valid damage target.`);
+        console.warn(`${magick.name} has no valid damage target.`);
 
         return false;
       }
 
-      const damage = this.magicDamage(skill, target, scope);
+      const damage = this.magickDamage(magick, target, scope);
 
-      if (!paySkillCost()) {
+      if (!payMagickCost()) {
         return false;
       }
 
@@ -591,7 +591,7 @@ class Game_Actor extends Game_Battler {
         typeof target.receiveDamage === "function"
           ? target.receiveDamage(damage, {
               category: "magical",
-              element: skill.element,
+              element: magick.element,
             })
           : null;
 
@@ -599,8 +599,8 @@ class Game_Actor extends Game_Battler {
         target.loseHp(damage);
       }
 
-      this._lastSkillStatusResults = this.resolveSkillStatusEffects(
-        skill,
+      this._lastMagickStatusResults = this.resolveMagickStatusEffects(
+        magick,
         target,
         random,
       );
@@ -610,12 +610,12 @@ class Game_Actor extends Game_Battler {
 
       if (damageResult?.absorbed) {
         DebugManager.log(
-          `${this.name} used ${skill.name} on ${target.name}; ` +
+          `${this.name} used ${magick.name} on ${target.name}; ` +
             `${target.name} absorbed it for ${resolvedHealing} HP.`,
         );
       } else {
         DebugManager.log(
-          `${this.name} used ${skill.name} on ${target.name} for ${resolvedDamage} damage.`,
+          `${this.name} used ${magick.name} on ${target.name} for ${resolvedDamage} damage.`,
         );
       }
 
@@ -623,49 +623,49 @@ class Game_Actor extends Game_Battler {
     }
 
     // STATUS APPLICATION / REMOVAL EFFECTS
-    if (skill.effect === "inflictStatus" || skill.effect === "removeStatus") {
-      if (!paySkillCost()) {
+    if (magick.effect === "inflictStatus" || magick.effect === "removeStatus") {
+      if (!payMagickCost()) {
         return false;
       }
 
-      this._lastSkillStatusResults = this.resolveSkillStatusEffects(
-        skill,
+      this._lastMagickStatusResults = this.resolveMagickStatusEffects(
+        magick,
         target,
         random,
       );
 
-      DebugManager.log(`${this.name} used ${skill.name} on ${target.name}.`);
+      DebugManager.log(`${this.name} used ${magick.name} on ${target.name}.`);
 
       return true;
     }
 
     console.warn(
-      `${skill.name} effect "${skill.effect}" is not implemented yet.`,
+      `${magick.name} effect "${magick.effect}" is not implemented yet.`,
     );
     return false;
   }
 
-  skillScopeMultiplier(skill, scope = "single") {
-    if (!skill?.scopePower) {
+  magickScopeMultiplier(magick, scope = "single") {
+    if (!magick?.scopePower) {
       return 1;
     }
 
-    const multiplier = Number(skill.scopePower[scope]);
+    const multiplier = Number(magick.scopePower[scope]);
 
     return Number.isFinite(multiplier) ? multiplier : 1;
   }
 
-  magicHealing(skill, scope = "single", target = null) {
-    if (!skill) {
+  magickHealing(magick, scope = "single", target = null) {
+    if (!magick) {
       return 0;
     }
 
-    const scopeMultiplier = this.skillScopeMultiplier(skill, scope);
-    const healPercent = Number(skill.healPercent);
+    const scopeMultiplier = this.magickScopeMultiplier(magick, scope);
+    const healPercent = Number(magick.healPercent);
 
     // Percentage healing is resolved from the target's maximum HP. This keeps
     // effects such as Perfect Renewal data-driven instead of turning them into
-    // skill-name checks.
+    // magick-name checks.
     if (Number.isFinite(healPercent) && healPercent > 0 && target) {
       const maximumHp = Number(target.maxHp);
 
@@ -677,23 +677,23 @@ class Game_Actor extends Game_Battler {
       }
     }
 
-    const power = skill.power || 0;
+    const power = magick.power || 0;
     const level = this.level || 1;
     const magicAttack = this.totalMagicAttack();
 
-    // FF7 restorative magic formula:
+    // FF7 restorative Magick formula:
     // (Spell Power × 22) + [(Level + Magic Attack) × 6]
     const rawHealing = power * 22 + (level + magicAttack) * 6;
 
     return Math.max(1, Math.floor(rawHealing * scopeMultiplier));
   }
 
-  magicDamage(skill, target, scope = "single") {
-    if (!skill || !target) {
+  magickDamage(magick, target, scope = "single") {
+    if (!magick || !target) {
       return 0;
     }
 
-    const power = skill.power || 0;
+    const power = magick.power || 0;
     const level = this.level || 1;
     const magicAttack = this.totalMagicAttack();
 
@@ -716,11 +716,11 @@ class Game_Actor extends Game_Battler {
 
     const elementMultiplier =
       typeof target.elementRate === "function"
-        ? target.elementRate(skill.element)
+        ? target.elementRate(magick.element)
         : 1;
 
-    const scopeMultiplier = this.skillScopeMultiplier(skill, scope);
-    const gravityPercent = Number(skill.gravityPercent);
+    const scopeMultiplier = this.magickScopeMultiplier(magick, scope);
+    const gravityPercent = Number(magick.gravityPercent);
 
     // Gravity-style damage uses the target's current HP instead of the normal
     // spell-power / Magic Defense formula. Elemental rate and normal incoming
@@ -741,12 +741,12 @@ class Game_Actor extends Game_Battler {
     );
   }
 
-  skillCanRemoveDefeatStatus(skill, target) {
-    if (skill?.effect !== "removeStatus" || !target) {
+  magickCanRemoveDefeatStatus(magick, target) {
+    if (magick?.effect !== "removeStatus" || !target) {
       return false;
     }
 
-    const statusPayload = skill.status;
+    const statusPayload = magick.status;
 
     if (
       !statusPayload ||
@@ -776,12 +776,12 @@ class Game_Actor extends Game_Battler {
     });
   }
 
-  isValidSkillTarget(skill, target) {
-    if (!skill || !target) {
+  isValidMagickTarget(magick, target) {
+    if (!magick || !target) {
       return false;
     }
 
-    const allowedTargets = Array.isArray(skill.target) ? skill.target : [];
+    const allowedTargets = Array.isArray(magick.target) ? magick.target : [];
     let targetGroupAllowed = allowedTargets.length === 0;
 
     if (allowedTargets.includes("self") && target === this) {
@@ -800,7 +800,7 @@ class Game_Actor extends Game_Battler {
       return false;
     }
 
-    if (skill.effect === "revive") {
+    if (magick.effect === "revive") {
       return (
         typeof target.canBeRevived === "function" && target.canBeRevived()
       );
@@ -812,7 +812,7 @@ class Game_Actor extends Game_Battler {
         : typeof target.isDead === "function" && target.isDead();
 
     if (defeated) {
-      return this.skillCanRemoveDefeatStatus(skill, target);
+      return this.magickCanRemoveDefeatStatus(magick, target);
     }
 
     return true;

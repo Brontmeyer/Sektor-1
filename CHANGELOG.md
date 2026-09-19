@@ -12,15 +12,20 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
-- Completed `Skills.json` v1
-- Added 54 initial skills
-- Defined Restore Magic
-- Defined Attack Magic
-- Defined Indirect Magic
-- Defined Advanced Magic
+- Added Magick Terminology Migration v1, moving the current supernatural ability system from the legacy Skills/Magic namespace to canonical **Magick** terminology
+- Renamed the canonical supernatural ability database to `data/Magick.json`, the field/battle Magick windows, Magick runtime APIs, Essence ability references, status metadata, regression suites, and player-facing command labels
+- Added a dedicated future **Skills** namespace for non-Magick techniques without implementing a premature Skills runtime
+- Added Save Runtime v4 migration so v1-v3 saves using legacy `skills` arrays restore into canonical `magickIds` state
+- Added dedicated Magick terminology regression coverage guarding canonical files, APIs, data keys, docs, and legacy-save compatibility
+- Completed `Magick.json` v1
+- Added 54 initial Magick abilities
+- Defined Restore Magick
+- Defined Attack Magick
+- Defined Indirect Magick
+- Defined Advanced Magick
 - Completed `Essences.json` v1
 - Added 19 initial Essences
-- Assigned all 54 current skills across the Essence system
+- Assigned all 54 current Magick abilities across the Essence system
 - Defined Resonance progression
 - Defined Mastery Ready at 1500 Resonance
 - Defined Level 4 Essence passives
@@ -52,24 +57,24 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added dedicated status-runtime regression coverage
 - Added Status Combat Modifiers v1 with shared physical/magical incoming-damage resolution
 - Added data-driven outgoing physical-damage and physical-accuracy status modifiers
-- Added Sleep / Confuse physical-damage removal and Shield elemental-magic absorption
+- Added Sleep / Confuse physical-damage removal and Shield elemental-Magick absorption
 - Added dedicated combat-modifier regression coverage
-- Added Skill / Status Integration v1 so skill status payloads route through the shared Status Runtime
+- Added Magick / Status Integration v1 so Magick status payloads route through the shared Status Runtime
 - Added ally-specific status chances, reversible status toggles, status removal, and damage-plus-status resolution
-- Added battle feedback for applied, refreshed, removed, resisted, and immune skill-driven statuses
-- Added dedicated skill/status integration regression coverage
-- Added Reflect Runtime v1 with per-target skill redirection and canonical one-bounce protection
-- Added reflection-aware magic resolution that preserves the original caster, scope, status payload, and single MP cost
+- Added battle feedback for applied, refreshed, removed, resisted, and immune Magick-driven statuses
+- Added dedicated Magick/status integration regression coverage
+- Added Reflect Runtime v1 with per-target Magick redirection and canonical one-bounce protection
+- Added reflection-aware Magick resolution that preserves the original caster, scope, status payload, and single MP cost
 - Added dedicated Reflect regression coverage for direct, all-target, ally-only, non-reflectable, and healing cases
-- Added Action Restrictions v1 with data-driven `allowedActions` and `blockedSkillTypes` handling
-- Added Silence magic blocking and Frog Attack-only command restrictions through the shared battler runtime
+- Added Action Restrictions v1 with data-driven `allowedActions` and `blockedActionTypes` handling
+- Added Silence Magick blocking and Frog Attack-only command restrictions through the shared battler runtime
 - Added battle-command availability feedback plus dedicated action-restriction regression coverage
 - Added Defeat & Revival Runtime v1 with a shared data-driven defeated-state contract
 - Added Petrify defeat handling without forcing HP to zero
 - Added Rekindle / Reawakening revival execution, defeated-target selection, and revival-aware Reflect routing
 - Added dedicated defeat/revival regression coverage for battle outcomes, rewards, cleansing, targeting, and metadata validation
 - Added Forced Action Control v1 with data-driven Confuse target randomization and Berserk automatic physical attacks
-- Added cross-side Confuse targeting for basic attacks, legal-target randomization for single-target skills, and enemy friendly-fire support
+- Added cross-side Confuse targeting for basic attacks, legal-target randomization for single-target Magick, and enemy friendly-fire support
 - Added forced-control metadata validation and dedicated regression coverage
 - Added Turn Speed Runtime v1 with data-driven Haste / Slow scheduling for party and enemy turns
 - Added fractional turn progress, interleaved bonus slots, and battler-relative countdown pacing under Haste / Slow
@@ -78,16 +83,16 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added save-schema validation, inventory normalization, safe malformed/future-save rejection, and storage-write failure handling
 - Added menu-facing save/load failure feedback and dedicated save-runtime regression coverage
 - Added `docs/audit_closure.md` to reconcile the historical repository audit against current code before selecting future passes
-- Added Database Contract Hardening v1 with field-level validation for actors, enemies, battle sprites, items, equipment, skills, statuses, and Essences
-- Added Essence progression/reference validation, including monotonic Resonance thresholds and canonical skill/status references
+- Added Database Contract Hardening v1 with field-level validation for actors, enemies, battle sprites, items, equipment, Magick, statuses, and Essences
+- Added Essence progression/reference validation, including monotonic Resonance thresholds and canonical Magick/status references
 - Added dedicated database-contract regression coverage for malformed runtime-consumed data
 - Added Map & Event Contract v1 with load-time validation for map geometry, transfers, events, pages, conditions, recursive commands, and database references
 - Added dedicated map/event contract regression coverage for malformed world/event data and runtime input normalization
-- Added Skills Runtime Completion v1 with data-driven Gravity damage, percentage healing, multi-hit/random-per-hit casting, Retreat escape, and Banish execution
-- Added battle-local Banish provenance so future currency rewards can honor the canonical no-Gil rule without skill-name checks
-- Added dedicated skill-runtime completion regression coverage
-- Added Actor / Party Ownership Cleanup v1 with data-driven actor construction, validated starter skills, explicit actor-context menus, and dedicated ownership regression coverage
-- Added UI Resilience v1 with shared scrolling list viewports for inventory, equipment selection, field magic, battle items, and battle magic
+- Added Magick Runtime Completion v1 with data-driven Gravity damage, percentage healing, multi-hit/random-per-hit casting, Retreat escape, and Banish execution
+- Added battle-local Banish provenance so future currency rewards can honor the canonical no-Gil rule without Magick-name checks
+- Added dedicated Magick-runtime completion regression coverage
+- Added Actor / Party Ownership Cleanup v1 with data-driven actor construction, validated starter Magick, explicit actor-context menus, and dedicated ownership regression coverage
+- Added UI Resilience v1 with shared scrolling list viewports for inventory, equipment selection, field Magick, battle items, and battle Magick
 - Added explicit battle-sprite load diagnostics plus named visual fallbacks and dedicated UI-resilience regression coverage
 
 - Added Audit Runtime Cleanup v1 with completed Stop turn-progression semantics and a reusable Limit-gain multiplier contract
@@ -95,12 +100,14 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added Battle Rewards v1 with persistent Gil, validated enemy drop tables, exactly-once drop resolution, and battle Resonance rewards
 - Added actor-owned equipped Essence progression state with 1500-Resonance Mastery-Ready capping and Save Runtime v3 persistence
 - Added dedicated battle-reward regression coverage for Banish no-Gil behavior, drop aggregation, surviving-participant Resonance, Mastery Ready transitions, and duplicate-finalization protection
-- Added Battle Results Screen v1 with victory summaries for EXP, Gil, item drops, party level-ups, Essence Resonance, awakened skills, and Mastery Ready transitions
+- Added Battle Results Screen v1 with victory summaries for EXP, Gil, item drops, party level-ups, Essence Resonance, awakened Magick, and Mastery Ready transitions
 - Added scrollable battle-results progression details while preserving exactly-once reward finalization
 - Added dedicated battle-results regression coverage for presentation data, overflow scrolling, and finalize-before-exit scene flow
 
 ### Changed
 
+- Normalized the complete documentation suite, including the historical repository audit, to distinguish current **Magick** from future non-Magick **Skills** while preserving Magic / Magic Attack / Magic Defense as combat-stat terminology
+- Upgraded persistent saves to version 4 for the Magick terminology migration, with compatibility migration from save versions 1, 2, and 3
 - Upgraded persistent saves to version 3 so Gil and equipped Essence progression survive save/load, with migration from v1 and v2 formats
 - Replaced Pass 11's currency/drop/Resonance reward extension stubs with live data-driven reward resolution
 - Marked the repository-audit closure phase complete after reconciling all 42 actionable findings
@@ -109,7 +116,7 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Reclassified Fury / Sadness / Near-Death Limit modifiers as a complete Status Runtime contract; future gauge accumulation remains owned by the future Limit system
 - Reconciled the audit tracker to 42 fixed / 0 partial / 0 open items after Pass 27; repository-audit closure is complete
 - Expanded the project from single-character battle assumptions toward a multi-character party architecture
-- Established canonical terminology across Skills, Essences, and Statuses
+- Established canonical terminology across Magick, Essences, and Statuses
 - Standardized status terminology including `paralyze` and `confuse`
 - Clarified the separation between canonical data, runtime implementation, active TODO work, experimental ideas, and documentation
 - Established Status Runtime as the current major development focus
@@ -120,24 +127,24 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Made Fury and Sadness mutually exclusive at the shared battler-runtime layer
 - Made the first party member of every new round receive the same turn-start status processing as later party members
 - Routed player and enemy physical attacks through one status-aware physical damage path
-- Routed magical skill damage through target-side incoming-damage resolution
+- Routed Magick damage through target-side incoming-damage resolution
 - Made enemy physical accuracy use enemy `attackPercent` safely instead of inheriting actor-only weapon assumptions
 - Standardized Soul Cleanse's Slow-Numb reference on the canonical `slowNumb` runtime key
-- Made skill status metadata validate status chances, ally-specific chances, and toggle flags before runtime use
-- Made skill metadata require an explicit `reflectable` flag and validated Reflect status metadata before runtime use
-- Centralized single-target and all-target magic effect presentation through one reflection-aware per-target resolver
-- Made actor skill usability and battle command execution honor the same shared status-driven action restrictions
-- Made skill metadata require a non-empty `type` because status restrictions depend on reusable skill categories
+- Made Magick status metadata validate status chances, ally-specific chances, and toggle flags before runtime use
+- Made Magick metadata require an explicit `reflectable` flag and validated Reflect status metadata before runtime use
+- Centralized single-target and all-target Magick effect presentation through one reflection-aware per-target resolver
+- Made actor Magick usability and battle command execution honor the same shared status-driven action restrictions
+- Made Magick metadata require a non-empty `type` because status restrictions depend on reusable Magick categories
 - Distinguished HP-zero death from the broader `isDefeated()` battle state so status-defined defeat can participate in outcome, targeting, animation, and reward logic
-- Made skill validation enforce the current effect vocabulary and validate `revivePercent` plus defeat/revival status metadata
+- Made Magick validation enforce the current effect vocabulary and validate `revivePercent` plus defeat/revival status metadata
 - Corrected the stale `Game_Party` comment to the canonical four-member active battle limit
 - Moved persistent save ownership from the legacy `$gameActor` alias to the full `Game_Party` actor roster
 - Made persistent status restoration bypass initial application effects and recompute derived states from restored HP
 - Marked Essence database loading complete in `TODO.md` because current `DatabaseManager` already loads `Essences.json`
-- Hardened skill validation for current type/category/element vocabularies, power, scopePower, special percentage fields, and multi-hit metadata
+- Hardened Magick validation for current type/category/element vocabularies, power, scopePower, special percentage fields, and multi-hit metadata
 - Hardened the canonical status nested schema so unsupported condition/effect keys and malformed consumed values fail at database load
 - Reconciled the validation audit cluster from 10 fixed / 5 partial / 27 open to 23 fixed / 3 partial / 16 open
-- Replaced individually named `Game_System` actor ownership and temporary skill grants with a canonical actor collection plus `Actors.json` `initialSkills`
+- Replaced individually named `Game_System` actor ownership and temporary Magick grants with a canonical actor collection plus `Actors.json` `initialMagickIds`
 - Removed active engine dependence on the `$gameActor` compatibility alias; party, interpreter, battle, and menu paths now resolve actor context through party ownership or explicit references
 - Centralized equipment removal through `Game_Actor.unequipWeapon()` / `unequipArmor()` and renamed the unused ambiguous party clear operation to `clearInventory()`
 - Reconciled the actor/party ownership audit cluster to 35 fixed / 1 partial / 6 open
@@ -148,8 +155,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Reconciled the map/event audit cluster from 23 fixed / 3 partial / 16 open to 26 fixed / 3 partial / 13 open
 - Made Gravity damage derive from target current HP while continuing through shared elemental and incoming magical-damage handling
 - Made percentage-healing metadata restore target HP through the shared healing path
-- Made random-per-hit skills own target selection at cast resolution and pay MP only once per cast
-- Reconciled the remaining skill-runtime audit cluster from 26 fixed / 3 partial / 13 open to 30 fixed / 1 partial / 11 open
+- Made random-per-hit Magick own target selection at cast resolution and pay MP only once per cast
+- Reconciled the remaining Magick-runtime audit cluster from 26 fixed / 3 partial / 13 open to 30 fixed / 1 partial / 11 open
 
 ### Documentation
 
@@ -179,15 +186,25 @@ The following entries preserve Sektor 1's original development-pass history.
 
 ---
 
-## Pass 23 - Skills Runtime Completion v1
+## Pass 29 - Magick Terminology Migration v1
 
-- Cross-referenced the remaining skill-runtime audit findings against current `Skills.json`, battle execution, and regression coverage before implementation
-- Connected `gravityPercent` to current-HP magical damage without skill-name checks
+- Renamed the current supernatural ability system from legacy Skills/Magic terminology to canonical Magick terminology across data, runtime APIs, windows, tests, and documentation
+- Reserved Skills as a future non-Magick namespace rather than aliasing it to the Magick system
+- Bumped Save Runtime to v4 and migrated legacy `skills` arrays from v1-v3 saves into `magickIds`
+- Preserved Magic, Magic Attack, and Magic Defense as combat-stat terminology
+- Added terminology regression coverage so legacy current-system identifiers cannot silently return
+
+---
+
+## Pass 23 - Magick Runtime Completion v1
+
+- Cross-referenced the remaining Magick-runtime audit findings against current `Magick.json`, battle execution, and regression coverage before implementation
+- Connected `gravityPercent` to current-HP magical damage without Magick-name checks
 - Connected `healPercent` to target maximum-HP restoration, closing an additional current-data gap that the historical audit did not explicitly list
 - Implemented generic multi-hit / random-target-per-hit casting with one MP payment per cast and candidate rebuilding between hits
 - Implemented the reusable `escape` effect through BattleManager's authoritative escape outcome, preserving zero-reward finalization
 - Implemented the reusable `banish` effect through the canonical Death/defeat bridge and preserved banishment provenance for future no-Gil currency handling
-- Added dedicated skill-runtime completion regression tests and updated audit closure status
+- Added dedicated Magick-runtime completion regression tests and updated audit closure status
 
 ---
 
@@ -209,9 +226,9 @@ The following entries preserve Sektor 1's original development-pass history.
 - Cross-referenced the validation-related audit findings against the current runtime before changing schemas
 - Added field-level actor/enemy combat-data validation, including actor growth/EXP and enemy element-rate contracts
 - Added actor/enemy battle-sprite metadata validation plus item, weapon, and armor runtime-schema checks
-- Expanded skill validation across category, element, power, scopePower, special percentage fields, multi-hit metadata, and canonical status references
+- Expanded Magick validation across category, element, power, scopePower, special percentage fields, multi-hit metadata, and canonical status references
 - Hardened Statuses.json nested classification/duration/condition/effect validation and rejected unsupported nested keys
-- Added Essence-specific validation for ordered progression, skill references, passive/common metadata, mastery data, and canonical status references
+- Added Essence-specific validation for ordered progression, Magick references, passive/common metadata, mastery data, and canonical status references
 - Consolidated duplicated turn/countdown duration validation
 - Added dedicated database-contract regression tests and updated audit closure status
 
@@ -243,9 +260,9 @@ The following entries preserve Sektor 1's original development-pass history.
 
 ## Pass 18 - Forced Action Control v1
 
-- Connected Confuse `forceRandomTarget` metadata to player attacks, single-target skills, and enemy physical turns
+- Connected Confuse `forceRandomTarget` metadata to player attacks, single-target Magick, and enemy physical turns
 - Connected Berserk `playerControl` / `forcePhysicalAttack` metadata to automatic party attacks
-- Added reusable target rebinding so forced selections reuse normal attack and skill execution paths
+- Added reusable target rebinding so forced selections reuse normal attack and Magick execution paths
 - Added control-effect schema validation and dedicated regression tests
 
 ---
@@ -255,7 +272,7 @@ The following entries preserve Sektor 1's original development-pass history.
 - Added `isDefeated()` as the shared battle-state contract for HP-zero and status-defined defeat
 - Connected Petrify's `countsAsDefeated` metadata to battle outcome, targeting, turn, presentation, and reward paths
 - Implemented data-driven revival for Rekindle and Reawakening, including Death-status removal and percentage HP restoration
-- Allowed status-cleansing skills to target Petrified battlers while ordinary healing continues to reject defeated targets
+- Allowed status-cleansing Magick to target Petrified battlers while ordinary healing continues to reject defeated targets
 - Added revive-aware reflection candidates and target-selection behavior
 - Added defeat/revival schema validation and dedicated regression tests
 - Corrected the active battle-party comment from three members to four
@@ -264,17 +281,17 @@ The following entries preserve Sektor 1's original development-pass history.
 
 ## Pass 16 - Action Restrictions v1
 
-- Implemented shared battler action allowlists and blocked skill-type rules from status data
-- Connected Silence to magic-skill availability and Frog to Attack-only battle commands
+- Implemented shared battler action allowlists and blocked action-type rules from status data
+- Connected Silence to Magick availability and Frog to Attack-only battle commands
 - Added command-window dimming/skipping plus execution-time guards against restricted actions
-- Added validation for skill types and status restriction metadata
+- Added validation for Magick types and status restriction metadata
 - Added dedicated regression tests for runtime, UI, and battle-flow restrictions
 
 ---
 
 ## Pass 15 - Reflect Runtime v1
 
-- Implemented data-driven Reflect routing for canonical reflectable skills
+- Implemented data-driven Reflect routing for canonical reflectable Magick
 - Resolved all-target reflection independently per original target while preserving one MP payment per cast
 - Allowed reflected effects to land across normal ally/enemy selection restrictions without becoming a second cast
 - Enforced the canonical one-reflection cap to prevent bounce loops
@@ -282,14 +299,14 @@ The following entries preserve Sektor 1's original development-pass history.
 
 ---
 
-## Pass 14 - Skill / Status Integration v1
+## Pass 14 - Magick / Status Integration v1
 
-- Routed `Skills.json` status payloads through the shared Status Runtime for status-only and damaging skills
+- Routed `Magick.json` status payloads through the shared Status Runtime for status-only and damaging Magick
 - Added ally-specific application chances and reusable toggle semantics for reversible statuses
-- Added reusable skill-driven status removal and battle presentation of status outcomes
+- Added reusable Magick-driven status removal and battle presentation of status outcomes
 - Corrected Soul Cleanse to use the canonical `slowNumb` status key
-- Added validation and regression tests for skill/status metadata and runtime behavior
-- Kept legacy `resist` and `deathforce` skill references non-canonical until their owning status designs are approved
+- Added validation and regression tests for Magick/status metadata and runtime behavior
+- Kept legacy `resist` and `deathforce` Magick references non-canonical until their owning status designs are approved
 
 ---
 
@@ -297,7 +314,7 @@ The following entries preserve Sektor 1's original development-pass history.
 
 - Added one shared target-side damage resolver for status-driven physical and magical mitigation
 - Connected Barrier, MBarrier, Sadness, Small, Shield, Berserk, Frog, Fury, and Darkness modifier data to reusable combat paths
-- Added Shield elemental-magic absorption and physical immunity
+- Added Shield elemental-Magick absorption and physical immunity
 - Added physical-damage wake rules for Sleep and Confuse
 - Added regression tests for modifier stacking, accuracy, wake rules, and absorption
 

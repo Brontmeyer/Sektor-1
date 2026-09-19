@@ -5,7 +5,7 @@
  *
  * Game_Battler owns the state and behavior that every combatant has in
  * common: HP/MP, core battle stats, derived stats, and defeat-state checks.
- * Actor-specific equipment/skills/EXP stay in Game_Actor, while enemy-
+ * Actor-specific equipment/magick/EXP stay in Game_Actor, while enemy-
  * specific sprite/database behavior stays in Game_Enemy.
  */
 class Game_Battler {
@@ -308,16 +308,16 @@ class Game_Battler {
     return [...allowed];
   }
 
-  blockedSkillTypes() {
+  blockedActionTypes() {
     const blocked = new Set();
 
-    for (const value of this.statusEffectValues("blockedSkillTypes")) {
+    for (const value of this.statusEffectValues("blockedActionTypes")) {
       if (!Array.isArray(value)) {
         continue;
       }
 
-      for (const skillType of value) {
-        const normalized = this.normalizedActionKey(skillType);
+      for (const actionType of value) {
+        const normalized = this.normalizedActionKey(actionType);
 
         if (normalized) {
           blocked.add(normalized);
@@ -345,25 +345,25 @@ class Game_Battler {
       return false;
     }
 
-    if (this.blockedSkillTypes().includes(action)) {
+    if (this.blockedActionTypes().includes(action)) {
       return false;
     }
 
     return true;
   }
 
-  canUseSkillDefinition(skill) {
-    if (!skill || typeof skill !== "object") {
+  canUseMagickDefinition(magick) {
+    if (!magick || typeof magick !== "object") {
       return false;
     }
 
-    const skillType = this.normalizedActionKey(skill.type);
+    const magickType = this.normalizedActionKey(magick.type);
 
-    if (!skillType) {
+    if (!magickType) {
       return false;
     }
 
-    return this.canUseBattleAction(skillType);
+    return this.canUseBattleAction(magickType);
   }
 
   physicalDamageMultiplier() {
@@ -407,7 +407,7 @@ class Game_Battler {
     return 1;
   }
 
-  isElementalMagicElement(element) {
+  isElementalMagickElement(element) {
     if (typeof element !== "string" || element.length === 0) {
       return false;
     }
@@ -415,27 +415,27 @@ class Game_Battler {
     return element !== "none" && element !== "restorative";
   }
 
-  absorbsElementalMagic(element) {
-    if (!this.isElementalMagicElement(element)) {
+  absorbsElementalMagick(element) {
+    if (!this.isElementalMagickElement(element)) {
       return false;
     }
 
-    return this.statusEffectValues("absorbElementalMagic").some(
+    return this.statusEffectValues("absorbElementalMagick").some(
       (value) => value === true,
     );
   }
 
-  reflectsSkills() {
+  reflectsMagick() {
     return this.activeStatusDefinitions().some(
-      (definition) => definition.effects?.reflectableSkills === true,
+      (definition) => definition.effects?.reflectableMagick === true,
     );
   }
 
-  maxSkillReflections() {
+  maxMagickReflections() {
     let maxReflections = 0;
 
     for (const definition of this.activeStatusDefinitions()) {
-      if (definition.effects?.reflectableSkills !== true) {
+      if (definition.effects?.reflectableMagick !== true) {
         continue;
       }
 
@@ -1009,7 +1009,7 @@ class Game_Battler {
     const absorbed =
       category === "magical" &&
       resolvedDamage > 0 &&
-      this.absorbsElementalMagic(element);
+      this.absorbsElementalMagick(element);
 
     if (absorbed) {
       this.setHp(this.hp + resolvedDamage);

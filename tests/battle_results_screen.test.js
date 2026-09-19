@@ -54,7 +54,7 @@ function sampleResult() {
             newLevel: 4,
             leveledUp: true,
             becameMasteryReady: true,
-            awakenedSkills: [{ id: 47, name: "Meteor Barrage" }],
+            awakenedMagick: [{ id: 47, name: "Meteor Barrage" }],
           },
         ],
       },

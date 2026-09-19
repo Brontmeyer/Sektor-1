@@ -16,28 +16,28 @@ class BattleTargetManager {
   // Scope and Target Management
   // =================================
 
-  allowedScopes(skill) {
-    if (!skill) {
+  allowedScopes(magick) {
+    if (!magick) {
       return ["single"];
     }
 
-    if (Array.isArray(skill.scope)) {
-      return skill.scope;
+    if (Array.isArray(magick.scope)) {
+      return magick.scope;
     }
 
-    if (typeof skill.scope === "string") {
-      return [skill.scope];
+    if (typeof magick.scope === "string") {
+      return [magick.scope];
     }
 
     return ["single"];
   }
 
-  canUseScope(skill, scope) {
-    return this.allowedScopes(skill).includes(scope);
+  canUseScope(magick, scope) {
+    return this.allowedScopes(magick).includes(scope);
   }
 
-  toggleScope(skill) {
-    const scopes = this.allowedScopes(skill);
+  toggleScope(magick) {
+    const scopes = this.allowedScopes(magick);
 
     if (scopes.length <= 1) {
       this.scene.targetScope = scopes[0] || "single";
@@ -53,44 +53,44 @@ class BattleTargetManager {
     return this.scene.targetScope;
   }
 
-  allowedTargetGroups(skill) {
-    if (!skill) {
+  allowedTargetGroups(magick) {
+    if (!magick) {
       return ["enemy"];
     }
 
-    if (Array.isArray(skill.target)) {
-      return skill.target;
+    if (Array.isArray(magick.target)) {
+      return magick.target;
     }
 
-    if (typeof skill.target === "string") {
-      return [skill.target];
+    if (typeof magick.target === "string") {
+      return [magick.target];
     }
 
     return ["enemy"];
   }
 
-  canTargetGroup(skill, group) {
-    return this.allowedTargetGroups(skill).includes(group);
+  canTargetGroup(magick, group) {
+    return this.allowedTargetGroups(magick).includes(group);
   }
 
-  currentSkill() {
-    return this.scene.pendingMagicSkill || null;
+  currentMagick() {
+    return this.scene.pendingMagick || null;
   }
 
   currentCaster() {
     return this.scene?.partyController?.currentBattler?.() || null;
   }
 
-  isSelectableTarget(battler, skill = this.currentSkill()) {
+  isSelectableTarget(battler, magick = this.currentMagick()) {
     if (!battler) {
       return false;
     }
 
-    if (skill) {
+    if (magick) {
       const caster = this.currentCaster();
 
-      if (caster && typeof caster.isValidSkillTarget === "function") {
-        return caster.isValidSkillTarget(skill, battler);
+      if (caster && typeof caster.isValidMagickTarget === "function") {
+        return caster.isValidMagickTarget(magick, battler);
       }
     }
 
@@ -101,11 +101,11 @@ class BattleTargetManager {
     return !(typeof battler.isDead === "function" && battler.isDead());
   }
 
-  selectableBattlers(group, skill = this.currentSkill()) {
+  selectableBattlers(group, magick = this.currentMagick()) {
     const battlers =
       group === "ally" ? $gameParty.battleMembers() : this.scene.enemies;
 
-    return battlers.filter((battler) => this.isSelectableTarget(battler, skill));
+    return battlers.filter((battler) => this.isSelectableTarget(battler, magick));
   }
 
   selectBattler(target) {
@@ -258,10 +258,10 @@ class BattleTargetManager {
   // Target Selection
   // =================================
 
-  selectFirstSelectableEnemy(skill = this.currentSkill()) {
+  selectFirstSelectableEnemy(magick = this.currentMagick()) {
     const { enemies } = this.scene;
     const index = enemies.findIndex((enemy) =>
-      this.isSelectableTarget(enemy, skill),
+      this.isSelectableTarget(enemy, magick),
     );
 
     if (index < 0) {
@@ -272,10 +272,10 @@ class BattleTargetManager {
     return enemies[index];
   }
 
-  selectFirstSelectableAlly(skill = this.currentSkill()) {
+  selectFirstSelectableAlly(magick = this.currentMagick()) {
     const allies = $gameParty.battleMembers();
     const index = allies.findIndex((ally) =>
-      this.isSelectableTarget(ally, skill),
+      this.isSelectableTarget(ally, magick),
     );
 
     if (index < 0) {
@@ -294,12 +294,12 @@ class BattleTargetManager {
     return this.selectFirstSelectableAlly(null);
   }
 
-  selectFrontSelectableAlly(skill = this.currentSkill()) {
+  selectFrontSelectableAlly(magick = this.currentMagick()) {
     const allies = $gameParty.battleMembers();
     const enemy = this.getSelectedEnemy();
 
     if (!enemy) {
-      return this.selectFirstSelectableAlly(skill);
+      return this.selectFirstSelectableAlly(magick);
     }
 
     const enemyPosition = this.scene.getEnemyPosition(enemy);
@@ -310,7 +310,7 @@ class BattleTargetManager {
     for (let i = 0; i < allies.length; i++) {
       const ally = allies[i];
 
-      if (!this.isSelectableTarget(ally, skill)) {
+      if (!this.isSelectableTarget(ally, magick)) {
         continue;
       }
 
@@ -334,12 +334,12 @@ class BattleTargetManager {
     return allies[bestIndex];
   }
 
-  selectFrontSelectableEnemy(skill = this.currentSkill()) {
+  selectFrontSelectableEnemy(magick = this.currentMagick()) {
     const enemies = this.scene.enemies;
     const ally = this.getSelectedAlly();
 
     if (!ally) {
-      return this.selectFirstSelectableEnemy(skill);
+      return this.selectFirstSelectableEnemy(magick);
     }
 
     const allyPosition = this.scene.getAllyPosition(ally);
@@ -350,7 +350,7 @@ class BattleTargetManager {
     for (let i = 0; i < enemies.length; i++) {
       const enemy = enemies[i];
 
-      if (!this.isSelectableTarget(enemy, skill)) {
+      if (!this.isSelectableTarget(enemy, magick)) {
         continue;
       }
 

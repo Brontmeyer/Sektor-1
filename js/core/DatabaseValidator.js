@@ -13,7 +13,7 @@ class DatabaseValidator {
       ["Items", database.items],
       ["Weapons", database.weapons],
       ["Armors", database.armors],
-      ["Skills", database.skills],
+      ["Magick", database.magickData],
       ["Essences", database.essences],
       ["Statuses", database.statuses],
     ]) {
@@ -21,16 +21,16 @@ class DatabaseValidator {
     }
 
     this.validateMapInfos(database.mapInfos, errors);
-    this.validateActors(database.actors, errors, database.skills);
+    this.validateActors(database.actors, errors, database.magickData);
     this.validateEnemies(database.enemies, database.items, errors);
     this.validateItems(database.items, errors);
     this.validateWeapons(database.weapons, errors);
     this.validateArmors(database.armors, errors);
-    this.validateSkills(database.skills, database.statuses, errors);
+    this.validateMagick(database.magickData, database.statuses, errors);
     this.validateStatuses(database.statuses, errors);
     this.validateEssences(
       database.essences,
-      database.skills,
+      database.magickData,
       database.statuses,
       errors,
     );
@@ -908,7 +908,7 @@ class DatabaseValidator {
     }
   }
 
-  static validateActors(actors, errors, skills = null) {
+  static validateActors(actors, errors, magick = null) {
     if (!Array.isArray(actors)) {
       return;
     }
@@ -941,25 +941,25 @@ class DatabaseValidator {
       this.validateBattleSprite(actor, label, "sideBattleSprite", errors);
       this.validateFiniteNumber(`${label} exp`, actor.exp, errors, { min: 0 });
 
-      if (!Array.isArray(actor.initialSkills)) {
-        errors.push(`${label} initialSkills must be an array.`);
+      if (!Array.isArray(actor.initialMagickIds)) {
+        errors.push(`${label} initialMagickIds must be an array.`);
       } else {
-        const seenSkillIds = new Set();
+        const seenMagickIds = new Set();
 
-        for (const skillId of actor.initialSkills) {
-          if (!Number.isInteger(skillId) || skillId <= 0) {
-            errors.push(`${label} initialSkills entries must be positive integers.`);
+        for (const magickId of actor.initialMagickIds) {
+          if (!Number.isInteger(magickId) || magickId <= 0) {
+            errors.push(`${label} initialMagickIds entries must be positive integers.`);
             continue;
           }
 
-          if (seenSkillIds.has(skillId)) {
-            errors.push(`${label} initialSkills must not contain duplicate skill ID ${skillId}.`);
+          if (seenMagickIds.has(magickId)) {
+            errors.push(`${label} initialMagickIds must not contain duplicate magick ID ${magickId}.`);
           }
 
-          seenSkillIds.add(skillId);
+          seenMagickIds.add(magickId);
 
-          if (Array.isArray(skills) && !skills[skillId]) {
-            errors.push(`${label} initialSkills references unknown skill ID ${skillId}.`);
+          if (Array.isArray(magick) && !magick[magickId]) {
+            errors.push(`${label} initialMagickIds references unknown magick ID ${magickId}.`);
           }
         }
       }
@@ -1166,13 +1166,13 @@ class DatabaseValidator {
     }
   }
 
-  static validateSkills(skills, statuses, errors) {
-    if (!Array.isArray(skills)) {
+  static validateMagick(magickDatabase, statuses, errors) {
+    if (!Array.isArray(magickDatabase)) {
       return;
     }
 
     // Backward-compatible call shape used by focused tests that pass
-    // only (skills, errors).
+    // only (magickDatabase, errors).
     if (errors === undefined && Array.isArray(statuses)) {
       errors = statuses;
       statuses = [];
@@ -1180,7 +1180,7 @@ class DatabaseValidator {
 
     const validTargets = new Set(["self", "ally", "enemy"]);
     const validScopes = new Set(["single", "all"]);
-    const validTypes = new Set(["magic"]);
+    const validTypes = new Set(["magick"]);
     const validCategories = new Set(["attack", "restore", "indirect", "advanced"]);
     const validElements = new Set([
       "none",
@@ -1209,71 +1209,71 @@ class DatabaseValidator {
     );
     const legacyStatusPlaceholders = new Set(["resist", "deathforce"]);
 
-    for (let index = 1; index < skills.length; index++) {
-      const skill = skills[index];
+    for (let index = 1; index < magickDatabase.length; index++) {
+      const magick = magickDatabase[index];
 
-      if (!skill) {
+      if (!magick) {
         continue;
       }
 
-      if (!Array.isArray(skill.target) || skill.target.length === 0) {
-        errors.push(`Skill ${index} must define at least one target type.`);
+      if (!Array.isArray(magick.target) || magick.target.length === 0) {
+        errors.push(`Magick ${index} must define at least one target type.`);
       } else {
-        for (const target of skill.target) {
+        for (const target of magick.target) {
           if (!validTargets.has(target)) {
-            errors.push(`Skill ${index} has unsupported target "${target}".`);
+            errors.push(`Magick ${index} has unsupported target "${target}".`);
           }
         }
       }
 
-      const scopes = Array.isArray(skill.scope) ? skill.scope : [skill.scope];
+      const scopes = Array.isArray(magick.scope) ? magick.scope : [magick.scope];
 
       if (scopes.length === 0 || scopes.includes(undefined)) {
-        errors.push(`Skill ${index} must define at least one scope.`);
+        errors.push(`Magick ${index} must define at least one scope.`);
       } else {
         for (const scope of scopes) {
           if (!validScopes.has(scope)) {
-            errors.push(`Skill ${index} has unsupported scope "${scope}".`);
+            errors.push(`Magick ${index} has unsupported scope "${scope}".`);
           }
         }
       }
 
-      if (typeof skill.type !== "string" || skill.type.trim().length === 0) {
-        errors.push(`Skill ${index} must define a non-empty string type.`);
-      } else if (!validTypes.has(skill.type)) {
-        errors.push(`Skill ${index} has unsupported type "${skill.type}".`);
+      if (typeof magick.type !== "string" || magick.type.trim().length === 0) {
+        errors.push(`Magick ${index} must define a non-empty string type.`);
+      } else if (!validTypes.has(magick.type)) {
+        errors.push(`Magick ${index} has unsupported type "${magick.type}".`);
       }
 
-      if (!validCategories.has(skill.category)) {
-        errors.push(`Skill ${index} has unsupported category "${skill.category}".`);
+      if (!validCategories.has(magick.category)) {
+        errors.push(`Magick ${index} has unsupported category "${magick.category}".`);
       }
 
-      if (!validElements.has(skill.element)) {
-        errors.push(`Skill ${index} has unsupported element "${skill.element}".`);
+      if (!validElements.has(magick.element)) {
+        errors.push(`Magick ${index} has unsupported element "${magick.element}".`);
       }
 
-      if (!validEffects.has(skill.effect)) {
-        errors.push(`Skill ${index} has unsupported effect "${skill.effect}".`);
+      if (!validEffects.has(magick.effect)) {
+        errors.push(`Magick ${index} has unsupported effect "${magick.effect}".`);
       }
 
-      if (skill.power !== undefined) {
-        this.validateFiniteNumber(`Skill ${index} power`, skill.power, errors, { min: 0 });
+      if (magick.power !== undefined) {
+        this.validateFiniteNumber(`Magick ${index} power`, magick.power, errors, { min: 0 });
       }
 
-      if (skill.scopePower !== undefined) {
-        if (!this.isPlainObject(skill.scopePower)) {
-          errors.push(`Skill ${index} scopePower must be an object when provided.`);
+      if (magick.scopePower !== undefined) {
+        if (!this.isPlainObject(magick.scopePower)) {
+          errors.push(`Magick ${index} scopePower must be an object when provided.`);
         } else {
           this.validateKnownKeys(
-            `Skill ${index} scopePower`,
-            skill.scopePower,
+            `Magick ${index} scopePower`,
+            magick.scopePower,
             [...validScopes],
             errors,
           );
 
-          for (const [scope, multiplier] of Object.entries(skill.scopePower)) {
+          for (const [scope, multiplier] of Object.entries(magick.scopePower)) {
             this.validateFiniteNumber(
-              `Skill ${index} scopePower.${scope}`,
+              `Magick ${index} scopePower.${scope}`,
               multiplier,
               errors,
               { min: 0 },
@@ -1282,106 +1282,106 @@ class DatabaseValidator {
         }
       }
 
-      if (skill.gravityPercent !== undefined) {
+      if (magick.gravityPercent !== undefined) {
         this.validateFiniteNumber(
-          `Skill ${index} gravityPercent`,
-          skill.gravityPercent,
+          `Magick ${index} gravityPercent`,
+          magick.gravityPercent,
           errors,
           { min: Number.MIN_VALUE, max: 1 },
         );
       }
 
-      if (skill.healPercent !== undefined) {
+      if (magick.healPercent !== undefined) {
         this.validateFiniteNumber(
-          `Skill ${index} healPercent`,
-          skill.healPercent,
+          `Magick ${index} healPercent`,
+          magick.healPercent,
           errors,
           { min: Number.MIN_VALUE, max: 1 },
         );
       }
 
-      if (skill.hits !== undefined) {
-        this.validateFiniteNumber(`Skill ${index} hits`, skill.hits, errors, {
+      if (magick.hits !== undefined) {
+        this.validateFiniteNumber(`Magick ${index} hits`, magick.hits, errors, {
           min: 1,
           integer: true,
         });
       }
 
       if (
-        skill.randomTargetPerHit !== undefined &&
-        typeof skill.randomTargetPerHit !== "boolean"
+        magick.randomTargetPerHit !== undefined &&
+        typeof magick.randomTargetPerHit !== "boolean"
       ) {
-        errors.push(`Skill ${index} randomTargetPerHit must be true or false when provided.`);
+        errors.push(`Magick ${index} randomTargetPerHit must be true or false when provided.`);
       }
 
       if (
-        skill.randomTargetPerHit === true &&
-        (!Number.isInteger(skill.hits) || skill.hits < 2)
+        magick.randomTargetPerHit === true &&
+        (!Number.isInteger(magick.hits) || magick.hits < 2)
       ) {
-        errors.push(`Skill ${index} randomTargetPerHit requires hits >= 2.`);
+        errors.push(`Magick ${index} randomTargetPerHit requires hits >= 2.`);
       }
 
       if (
-        skill.effect === "revive" &&
-        (!Number.isFinite(skill.revivePercent) ||
-          skill.revivePercent <= 0 ||
-          skill.revivePercent > 1)
+        magick.effect === "revive" &&
+        (!Number.isFinite(magick.revivePercent) ||
+          magick.revivePercent <= 0 ||
+          magick.revivePercent > 1)
       ) {
-        errors.push(`Skill ${index} revivePercent must be greater than 0 and at most 1.`);
+        errors.push(`Magick ${index} revivePercent must be greater than 0 and at most 1.`);
       }
 
-      if (!Number.isFinite(skill.mpCost) || skill.mpCost < 0) {
-        errors.push(`Skill ${index} must have a non-negative numeric mpCost.`);
+      if (!Number.isFinite(magick.mpCost) || magick.mpCost < 0) {
+        errors.push(`Magick ${index} must have a non-negative numeric mpCost.`);
       }
 
-      if (typeof skill.reflectable !== "boolean") {
-        errors.push(`Skill ${index} reflectable must be true or false.`);
+      if (typeof magick.reflectable !== "boolean") {
+        errors.push(`Magick ${index} reflectable must be true or false.`);
       }
 
       if (
-        skill.status !== undefined &&
-        !this.isPlainObject(skill.status)
+        magick.status !== undefined &&
+        !this.isPlainObject(magick.status)
       ) {
-        errors.push(`Skill ${index} status must be an object when provided.`);
-      } else if (this.isPlainObject(skill.status)) {
-        for (const [statusKey, chance] of Object.entries(skill.status)) {
+        errors.push(`Magick ${index} status must be an object when provided.`);
+      } else if (this.isPlainObject(magick.status)) {
+        for (const [statusKey, chance] of Object.entries(magick.status)) {
           if (!statusKey) {
-            errors.push(`Skill ${index} status keys must be non-empty strings.`);
+            errors.push(`Magick ${index} status keys must be non-empty strings.`);
           } else if (
             statusKeys.size > 0 &&
             !statusKeys.has(statusKey) &&
             !legacyStatusPlaceholders.has(statusKey)
           ) {
-            errors.push(`Skill ${index} references unknown status key "${statusKey}".`);
+            errors.push(`Magick ${index} references unknown status key "${statusKey}".`);
           }
 
           if (!Number.isFinite(chance) || chance < 0 || chance > 1) {
             errors.push(
-              `Skill ${index} status chance for "${statusKey}" must be between 0 and 1.`,
+              `Magick ${index} status chance for "${statusKey}" must be between 0 and 1.`,
             );
           }
         }
       }
 
       if (
-        skill.allyStatusChance !== undefined &&
-        (!Number.isFinite(skill.allyStatusChance) ||
-          skill.allyStatusChance < 0 ||
-          skill.allyStatusChance > 1)
+        magick.allyStatusChance !== undefined &&
+        (!Number.isFinite(magick.allyStatusChance) ||
+          magick.allyStatusChance < 0 ||
+          magick.allyStatusChance > 1)
       ) {
-        errors.push(`Skill ${index} allyStatusChance must be between 0 and 1 when provided.`);
+        errors.push(`Magick ${index} allyStatusChance must be between 0 and 1 when provided.`);
       }
 
       if (
-        skill.toggleStatus !== undefined &&
-        typeof skill.toggleStatus !== "boolean"
+        magick.toggleStatus !== undefined &&
+        typeof magick.toggleStatus !== "boolean"
       ) {
-        errors.push(`Skill ${index} toggleStatus must be true or false when provided.`);
+        errors.push(`Magick ${index} toggleStatus must be true or false when provided.`);
       }
     }
   }
 
-  static validateEssences(essences, skills, statuses, errors) {
+  static validateEssences(essences, magickDatabase, statuses, errors) {
     if (!Array.isArray(essences)) {
       return;
     }
@@ -1504,7 +1504,7 @@ class DatabaseValidator {
       if (!Array.isArray(essence.abilities) || essence.abilities.length === 0) {
         errors.push(`${label} abilities must be a non-empty array.`);
       } else {
-        const skillIds = new Set();
+        const magickIds = new Set();
 
         for (let abilityIndex = 0; abilityIndex < essence.abilities.length; abilityIndex++) {
           const ability = essence.abilities[abilityIndex];
@@ -1515,18 +1515,18 @@ class DatabaseValidator {
             continue;
           }
 
-          this.validateKnownKeys(abilityLabel, ability, ["skillId", "unlockLevel"], errors);
+          this.validateKnownKeys(abilityLabel, ability, ["magickId", "unlockLevel"], errors);
 
           if (
-            !Number.isInteger(ability.skillId) ||
-            !Array.isArray(skills) ||
-            !skills[ability.skillId]
+            !Number.isInteger(ability.magickId) ||
+            !Array.isArray(magickDatabase) ||
+            !magickDatabase[ability.magickId]
           ) {
-            errors.push(`${abilityLabel} references unknown skill ID ${ability.skillId}.`);
-          } else if (skillIds.has(ability.skillId)) {
-            errors.push(`${label} lists skill ID ${ability.skillId} more than once.`);
+            errors.push(`${abilityLabel} references unknown magick ID ${ability.magickId}.`);
+          } else if (magickIds.has(ability.magickId)) {
+            errors.push(`${label} lists magick ID ${ability.magickId} more than once.`);
           } else {
-            skillIds.add(ability.skillId);
+            magickIds.add(ability.magickId);
           }
 
           if (
@@ -1809,9 +1809,9 @@ class DatabaseValidator {
     ]);
     const validConditionKeys = ["hpPercentAtOrBelow", "hpPercentAbove"];
     const validEffectKeys = [
-      "absorbElementalMagic",
+      "absorbElementalMagick",
       "allowedActions",
-      "blockedSkillTypes",
+      "blockedActionTypes",
       "canAct",
       "canBeRevived",
       "canKill",
@@ -1830,14 +1830,14 @@ class DatabaseValidator {
       "physicalDamageMultiplier",
       "physicalDamageTakenMultiplier",
       "playerControl",
-      "reflectableSkills",
+      "reflectableMagick",
       "removeOnPhysicalDamage",
       "setsHpToZero",
       "trigger",
       "turnSpeedMultiplier",
     ];
     const booleanEffectKeys = [
-      "absorbElementalMagic",
+      "absorbElementalMagick",
       "canAct",
       "canBeRevived",
       "canKill",
@@ -1847,7 +1847,7 @@ class DatabaseValidator {
       "haltsTurnProgression",
       "perTarget",
       "playerControl",
-      "reflectableSkills",
+      "reflectableMagick",
       "removeOnPhysicalDamage",
       "setsHpToZero",
     ];
@@ -2016,7 +2016,7 @@ class DatabaseValidator {
         errors.push(`Status ${index} effects.trigger has unsupported value "${effects.trigger}".`);
       }
 
-      for (const effectKey of ["allowedActions", "blockedSkillTypes"]) {
+      for (const effectKey of ["allowedActions", "blockedActionTypes"]) {
         const values = effects[effectKey];
         if (values === undefined) {
           continue;
@@ -2040,15 +2040,15 @@ class DatabaseValidator {
         );
       }
 
-      if (effects.reflectableSkills === true && effects.perTarget !== true) {
-        errors.push(`Status ${index} that reflects skills must define effects.perTarget as true.`);
+      if (effects.reflectableMagick === true && effects.perTarget !== true) {
+        errors.push(`Status ${index} that reflects magick must define effects.perTarget as true.`);
       }
 
       if (
-        effects.reflectableSkills === true &&
+        effects.reflectableMagick === true &&
         (!Number.isInteger(effects.maxReflections) || effects.maxReflections < 1)
       ) {
-        errors.push(`Status ${index} that reflects skills must define a positive integer maxReflections.`);
+        errors.push(`Status ${index} that reflects magick must define a positive integer maxReflections.`);
       }
 
       if (effects.onExpire !== undefined) {

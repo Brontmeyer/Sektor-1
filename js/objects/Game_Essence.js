@@ -63,14 +63,14 @@ class Game_Essence {
     const oldResonance = this.resonance;
     const oldLevel = this.level();
     const masteryReadyBefore = this.isMasteryReady();
-    const oldSkillIds = new Set(this.unlockedSkills().map((skill) => skill.id));
+    const oldMagickIds = new Set(this.unlockedMagick().map((magick) => magick.id));
 
     this.resonance = Math.min(this.masteryThreshold(), this.resonance + value);
 
     const newLevel = this.level();
     const masteryReadyAfter = this.isMasteryReady();
-    const awakenedSkills = this.unlockedSkills().filter(
-      (skill) => !oldSkillIds.has(skill.id),
+    const awakenedMagick = this.unlockedMagick().filter(
+      (magick) => !oldMagickIds.has(magick.id),
     );
 
     return {
@@ -83,7 +83,7 @@ class Game_Essence {
       masteryReadyBefore,
       masteryReadyAfter,
       becameMasteryReady: !masteryReadyBefore && masteryReadyAfter,
-      awakenedSkills,
+      awakenedMagick,
     };
   }
 
@@ -101,9 +101,9 @@ class Game_Essence {
     );
   }
 
-  unlockedSkills() {
+  unlockedMagick() {
     return this.unlockedAbilities()
-      .map((ability) => DatabaseManager.skill(ability.skillId))
-      .filter((skill) => skill);
+      .map((ability) => DatabaseManager.magick(ability.magickId))
+      .filter((magick) => magick);
   }
 }

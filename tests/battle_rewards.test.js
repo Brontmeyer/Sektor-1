@@ -14,7 +14,7 @@ const enemies = readData("Enemies.json");
 const items = readData("Items.json");
 const weapons = readData("Weapons.json");
 const armors = readData("Armors.json");
-const skills = readData("Skills.json");
+const magick = readData("Magick.json");
 const essences = readData("Essences.json");
 const statuses = readData("Statuses.json");
 
@@ -25,7 +25,7 @@ function makeDatabaseManager() {
     items,
     weapons,
     armors,
-    skills,
+    magick,
     essences,
     statuses,
     actor(id) {
@@ -46,11 +46,11 @@ function makeDatabaseManager() {
     armor(id) {
       return armors[id] || null;
     },
-    skill(id) {
-      return skills[id] || null;
+    magick(id) {
+      return magick[id] || null;
     },
-    skillName(id) {
-      return skills[id]?.name || `Unknown Skill ${id}`;
+    magickName(id) {
+      return magick[id]?.name || `Unknown Magick ${id}`;
     },
     essence(id) {
       return essences[id] || null;

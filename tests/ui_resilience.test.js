@@ -56,9 +56,9 @@ function testAllAuditedListWindowsUseSharedViewport() {
   const windowFiles = [
     "js/windows/Window_Inventory.js",
     "js/windows/Window_EquipSelect.js",
-    "js/windows/Window_Magic.js",
+    "js/windows/Window_Magick.js",
     "js/windows/Window_BattleItem.js",
-    "js/windows/Window_BattleMagic.js",
+    "js/windows/Window_BattleMagick.js",
   ];
 
   for (const relativePath of windowFiles) {

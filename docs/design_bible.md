@@ -32,7 +32,7 @@ Sektor 1 should feel understandable at first glance and deeper the longer the pl
 
 ## Familiar Foundations, Original Combinations
 
-Players should recognize the language of a classic JRPG: party members, enemies, turns, physical attacks, magic, items, equipment, elements, statuses, progression, bosses, towns, dungeons, and exploration.
+Players should recognize the language of a classic JRPG: party members, enemies, turns, physical attacks, Magick, items, equipment, elements, statuses, progression, bosses, towns, dungeons, and exploration.
 
 Sektor 1 can then use those familiar foundations to create its own combinations through Essences, unusual targeting, status interactions, Mastery, future Evolution, and character-specific mechanics.
 
@@ -48,7 +48,7 @@ Whenever practical, new mechanics should connect to the game's existing vocabula
 
 ## Data Creates Possibility
 
-Skills, Essences, statuses, enemies, and other content should be expressible through reusable rules wherever practical.
+Magick, Essences, statuses, enemies, and other content should be expressible through reusable rules wherever practical.
 
 This is both an engineering principle and a design principle.
 
@@ -81,7 +81,7 @@ Sektor 1 uses a custom side-view, turn-based battle system.
 Battle should reward understanding the relationships between:
 
 - Party composition
-- Skills
+- Magick
 - Elements
 - Status effects
 - Targeting
@@ -99,22 +99,22 @@ Canonical mechanical rules belong in `docs/battle_system.md`.
 
 ---
 
-# ✨ Magic Identity
+# ✨ Magick Identity
 
-Magic is not intended to be only a ladder of progressively larger damage numbers.
+Magick is not intended to be only a ladder of progressively larger damage numbers.
 
-The initial 54 skills establish four major categories:
+The initial 54 Magick abilities establish four major categories:
 
 ```text
-Restore Magic
-Attack Magic
-Indirect Magic
-Advanced Magic
+Restore Magick
+Attack Magick
+Indirect Magick
+Advanced Magick
 ```
 
-Future categories include Summon Magic and Limit Skills.
+Summon Magick is a future Magick category. **Skills** is reserved for future non-Magick techniques, including Limit Skills.
 
-The magic system should support:
+The Magick system should support:
 
 - Direct damage
 - Restoration
@@ -132,16 +132,16 @@ A spell's identity can come from what it changes, not merely how much HP it remo
 
 # 🎯 Targeting as Design Space
 
-Targeting is part of a skill's design rather than a menu afterthought.
+Targeting is part of a Magick's design rather than a menu afterthought.
 
-Sektor 1 supports skills that can distinguish between:
+Sektor 1 supports Magick that can distinguish between:
 
 ```text
 Ally / Enemy
 Single / All
 ```
 
-Some skills may permit unusual combinations, including restorative abilities that can legally target enemies.
+Some Magick may permit unusual combinations, including restorative abilities that can legally target enemies.
 
 This creates room for mechanics such as planned undead restorative damage and other future interactions where the meaning of an effect depends on the target.
 
@@ -149,7 +149,7 @@ The design principle is:
 
 > **Target legality and effect interpretation are separate decisions.**
 
-Do not unnecessarily restrict a skill's targeting merely because its most common use suggests one obvious target.
+Do not unnecessarily restrict a Magick's targeting merely because its most common use suggests one obvious target.
 
 ---
 
@@ -243,7 +243,7 @@ Wayfarer
 Rift
 ```
 
-All 54 current skills are assigned exactly once across the 19 Essences.
+All 54 current Magick abilities are assigned exactly once across the 19 Essences.
 
 Essences are not merely containers for spells.
 
@@ -371,8 +371,8 @@ Exceptions are valuable when they create strategy.
 
 Examples already present in the design include:
 
-- Restore magic being allowed to target enemies for future undead interaction
-- Shield converting elemental magical damage into healing while leaving non-elemental magic normal
+- Restore Magick being allowed to target enemies for future undead interaction
+- Shield converting elemental magical damage into healing while leaving non-elemental Magick normal
 - Frog restricting actions without becoming identical to Stop or Paralyze
 - Poison and Dual sharing a family without sharing every interaction
 - Near-Death being derived rather than cleansable
@@ -488,7 +488,7 @@ Recovery
 Risk / reward
 ```
 
-A strange skill does not need to compete with a direct-damage spell on raw damage alone.
+A strange Magick does not need to compete with a direct-damage spell on raw damage alone.
 
 Likewise, a powerful combination is not automatically a problem if it requires meaningful setup, investment, timing, or discovery and does not erase the rest of the game's decision space.
 

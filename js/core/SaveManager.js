@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 3;
+    return 4;
   }
 
   static clearError() {
@@ -66,10 +66,21 @@ class SaveManager {
       ...data,
       version: this.currentVersion(),
       actors: Array.isArray(data.actors)
-        ? data.actors.map((actor) => ({
-            ...actor,
-            essences: Array.isArray(actor?.essences) ? actor.essences : [],
-          }))
+        ? data.actors.map((actor) => {
+            const source = this.isPlainObject(actor) ? actor : {};
+            const magickIds = Array.isArray(source.magickIds)
+              ? source.magickIds
+              : Array.isArray(source.skills)
+                ? source.skills
+                : [];
+            const { skills: _legacySkills, ...rest } = source;
+
+            return {
+              ...rest,
+              magickIds,
+              essences: Array.isArray(source.essences) ? source.essences : [],
+            };
+          })
         : [],
       party: {
         ...(this.isPlainObject(data.party) ? data.party : {}),
@@ -83,7 +94,7 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if (inferredVersion === 2) {
+    if (inferredVersion === 3 || inferredVersion === 2) {
       return upgradeToCurrent(saveData);
     }
 
@@ -176,8 +187,8 @@ class SaveManager {
           }
         }
 
-        if (actorData.skills !== undefined && !Array.isArray(actorData.skills)) {
-          errors.push(`Actor ${actorId} skills must be an array.`);
+        if (actorData.magickIds !== undefined && !Array.isArray(actorData.magickIds)) {
+          errors.push(`Actor ${actorId} magickIds must be an array.`);
         }
 
         if (
@@ -323,7 +334,7 @@ class SaveManager {
 
       weaponId: actor.weaponId,
       armorId: actor.armorId,
-      skills: [...actor.skills],
+      magickIds: [...actor.magickIds],
       statuses:
         typeof actor.persistentStatusState === "function"
           ? actor.persistentStatusState()
@@ -385,16 +396,16 @@ class SaveManager {
     actor.armorId =
       armorId === 0 || DatabaseManager.armor(armorId) ? armorId : 0;
 
-    if (Array.isArray(actorData.skills)) {
-      actor.skills = [
+    if (Array.isArray(actorData.magickIds)) {
+      actor.magickIds = [
         ...new Set(
-          actorData.skills
-            .map((skillId) => Number(skillId))
+          actorData.magickIds
+            .map((magickId) => Number(magickId))
             .filter(
-              (skillId) =>
-                Number.isInteger(skillId) &&
-                skillId > 0 &&
-                DatabaseManager.skill(skillId),
+              (magickId) =>
+                Number.isInteger(magickId) &&
+                magickId > 0 &&
+                DatabaseManager.magick(magickId),
             ),
         ),
       ];

@@ -3,7 +3,7 @@
 This file tracks unfinished development work only.
 
 Canonical game data belongs in the appropriate database files:
-- `data/Skills.json`
+- `data/Magick.json`
 - `data/Essences.json`
 - `data/Statuses.json`
 
@@ -38,13 +38,13 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Poison / Dual damage-over-time
 - [x] Regen healing-over-time
 - [x] Barrier / MBarrier damage reduction
-- [x] Reflect spell reflection
+- [x] Reflect Magick reflection
 - [x] Haste / Slow turn-speed modifiers
 - [x] Stop / Paralyze action prevention
 - [x] Stop turn-progression halt semantics
 - [x] Sleep / Confuse physical-damage removal
 - [x] Confuse random targeting
-- [x] Silence skill-type restrictions
+- [x] Silence action-type restrictions
 - [x] Petrify defeat-state handling
 - [x] Death defeat / revival handling
 - [x] Berserk forced physical attacks
@@ -56,7 +56,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Slow-Numb countdown → Petrify
 - [x] Near-Death derived HP state
 - [x] Shield physical immunity
-- [x] Shield elemental magic absorption
+- [x] Shield elemental Magick absorption
 
 ---
 
@@ -69,7 +69,7 @@ Completed systems and design rules should be documented rather than duplicated h
 ## Battle Presentation
 
 - [x] Implement Battle Results Screen v1
-- [x] Present EXP, Gil, item drops, level-ups, Essence Resonance, awakened skills, and Mastery Ready transitions
+- [x] Present EXP, Gil, item drops, level-ups, Essence Resonance, awakened Magick abilities, and Mastery Ready transitions
 
 ---
 
@@ -77,7 +77,7 @@ Completed systems and design rules should be documented rather than duplicated h
 
 - [x] Design Essences.json v1
 - [x] Create 19 initial Essences
-- [x] Assign all 54 current skills to Essences
+- [x] Assign all 54 current Magick abilities to Essences
 - [x] Define Resonance progression
 - [x] Define Mastery Ready at 1500 Resonance
 - [x] Define Level 4 passive abilities
@@ -96,20 +96,27 @@ Completed systems and design rules should be documented rather than duplicated h
 
 ---
 
-# ✨ Skills
+# ✨ Magick
 
-- [x] Complete Skills.json v1
-- [x] Define 54 initial skills
-- [x] Define Restore Magic
-- [x] Define Attack Magic
-- [x] Define Indirect Magic
-- [x] Define Advanced Magic
-- [x] Implement remaining skill mechanics required by Skills.json
-- [x] Implement status interaction with skills
+- [x] Complete Magick.json v1
+- [x] Define 54 initial Magick abilities
+- [x] Define Restore Magick
+- [x] Define Attack Magick
+- [x] Define Indirect Magick
+- [x] Define Advanced Magick
+- [x] Implement remaining Magick mechanics required by Magick.json
+- [x] Implement status interaction with Magick
 - [ ] Implement undead restorative-damage interaction
-- [ ] Design Summon Magic
-- [ ] Design Limit Skills
+- [ ] Design Summon Magick
 - [ ] Implement Limit gauge/runtime and consume status Limit multipliers
+
+---
+
+# 🥋 Skills (Future Non-Magick Techniques)
+
+- [ ] Define the canonical Skills data model for non-Magick techniques
+- [ ] Define Skills costs/resources and battle execution rules
+- [ ] Design Limit Skills within the future Skills namespace
 
 ---
 
@@ -133,7 +140,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Enemy AI
 - [ ] Boss scripting system
 - [ ] Status resistance / immunity data
-- [ ] Enemy skill selection rules
+- [ ] Enemy action-selection rules
 - [ ] Boss-specific mechanics
 
 ---
@@ -157,7 +164,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v3 with multi-actor, Gil, Essence-state persistence, and v1/v2 migration
+- [x] Save Runtime v4 with multi-actor, Gil, Essence-state persistence, and v1/v2/v3 migration
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies

@@ -120,7 +120,7 @@ function testDatabaseAccessorsShareOneSafeConvention() {
   DatabaseManager.items = [null, { id: 1, name: "Potion" }];
   DatabaseManager.weapons = [null, { id: 1, name: "Sword" }];
   DatabaseManager.armors = [null, { id: 1, name: "Armor" }];
-  DatabaseManager.skills = [null, { id: 1, name: "Mend" }];
+  DatabaseManager.magickData = [null, { id: 1, name: "Mend" }];
   DatabaseManager.essences = [null, { id: 1, name: "Restore" }];
   DatabaseManager.statuses = [null, { id: 1, key: "poison", name: "Poison" }];
 
@@ -130,7 +130,7 @@ function testDatabaseAccessorsShareOneSafeConvention() {
   assert.equal(DatabaseManager.item(1).name, "Potion");
   assert.equal(DatabaseManager.weapon(1).name, "Sword");
   assert.equal(DatabaseManager.armor(1).name, "Armor");
-  assert.equal(DatabaseManager.skill(1).name, "Mend");
+  assert.equal(DatabaseManager.magick(1).name, "Mend");
   assert.equal(DatabaseManager.essence(1).name, "Restore");
   assert.equal(DatabaseManager.status(1).name, "Poison");
 
@@ -143,7 +143,7 @@ function testDatabaseAccessorsShareOneSafeConvention() {
   assert.equal(DatabaseManager.itemName(99), "Unknown Item 99");
   assert.equal(DatabaseManager.weaponName(99), "Unknown Weapon 99");
   assert.equal(DatabaseManager.armorName(99), "Unknown Armor 99");
-  assert.equal(DatabaseManager.skillName(99), "Unknown Skill 99");
+  assert.equal(DatabaseManager.magickName(99), "Unknown Magick 99");
   assert.equal(DatabaseManager.essenceName(99), "Unknown Essence 99");
   assert.equal(DatabaseManager.statusName(99), "Unknown Status 99");
   assert.equal(

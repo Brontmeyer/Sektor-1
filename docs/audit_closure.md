@@ -1,4 +1,8 @@
-# Sektor 1 Audit Closure Tracker
+# Repository Audit Closure Tracker
+
+## Post-Audit Terminology Migration
+
+Pass 29 does not reopen any audit finding. It renames the current supernatural ability system to **Magick**, reserves **Skills** for future non-Magick techniques, and bumps Save Runtime to v4 so legacy v1-v3 `skills` save fields migrate safely into `magickIds`. The historical audit text has been terminology-normalized for readability while retaining its original findings.
 
 This document reconciles the historical static review in `docs/repo_audit.md`
 against the **current repository**.
@@ -43,24 +47,24 @@ headings.
 | 2 | Game_Party battle-member comment disagrees with implementation | Fixed | Pass 17 corrected the comment to the canonical four-member limit. |
 | 3 | SaveManager persists only the legacy leader actor | Fixed | Pass 20 Save Runtime v2 serializes/restores every actor owned by `Game_Party`. |
 | 4 | Runtime battler statuses are not persisted by SaveManager | Fixed | Pass 20 persists/restores status runtime state whose canonical status is allowed to persist after battle; derived states are recomputed. |
-| 5 | Skills.json defines effects that Game_Actor.useSkill() cannot execute | Fixed | Pass 23 completes the current effect vocabulary: escape is battle-owned, banish uses the shared Death/defeat bridge, and the previously completed heal/damage/status/revive effects remain on their reusable paths. |
-| 6 | Skill `status` metadata has no identified runtime consumer | Fixed | Pass 14 routes skill status payloads through the shared status runtime. |
-| 7 | Status and skill combat metadata are only partially integrated | Fixed | Pass 26 finishes Stop's `haltsTurnProgression` contract by freezing scheduled turns, personal turn progress, turn-start triggers, and ordinary battler-relative status timers while advancing Stop itself once per side round so it can expire. `Game_Battler.limitGainMultiplier()` now consumes Fury/Sadness/Near-Death modifier data as the reusable boundary for the future Limit gauge; actual Limit accumulation remains a future feature rather than unfinished Status Runtime. |
-| 8 | `allyStatusChance` currently has no runtime consumer | Fixed | Pass 14 applies ally-specific status chances through the shared skill/status resolver. |
+| 5 | Magick.json defines effects that Game_Actor.useMagick() cannot execute | Fixed | Pass 23 completes the current effect vocabulary: escape is battle-owned, banish uses the shared Death/defeat bridge, and the previously completed heal/damage/status/revive effects remain on their reusable paths. |
+| 6 | Magick `status` metadata has no identified runtime consumer | Fixed | Pass 14 routes Magick status payloads through the shared status runtime. |
+| 7 | Status and Magick combat metadata are only partially integrated | Fixed | Pass 26 finishes Stop's `haltsTurnProgression` contract by freezing scheduled turns, personal turn progress, turn-start triggers, and ordinary battler-relative status timers while advancing Stop itself once per side round so it can expire. `Game_Battler.limitGainMultiplier()` now consumes Fury/Sadness/Near-Death modifier data as the reusable boundary for the future Limit gauge; actual Limit accumulation remains a future feature rather than unfinished Status Runtime. |
+| 8 | `allyStatusChance` currently has no runtime consumer | Fixed | Pass 14 applies ally-specific status chances through the shared Magick/status resolver. |
 | 9 | Legacy `$gameActor` dependency remains widespread | Fixed | Pass 24 removes active engine dependencies on `$gameActor`; menu/interpreter/battle fallbacks resolve actors through `Game_Party` or explicit actor context. `main.js` retains only the compatibility alias for external/legacy integrations. |
 | 10 | Database accessor consistency | Fixed | Pass 26 routes all indexed database accessors through one null-safe helper and standardizes unknown-name fallbacks to include the requested ID; keyed status-name fallback likewise includes the missing key. |
 | 11 | Status nested-schema validation is permissive | Fixed | Pass 21 validates the current classification/duration/condition/effect vocabularies, consumed field types/ranges, expiration references, and rejects unsupported nested keys. |
 | 12 | Essence level calculation assumes ordered progression data | Fixed | Pass 21 enforces strictly increasing Essence levels and Resonance thresholds, including the canonical level-1 / zero-Resonance start. |
 | 13 | Small validation duplication in duration rules | Fixed | Pass 21 consolidates turn/countdown positive-integer duration validation into one shared rule while hardening the surrounding nested schema. |
 | 14 | Game_System actor ownership is individually hard-coded | Fixed | Pass 24 builds the actor collection from validated `Actors.json` records and gives that collection to `Game_Party`; individually named actor2/actor3/actor4 ownership is removed. |
-| 15 | Temporary party skill setup lives in Game_System | Fixed | Pass 24 moves current starter skills into validated actor `initialSkills` data and removes the constructor-time `TEMP` learning block. |
+| 15 | Temporary party Magick setup lives in Game_System | Fixed | Pass 24 moves current starter Magick into validated actor `initialMagickIds` data and removes the constructor-time `TEMP` learning block. |
 | 16 | Game_Party.clear() clears inventory only | Fixed | Pass 24 removes the unused ambiguous `clear()` API and exposes the intent explicitly as `clearInventory()`, which leaves actor roster/battle composition untouched. |
 | 17 | Save version is written but not consumed during loading | Fixed | Pass 20 introduces version-aware Save Runtime v2 plus v1 migration and future/unknown-version rejection. |
 | 18 | Window_Equipment bypasses Game_Actor APIs when unequipping | Fixed | Pass 24 adds `Game_Actor.unequipWeapon()` / `unequipArmor()` and routes the equipment UI through those APIs instead of direct ID mutation. |
-| 19 | Skill validation covers only target, scope, and MP cost | Fixed | Pass 21 validates current type/category/element vocabularies plus power, scopePower, gravity/heal percentages, multi-hit metadata, canonical status references, and the previously added effect/status/revival/Reflect contracts. |
-| 20 | Gravity skill percentage metadata has no identified runtime consumer | Fixed | Pass 23 resolves configured Gravity percentages from target current HP and routes the result through shared elemental / incoming magical-damage handling. |
+| 19 | Magick validation covers only target, scope, and MP cost | Fixed | Pass 21 validates current type/category/element vocabularies plus power, scopePower, gravity/heal percentages, multi-hit metadata, canonical status references, and the previously added effect/status/revival/Reflect contracts. |
+| 20 | Gravity Magick percentage metadata has no identified runtime consumer | Fixed | Pass 23 resolves configured Gravity percentages from target current HP and routes the result through shared elemental / incoming magical-damage handling. |
 | 21 | Multi-hit and per-hit random-target metadata have no identified runtime consumer | Fixed | Pass 23 consumes `hits` / `randomTargetPerHit` through one cast-level resolver that rebuilds legal candidates per hit and charges MP once. |
-| 22 | Skill effect vocabulary exceeds the implemented runtime dispatcher | Fixed | Pass 23 adds reusable escape and banish execution, completing the current seven-value effect vocabulary. |
+| 22 | Magick effect vocabulary exceeds the implemented runtime dispatcher | Fixed | Pass 23 adds reusable escape and banish execution, completing the current seven-value effect vocabulary. |
 | 23 | Enemy `elementRates` is runtime-consumed but not specifically validated | Fixed | Pass 21 validates enemy element-rate objects and requires every configured multiplier to be a finite non-negative number. |
 | 24 | Battle-sprite metadata is runtime-consumed but not specifically validated | Fixed | Pass 21 validates configured actor/enemy sprite names, positive dimensions, and positive integer frame/row counts before rendering code sees them. |
 | 25 | Actor `growth` data is runtime-consumed but not specifically validated | Fixed | Pass 21 requires the complete current growth-stat contract and finite non-negative values before `Game_Actor.levelUp()` can consume it. |
@@ -71,16 +75,16 @@ headings.
 | 30 | Item gain commands do not validate quantities consistently with equipment gain commands | Fixed | Pass 22 normalizes item quantities in both interpreter commands and `Game_Party.gainItem()`, rejects invalid direct input, and preserves numeric inventory arithmetic. |
 | 31 | Item runtime schema is not specifically validated at database load time | Fixed | Pass 21 validates the current item type/consumable/price contract plus the runtime-supported `healHp` effect and positive value. |
 | 32 | Weapon and armor combat schemas are not specifically validated at database load time | Fixed | Pass 21 validates current weapon price/attack/accuracy/magic/critical fields and armor price/defense values as finite non-negative numbers. |
-| 33 | Several selectable list windows do not support more entries than their fixed layouts | Fixed | Pass 25 adds one shared five-row viewport with automatic selection scrolling and overflow indicators to inventory, equipment-select, field magic, battle item, and battle magic windows. |
+| 33 | Several selectable list windows do not support more entries than their fixed layouts | Fixed | Pass 25 adds one shared five-row viewport with automatic selection scrolling and overflow indicators to inventory, equipment-select, field Magick, battle item, and battle Magick windows. |
 | 34 | The battle scene has no identified runtime entry path and hardcodes its encounter | Fixed | `SceneManager.startBattle()` / interpreter battle commands provide runtime entry and `Scene_Battle` consumes validated encounter data. |
 | 35 | `addVariable` performs arithmetic without numeric normalization | Fixed | Pass 22 normalizes additive variable input at the interpreter boundary and again in `Game_Variables.addValue()`, preventing string concatenation while leaving direct `setVariable` values unrestricted. |
 | 36 | Individual map data is loaded without an identified schema-validation boundary | Fixed | Pass 22 validates each loaded map before runtime construction, including identity, geometry, transfers, event pages/conditions, recursive command payloads, and current database references. |
-| 37 | Skill `scopePower` metadata is consumed but not validated | Fixed | Pass 21 validates scopePower as a supported-scope multiplier map with finite non-negative values. |
-| 38 | Skill `power` metadata is consumed but not validated | Fixed | Pass 21 validates configured skill power as a finite non-negative number before the damage/healing formulas consume it. |
+| 37 | Magick `scopePower` metadata is consumed but not validated | Fixed | Pass 21 validates scopePower as a supported-scope multiplier map with finite non-negative values. |
+| 38 | Magick `power` metadata is consumed but not validated | Fixed | Pass 21 validates configured Magick power as a finite non-negative number before the damage/healing formulas consume it. |
 | 39 | Battle victories do not award experience | Fixed | Pass 11 awards defeated-enemy EXP exactly once to active battle-party members. |
 | 40 | Currency rewards are not implemented | Fixed | Pass 27 adds persistent party Gil state/APIs and victory-time Gil rewards; Banished enemies contribute no Gil. |
 | 41 | Battle item drops are not implemented | Fixed | Pass 27 adds validated enemy drop tables, exactly-once victory resolution, aggregation, inventory awards, and structured drop results. |
-| 42 | Battle victories do not award Essence Resonance | Fixed | Pass 27 awards encounter Resonance exactly once to equipped Essences on surviving active battle participants, caps progression at Mastery Ready, reports transitions, and persists equipped Essence state in Save Runtime v3. |
+| 42 | Battle victories do not award Essence Resonance | Fixed | Pass 27 awards encounter Resonance exactly once to equipped Essences on surviving active battle participants, caps progression at Mastery Ready, reports transitions, and persists equipped Essence state in Save Runtime v3; Pass 29 subsequently migrates that state through Save Runtime v4. |
 
 ## Pass Selection Gate
 

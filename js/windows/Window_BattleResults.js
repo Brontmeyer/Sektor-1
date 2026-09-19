@@ -118,15 +118,15 @@ class Window_BattleResults {
           });
         }
 
-        const awakenedSkills = Array.isArray(essence?.awakenedSkills)
-          ? essence.awakenedSkills
+        const awakenedMagick = Array.isArray(essence?.awakenedMagick)
+          ? essence.awakenedMagick
           : [];
 
-        if (awakenedSkills.length > 0) {
+        if (awakenedMagick.length > 0) {
           lines.push({
             kind: "highlight",
-            text: `    Awakened: ${awakenedSkills
-              .map((skill) => skill?.name)
+            text: `    Awakened: ${awakenedMagick
+              .map((magick) => magick?.name)
               .filter((name) => typeof name === "string" && name.length > 0)
               .join(", ")}`,
           });

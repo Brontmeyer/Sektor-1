@@ -1,6 +1,6 @@
 "use strict";
 
-class Window_BattleMagic {
+class Window_BattleMagick {
   constructor(scene) {
     this.scene = scene;
     this.visible = false;
@@ -22,9 +22,9 @@ class Window_BattleMagic {
       return;
     }
 
-    const skills = this.skills();
+    const magickList = this.magickList();
 
-    if (skills.length === 0) {
+    if (magickList.length === 0) {
       return;
     }
 
@@ -32,41 +32,41 @@ class Window_BattleMagic {
       this.index--;
 
       if (this.index < 0) {
-        this.index = skills.length - 1;
+        this.index = magickList.length - 1;
       }
     }
 
     if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
       this.index++;
 
-      if (this.index >= skills.length) {
+      if (this.index >= magickList.length) {
         this.index = 0;
       }
     }
 
-    this.listViewport.ensureVisible(this.index, skills.length);
+    this.listViewport.ensureVisible(this.index, magickList.length);
   }
 
   actor() {
     return this.scene?.partyController?.currentBattler() || $gameParty.battleLeader();
   }
 
-  skills() {
+  magickList() {
     return this.actor()
-      .knownSkills()
-      .filter((skill) => skill.type === "magic");
+      .knownMagick()
+      .filter((magick) => magick.type === "magick");
   }
 
-  currentSkill() {
-    const skills = this.skills();
+  currentMagick() {
+    const magickList = this.magickList();
 
-    return skills[this.index] || null;
+    return magickList[this.index] || null;
   }
 
   show() {
     this.visible = true;
     this.index = 0;
-    this.listViewport.reset(this.index, this.skills().length);
+    this.listViewport.reset(this.index, this.magickList().length);
   }
 
   hide() {
@@ -104,7 +104,7 @@ class Window_BattleMagic {
     }
 
     const context = Graphics.context;
-    const skills = this.skills();
+    const magickList = this.magickList();
 
     context.save();
 
@@ -122,32 +122,32 @@ class Window_BattleMagic {
     context.font = "22px Arial";
     context.fillStyle = "#ffffff";
 
-    context.fillText("Magic", this.x + this.padding, this.y + 30);
+    context.fillText("Magick", this.x + this.padding, this.y + 30);
 
-    if (skills.length === 0) {
-      context.fillText("(No magic)", this.x + this.padding, this.y + 80);
+    if (magickList.length === 0) {
+      context.fillText("(No magick)", this.x + this.padding, this.y + 80);
 
       context.restore();
       return;
     }
 
-    const range = this.listViewport.visibleRange(this.index, skills.length);
+    const range = this.listViewport.visibleRange(this.index, magickList.length);
 
     for (let i = range.start; i < range.end; i++) {
-      const skill = skills[i];
+      const magick = magickList[i];
 
       const prefix = i === this.index ? "▶ " : "   ";
       const visibleRow = i - range.start;
       const drawY = this.y + 75 + visibleRow * this.lineHeight;
 
-      const usable = this.actor().canUseSkill(skill.id);
+      const usable = this.actor().canUseMagick(magick.id);
 
       context.globalAlpha = usable ? 1.0 : 0.4;
-      context.fillText(`${prefix}${skill.name}`, this.x + this.padding, drawY);
+      context.fillText(`${prefix}${magick.name}`, this.x + this.padding, drawY);
       context.textAlign = "right";
 
       context.fillText(
-        `${skill.mpCost || 0} MP`,
+        `${magick.mpCost || 0} MP`,
         this.x + this.width - this.padding,
         drawY,
       );
@@ -156,7 +156,7 @@ class Window_BattleMagic {
       context.globalAlpha = 1.0;
     }
 
-    this.drawScrollIndicators(context, skills.length);
+    this.drawScrollIndicators(context, magickList.length);
 
     context.restore();
   }

@@ -15,8 +15,8 @@ const actors = JSON.parse(
 const enemies = JSON.parse(
   fs.readFileSync(path.join(projectRoot, "data", "Enemies.json"), "utf8"),
 );
-const skills = JSON.parse(
-  fs.readFileSync(path.join(projectRoot, "data", "Skills.json"), "utf8"),
+const magick = JSON.parse(
+  fs.readFileSync(path.join(projectRoot, "data", "Magick.json"), "utf8"),
 );
 
 function loadClasses(relativePaths, exportExpression, globals = {}) {
@@ -41,7 +41,7 @@ function makeDatabaseManager() {
     statuses,
     actors,
     enemies,
-    skills,
+    magick,
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
     },
@@ -51,11 +51,11 @@ function makeDatabaseManager() {
     enemy(id) {
       return enemies[id] || null;
     },
-    skill(id) {
-      return skills[id] || null;
+    magick(id) {
+      return magick[id] || null;
     },
-    skillName(id) {
-      return skills[id]?.name || "Unknown Skill";
+    magickName(id) {
+      return magick[id]?.name || "Unknown Magick";
     },
     weapon() {
       return null;
@@ -216,32 +216,32 @@ function testPhysicalOutgoingDamageAndAccuracyModifiers() {
   assert.equal(target.hp, 995);
 }
 
-function testMagicSkillUsesSharedDamageResolution() {
+function testMagickUsesSharedDamageResolution() {
   const { Game_Actor, Game_Enemy } = loadCombatClasses();
   const actor = new Game_Actor(1);
   const target = new Game_Enemy(1);
 
-  actor.learnSkill(10);
+  actor.learnMagick(10);
   target.setHp(100);
   target.addStatus("shield");
 
   const mpBefore = actor.mp;
-  const success = actor.useSkill(10, target, true, "single");
+  const success = actor.useMagick(10, target, true, "single");
 
   assert.equal(success, true);
-  assert.equal(actor.mp, mpBefore - skills[10].mpCost);
+  assert.equal(actor.mp, mpBefore - magick[10].mpCost);
   assert.ok(target.hp > 100);
 
   const mbarrierTarget = new Game_Enemy(1);
   mbarrierTarget.addStatus("mbarrier");
-  const expectedBeforeBarrier = actor.magicDamage(
-    skills[10],
+  const expectedBeforeBarrier = actor.magickDamage(
+    magick[10],
     mbarrierTarget,
     "single",
   );
   const hpBefore = mbarrierTarget.hp;
 
-  actor.useSkill(10, mbarrierTarget, false, "single");
+  actor.useMagick(10, mbarrierTarget, false, "single");
 
   assert.equal(
     hpBefore - mbarrierTarget.hp,
@@ -253,6 +253,6 @@ testIncomingDamageStatusModifiers();
 testShieldPhysicalImmunityAndElementalAbsorption();
 testPhysicalDamageWakeRules();
 testPhysicalOutgoingDamageAndAccuracyModifiers();
-testMagicSkillUsesSharedDamageResolution();
+testMagickUsesSharedDamageResolution();
 
 console.log("Combat modifier regression tests passed.");

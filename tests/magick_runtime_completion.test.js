@@ -12,7 +12,7 @@ const readData = (filename) =>
 const statuses = readData("Statuses.json");
 const actors = readData("Actors.json");
 const enemies = readData("Enemies.json");
-const skills = readData("Skills.json");
+const magick = readData("Magick.json");
 
 function loadClasses(relativePaths, exportExpression, globals = {}) {
   const context = vm.createContext({ console, ...globals });
@@ -36,7 +36,7 @@ function makeDatabaseManager() {
     statuses,
     actors,
     enemies,
-    skills,
+    magick,
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
     },
@@ -46,11 +46,11 @@ function makeDatabaseManager() {
     enemy(id) {
       return enemies[id] || null;
     },
-    skill(id) {
-      return skills[id] || null;
+    magick(id) {
+      return magick[id] || null;
     },
-    skillName(id) {
-      return skills[id]?.name || "Unknown Skill";
+    magickName(id) {
+      return magick[id]?.name || "Unknown Magick";
     },
     weapon() {
       return null;
@@ -66,6 +66,8 @@ function loadCombatClasses() {
   const gameParty = {
     battleMembers: () => partyMembers,
     livingBattleMembers: () => partyMembers.filter((battler) => battler.isAlive()),
+    gainItem() {},
+    gainGil() {},
   };
 
   const classes = loadClasses(
@@ -91,7 +93,7 @@ function makeBattleScene(caster, enemiesInBattle = []) {
   const popups = [];
 
   const scene = {
-    encounter: { id: 1, name: "Skill Runtime Test", canEscape: true },
+    encounter: { id: 1, name: "Magick Runtime Test", canEscape: true },
     enemies: enemiesInBattle,
     outcome: null,
     victory: false,
@@ -99,10 +101,10 @@ function makeBattleScene(caster, enemiesInBattle = []) {
     result: null,
     targetGroup: "enemy",
     targetScope: "single",
-    pendingMagicSkill: null,
-    pendingMagicTarget: null,
-    magicEffectSkill: null,
-    magicEffectTarget: null,
+    pendingMagick: null,
+    pendingMagickTarget: null,
+    magickEffect: null,
+    magickEffectTarget: null,
     pendingEnemyTurn: false,
     enemyTurnDelay: 0,
     battleInputLocked: false,
@@ -112,20 +114,20 @@ function makeBattleScene(caster, enemiesInBattle = []) {
       },
     },
     targetManager: {
-      allowedTargetGroups(skill) {
-        return Array.isArray(skill?.target) ? skill.target : [];
+      allowedTargetGroups(magick) {
+        return Array.isArray(magick?.target) ? magick.target : [];
       },
-      allowedScopes(skill) {
-        return Array.isArray(skill?.scope) ? skill.scope : [];
+      allowedScopes(magick) {
+        return Array.isArray(magick?.scope) ? magick.scope : [];
       },
-      selectableBattlers(group, skill) {
+      selectableBattlers(group, magick) {
         const battlers = group === "ally" ? scene.partyMembers : enemiesInBattle;
-        return battlers.filter((battler) => caster.isValidSkillTarget(skill, battler));
+        return battlers.filter((battler) => caster.isValidMagickTarget(magick, battler));
       },
       getCurrentTargets() {
         const battlers =
           scene.targetGroup === "ally" ? scene.partyMembers : enemiesInBattle;
-        return battlers.filter((battler) => caster.isValidSkillTarget(scene.pendingMagicSkill, battler));
+        return battlers.filter((battler) => caster.isValidMagickTarget(scene.pendingMagick, battler));
       },
     },
     addBattleMessage(message) {
@@ -153,17 +155,17 @@ function testGravityUsesCurrentHpPercentage() {
   const caster = new Game_Actor(1);
   const target = new Game_Enemy(1);
 
-  caster.learnSkill(25); // Burden, 25% current HP.
+  caster.learnMagick(25); // Burden, 25% current HP.
   const firstHp = target.hp;
 
-  assert.equal(caster.useSkill(25, target, false, "single", () => 0), true);
+  assert.equal(caster.useMagick(25, target, false, "single", () => 0), true);
   const firstDamage = firstHp - target.hp;
-  assert.equal(firstDamage, Math.floor(firstHp * skills[25].gravityPercent));
+  assert.equal(firstDamage, Math.floor(firstHp * magick[25].gravityPercent));
 
   const secondHp = target.hp;
-  assert.equal(caster.useSkill(25, target, false, "single", () => 0), true);
+  assert.equal(caster.useMagick(25, target, false, "single", () => 0), true);
   const secondDamage = secondHp - target.hp;
-  assert.equal(secondDamage, Math.floor(secondHp * skills[25].gravityPercent));
+  assert.equal(secondDamage, Math.floor(secondHp * magick[25].gravityPercent));
   assert.ok(secondDamage < firstDamage);
 }
 
@@ -174,15 +176,15 @@ function testPerfectRenewalUsesHealPercent() {
 
   caster.maxMp = 500;
   caster.mp = 500;
-  caster.learnSkill(52); // Perfect Renewal.
+  caster.learnMagick(52); // Perfect Renewal.
   ally.setHp(1);
 
   const mpBefore = caster.mp;
-  const success = caster.useSkill(52, ally, true, "single", () => 0);
+  const success = caster.useMagick(52, ally, true, "single", () => 0);
 
   assert.equal(success, true);
   assert.equal(ally.hp, ally.maxHp);
-  assert.equal(caster.mp, mpBefore - skills[52].mpCost);
+  assert.equal(caster.mp, mpBefore - magick[52].mpCost);
 }
 
 function testMeteorBarrageResolvesFourRandomHitsAndPaysOnce() {
@@ -198,7 +200,7 @@ function testMeteorBarrageResolvesFourRandomHitsAndPaysOnce() {
 
   caster.maxMp = 500;
   caster.mp = 500;
-  caster.learnSkill(47); // Meteor Barrage.
+  caster.learnMagick(47); // Meteor Barrage.
   partyMembers.push(caster);
 
   const scene = makeBattleScene(caster, targets);
@@ -210,9 +212,9 @@ function testMeteorBarrageResolvesFourRandomHitsAndPaysOnce() {
   let rollIndex = 0;
   const random = () => rolls[rollIndex++] ?? 0;
 
-  const resolutions = manager.resolveRandomMultiHitMagic(
+  const resolutions = manager.resolveRandomMultiHitMagick(
     caster,
-    skills[47],
+    magick[47],
     random,
   );
 
@@ -221,14 +223,14 @@ function testMeteorBarrageResolvesFourRandomHitsAndPaysOnce() {
     Array.from(resolutions, (resolution) => targets.indexOf(resolution.target)),
     [0, 1, 2, 3],
   );
-  assert.equal(caster.mp, mpBefore - skills[47].mpCost);
+  assert.equal(caster.mp, mpBefore - magick[47].mpCost);
 
   for (let index = 0; index < targets.length; index++) {
     assert.ok(targets[index].hp < hpBefore[index]);
   }
 }
 
-function testRandomPerHitSkillSkipsManualTargetSelection() {
+function testRandomPerHitMagickSkipsManualTargetSelection() {
   const { Game_Actor, Game_Enemy, BattleManager, partyMembers } =
     loadCombatClasses();
   const caster = new Game_Actor(1);
@@ -236,7 +238,7 @@ function testRandomPerHitSkillSkipsManualTargetSelection() {
 
   caster.maxMp = 500;
   caster.mp = 500;
-  caster.learnSkill(47); // Meteor Barrage.
+  caster.learnMagick(47); // Meteor Barrage.
   partyMembers.push(caster);
 
   const scene = makeBattleScene(caster, [enemy]);
@@ -244,10 +246,10 @@ function testRandomPerHitSkillSkipsManualTargetSelection() {
   scene.selectingEnemyTarget = false;
   scene.enemyTargetAction = null;
   scene.actionPhase = "none";
-  scene.magicWindow = {
+  scene.magickWindow = {
     hidden: false,
-    currentSkill() {
-      return skills[47];
+    currentMagick() {
+      return magick[47];
     },
     hide() {
       this.hidden = true;
@@ -255,15 +257,15 @@ function testRandomPerHitSkillSkipsManualTargetSelection() {
   };
 
   const manager = new BattleManager(scene);
-  manager.executeMagic();
+  manager.executeMagick();
 
-  assert.equal(scene.pendingMagicSkill, skills[47]);
-  assert.equal(scene.pendingMagicTarget, null);
+  assert.equal(scene.pendingMagick, magick[47]);
+  assert.equal(scene.pendingMagickTarget, null);
   assert.equal(scene.selectingEnemyTarget, false);
   assert.equal(scene.enemyTargetAction, null);
   assert.equal(scene.battleInputLocked, true);
-  assert.equal(scene.actionPhase, "magicCast");
-  assert.equal(scene.magicWindow.hidden, true);
+  assert.equal(scene.actionPhase, "magickCast");
+  assert.equal(scene.magickWindow.hidden, true);
 }
 
 function testRetreatDeclaresEscapeAndFinalizesWithoutRewards() {
@@ -272,7 +274,7 @@ function testRetreatDeclaresEscapeAndFinalizesWithoutRewards() {
   const caster = new Game_Actor(1);
   const enemy = new Game_Enemy(1);
 
-  caster.learnSkill(43); // Retreat.
+  caster.learnMagick(43); // Retreat.
   partyMembers.push(caster);
 
   const scene = makeBattleScene(caster, [enemy]);
@@ -280,9 +282,9 @@ function testRetreatDeclaresEscapeAndFinalizesWithoutRewards() {
   const manager = new BattleManager(scene);
   const mpBefore = caster.mp;
 
-  assert.equal(manager.performEscapeSkill(caster, skills[43]), true);
+  assert.equal(manager.performEscapeMagick(caster, magick[43]), true);
   assert.equal(scene.outcome, BattleManager.OUTCOME_ESCAPE);
-  assert.equal(caster.mp, mpBefore - skills[43].mpCost);
+  assert.equal(caster.mp, mpBefore - magick[43].mpCost);
   assert.ok(scene.messages.some((message) => message.includes("party escapes")));
 
   const result = manager.finalizeBattle();
@@ -301,7 +303,7 @@ function testBanishUsesDeathBridgeAndPreservesRewardReason() {
 
   caster.maxMp = 200;
   caster.mp = 200;
-  caster.learnSkill(44); // Banish.
+  caster.learnMagick(44); // Banish.
   partyMembers.push(caster);
 
   const scene = makeBattleScene(caster, [target]);
@@ -309,9 +311,9 @@ function testBanishUsesDeathBridgeAndPreservesRewardReason() {
   const manager = new BattleManager(scene);
   const mpBefore = caster.mp;
 
-  const resolution = manager.resolveMagicEffectOnTarget(
+  const resolution = manager.resolveMagickEffectOnTarget(
     caster,
-    skills[44],
+    magick[44],
     target,
     true,
     "single",
@@ -324,7 +326,7 @@ function testBanishUsesDeathBridgeAndPreservesRewardReason() {
   assert.equal(target.isDead(), true);
   assert.equal(target.isDefeated(), true);
   assert.equal(target.canBeRevived(), false);
-  assert.equal(caster.mp, mpBefore - skills[44].mpCost);
+  assert.equal(caster.mp, mpBefore - magick[44].mpCost);
   assert.ok(scene.popups.some((popup) => popup.text === "BANISHED"));
 
   manager.declareBattleOutcome(BattleManager.OUTCOME_VICTORY);
@@ -339,11 +341,11 @@ function run() {
   testGravityUsesCurrentHpPercentage();
   testPerfectRenewalUsesHealPercent();
   testMeteorBarrageResolvesFourRandomHitsAndPaysOnce();
-  testRandomPerHitSkillSkipsManualTargetSelection();
+  testRandomPerHitMagickSkipsManualTargetSelection();
   testRetreatDeclaresEscapeAndFinalizesWithoutRewards();
   testBanishUsesDeathBridgeAndPreservesRewardReason();
 
-  console.log("Skill runtime completion regression tests passed.");
+  console.log("Magick runtime completion regression tests passed.");
 }
 
 run();

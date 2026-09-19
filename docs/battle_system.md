@@ -20,7 +20,7 @@ The battle system should remain:
 - Modular rather than concentrated in one giant class
 - Shared between actors and enemies through `Game_Battler`
 - Capable of supporting multiple party members and multiple enemies
-- Flexible enough for unusual skills, statuses, Essences, bosses, and future mechanics
+- Flexible enough for unusual Magick, statuses, Essences, bosses, and future mechanics
 - Clear about the difference between game data, runtime state, battle rules, and presentation
 
 Battle data describes an action. Runtime systems decide how that action behaves.
@@ -72,8 +72,8 @@ Examples include:
 Physical Attack
 lunge → hit → return → wait
 
-Magic
-magicCast → magicEffect → magicRecover → magicWait
+Magick
+magickCast → magickEffect → magickRecover → magickWait
 
 Item
 itemUse → itemEffect → itemRecover → itemWait
@@ -95,7 +95,7 @@ A battler can own runtime values such as:
 - Element interactions
 - Battle state
 - Defending state
-- Skill usability
+- Magick usability
 - Future active status effects and status durations
 
 Actor-specific behavior belongs in `Game_Actor`.
@@ -112,7 +112,7 @@ The current battle command foundation supports:
 
 ```text
 Attack
-Magic
+Magick
 Item
 Defend
 ```
@@ -134,14 +134,14 @@ The battle system currently supports concepts including:
 - Single targets
 - All targets
 - Selection of living targets
-- Skills that permit more than one target group
-- Skills that permit more than one target scope
+- Magick that permit more than one target group
+- Magick that permit more than one target scope
 
-Skill data should determine which target groups and scopes are legal.
+Magick data should determine which target groups and scopes are legal.
 
-The battle scene and target manager handle the player's current selection. Effect resolution should not redefine the skill's targeting rules.
+The battle scene and target manager handle the player's current selection. Effect resolution should not redefine the Magick's targeting rules.
 
-When a skill permits both allies and enemies, the current magic command flow prefers the enemy group as the initial selection while still allowing the legal target groups defined by the skill.
+When a Magick permits both allies and enemies, the current Magick command flow prefers the enemy group as the initial selection while still allowing the legal target groups defined by the Magick.
 
 ---
 
@@ -165,17 +165,17 @@ These are current engine rules, not permanent balance promises. If formulas are 
 
 ---
 
-# ✨ Magic and Skills
+# ✨ Magick
 
-Canonical skill definitions live in:
+Canonical Magick definitions live in:
 
 ```text
-data/Skills.json
+data/Magick.json
 ```
 
-The initial Skills System v1 contains 54 skills across Restore, Attack, Indirect, and Advanced magic categories.
+The initial Magick System v1 contains 54 Magick abilities across Restore, Attack, Indirect, and Advanced Magick categories.
 
-Skills can describe behavior such as:
+Magick can describe behavior such as:
 
 - Damage
 - Healing
@@ -189,15 +189,15 @@ Skills can describe behavior such as:
 - Ally and enemy targeting
 - Elemental behavior
 
-The engine should interpret reusable skill properties rather than hard-code individual spell names whenever practical.
+The engine should interpret reusable Magick properties rather than hard-code individual spell names whenever practical.
 
-For all-target magic, MP cost is paid once for the cast even though the effect is resolved against multiple targets. Multi-hit skills follow the same cast-cost rule: `hits` controls the number of effect resolutions, and `randomTargetPerHit: true` rebuilds the legal target pool before each hit so defeated targets do not remain selectable when another legal target exists.
+For all-target Magick, MP cost is paid once for the cast even though the effect is resolved against multiple targets. Multi-hit Magick follow the same cast-cost rule: `hits` controls the number of effect resolutions, and `randomTargetPerHit: true` rebuilds the legal target pool before each hit so defeated targets do not remain selectable when another legal target exists.
 
-Gravity-style skills use `gravityPercent` against the target's **current HP** rather than the normal spell-power / Magic Defense formula. The resulting amount still passes through shared elemental and incoming magical-damage handling. Because the percentage is floored from current HP, the current Gravity definitions naturally stop dealing damage at the final sliver of HP rather than requiring a skill-name exception.
+Gravity-style Magick abilities use `gravityPercent` against the target's **current HP** rather than the normal spell-power / Magic Defense formula. The resulting amount still passes through shared elemental and incoming magical-damage handling. Because the percentage is floored from current HP, the current Gravity definitions naturally stop dealing damage at the final sliver of HP rather than requiring a Magick-name exception.
 
-Percentage-healing skills use `healPercent` against the target's maximum HP. This is the data-driven path used by Perfect Renewal's full restoration.
+Percentage-healing Magick abilities use `healPercent` against the target's maximum HP. This is the data-driven path used by Perfect Renewal's full restoration.
 
-The `escape` effect is battle-owned: a successful cast declares the authoritative escape outcome and finalizes with no rewards. The `banish` effect routes through the canonical Death/defeat state while preserving a separate banished marker so future currency rewards can exclude Gil from that enemy without re-parsing the originating skill.
+The `escape` effect is battle-owned: a successful cast declares the authoritative escape outcome and finalizes with no rewards. The `banish` effect routes through the canonical Death/defeat state while preserving a separate banished marker so future currency rewards can exclude Gil from that enemy without re-parsing the originating Magick.
 
 The current battle presentation can report elemental outcomes such as:
 
@@ -207,33 +207,33 @@ WEAK
 RESIST
 ```
 
-based on the target's elemental interaction with the skill.
+based on the target's elemental interaction with the Magick.
 
 ---
 
 # 🌐 Scope Power
 
-Some power-based skills support both single-target and all-target casting.
+Some power-based Magick support both single-target and all-target casting.
 
 `scopePower` exists to allow the power component of a spell to change with scope without silently changing unrelated mechanics.
 
-Status application chance is not automatically reduced merely because a skill is cast on all targets.
+Status application chance is not automatically reduced merely because a Magick is cast on all targets.
 
 This distinction is important:
 
-> **Scope modifies the properties explicitly designed to scale with scope. It does not globally weaken every part of the skill.**
+> **Scope modifies the properties explicitly designed to scale with scope. It does not globally weaken every part of the Magick.**
 
 ---
 
-# ❤️ Restore Magic and Unusual Targets
+# ❤️ Restore Magick and Unusual Targets
 
-Restore magic is intentionally capable of supporting unusual ally/enemy interactions.
+Restore Magick is intentionally capable of supporting unusual ally/enemy interactions.
 
-Some restorative skills may legally target enemies. This is necessary for planned undead-style interactions where healing or restorative power can become harmful to an appropriate target.
+Some restorative Magick may legally target enemies. This is necessary for planned undead-style interactions where healing or restorative power can become harmful to an appropriate target.
 
 Target legality and effect interpretation are separate responsibilities.
 
-A skill being restorative does not automatically mean its target must be an ally.
+A Magick being restorative does not automatically mean its target must be an ally.
 
 The complete undead restorative-damage interaction remains future runtime work.
 
@@ -266,7 +266,7 @@ The runtime currently supports:
 - Fury / Sadness mutual exclusivity
 - Turn-start damage and healing triggers
 - Generic action prevention through `effects.canAct`
-- Data-driven action allowlists and blocked skill types for status restrictions
+- Data-driven action allowlists and blocked Magick types for status restrictions
 - Shared physical and magical incoming-damage modifiers
 - Shared outgoing physical-damage and physical-accuracy modifiers
 - Physical-damage status-removal triggers
@@ -279,11 +279,11 @@ Battlers may optionally define `statusRates` for a specific status key and `stat
 
 Ordinary status application uses the calling effect's base chance multiplied by the target's effective status rate. Derived statuses are not rolled or manually inflicted; the runtime evaluates them from their conditions.
 
-Skill status payloads now route through this same runtime. `Game_Actor.useSkill()` interprets the reusable `status` object for damage skills, pure status application, and status removal. Skill-defined base chances continue to respect target status resistance and immunity when applying a status. `allyStatusChance` can override the base chance for allied targets, and `toggleStatus` lets reversible transformations such as Small and Frog use the same skill to apply or remove their status. Status-removal skills use their own per-status chance without being blocked by the target's resistance to receiving that status.
+Magick status payloads now route through this same runtime. `Game_Actor.useMagick()` interprets the reusable `status` object for damage Magick, pure status application, and status removal. Magick-defined base chances continue to respect target status resistance and immunity when applying a status. `allyStatusChance` can override the base chance for allied targets, and `toggleStatus` lets reversible transformations such as Small and Frog use the same Magick to apply or remove their status. Status-removal Magick abilities use their own per-status chance without being blocked by the target's resistance to receiving that status.
 
-The runtime records the most recent per-status resolution so battle presentation can distinguish applied, refreshed, removed, resisted, immune, unchanged, and unsupported status references without hard-coding individual skill names.
+The runtime records the most recent per-status resolution so battle presentation can distinguish applied, refreshed, removed, resisted, immune, unchanged, and unsupported status references without hard-coding individual Magick names.
 
-`Skills.json` still contains the legacy keys `resist` and `deathforce`, but neither is part of the approved 25-status `Statuses.json` v1 set. The runtime therefore reports those references as unsupported instead of inventing ad-hoc status behavior. They remain future design work unless they are formally added to the canonical status database.
+`Magick.json` still contains the legacy keys `resist` and `deathforce`, but neither is part of the approved 25-status `Statuses.json` v1 set. The runtime therefore reports those references as unsupported instead of inventing ad-hoc status behavior. They remain future design work unless they are formally added to the canonical status database.
 
 ---
 
@@ -321,11 +321,11 @@ Regen and damaging-over-time statuses may coexist. Their turn-start effects reso
 
 Stop and Paralyze are intentionally distinct. Both prevent acting through the shared `canAct` runtime rule, but Stop additionally freezes personal turn progression through `effects.haltsTurnProgression`. A stopped battler receives no scheduled turn slots, does not process turn-start triggers, does not advance ordinary battler-relative status timers, and preserves any fractional Haste/Slow turn progress already accumulated. Stop's own duration advances once per side round after that round's queue is determined; when it expires, the battler resumes eligibility on the next side round rather than gaining a turn immediately in the expiration round.
 
-Sleep and Confuse are removed when the afflicted battler actually takes physical damage. A miss or a fully nullified physical hit does not remove them. Confuse reads `effects.forceRandomTarget` through the shared battler runtime: a chosen basic Attack targets a random living battler on either side, enemy basic attacks can likewise redirect to either side, and a chosen single-target skill selects randomly from the targets that are legal for that skill. If a future skill only supports all-target scope, Confuse instead chooses a random legal target group and resolves the skill against that side. Confuse changes target authority rather than choosing a different action for the battler.
+Sleep and Confuse are removed when the afflicted battler actually takes physical damage. A miss or a fully nullified physical hit does not remove them. Confuse reads `effects.forceRandomTarget` through the shared battler runtime: a chosen basic Attack targets a random living battler on either side, enemy basic attacks can likewise redirect to either side, and a chosen single-target Magick selects randomly from the targets that are legal for that Magick. If a future Magick only supports all-target scope, Confuse instead chooses a random legal target group and resolves the Magick against that side. Confuse changes target authority rather than choosing a different action for the battler.
 
 Physical combat modifiers are read from status data rather than status names. Outgoing `physicalDamageMultiplier` values affect basic physical damage, `physicalAccuracyMultiplier` values affect physical hit chance, and target-side `physicalDamageTakenMultiplier` values are applied by the shared incoming-damage resolver. This makes the damage portions of Berserk, Fury, Darkness, Frog, Small, Sadness, Barrier, and Shield reusable even while their unrelated mechanics remain separate work.
 
-Action restrictions are resolved from status data rather than status names. `effects.allowedActions` narrows the battler to the intersection of all active allowlists, while `effects.blockedSkillTypes` blocks matching skill/action types. Frog currently uses `allowedActions: ["attack"]`, so Attack remains available while Magic, Item, and Defend are disabled. Silence uses `blockedSkillTypes: ["magic"]`, so physical attacks, items, and Defend remain available while magic skills are unusable. The battle command window dims/skips restricted commands, and the execution layer rechecks the same shared rule before resolving an action.
+Action restrictions are resolved from status data rather than status names. `effects.allowedActions` narrows the battler to the intersection of all active allowlists, while `effects.blockedActionTypes` blocks matching Magick/action types. Frog currently uses `allowedActions: ["attack"]`, so Attack remains available while Magick, Item, and Defend are disabled. Silence uses `blockedActionTypes: ["magick"]`, so physical attacks, items, and Defend remain available while Magick actions are unusable. The battle command window dims/skips restricted commands, and the execution layer rechecks the same shared rule before resolving an action.
 
 Forced action ownership is also data-driven. `effects.playerControl: false` removes command-window authority from the player, while `effects.forcePhysicalAttack: true` tells the battle flow to begin a basic physical attack automatically when that battler's turn starts. Berserk currently combines those fields, so a Berserked party member attacks automatically instead of opening the command window. Without Confuse, that forced attack uses the normal opposing-side target preference; when Confuse is also active, `forceRandomTarget` expands the candidate set to living battlers on either side.
 
@@ -339,9 +339,9 @@ Death is a battle defeat state that can be revived. Post-battle processing resto
 
 The shared battler model distinguishes **dead** from **defeated**. `isDead()` remains the HP-zero check. `isDefeated()` is the battle-state check and is true when HP is zero or when an active status defines `effects.countsAsDefeated: true`. Death therefore reaches defeat through both HP zero and status metadata, while Petrify counts as defeated without changing the battler's HP. Battle outcome, active-turn, ordinary target-selection, defeat-presentation, and defeated-enemy reward paths use the broader defeated-state contract.
 
-Revival is data-driven through skills with `effect: "revive"` and a valid `revivePercent`. A normal HP-zero KO can be revived even when no Death status object is present. A revivable defeat status such as Death is removed before HP is restored. A non-revivable defeat status such as Petrify blocks revival and must instead be removed by an appropriate cleansing skill such as Soul Cleanse. Ordinary healing does not target defeated battlers.
+Revival is data-driven through Magick with `effect: "revive"` and a valid `revivePercent`. A normal HP-zero KO can be revived even when no Death status object is present. A revivable defeat status such as Death is removed before HP is restored. A non-revivable defeat status such as Petrify blocks revival and must instead be removed by an appropriate cleansing Magick such as Soul Cleanse. Ordinary healing does not target defeated battlers.
 
-Battle target selection uses the same skill-target validity contract as execution. Rekindle and Reawakening can therefore select revivable defeated allies, Soul Cleanse can select a Petrified ally because it can remove Petrify, and normal healing continues to select active battlers only. If a reflectable revival is redirected, Reflect chooses a revivable battler on the opposing side rather than a living target that cannot receive revival.
+Battle target selection uses the same Magick-target validity contract as execution. Rekindle and Reawakening can therefore select revivable defeated allies, Soul Cleanse can select a Petrified ally because it can remove Petrify, and normal healing continues to select active battlers only. If a reflectable revival is redirected, Reflect chooses a revivable battler on the opposing side rather than a living target that cannot receive revival.
 
 Battle presentation exposes active status names for both sides. Turn-based and countdown statuses include their remaining-turn value, and compact summaries collapse additional statuses behind a `+N` suffix when space is limited.
 
@@ -351,13 +351,13 @@ Battle presentation exposes active status names for both sides. Turn-based and c
 
 Barrier and MBarrier now reduce their respective physical or magical incoming damage categories through the shared battler damage resolver. Multiple compatible incoming-damage multipliers combine multiplicatively.
 
-Reflect redirects eligible skills at the per-target resolution layer. A skill only reflects when its canonical definition has `reflectable: true` and the current target has an active status whose effects enable `reflectableSkills`.
+Reflect redirects eligible Magick at the per-target resolution layer. A Magick only reflects when its canonical definition has `reflectable: true` and the current target has an active status whose effects enable `reflectableMagick`.
 
-The initial Reflect status uses `perTarget: true` and `maxReflections: 1`. Each original target of an all-target cast therefore resolves reflection independently, while the spell's MP cost is still paid only once for the cast. Reflected skills normally redirect to a random living battler on the side opposing the Reflect holder. Revival is the state-aware exception: a reflected revive selects a random revivable defeated battler on the opposing side so the redirected effect still has a legal revival destination.
+The initial Reflect status uses `perTarget: true` and `maxReflections: 1`. Each original target of an all-target cast therefore resolves reflection independently, while the spell's MP cost is still paid only once for the cast. Reflected Magick normally redirect to a random living battler on the side opposing the Reflect holder. Revival is the state-aware exception: a reflected revive selects a random revivable defeated battler on the opposing side so the redirected effect still has a legal revival destination.
 
-Reflection changes the resolved target; it does not create a second cast. The reflected effect therefore keeps the original caster, scope, power, status chances, and paid MP cost. Because the redirection happens after the player has already chosen a legal original target, the reflected destination is allowed to receive the effect even when that battler could not have been manually selected under the skill's normal ally/enemy targeting rules.
+Reflection changes the resolved target; it does not create a second cast. The reflected effect therefore keeps the original caster, scope, power, status chances, and paid MP cost. Because the redirection happens after the player has already chosen a legal original target, the reflected destination is allowed to receive the effect even when that battler could not have been manually selected under the Magick's normal ally/enemy targeting rules.
 
-The reflection count is capped by the Reflect status that first redirects the skill. With the current one-reflection cap, a redirected skill lands on its new target even if that target also has Reflect, preventing infinite bounce loops. Skills marked `reflectable: false`, including Mirror Ward and Wardbreaker, ignore Reflect entirely.
+The reflection count is capped by the Reflect status that first redirects the Magick. With the current one-reflection cap, a redirected Magick lands on its new target even if that target also has Reflect, preventing infinite bounce loops. Magick marked `reflectable: false`, including Mirror Ward and Wardbreaker, ignore Reflect entirely.
 
 Shield is a specialized defensive status. Its implemented damage rules are:
 
@@ -366,7 +366,7 @@ Shield is a specialized defensive status. Its implemented damage rules are:
 - Recovery is capped at Max HP
 - Non-elemental magical damage resolves normally
 
-Elemental absorption occurs after the normal magic formula, elemental rate, scope power, and incoming magical-damage modifiers have produced the damage amount. The resulting elemental damage is then converted into healing. An elemental immunity rate of `0` remains immunity rather than absorption.
+Elemental absorption occurs after the normal Magick formula, elemental rate, scope power, and incoming magical-damage modifiers have produced the damage amount. The resulting elemental damage is then converted into healing. An elemental immunity rate of `0` remains immunity rather than absorption.
 
 ---
 
@@ -380,7 +380,7 @@ data/Essences.json
 
 Essences connect character progression to the battle system by granting abilities and passive effects.
 
-The initial design contains 19 Essences with all 54 current skills assigned exactly once across the Essence set.
+The initial design contains 19 Essences with all 54 current Magick abilities assigned exactly once across the Essence set.
 
 Equipped Essences are designed to gain full battle Resonance regardless of whether one of their granted abilities was cast during that battle.
 
@@ -401,7 +401,7 @@ The current design includes passive concepts such as:
 - Element damage bonuses
 - Element status-chance bonuses
 - Status-family resistance
-- Skill MP refunds
+- Magick MP refunds
 - Low-HP self-status effects
 - Incoming-status negation
 - Physical evasion bonuses
@@ -422,13 +422,13 @@ Items use their own battle selection window and action sequence.
 
 The current flow stores the selected item, closes the item window, locks battle input while the action resolves, and proceeds through the item action phases.
 
-Item effects should ultimately follow the same architectural principle as skills and statuses: content data describes the item, while reusable runtime systems interpret its behavior.
+Item effects should ultimately follow the same architectural principle as Magick and statuses: content data describes the item, while reusable runtime systems interpret its behavior.
 
 ---
 
 # 🛡️ Defend
 
-Defend is a battle command rather than a skill.
+Defend is a battle command rather than a Magick.
 
 The current physical attack path checks whether the target is defending and reduces incoming basic physical attack damage by 50%.
 
@@ -485,7 +485,7 @@ Defeat and escape award no battle rewards. Victory resolves every reward exactly
 - **Item drops:** each defeated enemy resolves its validated `dropTable` independently. Successful rolls are aggregated by item ID and awarded through `Game_Party.gainItem()`.
 - **Essence Resonance:** total `resonanceReward` from defeated enemies. Every equipped Essence on each **surviving active battle-party participant** receives the full encounter Resonance amount. Defeated participants and reserve roster members receive none.
 
-Essence Resonance caps at the canonical Mastery threshold (1500 with the current data). Per-actor reward results report Essence level changes, awakened skill IDs, and Mastery-Ready transitions without automatically promoting an Essence to Level 5.
+Essence Resonance caps at the canonical Mastery threshold (1500 with the current data). Per-actor reward results report Essence level changes, awakened Magick IDs, and Mastery-Ready transitions without automatically promoting an Essence to Level 5.
 
 ## Battle Results Presentation
 
@@ -499,7 +499,7 @@ The initial results screen presents:
 - Character level-up transitions
 - Equipped-Essence Resonance gains
 - Essence level-up transitions
-- Newly awakened Essence skills
+- Newly awakened Essence Magick
 - Mastery Ready transitions
 
 Long progression output scrolls inside the results panel while the battle scene remains visible underneath. `E` / `Enter` confirms the results and completes the existing callback / scene-pop handoff to the originating map event. Defeat and escape retain their existing no-reward completion behavior.
@@ -547,7 +547,7 @@ Future AI should be responsible for decisions such as:
 - Selecting actions
 - Selecting legal targets
 - Responding to battle conditions
-- Weighted or conditional skill use
+- Weighted or conditional Magick selection
 - Boss-specific behavior
 
 AI chooses what an enemy attempts to do. Shared battle systems should still resolve targeting legality, damage, statuses, and effects.
@@ -579,7 +579,7 @@ Major battle features still planned include:
 - Complete Essence Runtime
 - Enemy AI
 - Boss mechanics
-- Summon Magic
+- Summon Magick
 - Limit Skills
 - Party switching
 - Dual Techniques
@@ -595,7 +595,7 @@ These are planned architecture, not claims about currently completed runtime beh
 When adding a battle feature, ask which layer owns the responsibility.
 
 ```text
-Skills.json / Statuses.json / Essences.json
+Magick.json / Statuses.json / Essences.json
     Define canonical content
 
 Game_Battler / Game_Actor / Game_Enemy
@@ -620,7 +620,7 @@ Scene_Battle
     Coordinates the complete battle scene
 
 Windows
-    Present commands, skills, items, and other player choices
+    Present commands, Magick, items, and other player choices
 ```
 
 A new mechanic should be placed in the narrowest system that truly owns it.
@@ -634,7 +634,7 @@ Avoid making `Scene_Battle` or `BattleManager` the permanent home of every new r
 Battle documentation and data have different responsibilities.
 
 ```text
-data/Skills.json       Canonical skill definitions
+data/Magick.json       Canonical Magick definitions
 data/Essences.json     Canonical Essence definitions
 data/Statuses.json     Canonical status definitions
 
@@ -655,7 +655,7 @@ Sektor 1's battle system is not a collection of isolated spell scripts.
 
 It is a set of reusable rules that can combine in increasingly interesting ways as the game grows.
 
-A new skill should mostly be data.
+A new Magick should mostly be data.
 
 A new status should mostly be data.
 

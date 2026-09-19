@@ -15,14 +15,14 @@ systems are being designed and implemented specifically for Sektor 1.
 
 ## Post-Audit Feature Development
 
-The historical repository-audit backlog is now fully reconciled against the current codebase. Core battle resolution, status/skill runtime, persistence, validation, ownership, UI resilience, and battle rewards have dedicated runtime paths and regression coverage.
+The historical repository-audit backlog is now fully reconciled against the current codebase. Core battle resolution, status/Magick runtime, persistence, validation, ownership, UI resilience, and battle rewards have dedicated runtime paths and regression coverage.
 
 New development can now be selected primarily from the active roadmap and TODO priorities, while continuing to verify current code before implementing overlapping work.
 
 ### Recently Completed
 
--   ✅ Skills System v1
--   ✅ 54 initial skills
+-   ✅ Magick System v1
+-   ✅ 54 initial Magick abilities
 -   ✅ Essence System v1
 -   ✅ 19 initial Essences
 -   ✅ Essence Resonance and Mastery design
@@ -33,6 +33,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Battle EXP / Gil / item-drop rewards
 -   ✅ Battle Essence Resonance progression
 -   ✅ Repository-audit closure
+-   ✅ Magick Terminology Migration v1
 
 ------------------------------------------------------------------------
 
@@ -48,7 +49,7 @@ Completed foundations include:
 -   ✅ Party foundation
 -   ✅ Multi-character turn system
 -   ✅ Turn queue
--   ✅ Save / Load (version-aware Save Runtime v3)
+-   ✅ Save / Load (version-aware Save Runtime v4)
 -   ✅ Equipment system
 -   ✅ Inventory system
 
@@ -68,7 +69,7 @@ Current battle features include:
 -   ✅ Enemy targeting
 -   ✅ Battle effects
 -   ✅ Animation controller
--   ✅ Magic foundation
+-   ✅ Magick foundation
 -   ✅ Idempotent battle resolution and structured rewards
 -   ✅ Gil, enemy item drops, and Essence Resonance rewards
 
@@ -81,21 +82,31 @@ Systems currently being expanded include:
 
 ------------------------------------------------------------------------
 
-# ✨ Skills
+# ✨ Magick
 
-The initial skill database contains **54 skills** divided across several
+The initial Magick database contains **54 Magick abilities** divided across several
 major categories:
 
--   Restore Magic
--   Attack Magic
--   Indirect Magic
--   Advanced Magic
+-   Restore Magick
+-   Attack Magick
+-   Indirect Magick
+-   Advanced Magick
 
-Skills are data-driven through `data/Skills.json`, allowing battle
+Magick is data-driven through `data/Magick.json`, allowing battle
 behavior to be expanded without hard-coding individual spells throughout
 the engine.
 
-Future categories include Summon Magic and Limit Skills.
+Summon Magick is a future Magick category. The separate **Skills** namespace is reserved for future non-Magick techniques, including concepts such as Limit Skills once their design is approved.
+
+Combat-stat terminology remains **Magic**, **Magic Attack**, and **Magic Defense**. Those names describe character statistics rather than the Magick ability namespace.
+
+------------------------------------------------------------------------
+
+# 🥋 Skills (Future Non-Magick Techniques)
+
+**Skills** is intentionally reserved for future physical, technical, tactical, or otherwise non-Magick abilities. It does not currently have a canonical database or runtime.
+
+This separation keeps Essence-linked supernatural abilities under **Magick** while leaving a clean namespace for future techniques that should not behave like spells.
 
 ------------------------------------------------------------------------
 
@@ -104,7 +115,7 @@ Future categories include Summon Magic and Limit Skills.
 Essences are one of Sektor 1's primary character-progression systems.
 
 The initial database contains **19 Essences**, with all 54 current
-skills assigned to an Essence.
+Magick abilities assigned to an Essence.
 
 Essences can grow through **Resonance**, unlocking abilities and unique
 passive effects as they develop.
@@ -140,7 +151,7 @@ The status architecture supports concepts including:
 -   Derived battle states
 -   Status interaction and removal
 -   Defensive effects
--   Elemental magic absorption
+-   Elemental Magick absorption
 
 The database design is complete for Status System v1. Runtime
 implementation is the current development focus.
@@ -154,7 +165,7 @@ Core gameplay definitions are stored separately from engine code.
 Canonical game data currently includes:
 
 ``` text
-data/Skills.json
+data/Magick.json
 data/Essences.json
 data/Statuses.json
 ```
@@ -172,7 +183,7 @@ Major systems still planned include:
 -   Boss scripting
 -   Party switching
 -   Limit Skills
--   Summon Magic
+-   Summon Magick
 -   World exploration
 -   Towns and dungeons
 -   Side quests
@@ -236,7 +247,7 @@ Every new feature should make the engine easier to understand, maintain,
 and expand.
 
 Gameplay data should remain separate from engine logic whenever
-practical, allowing new skills, statuses, Essences, enemies, and other
+practical, allowing new Magick abilities, Skills, statuses, Essences, enemies, and other
 content to be added without rewriting unrelated systems.
 
 The goal is not simply to finish one game.
@@ -250,13 +261,13 @@ continues to grow.
 
 ### Completed Design Milestones
 
--   ✅ Skills System v1
+-   ✅ Magick System v1
 -   ✅ Essence System v1
 -   ✅ Status System v1
 
 ### Current Focus
 
-> 🚧 **Status System Runtime**
+> 🚧 **Post-audit feature development**
 
 See [`TODO.md`](TODO.md) for the current development checklist.
 

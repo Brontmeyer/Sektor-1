@@ -1,6 +1,6 @@
 "use strict";
 
-class Window_Magic {
+class Window_Magick {
   constructor(actor) {
     this.actor = actor;
     this.visible = false;
@@ -27,9 +27,9 @@ class Window_Magic {
       return;
     }
 
-    const skills = this.skills();
+    const magickList = this.magickList();
 
-    if (skills.length === 0) {
+    if (magickList.length === 0) {
       return;
     }
 
@@ -37,70 +37,70 @@ class Window_Magic {
       this.index--;
 
       if (this.index < 0) {
-        this.index = skills.length - 1;
+        this.index = magickList.length - 1;
       }
     }
 
     if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
       this.index++;
 
-      if (this.index >= skills.length) {
+      if (this.index >= magickList.length) {
         this.index = 0;
       }
     }
 
-    this.listViewport.ensureVisible(this.index, skills.length);
+    this.listViewport.ensureVisible(this.index, magickList.length);
 
     if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
-      const skill = this.currentSkill();
+      const currentMagick = this.currentMagick();
 
-      if (!skill) {
+      if (!currentMagick) {
         return;
       }
 
       // Field menu currently only supports
-      // magic that can target the player.
-      if (!this.canUseFromField(skill)) {
-        DebugManager.log(`${skill.name} cannot be used from the field menu.`);
+      // magick that can target the player.
+      if (!this.canUseFromField(currentMagick)) {
+        DebugManager.log(`${currentMagick.name} cannot be used from the field menu.`);
         return;
       }
 
-      this.actor.useSkill(skill.id, this.actor);
+      this.actor.useMagick(currentMagick.id, this.actor);
     }
   }
 
-  skills() {
-    return this.actor.knownSkills().filter((skill) => skill.type === "magic");
+  magickList() {
+    return this.actor.knownMagick().filter((magick) => magick.type === "magick");
   }
 
-  currentSkill() {
-    const skills = this.skills();
+  currentMagick() {
+    const magickList = this.magickList();
 
-    return skills[this.index] || null;
+    return magickList[this.index] || null;
   }
 
-  canUseFromField(skill) {
-    if (!skill) {
+  canUseFromField(magick) {
+    if (!magick) {
       return false;
     }
 
     const canTargetPlayer =
-      Array.isArray(skill.target) &&
-      (skill.target.includes("ally") || skill.target.includes("self"));
+      Array.isArray(magick.target) &&
+      (magick.target.includes("ally") || magick.target.includes("self"));
 
-    const isFieldEffect = skill.effect === "heal";
+    const isFieldEffect = magick.effect === "heal";
 
     if (!canTargetPlayer || !isFieldEffect) {
       return false;
     }
 
-    return this.actor.canUseSkill(skill.id);
+    return this.actor.canUseMagick(magick.id);
   }
 
   show() {
     this.visible = true;
     this.index = 0;
-    this.listViewport.reset(this.index, this.skills().length);
+    this.listViewport.reset(this.index, this.magickList().length);
   }
 
   hide() {
@@ -153,7 +153,7 @@ class Window_Magic {
     context.fillStyle = "#ffffff";
     context.font = "26px sans-serif";
 
-    context.fillText("Magic", this.x + this.padding, this.y + 42);
+    context.fillText("Magick", this.x + this.padding, this.y + 42);
 
     // Divider
     context.beginPath();
@@ -162,36 +162,36 @@ class Window_Magic {
     context.stroke();
 
     // =====================================
-    // SKILL LIST
+    // MAGICK LIST
     // =====================================
 
-    const skills = this.skills();
+    const magickList = this.magickList();
 
     context.font = "22px sans-serif";
 
-    if (skills.length === 0) {
-      context.fillText("(No magic)", this.x + this.padding, this.y + 105);
+    if (magickList.length === 0) {
+      context.fillText("(No magick)", this.x + this.padding, this.y + 105);
 
       context.restore();
       return;
     }
 
-    const range = this.listViewport.visibleRange(this.index, skills.length);
+    const range = this.listViewport.visibleRange(this.index, magickList.length);
     let drawY = this.y + 105;
 
     for (let i = range.start; i < range.end; i++) {
-      const skill = skills[i];
+      const magick = magickList[i];
 
       const prefix = i === this.index ? "▶ " : "   ";
 
-      const usable = this.canUseFromField(skill);
+      const usable = this.canUseFromField(magick);
 
       context.globalAlpha = usable ? 1.0 : 0.4;
 
-      context.fillText(`${prefix}${skill.name}`, this.x + this.padding, drawY);
+      context.fillText(`${prefix}${magick.name}`, this.x + this.padding, drawY);
 
       context.fillText(
-        `${skill.mpCost || 0} MP`,
+        `${magick.mpCost || 0} MP`,
         this.x + this.width - 110,
         drawY,
       );
@@ -201,15 +201,15 @@ class Window_Magic {
       drawY += this.itemHeight;
     }
 
-    this.drawScrollIndicators(context, skills.length);
+    this.drawScrollIndicators(context, magickList.length);
 
     // =====================================
-    // CURRENT SKILL DETAILS
+    // CURRENT MAGICK DETAILS
     // =====================================
 
-    const skill = this.currentSkill();
+    const currentMagick = this.currentMagick();
 
-    if (skill) {
+    if (currentMagick) {
       context.font = "18px sans-serif";
 
       context.fillText(
@@ -219,13 +219,13 @@ class Window_Magic {
       );
 
       context.fillText(
-        skill.description || "",
+        currentMagick.description || "",
         this.x + 24,
         this.y + this.height - 60,
       );
 
       context.fillText(
-        `Category: ${skill.category || "other"}`,
+        `Category: ${currentMagick.category || "other"}`,
         this.x + 24,
         this.y + this.height - 30,
       );

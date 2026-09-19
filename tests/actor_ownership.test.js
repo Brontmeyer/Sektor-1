@@ -14,7 +14,7 @@ const actors = readData("Actors.json");
 const items = readData("Items.json");
 const weapons = readData("Weapons.json");
 const armors = readData("Armors.json");
-const skills = readData("Skills.json");
+const magick = readData("Magick.json");
 const statuses = readData("Statuses.json");
 
 function makeDatabaseManager() {
@@ -23,7 +23,7 @@ function makeDatabaseManager() {
     items,
     weapons,
     armors,
-    skills,
+    magick,
     statuses,
     actor(id) {
       return actors[id] || null;
@@ -37,11 +37,11 @@ function makeDatabaseManager() {
     armor(id) {
       return armors[id] || null;
     },
-    skill(id) {
-      return skills[id] || null;
+    magick(id) {
+      return magick[id] || null;
     },
-    skillName(id) {
-      return skills[id]?.name || "Unknown Skill";
+    magickName(id) {
+      return magick[id]?.name || "Unknown Magick";
     },
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
@@ -80,7 +80,7 @@ function createHarness() {
   return { context, DatabaseManager, ...context.__classes };
 }
 
-function testGameSystemBuildsActorsFromDatabaseAndInitialSkills() {
+function testGameSystemBuildsActorsFromDatabaseAndInitialMagick() {
   const { Game_System } = createHarness();
   const system = new Game_System();
 
@@ -97,10 +97,10 @@ function testGameSystemBuildsActorsFromDatabaseAndInitialSkills() {
   assert.equal(Object.hasOwn(system, "actor3"), false);
   assert.equal(Object.hasOwn(system, "actor4"), false);
 
-  assert.deepEqual(Array.from(system.actors[0].skills), []);
-  assert.deepEqual(Array.from(system.actors[1].skills), [1, 10]);
-  assert.deepEqual(Array.from(system.actors[2].skills), [1, 10]);
-  assert.deepEqual(Array.from(system.actors[3].skills), [1, 10]);
+  assert.deepEqual(Array.from(system.actors[0].magickIds), []);
+  assert.deepEqual(Array.from(system.actors[1].magickIds), [1, 10]);
+  assert.deepEqual(Array.from(system.actors[2].magickIds), [1, 10]);
+  assert.deepEqual(Array.from(system.actors[3].magickIds), [1, 10]);
 }
 
 function testPartyOwnedDefaultItemTargetAndExplicitInventoryClear() {
@@ -199,7 +199,7 @@ function testRuntimeHasNoActiveGameActorDependencyOutsideCompatibilityAlias() {
   assert.deepEqual(offenders, []);
 }
 
-function testActorInitialSkillValidation() {
+function testActorInitialMagickValidation() {
   const validatorSource = fs.readFileSync(
     path.join(projectRoot, "js/core/DatabaseValidator.js"),
     "utf8",
@@ -217,32 +217,32 @@ function testActorInitialSkillValidation() {
   const actorData = clone(actors);
   const errors = [];
 
-  actorData[2].initialSkills = [1, 1, 999];
-  actorData[3].initialSkills = "1,10";
+  actorData[2].initialMagickIds = [1, 1, 999];
+  actorData[3].initialMagickIds = "1,10";
 
-  context.__DatabaseValidator.validateActors(actorData, errors, skills);
+  context.__DatabaseValidator.validateActors(actorData, errors, magick);
 
   assert.equal(
-    errors.some((error) => error.includes("duplicate skill ID 1")),
+    errors.some((error) => error.includes("duplicate magick ID 1")),
     true,
   );
   assert.equal(
-    errors.some((error) => error.includes("unknown skill ID 999")),
+    errors.some((error) => error.includes("unknown magick ID 999")),
     true,
   );
   assert.equal(
-    errors.some((error) => error.includes("Actor 3 initialSkills must be an array")),
+    errors.some((error) => error.includes("Actor 3 initialMagickIds must be an array")),
     true,
   );
 }
 
 function run() {
-  testGameSystemBuildsActorsFromDatabaseAndInitialSkills();
+  testGameSystemBuildsActorsFromDatabaseAndInitialMagick();
   testPartyOwnedDefaultItemTargetAndExplicitInventoryClear();
   testEquipmentMutationStaysOnGameActorApi();
   testInterpreterExpUsesPartyLeaderWithoutGameActorAlias();
   testRuntimeHasNoActiveGameActorDependencyOutsideCompatibilityAlias();
-  testActorInitialSkillValidation();
+  testActorInitialMagickValidation();
 
   console.log("Actor ownership regression tests passed.");
 }

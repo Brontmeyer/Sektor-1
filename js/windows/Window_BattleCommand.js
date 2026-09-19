@@ -3,7 +3,7 @@
 class Window_BattleCommand {
   constructor(scene = null) {
     this.scene = scene;
-    this.commands = ["Attack", "Magic", "Item", "Defend"];
+    this.commands = ["Attack", "Magick", "Item", "Defend"];
 
     this.index = 0;
     this.visible = true;
@@ -25,7 +25,7 @@ class Window_BattleCommand {
   commandActionKey(command) {
     const actionKeys = {
       Attack: "attack",
-      Magic: "magic",
+      Magick: "magick",
       Item: "item",
       Defend: "defend",
     };

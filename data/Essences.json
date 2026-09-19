@@ -5,35 +5,32 @@
     "id": 1,
     "name": "Healing Essence",
     "description": "An Essence attuned to healing and restoration.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 1,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 1
       },
       {
-        "skillId": 2,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 2
       },
       {
-        "skillId": 3,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 3
       },
       {
-        "skillId": 52,
-        "unlockLevel": 4
+        "unlockLevel": 4,
+        "magickId": 52
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "essenceAbilityMpCostReduction",
       "value": 0.15
     },
-
     "levels": [
       {
         "level": 1,
@@ -52,7 +49,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -65,31 +61,28 @@
     "id": 2,
     "name": "Purity Essence",
     "description": "An Essence attuned to purification and resistance.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 4,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 4
       },
       {
-        "skillId": 5,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 5
       },
       {
-        "skillId": 6,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 6
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "essenceCleanseHeal",
       "healPercent": 0.1
     },
-
     "levels": [
       {
         "level": 1,
@@ -108,7 +101,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -121,31 +113,28 @@
     "id": 3,
     "name": "Renewal Essence",
     "description": "An Essence attuned to revival and regeneration.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 7,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 7
       },
       {
-        "skillId": 8,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 8
       },
       {
-        "skillId": 9,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 9
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "reviveGrantStatus",
       "status": "regen"
     },
-
     "levels": [
       {
         "level": 1,
@@ -164,7 +153,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -177,36 +165,33 @@
     "id": 4,
     "name": "Flame Essence",
     "description": "An Essence infused with elemental fire.",
-    "type": "magic",
+    "type": "magick",
     "element": "fire",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 10,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 10
       },
       {
-        "skillId": 11,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 11
       },
       {
-        "skillId": 12,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 12
       },
       {
-        "skillId": 51,
-        "unlockLevel": 4
+        "unlockLevel": 4,
+        "magickId": 51
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "elementDamageBoost",
       "element": "fire",
       "value": 0.1
     },
-
     "levels": [
       {
         "level": 1,
@@ -225,7 +210,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -238,29 +222,27 @@
     "id": 5,
     "name": "Ice Essence",
     "description": "An Essence infused with elemental ice.",
-    "type": "magic",
+    "type": "magick",
     "element": "ice",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 13,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 13
       },
       {
-        "skillId": 14,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 14
       },
       {
-        "skillId": 15,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 15
       },
       {
-        "skillId": 48,
-        "unlockLevel": 4
+        "unlockLevel": 4,
+        "magickId": 48
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "elementStatusChance",
@@ -268,7 +250,6 @@
       "status": "slow",
       "chance": 0.15
     },
-
     "levels": [
       {
         "level": 1,
@@ -287,7 +268,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -300,25 +280,23 @@
     "id": 6,
     "name": "Lightning Essence",
     "description": "An Essence infused with elemental lightning.",
-    "type": "magic",
+    "type": "magick",
     "element": "lightning",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 16,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 16
       },
       {
-        "skillId": 17,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 17
       },
       {
-        "skillId": 18,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 18
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "elementStatusChance",
@@ -326,7 +304,6 @@
       "status": "paralyze",
       "chance": 0.1
     },
-
     "levels": [
       {
         "level": 1,
@@ -345,7 +322,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -358,29 +334,27 @@
     "id": 7,
     "name": "Earth Essence",
     "description": "An Essence infused with elemental earth.",
-    "type": "magic",
+    "type": "magick",
     "element": "earth",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 19,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 19
       },
       {
-        "skillId": 20,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 20
       },
       {
-        "skillId": 21,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 21
       },
       {
-        "skillId": 49,
-        "unlockLevel": 4
+        "unlockLevel": 4,
+        "magickId": 49
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "elementSelfStatusChance",
@@ -388,7 +362,6 @@
       "status": "barrier",
       "chance": 0.2
     },
-
     "levels": [
       {
         "level": 1,
@@ -407,7 +380,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -420,32 +392,29 @@
     "id": 8,
     "name": "Poison Essence",
     "description": "An Essence infused with elemental poison.",
-    "type": "magic",
+    "type": "magick",
     "element": "poison",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 22,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 22
       },
       {
-        "skillId": 23,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 23
       },
       {
-        "skillId": 24,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 24
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "statusDamageBoost",
       "status": "poison",
       "value": 0.25
     },
-
     "levels": [
       {
         "level": 1,
@@ -464,7 +433,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -477,25 +445,23 @@
     "id": 9,
     "name": "Gravity Essence",
     "description": "An Essence infused with elemental gravity.",
-    "type": "magic",
+    "type": "magick",
     "element": "gravity",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 25,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 25
       },
       {
-        "skillId": 26,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 26
       },
       {
-        "skillId": 27,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 27
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "elementSelfStatusChance",
@@ -503,7 +469,6 @@
       "status": "haste",
       "chance": 0.15
     },
-
     "levels": [
       {
         "level": 1,
@@ -522,7 +487,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -535,32 +499,29 @@
     "id": 10,
     "name": "Mind Essence",
     "description": "An Essence attuned to thought and consciousness.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 28,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 28
       },
       {
-        "skillId": 29,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 29
       },
       {
-        "skillId": 30,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 30
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "statusFamilyResistance",
       "statusFamily": "mental",
       "value": 0.25
     },
-
     "levels": [
       {
         "level": 1,
@@ -579,7 +540,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -592,27 +552,24 @@
     "id": 11,
     "name": "Metamorph Essence",
     "description": "An Essence attuned to transformation and adaptation.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 31,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 31
       },
       {
-        "skillId": 32,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 32
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "essenceAbilityStatusChanceBoost",
       "value": 0.15
     },
-
     "levels": [
       {
         "level": 1,
@@ -631,7 +588,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -644,31 +600,28 @@
     "id": 12,
     "name": "Time Essence",
     "description": "An Essence attuned to the flow and distortion of time.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 34,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 34
       },
       {
-        "skillId": 35,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 35
       },
       {
-        "skillId": 36,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 36
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "essenceAbilityMpRefundChance",
       "chance": 0.15
     },
-
     "levels": [
       {
         "level": 1,
@@ -687,7 +640,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -700,41 +652,41 @@
     "id": 13,
     "name": "Ward Essence",
     "description": "An Essence attuned to protection and defense.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 37,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 37
       },
       {
-        "skillId": 38,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 38
       },
       {
-        "skillId": 39,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 39
       },
       {
-        "skillId": 45,
-        "unlockLevel": 4
+        "unlockLevel": 4,
+        "magickId": 45
       },
       {
-        "skillId": 53,
-        "unlockLevel": 4
+        "unlockLevel": 4,
+        "magickId": 53
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "lowHpSelfStatuses",
       "hpThreshold": 0.25,
-      "statuses": ["barrier", "mbarrier"],
+      "statuses": [
+        "barrier",
+        "mbarrier"
+      ],
       "oncePerBattle": true
     },
-
     "levels": [
       {
         "level": 1,
@@ -753,7 +705,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -766,31 +717,28 @@
     "id": 14,
     "name": "Null Essence",
     "description": "An Essence attuned to negation and void.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 40,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 40
       },
       {
-        "skillId": 41,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 41
       },
       {
-        "skillId": 42,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 42
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "incomingStatusNegateChance",
       "chance": 0.2
     },
-
     "levels": [
       {
         "level": 1,
@@ -809,7 +757,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -822,32 +769,29 @@
     "id": 15,
     "name": "Astral Essence",
     "description": "An Essence attuned to the cosmos and celestial forces.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 46,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 46
       },
       {
-        "skillId": 47,
-        "unlockLevel": 2
+        "unlockLevel": 2,
+        "magickId": 47
       },
       {
-        "skillId": 54,
-        "unlockLevel": 3
+        "unlockLevel": 3,
+        "magickId": 54
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "essenceAbilityPartialMpRefundChance",
       "chance": 0.1,
       "refundPercent": 0.5
     },
-
     "levels": [
       {
         "level": 1,
@@ -866,7 +810,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -879,23 +822,20 @@
     "id": 16,
     "name": "Wind Essence",
     "description": "An Essence infused with elemental wind.",
-    "type": "magic",
+    "type": "magick",
     "element": "wind",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 50,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 50
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "physicalEvasionBonus",
       "value": 0.15
     },
-
     "levels": [
       {
         "level": 1,
@@ -914,7 +854,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -927,17 +866,15 @@
     "id": 17,
     "name": "Fury Essence",
     "description": "An Essence attuned to aggression and battle instinct.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 33,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 33
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "lowHpPhysicalDamageBoost",
@@ -952,7 +889,6 @@
         }
       ]
     },
-
     "levels": [
       {
         "level": 1,
@@ -971,7 +907,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -984,24 +919,21 @@
     "id": 18,
     "name": "Wayfarer Essence",
     "description": "An Essence attuned to survival and the paths between danger.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 43,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 43
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "successfulEscapePartyRecovery",
       "hpPercent": 0.1,
       "mpPercent": 0.1
     },
-
     "levels": [
       {
         "level": 1,
@@ -1020,7 +952,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,
@@ -1033,24 +964,21 @@
     "id": 19,
     "name": "Rift Essence",
     "description": "An Essence attuned to space and the boundaries between worlds.",
-    "type": "magic",
+    "type": "magick",
     "element": "none",
     "maxLevel": 5,
-
     "abilities": [
       {
-        "skillId": 44,
-        "unlockLevel": 1
+        "unlockLevel": 1,
+        "magickId": 44
       }
     ],
-
     "passive": {
       "unlockLevel": 4,
       "type": "banishChainChance",
       "chance": 0.25,
       "maxChains": 1
     },
-
     "levels": [
       {
         "level": 1,
@@ -1069,7 +997,6 @@
         "resonanceRequired": 700
       }
     ],
-
     "mastery": {
       "resonanceRequired": 1500,
       "questRequired": true,

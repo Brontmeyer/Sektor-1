@@ -12,7 +12,7 @@ const readData = (filename) =>
 const statuses = readData("Statuses.json");
 const actors = readData("Actors.json");
 const enemies = readData("Enemies.json");
-const skills = readData("Skills.json");
+const magick = readData("Magick.json");
 
 function loadClasses(relativePaths, exportExpression, globals = {}) {
   const context = vm.createContext({ console, ...globals });
@@ -36,7 +36,7 @@ function makeDatabaseManager() {
     statuses,
     actors,
     enemies,
-    skills,
+    magick,
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
     },
@@ -46,11 +46,11 @@ function makeDatabaseManager() {
     enemy(id) {
       return enemies[id] || null;
     },
-    skill(id) {
-      return skills[id] || null;
+    magick(id) {
+      return magick[id] || null;
     },
-    skillName(id) {
-      return skills[id]?.name || "Unknown Skill";
+    magickName(id) {
+      return magick[id]?.name || "Unknown Magick";
     },
     weapon() {
       return null;
@@ -102,10 +102,10 @@ function makeBattleScene(caster, enemiesInBattle = []) {
     enemies: enemiesInBattle,
     outcome: null,
     targetScope: "single",
-    pendingMagicSkill: null,
-    pendingMagicTarget: null,
-    magicEffectSkill: null,
-    magicEffectTarget: null,
+    pendingMagick: null,
+    pendingMagickTarget: null,
+    magickEffect: null,
+    magickEffectTarget: null,
     partyController: {
       currentBattler() {
         return caster;
@@ -138,13 +138,13 @@ function testReflectStatusExposesReusableRuntimeProperties() {
   const { Game_Enemy } = loadCombatClasses();
   const target = new Game_Enemy(1);
 
-  assert.equal(target.reflectsSkills(), false);
-  assert.equal(target.maxSkillReflections(), 0);
+  assert.equal(target.reflectsMagick(), false);
+  assert.equal(target.maxMagickReflections(), 0);
 
   target.addStatus("reflect");
 
-  assert.equal(target.reflectsSkills(), true);
-  assert.equal(target.maxSkillReflections(), 1);
+  assert.equal(target.reflectsMagick(), true);
+  assert.equal(target.maxMagickReflections(), 1);
 }
 
 function testReflectableDamageRedirectsAndChargesMpOnce() {
@@ -156,7 +156,7 @@ function testReflectableDamageRedirectsAndChargesMpOnce() {
 
   partyMembers.push(caster, ally);
   target.addStatus("reflect");
-  caster.learnSkill(10); // Ember
+  caster.learnMagick(10); // Ember
 
   const scene = makeBattleScene(caster, [target]);
   const manager = new BattleManager(scene);
@@ -164,9 +164,9 @@ function testReflectableDamageRedirectsAndChargesMpOnce() {
   const targetHpBefore = target.hp;
   const mpBefore = caster.mp;
 
-  const result = manager.resolveMagicEffectOnTarget(
+  const result = manager.resolveMagickEffectOnTarget(
     caster,
-    skills[10],
+    magick[10],
     target,
     true,
     "single",
@@ -179,7 +179,7 @@ function testReflectableDamageRedirectsAndChargesMpOnce() {
   assert.equal(result.target, caster);
   assert.equal(target.hp, targetHpBefore);
   assert.ok(caster.hp < casterHpBefore);
-  assert.equal(caster.mp, mpBefore - skills[10].mpCost);
+  assert.equal(caster.mp, mpBefore - magick[10].mpCost);
   assert.ok(scene.messages.some((message) => message.includes("Reflect redirects")));
   assert.ok(scene.popups.some((popup) => popup.text === "REFLECT"));
 }
@@ -194,15 +194,15 @@ function testReflectedAllyOnlyStatusCanLandOnEnemy() {
   partyMembers.push(caster, ally);
   ally.addStatus("reflect");
   enemy.addStatus("reflect");
-  caster.learnSkill(34); // Quickening, normally ally-only.
+  caster.learnMagick(34); // Quickening, normally ally-only.
 
   const scene = makeBattleScene(caster, [enemy]);
   const manager = new BattleManager(scene);
   const mpBefore = caster.mp;
 
-  const result = manager.resolveMagicEffectOnTarget(
+  const result = manager.resolveMagickEffectOnTarget(
     caster,
-    skills[34],
+    magick[34],
     ally,
     true,
     "single",
@@ -215,21 +215,21 @@ function testReflectedAllyOnlyStatusCanLandOnEnemy() {
   assert.equal(result.target, enemy);
   assert.equal(ally.hasStatus("haste"), false);
   assert.equal(enemy.hasStatus("haste"), true);
-  assert.equal(caster.mp, mpBefore - skills[34].mpCost);
+  assert.equal(caster.mp, mpBefore - magick[34].mpCost);
 }
 
-function testNonReflectableSkillIgnoresReflect() {
+function testNonReflectableMagickIgnoresReflect() {
   const { Game_Actor, BattleManager, partyMembers } = loadCombatClasses();
   const caster = new Game_Actor(1);
   const ally = new Game_Actor(2);
 
   partyMembers.push(caster, ally);
   ally.addStatus("reflect");
-  caster.learnSkill(39); // Mirror Ward explicitly cannot be reflected.
+  caster.learnMagick(39); // Mirror Ward explicitly cannot be reflected.
 
   const scene = makeBattleScene(caster, []);
   const manager = new BattleManager(scene);
-  const reflection = manager.resolveSkillReflection(skills[39], ally, () => 0);
+  const reflection = manager.resolveMagickReflection(magick[39], ally, () => 0);
 
   assert.equal(reflection.reflected, false);
   assert.equal(reflection.target, ally);
@@ -246,11 +246,11 @@ function testAllTargetReflectionIsPerTargetAndPaysOneMpCost() {
 
   partyMembers.push(caster, ally);
   reflectedEnemy.addStatus("reflect");
-  caster.learnSkill(10); // Ember supports all-target scope.
+  caster.learnMagick(10); // Ember supports all-target scope.
 
   const scene = makeBattleScene(caster, [reflectedEnemy, directEnemy]);
   scene.targetScope = "all";
-  scene.pendingMagicSkill = skills[10];
+  scene.pendingMagick = magick[10];
   scene.targetManager.getCurrentTargets = () => [reflectedEnemy, directEnemy];
 
   const manager = new BattleManager(scene);
@@ -259,14 +259,14 @@ function testAllTargetReflectionIsPerTargetAndPaysOneMpCost() {
   const directHpBefore = directEnemy.hp;
   const mpBefore = caster.mp;
 
-  manager.performMagicEffect();
+  manager.performMagickEffect();
 
   assert.equal(reflectedEnemy.hp, reflectedHpBefore);
   assert.ok(directEnemy.hp < directHpBefore);
   assert.ok(caster.hp < casterHpBefore);
-  assert.equal(caster.mp, mpBefore - skills[10].mpCost);
-  assert.equal(scene.pendingMagicSkill, null);
-  assert.equal(scene.pendingMagicTarget, null);
+  assert.equal(caster.mp, mpBefore - magick[10].mpCost);
+  assert.equal(scene.pendingMagick, null);
+  assert.equal(scene.pendingMagickTarget, null);
   assert.equal(
     scene.messages.filter((message) => message.includes("Reflect redirects")).length,
     1,
@@ -283,7 +283,7 @@ function testReflectedHealingStillConsumesTheOriginalCast() {
   partyMembers.push(caster, ally);
   ally.setHp(Math.floor(ally.maxHp / 2));
   ally.addStatus("reflect");
-  caster.learnSkill(1); // Mend
+  caster.learnMagick(1); // Mend
 
   const scene = makeBattleScene(caster, [enemy]);
   const manager = new BattleManager(scene);
@@ -291,9 +291,9 @@ function testReflectedHealingStillConsumesTheOriginalCast() {
   const enemyHpBefore = enemy.hp;
   const mpBefore = caster.mp;
 
-  const result = manager.resolveMagicEffectOnTarget(
+  const result = manager.resolveMagickEffectOnTarget(
     caster,
-    skills[1],
+    magick[1],
     ally,
     true,
     "single",
@@ -304,7 +304,7 @@ function testReflectedHealingStillConsumesTheOriginalCast() {
   assert.equal(result.target, enemy);
   assert.equal(ally.hp, allyHpBefore);
   assert.equal(enemy.hp, enemyHpBefore);
-  assert.equal(caster.mp, mpBefore - skills[1].mpCost);
+  assert.equal(caster.mp, mpBefore - magick[1].mpCost);
 }
 
 function testReflectionMetadataValidation() {
@@ -313,31 +313,31 @@ function testReflectionMetadataValidation() {
     "{ DatabaseValidator }",
   );
 
-  const skillErrors = [];
+  const magickErrors = [];
   const statusErrors = [];
 
-  DatabaseValidator.validateSkills(skills, skillErrors);
+  DatabaseValidator.validateMagick(magick, magickErrors);
   DatabaseValidator.validateStatuses(statuses, statusErrors);
 
-  assert.deepEqual(Array.from(skillErrors), []);
+  assert.deepEqual(Array.from(magickErrors), []);
   assert.deepEqual(Array.from(statusErrors), []);
 
-  const invalidSkills = [
+  const invalidMagick = [
     null,
     {
       id: 1,
-      name: "Broken Reflection Skill",
+      name: "Broken Reflection Magick",
       target: ["enemy"],
       scope: ["single"],
       mpCost: 0,
       status: {},
     },
   ];
-  const invalidSkillErrors = [];
+  const invalidMagickErrors = [];
 
-  DatabaseValidator.validateSkills(invalidSkills, invalidSkillErrors);
+  DatabaseValidator.validateMagick(invalidMagick, invalidMagickErrors);
   assert.ok(
-    invalidSkillErrors.some((error) => error.includes("reflectable must be true or false")),
+    invalidMagickErrors.some((error) => error.includes("reflectable must be true or false")),
   );
 
   const invalidStatuses = [
@@ -353,7 +353,7 @@ function testReflectionMetadataValidation() {
         persistsAfterBattle: false,
       },
       duration: { type: "turns", turns: 1 },
-      effects: { reflectableSkills: true, perTarget: true },
+      effects: { reflectableMagick: true, perTarget: true },
     },
   ];
   const invalidStatusErrors = [];
@@ -367,7 +367,7 @@ function testReflectionMetadataValidation() {
 testReflectStatusExposesReusableRuntimeProperties();
 testReflectableDamageRedirectsAndChargesMpOnce();
 testReflectedAllyOnlyStatusCanLandOnEnemy();
-testNonReflectableSkillIgnoresReflect();
+testNonReflectableMagickIgnoresReflect();
 testAllTargetReflectionIsPerTargetAndPaysOneMpCost();
 testReflectedHealingStillConsumesTheOriginalCast();
 testReflectionMetadataValidation();

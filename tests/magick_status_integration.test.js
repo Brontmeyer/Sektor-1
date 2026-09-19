@@ -12,7 +12,7 @@ const readData = (filename) =>
 const statuses = readData("Statuses.json");
 const actors = readData("Actors.json");
 const enemies = readData("Enemies.json");
-const skills = readData("Skills.json");
+const magick = readData("Magick.json");
 
 function loadClasses(relativePaths, exportExpression, globals = {}) {
   const context = vm.createContext({ console, ...globals });
@@ -36,7 +36,7 @@ function makeDatabaseManager() {
     statuses,
     actors,
     enemies,
-    skills,
+    magick,
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
     },
@@ -46,11 +46,11 @@ function makeDatabaseManager() {
     enemy(id) {
       return enemies[id] || null;
     },
-    skill(id) {
-      return skills[id] || null;
+    magick(id) {
+      return magick[id] || null;
     },
-    skillName(id) {
-      return skills[id]?.name || "Unknown Skill";
+    magickName(id) {
+      return magick[id]?.name || "Unknown Magick";
     },
     weapon() {
       return null;
@@ -76,48 +76,48 @@ function loadCombatClasses() {
   );
 }
 
-function testPureStatusSkillUsesRuntimeAndMp() {
+function testPureStatusMagickUsesRuntimeAndMp() {
   const { Game_Actor, Game_Enemy } = loadCombatClasses();
   const caster = new Game_Actor(1);
   const target = new Game_Enemy(1);
 
-  caster.learnSkill(28); // Dreambind
+  caster.learnMagick(28); // Dreambind
   const mpBefore = caster.mp;
 
-  const success = caster.useSkill(28, target, true, "single", () => 0);
+  const success = caster.useMagick(28, target, true, "single", () => 0);
 
   assert.equal(success, true);
-  assert.equal(caster.mp, mpBefore - skills[28].mpCost);
+  assert.equal(caster.mp, mpBefore - magick[28].mpCost);
   assert.equal(target.hasStatus("sleep"), true);
-  assert.equal(caster.skillStatusResults()[0].reason, "applied");
+  assert.equal(caster.magickStatusResults()[0].reason, "applied");
 }
 
-function testDamageSkillCarriesStatusPayload() {
+function testDamageMagickCarriesStatusPayload() {
   const { Game_Actor, Game_Enemy } = loadCombatClasses();
   const caster = new Game_Actor(1);
   const target = new Game_Enemy(1);
 
-  caster.learnSkill(22); // Venom
+  caster.learnMagick(22); // Venom
   const hpBefore = target.hp;
 
-  const success = caster.useSkill(22, target, true, "single", () => 0);
+  const success = caster.useMagick(22, target, true, "single", () => 0);
 
   assert.equal(success, true);
   assert.ok(target.hp < hpBefore);
   assert.equal(target.hasStatus("poison"), true);
-  assert.equal(caster.skillStatusResults()[0].key, "poison");
+  assert.equal(caster.magickStatusResults()[0].key, "poison");
 }
 
-function testStatusResistanceStillAppliesToSkillPayloads() {
+function testStatusResistanceStillAppliesToMagickPayloads() {
   const { Game_Actor, Game_Enemy } = loadCombatClasses();
   const caster = new Game_Actor(1);
   const target = new Game_Enemy(1);
 
-  caster.learnSkill(22); // Venom
+  caster.learnMagick(22); // Venom
   target.statusRates.poison = 0;
 
-  const success = caster.useSkill(22, target, true, "single", () => 0);
-  const result = caster.skillStatusResults()[0];
+  const success = caster.useMagick(22, target, true, "single", () => 0);
+  const result = caster.magickStatusResults()[0];
 
   assert.equal(success, true);
   assert.equal(target.hasStatus("poison"), false);
@@ -130,22 +130,22 @@ function testAllyStatusChanceAndToggleBehavior() {
   const ally = new Game_Actor(2);
   const enemy = new Game_Enemy(1);
 
-  caster.learnSkill(31); // Diminish
+  caster.learnMagick(31); // Diminish
 
   // Diminish is guaranteed on allies even with a roll above its enemy chance.
-  assert.equal(caster.useSkill(31, ally, true, "single", () => 0.99), true);
+  assert.equal(caster.useMagick(31, ally, true, "single", () => 0.99), true);
   assert.equal(ally.hasStatus("small"), true);
-  assert.equal(caster.skillStatusResults()[0].chance, 1);
+  assert.equal(caster.magickStatusResults()[0].chance, 1);
 
   // Recasting the toggle on an afflicted ally cures the same status.
-  assert.equal(caster.useSkill(31, ally, true, "single", () => 0.99), true);
+  assert.equal(caster.useMagick(31, ally, true, "single", () => 0.99), true);
   assert.equal(ally.hasStatus("small"), false);
-  assert.equal(caster.skillStatusResults()[0].reason, "removed");
+  assert.equal(caster.magickStatusResults()[0].reason, "removed");
 
-  // The enemy path keeps the skill's normal 72% base chance.
-  assert.equal(caster.useSkill(31, enemy, false, "single", () => 0.8), true);
+  // The enemy path keeps the magick's normal 72% base chance.
+  assert.equal(caster.useMagick(31, enemy, false, "single", () => 0.8), true);
   assert.equal(enemy.hasStatus("small"), false);
-  assert.equal(caster.skillStatusResults()[0].chance, 0.72);
+  assert.equal(caster.magickStatusResults()[0].chance, 0.72);
 }
 
 function testStatusRemovalUsesCanonicalRuntimeKeys() {
@@ -153,16 +153,16 @@ function testStatusRemovalUsesCanonicalRuntimeKeys() {
   const caster = new Game_Actor(1);
   const ally = new Game_Actor(2);
 
-  caster.learnSkill(5); // Soul Cleanse
+  caster.learnMagick(5); // Soul Cleanse
   ally.addStatus("poison");
   ally.addStatus("slowNumb");
 
   assert.equal(ally.hasStatus("poison"), true);
   assert.equal(ally.hasStatus("slowNumb"), true);
 
-  const success = caster.useSkill(5, ally, true, "single", () => 0);
+  const success = caster.useMagick(5, ally, true, "single", () => 0);
   const removedKeys = caster
-    .skillStatusResults()
+    .magickStatusResults()
     .filter((result) => result.removed)
     .map((result) => result.key);
 
@@ -171,18 +171,18 @@ function testStatusRemovalUsesCanonicalRuntimeKeys() {
   assert.equal(ally.hasStatus("slowNumb"), false);
   assert.ok(removedKeys.includes("poison"));
   assert.ok(removedKeys.includes("slowNumb"));
-  assert.equal(skills[5].status.slowNumb, 1);
-  assert.equal(skills[5].status["slow-numb"], undefined);
+  assert.equal(magick[5].status.slowNumb, 1);
+  assert.equal(magick[5].status["slow-numb"], undefined);
 }
 
-function testDeathStatusSkillUsesSharedStatusEffects() {
+function testDeathStatusMagickUsesSharedStatusEffects() {
   const { Game_Actor, Game_Enemy } = loadCombatClasses();
   const caster = new Game_Actor(1);
   const target = new Game_Enemy(1);
 
-  caster.learnSkill(42); // Final Tol
+  caster.learnMagick(42); // Final Tol
 
-  const success = caster.useSkill(42, target, true, "single", () => 0);
+  const success = caster.useMagick(42, target, true, "single", () => 0);
 
   assert.equal(success, true);
   assert.equal(target.hasStatus("death"), true);
@@ -190,19 +190,19 @@ function testDeathStatusSkillUsesSharedStatusEffects() {
   assert.equal(target.isDead(), true);
 }
 
-function testMultipleStatusesResolveFromOneSkill() {
+function testMultipleStatusesResolveFromOneMagick() {
   const { Game_Actor } = loadCombatClasses();
   const caster = new Game_Actor(1);
   const ally = new Game_Actor(2);
 
-  caster.learnSkill(45); // Twin Aegis
-  const success = caster.useSkill(45, ally, true, "single", () => 0);
+  caster.learnMagick(45); // Twin Aegis
+  const success = caster.useMagick(45, ally, true, "single", () => 0);
 
   assert.equal(success, true);
   assert.equal(ally.hasStatus("barrier"), true);
   assert.equal(ally.hasStatus("mbarrier"), true);
   assert.deepEqual(
-    Array.from(caster.skillStatusResults(), (result) => result.key).sort(),
+    Array.from(caster.magickStatusResults(), (result) => result.key).sort(),
     ["barrier", "mbarrier"],
   );
 }
@@ -214,10 +214,10 @@ function testLegacyUnknownStatusReferenceFailsSafely() {
 
   caster.maxMp = 200;
   caster.mp = 200;
-  caster.learnSkill(6); // Unchanging Will currently references legacy Resist.
+  caster.learnMagick(6); // Unchanging Will currently references legacy Resist.
 
-  const success = caster.useSkill(6, ally, true, "single", () => 0);
-  const result = caster.skillStatusResults()[0];
+  const success = caster.useMagick(6, ally, true, "single", () => 0);
+  const result = caster.magickStatusResults()[0];
 
   assert.equal(success, true);
   assert.equal(result.key, "resist");
@@ -230,11 +230,11 @@ function testLegacyUnknownRemovalReferencesFailSafely() {
   const caster = new Game_Actor(1);
   const ally = new Game_Actor(2);
 
-  caster.learnSkill(41); // Nulify still names legacy Death Force / Resist.
+  caster.learnMagick(41); // Nulify still names legacy Death Force / Resist.
   ally.addStatus("regen");
 
-  const success = caster.useSkill(41, ally, true, "single", () => 0);
-  const results = caster.skillStatusResults();
+  const success = caster.useMagick(41, ally, true, "single", () => 0);
+  const results = caster.magickStatusResults();
   const regen = results.find((result) => result.key === "regen");
   const deathforce = results.find((result) => result.key === "deathforce");
   const resist = results.find((result) => result.key === "resist");
@@ -246,14 +246,14 @@ function testLegacyUnknownRemovalReferencesFailSafely() {
   assert.equal(resist.reason, "unknownStatus");
 }
 
-function testSkillStatusMetadataValidation() {
+function testMagickStatusMetadataValidation() {
   const { DatabaseValidator } = loadClasses(
     ["js/core/DatabaseValidator.js"],
     "{ DatabaseValidator }",
   );
 
   const validErrors = [];
-  DatabaseValidator.validateSkills(skills, validErrors);
+  DatabaseValidator.validateMagick(magick, validErrors);
   assert.deepEqual(Array.from(validErrors), []);
 
   const invalid = [
@@ -261,7 +261,7 @@ function testSkillStatusMetadataValidation() {
     {
       id: 1,
       name: "Broken",
-      type: "magic",
+      type: "magick",
       category: "indirect",
       element: "none",
       effect: "inflictStatus",
@@ -276,20 +276,20 @@ function testSkillStatusMetadataValidation() {
   ];
   const invalidErrors = [];
 
-  DatabaseValidator.validateSkills(invalid, invalidErrors);
+  DatabaseValidator.validateMagick(invalid, invalidErrors);
 
   assert.equal(invalidErrors.length, 3);
 }
 
-testPureStatusSkillUsesRuntimeAndMp();
-testDamageSkillCarriesStatusPayload();
-testStatusResistanceStillAppliesToSkillPayloads();
+testPureStatusMagickUsesRuntimeAndMp();
+testDamageMagickCarriesStatusPayload();
+testStatusResistanceStillAppliesToMagickPayloads();
 testAllyStatusChanceAndToggleBehavior();
 testStatusRemovalUsesCanonicalRuntimeKeys();
-testDeathStatusSkillUsesSharedStatusEffects();
-testMultipleStatusesResolveFromOneSkill();
+testDeathStatusMagickUsesSharedStatusEffects();
+testMultipleStatusesResolveFromOneMagick();
 testLegacyUnknownStatusReferenceFailsSafely();
 testLegacyUnknownRemovalReferencesFailSafely();
-testSkillStatusMetadataValidation();
+testMagickStatusMetadataValidation();
 
-console.log("Skill/status integration regression tests passed.");
+console.log("Magick/status integration regression tests passed.");

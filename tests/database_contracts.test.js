@@ -37,7 +37,7 @@ function projectDatabase() {
     items: readData("Items.json"),
     weapons: readData("Weapons.json"),
     armors: readData("Armors.json"),
-    skills: readData("Skills.json"),
+    magickData: readData("Magick.json"),
     essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),
   };
@@ -126,23 +126,23 @@ function testItemAndEquipmentContracts() {
   );
 }
 
-function testSkillRuntimeMetadataContracts() {
+function testMagickRuntimeMetadataContracts() {
   const DatabaseValidator = loadValidator();
-  const skills = clone(readData("Skills.json"));
+  const magick = clone(readData("Magick.json"));
   const statuses = readData("Statuses.json");
   const errors = [];
 
-  skills[1].category = "healz";
-  skills[10].element = "flameish";
-  skills[11].power = Number.NaN;
-  skills[12].scopePower.single = -1;
-  skills[28].status.typoStatus = 0.5;
+  magick[1].category = "healz";
+  magick[10].element = "flameish";
+  magick[11].power = Number.NaN;
+  magick[12].scopePower.single = -1;
+  magick[28].status.typoStatus = 0.5;
 
-  DatabaseValidator.validateSkills(skills, statuses, errors);
+  DatabaseValidator.validateMagick(magick, statuses, errors);
 
   assert.equal(errors.some((error) => error.includes("unsupported category")), true);
   assert.equal(errors.some((error) => error.includes("unsupported element")), true);
-  assert.equal(errors.some((error) => error.includes("Skill 11 power")), true);
+  assert.equal(errors.some((error) => error.includes("Magick 11 power")), true);
   assert.equal(errors.some((error) => error.includes("scopePower.single")), true);
   assert.equal(errors.some((error) => error.includes("unknown status key")), true);
 }
@@ -175,21 +175,21 @@ function testStatusNestedSchemaRejectsUnknownAndMalformedFields() {
 function testEssenceProgressionAndReferencesAreValidated() {
   const DatabaseValidator = loadValidator();
   const essences = clone(readData("Essences.json"));
-  const skills = readData("Skills.json");
+  const magick = readData("Magick.json");
   const statuses = readData("Statuses.json");
   const errors = [];
 
   essences[1].levels[2].resonanceRequired = 50;
-  essences[2].abilities[0].skillId = 999;
+  essences[2].abilities[0].magickId = 999;
   essences[3].passive.status = "notAStatus";
 
-  DatabaseValidator.validateEssences(essences, skills, statuses, errors);
+  DatabaseValidator.validateEssences(essences, magick, statuses, errors);
 
   assert.equal(
     errors.some((error) => error.includes("resonance requirements must be strictly increasing")),
     true,
   );
-  assert.equal(errors.some((error) => error.includes("unknown skill ID 999")), true);
+  assert.equal(errors.some((error) => error.includes("unknown magick ID 999")), true);
   assert.equal(
     errors.some((error) => error.includes("must reference a canonical status key")),
     true,
@@ -201,7 +201,7 @@ function run() {
   testActorGrowthExpAndSpriteContracts();
   testEnemyElementRateAndSpriteContracts();
   testItemAndEquipmentContracts();
-  testSkillRuntimeMetadataContracts();
+  testMagickRuntimeMetadataContracts();
   testStatusNestedSchemaRejectsUnknownAndMalformedFields();
   testEssenceProgressionAndReferencesAreValidated();
 

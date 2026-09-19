@@ -12,7 +12,7 @@ const readData = (filename) =>
 const statuses = readData("Statuses.json");
 const actors = readData("Actors.json");
 const enemies = readData("Enemies.json");
-const skills = readData("Skills.json");
+const magick = readData("Magick.json");
 
 function loadClasses(relativePaths, exportExpression, globals = {}) {
   const context = vm.createContext({ console, ...globals });
@@ -36,7 +36,7 @@ function makeDatabaseManager() {
     statuses,
     actors,
     enemies,
-    skills,
+    magick,
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
     },
@@ -46,11 +46,11 @@ function makeDatabaseManager() {
     enemy(id) {
       return enemies[id] || null;
     },
-    skill(id) {
-      return skills[id] || null;
+    magick(id) {
+      return magick[id] || null;
     },
-    skillName(id) {
-      return skills[id]?.name || "Unknown Skill";
+    magickName(id) {
+      return magick[id]?.name || "Unknown Magick";
     },
     weapon() {
       return null;
@@ -100,17 +100,17 @@ function testOrdinaryKoAndDeathCanBeRevived() {
 
   caster.maxMp = 500;
   caster.mp = 500;
-  caster.learnSkill(7); // Rekindle
-  caster.learnSkill(8); // Reawakening
+  caster.learnMagick(7); // Rekindle
+  caster.learnMagick(8); // Reawakening
 
   target.setHp(0);
   assert.equal(target.canBeRevived(), true);
 
   const mpBeforeRekindle = caster.mp;
-  assert.equal(caster.useSkill(7, target), true);
+  assert.equal(caster.useMagick(7, target), true);
   assert.equal(target.hp, Math.max(1, Math.floor(target.maxHp * 0.25)));
   assert.equal(target.isDefeated(), false);
-  assert.equal(caster.mp, mpBeforeRekindle - skills[7].mpCost);
+  assert.equal(caster.mp, mpBeforeRekindle - magick[7].mpCost);
 
   target.addStatus("death");
   assert.equal(target.hp, 0);
@@ -118,11 +118,11 @@ function testOrdinaryKoAndDeathCanBeRevived() {
   assert.equal(target.canBeRevived(), true);
 
   const mpBeforeReawakening = caster.mp;
-  assert.equal(caster.useSkill(8, target), true);
+  assert.equal(caster.useMagick(8, target), true);
   assert.equal(target.hp, target.maxHp);
   assert.equal(target.hasStatus("death"), false);
   assert.equal(target.isDefeated(), false);
-  assert.equal(caster.mp, mpBeforeReawakening - skills[8].mpCost);
+  assert.equal(caster.mp, mpBeforeReawakening - magick[8].mpCost);
 }
 
 function testPetrifyRequiresCleansingInsteadOfRevival() {
@@ -132,18 +132,18 @@ function testPetrifyRequiresCleansingInsteadOfRevival() {
 
   caster.maxMp = 500;
   caster.mp = 500;
-  caster.learnSkill(5); // Soul Cleanse
-  caster.learnSkill(7); // Rekindle
+  caster.learnMagick(5); // Soul Cleanse
+  caster.learnMagick(7); // Rekindle
   target.addStatus("petrify");
 
   const mpBeforeFailedRevive = caster.mp;
-  assert.equal(caster.useSkill(7, target), false);
+  assert.equal(caster.useMagick(7, target), false);
   assert.equal(caster.mp, mpBeforeFailedRevive);
   assert.equal(target.hasStatus("petrify"), true);
   assert.equal(target.isDefeated(), true);
 
-  assert.equal(caster.isValidSkillTarget(skills[5], target), true);
-  assert.equal(caster.useSkill(5, target, true, "single", () => 0), true);
+  assert.equal(caster.isValidMagickTarget(magick[5], target), true);
+  assert.equal(caster.useMagick(5, target, true, "single", () => 0), true);
   assert.equal(target.hasStatus("petrify"), false);
   assert.equal(target.isDefeated(), false);
 }
@@ -153,11 +153,11 @@ function testNormalHealingCannotTargetDefeatedBattlers() {
   const caster = new Game_Actor(1);
   const target = new Game_Actor(2);
 
-  caster.learnSkill(1); // Mend
+  caster.learnMagick(1); // Mend
   target.setHp(0);
 
-  assert.equal(caster.isValidSkillTarget(skills[1], target), false);
-  assert.equal(caster.useSkill(1, target), false);
+  assert.equal(caster.isValidMagickTarget(magick[1], target), false);
+  assert.equal(caster.useMagick(1, target), false);
 }
 
 function testPartyLivingMembersExcludePetrifiedActors() {
@@ -189,7 +189,7 @@ function testBattleTargetManagerUnderstandsReviveAndPetrifyCleansing() {
     enemies: [],
     selectedAllyIndex: 0,
     selectedEnemyIndex: 0,
-    pendingMagicSkill: skills[7],
+    pendingMagick: magick[7],
     partyController: {
       currentBattler() {
         return caster;
@@ -210,16 +210,16 @@ function testBattleTargetManagerUnderstandsReviveAndPetrifyCleansing() {
   );
   const manager = new BattleTargetManager(scene);
 
-  assert.equal(manager.isSelectableTarget(livingAlly, skills[7]), false);
-  assert.equal(manager.isSelectableTarget(koAlly, skills[7]), true);
-  assert.equal(manager.isSelectableTarget(petrifiedAlly, skills[7]), false);
-  assert.equal(manager.selectFirstSelectableAlly(skills[7]), koAlly);
+  assert.equal(manager.isSelectableTarget(livingAlly, magick[7]), false);
+  assert.equal(manager.isSelectableTarget(koAlly, magick[7]), true);
+  assert.equal(manager.isSelectableTarget(petrifiedAlly, magick[7]), false);
+  assert.equal(manager.selectFirstSelectableAlly(magick[7]), koAlly);
 
-  assert.equal(manager.isSelectableTarget(petrifiedAlly, skills[5]), true);
-  assert.equal(manager.isSelectableTarget(petrifiedAlly, skills[1]), false);
+  assert.equal(manager.isSelectableTarget(petrifiedAlly, magick[5]), true);
+  assert.equal(manager.isSelectableTarget(petrifiedAlly, magick[1]), false);
 }
 
-function testPetrifyAppliedByMagicDeclaresVictoryWithoutHpZero() {
+function testPetrifyAppliedByMagickDeclaresVictoryWithoutHpZero() {
   const { Game_Actor, Game_Enemy, Game_Party } = loadCombatClasses();
   const caster = new Game_Actor(1);
   const enemy = new Game_Enemy(1);
@@ -229,7 +229,7 @@ function testPetrifyAppliedByMagicDeclaresVictoryWithoutHpZero() {
   enemy.setHp(enemy.maxHp);
   caster.maxMp = 500;
   caster.mp = 500;
-  caster.learnSkill(49); // Stone Prison
+  caster.learnMagick(49); // Stone Prison
 
   let enemyState = null;
   const scene = {
@@ -264,9 +264,9 @@ function testPetrifyAppliedByMagicDeclaresVictoryWithoutHpZero() {
   );
   const manager = new BattleManager(scene);
 
-  const result = manager.resolveMagicEffectOnTarget(
+  const result = manager.resolveMagickEffectOnTarget(
     caster,
-    skills[49],
+    magick[49],
     enemy,
     true,
     "single",
@@ -291,7 +291,7 @@ function testReflectedRevivalUsesARevivableOpposingTarget() {
 
   caster.maxMp = 500;
   caster.mp = 500;
-  caster.learnSkill(7); // Rekindle
+  caster.learnMagick(7); // Rekindle
   ally.addStatus("reflect");
   ally.setHp(0);
   defeatedEnemy.setHp(0);
@@ -326,9 +326,9 @@ function testReflectedRevivalUsesARevivableOpposingTarget() {
   const manager = new BattleManager(scene);
   const mpBefore = caster.mp;
 
-  const result = manager.resolveMagicEffectOnTarget(
+  const result = manager.resolveMagickEffectOnTarget(
     caster,
-    skills[7],
+    magick[7],
     ally,
     true,
     "single",
@@ -342,9 +342,9 @@ function testReflectedRevivalUsesARevivableOpposingTarget() {
   assert.equal(defeatedEnemy.isDefeated(), false);
   assert.equal(
     defeatedEnemy.hp,
-    Math.max(1, Math.floor(defeatedEnemy.maxHp * skills[7].revivePercent)),
+    Math.max(1, Math.floor(defeatedEnemy.maxHp * magick[7].revivePercent)),
   );
-  assert.equal(caster.mp, mpBefore - skills[7].mpCost);
+  assert.equal(caster.mp, mpBefore - magick[7].mpCost);
 }
 
 function testBattleOutcomeAndRewardsTreatPetrifyAsDefeat() {
@@ -426,25 +426,25 @@ function testDefeatAndRevivalMetadataValidation() {
     { DebugManager: { log() {} } },
   );
 
-  const validSkillErrors = [];
+  const validMagickErrors = [];
   const validStatusErrors = [];
-  DatabaseValidator.validateSkills(skills, validSkillErrors);
+  DatabaseValidator.validateMagick(magick, validMagickErrors);
   DatabaseValidator.validateStatuses(statuses, validStatusErrors);
-  assert.deepEqual(Array.from(validSkillErrors), []);
+  assert.deepEqual(Array.from(validMagickErrors), []);
   assert.deepEqual(Array.from(validStatusErrors), []);
 
-  const invalidSkills = JSON.parse(JSON.stringify(skills));
-  invalidSkills[7].revivePercent = 0;
-  invalidSkills[8].effect = "resurrectMaybe";
-  const invalidSkillErrors = [];
-  DatabaseValidator.validateSkills(invalidSkills, invalidSkillErrors);
+  const invalidMagick = JSON.parse(JSON.stringify(magick));
+  invalidMagick[7].revivePercent = 0;
+  invalidMagick[8].effect = "resurrectMaybe";
+  const invalidMagickErrors = [];
+  DatabaseValidator.validateMagick(invalidMagick, invalidMagickErrors);
 
   assert.equal(
-    invalidSkillErrors.some((error) => error.includes("revivePercent")),
+    invalidMagickErrors.some((error) => error.includes("revivePercent")),
     true,
   );
   assert.equal(
-    invalidSkillErrors.some((error) => error.includes("unsupported effect")),
+    invalidMagickErrors.some((error) => error.includes("unsupported effect")),
     true,
   );
 
@@ -470,7 +470,7 @@ testPetrifyRequiresCleansingInsteadOfRevival();
 testNormalHealingCannotTargetDefeatedBattlers();
 testPartyLivingMembersExcludePetrifiedActors();
 testBattleTargetManagerUnderstandsReviveAndPetrifyCleansing();
-testPetrifyAppliedByMagicDeclaresVictoryWithoutHpZero();
+testPetrifyAppliedByMagickDeclaresVictoryWithoutHpZero();
 testReflectedRevivalUsesARevivableOpposingTarget();
 testBattleOutcomeAndRewardsTreatPetrifyAsDefeat();
 testDefeatAndRevivalMetadataValidation();

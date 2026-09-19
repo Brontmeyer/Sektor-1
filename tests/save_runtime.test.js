@@ -13,7 +13,7 @@ const actors = readData("Actors.json");
 const items = readData("Items.json");
 const weapons = readData("Weapons.json");
 const armors = readData("Armors.json");
-const skills = readData("Skills.json");
+const magick = readData("Magick.json");
 const essences = readData("Essences.json");
 const statuses = readData("Statuses.json");
 const mapInfos = readData("MapInfos.json");
@@ -45,7 +45,7 @@ function makeDatabaseManager() {
     items,
     weapons,
     armors,
-    skills,
+    magick,
     essences,
     statuses,
     mapInfos,
@@ -70,11 +70,11 @@ function makeDatabaseManager() {
     armorName(id) {
       return armors[id]?.name || `Unknown Armor ${id}`;
     },
-    skill(id) {
-      return skills[id] || null;
+    magick(id) {
+      return magick[id] || null;
     },
-    skillName(id) {
-      return skills[id]?.name || "Unknown Skill";
+    magickName(id) {
+      return magick[id]?.name || "Unknown Magick";
     },
     essence(id) {
       return essences[id] || null;
@@ -154,14 +154,14 @@ function rawSave(localStorage, SaveManager, slotId = 1) {
   return JSON.parse(localStorage.getItem(SaveManager.saveKey(slotId)));
 }
 
-function testV3SaveSerializesPartyCurrencyEssencesAndPersistentStatuses() {
+function testV4SaveSerializesPartyCurrencyEssencesAndPersistentStatuses() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
 
   second.exp = 321;
   second.level = 4;
   second.setHp(222);
-  second.learnSkill(1);
+  second.learnMagick(2);
   second.addStatus("fury");
   second.addStatus("barrier");
   assert.equal(second.equipEssence(1, 145), true);
@@ -176,12 +176,14 @@ function testV3SaveSerializesPartyCurrencyEssencesAndPersistentStatuses() {
   const saveData = rawSave(localStorage, SaveManager);
   const savedSecond = saveData.actors.find((actor) => actor.actorId === 2);
 
-  assert.equal(saveData.version, 3);
+  assert.equal(saveData.version, 4);
   assert.equal(saveData.actors.length, 4);
   assert.equal(Object.hasOwn(saveData, "actor"), false);
   assert.equal(savedSecond.exp, 321);
   assert.equal(savedSecond.level, 4);
   assert.equal(savedSecond.hp, 222);
+  assert.deepEqual(Array.from(savedSecond.magickIds), [1, 10, 2]);
+  assert.equal(Object.hasOwn(savedSecond, "skills"), false);
   assert.deepEqual(
     Array.from(savedSecond.statuses, (status) => status.key),
     ["fury"],
@@ -193,7 +195,7 @@ function testV3SaveSerializesPartyCurrencyEssencesAndPersistentStatuses() {
   ]);
 }
 
-async function testV3LoadRestoresActorStateCurrencyEssencesAndNormalizesInventory() {
+async function testV4LoadRestoresActorStateCurrencyEssencesAndNormalizesInventory() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
 
@@ -235,6 +237,41 @@ async function testV3LoadRestoresActorStateCurrencyEssencesAndNormalizesInventor
   assert.equal(second.equippedEssence(4).resonance, 299);
 }
 
+async function testVersionThreeSaveMigratesLegacySkillsToMagickIds() {
+  const { localStorage, party, partyActors, SaveManager } = createHarness();
+  const second = partyActors[1];
+
+  const v3 = {
+    version: 3,
+    metadata: { actorName: party.leader().name, level: 1, timestamp: Date.now() },
+    actors: partyActors.map((actor) => {
+      const serialized = SaveManager.serializeActor(actor);
+      const { magickIds, ...legacy } = serialized;
+      return { ...legacy, skills: actor.actorId === 2 ? [2, 3] : magickIds };
+    }),
+    party: {
+      items: {},
+      weapons: {},
+      armors: {},
+      battleActorIds: [1, 2, 3, 4],
+      gil: 44,
+    },
+    switches: { data: {} },
+    variables: { data: {} },
+    selfSwitches: { data: {} },
+    location: { mapId: 1, x: 7, y: 8 },
+  };
+
+  localStorage.setItem(SaveManager.saveKey(1), JSON.stringify(v3));
+
+  second.magickIds = [];
+  party.setGil(0);
+
+  assert.equal(await SaveManager.load(1), true);
+  assert.deepEqual(Array.from(second.magickIds), [2, 3]);
+  assert.equal(party.gil(), 44);
+}
+
 async function testVersionTwoSaveMigratesCurrencyAndEssenceDefaults() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
@@ -243,10 +280,10 @@ async function testVersionTwoSaveMigratesCurrencyAndEssenceDefaults() {
   const v2 = {
     version: 2,
     metadata: { actorName: party.leader().name, level: 1, timestamp: Date.now() },
-    actors: partyActors.map((actor) => SaveManager.serializeActor(actor)).map((actor) => {
-      const copy = { ...actor };
-      delete copy.essences;
-      return copy;
+    actors: partyActors.map((actor) => {
+      const serialized = SaveManager.serializeActor(actor);
+      const { magickIds, essences: _essences, ...legacy } = serialized;
+      return { ...legacy, skills: magickIds };
     }),
     party: { items: {}, weapons: {}, armors: {}, battleActorIds: [1, 2, 3, 4] },
     switches: { data: {} },
@@ -318,6 +355,7 @@ async function testVersionOneSaveMigratesLeaderWithoutOverwritingOtherActors() {
   assert.equal(leader.level, 3);
   assert.equal(leader.exp, 222);
   assert.equal(leader.hp, 123);
+  assert.deepEqual(Array.from(leader.magickIds), [1]);
   assert.equal(second.exp, secondExpBefore);
 }
 
@@ -355,8 +393,9 @@ function testSaveStorageFailureReturnsFalse() {
 }
 
 async function run() {
-  testV3SaveSerializesPartyCurrencyEssencesAndPersistentStatuses();
-  await testV3LoadRestoresActorStateCurrencyEssencesAndNormalizesInventory();
+  testV4SaveSerializesPartyCurrencyEssencesAndPersistentStatuses();
+  await testV4LoadRestoresActorStateCurrencyEssencesAndNormalizesInventory();
+  await testVersionThreeSaveMigratesLegacySkillsToMagickIds();
   await testVersionTwoSaveMigratesCurrencyAndEssenceDefaults();
   await testVersionOneSaveMigratesLeaderWithoutOverwritingOtherActors();
   await testMalformedAndFutureSavesFailWithoutThrowing();

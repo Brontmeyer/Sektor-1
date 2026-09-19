@@ -40,22 +40,22 @@ Completed engine foundations include:
 - Turn queue
 - Multi-character turns
 - Data-driven actor collection ownership with explicit party/leader context
-- Save / Load with version-aware multi-actor Save Runtime v3, persistent Gil / Essence state, and v1/v2 migration
+- Save / Load with version-aware multi-actor Save Runtime v4, persistent Gil / Essence state, and v1/v2/v3 migration
 - Equipment system
 - Inventory system
 - Battle Results Screen v1 for visible EXP, Gil, drop, level-up, and Essence progression feedback
 
 Completed canonical battle-data foundations include:
 
-- `Skills.json` v1
-- 54 initial skills
-- Restore Magic
-- Attack Magic
-- Indirect Magic
-- Advanced Magic
+- `Magick.json` v1
+- 54 initial Magick abilities
+- Restore Magick
+- Attack Magick
+- Indirect Magick
+- Advanced Magick
 - `Essences.json` v1
 - 19 initial Essences
-- All 54 current skills assigned to Essences
+- All 54 current Magick abilities assigned to Essences
 - Resonance progression design
 - Mastery Ready design
 - Level 4 passive design
@@ -71,7 +71,7 @@ Completed canonical battle-data foundations include:
 
 These foundations allow the next phase of development to focus primarily on turning established data into complete runtime behavior.
 
-The repository-audit closure track is complete. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` records how every actionable finding was reconciled against current code. Passes 20–27 closed the remaining save, validation, map/event, skill, ownership, UI, runtime-cleanup, and battle-reward findings. New passes should still verify the current repository before implementing overlapping work, but audit closure is no longer the primary development backlog.
+The repository-audit closure track is complete. `docs/repo_audit.md` remains the historical static review, while `docs/audit_closure.md` records how every actionable finding was reconciled against current code. Passes 20–27 closed the remaining save, validation, map/event, Magick, ownership, UI, runtime-cleanup, and battle-reward findings. New passes should still verify the current repository before implementing overlapping work, but audit closure is no longer the primary development backlog.
 
 ---
 
@@ -100,7 +100,7 @@ Status Runtime Core v1, Status Combat Modifiers v1, Reflect Runtime v1, Action R
 - Sleep / Confuse removal after actual physical damage
 - Barrier / MBarrier reduction and Shield physical immunity / elemental absorption
 - Per-target Reflect routing with one-bounce protection and single-cost all-target casting
-- Shared action/skill restrictions for Silence and Frog, including command-window availability
+- Shared action/Magick restrictions for Silence and Frog, including command-window availability
 - Data-driven forced action control for Confuse random targeting and Berserk auto-attacks
 - Shared fractional turn progress for Haste / Slow scheduling on both party and enemy sides
 - Interleaved bonus turn slots so Haste adds frequency without bypassing normal side ordering
@@ -119,22 +119,24 @@ Status Runtime is complete when the engine can load the canonical status databas
 
 ---
 
-# ✨ Milestone 2: Complete Skills Runtime
+# ✨ Milestone 2: Complete Magick Runtime
 
-Skills v1 already defines the initial 54 abilities, but some mechanics still depend on systems that are unfinished.
+Magick v1 already defines the initial 54 abilities, but some mechanics still depend on systems that are unfinished.
 
-The current `Skills.json` runtime vocabulary is now connected through reusable execution paths: power-based damage/healing, status application/removal, revival, Gravity current-HP damage, percentage healing, multi-hit/random-per-hit casting, Retreat escape, and Banish all execute without skill-name patches. Ally-specific status chances, target resistance/immunity, per-target reflection, defeated-target selection, revival HP percentages, scope-dependent power, and one-cost multi-target / multi-hit casting all flow through shared rules.
+**Terminology boundary:** Magick is the current Essence-linked supernatural ability system. **Skills** is reserved for future non-Magick techniques and does not yet have a canonical runtime or database.
+
+The current `Magick.json` runtime vocabulary is now connected through reusable execution paths: power-based damage/healing, status application/removal, revival, Gravity current-HP damage, percentage healing, multi-hit/random-per-hit casting, Retreat escape, and Banish all execute without Magick-name patches. Ally-specific status chances, target resistance/immunity, per-target reflection, defeated-target selection, revival HP percentages, scope-dependent power, and one-cost multi-target / multi-hit casting all flow through shared rules.
 
 Primary remaining work includes:
 
-- Verify every initial skill against its canonical data through broader playtest/content coverage
+- Verify every initial Magick ability against its canonical data through broader playtest/content coverage
 - Implement undead restorative-damage interaction once undead battler identity/data is established
 
 ## Milestone Exit Condition
 
-The initial Skills System is runtime-complete when all 54 current skills can execute their intended mechanics without requiring name-specific patches for behavior that should be reusable.
+The initial Magick System is runtime-complete when all 54 current Magick abilities can execute their intended mechanics without requiring name-specific patches for behavior that should be reusable.
 
-Summon Magic and Limit Skills remain later design work and are not required to complete the initial 54-skill runtime.
+Summon Magick remains later Magick design work and is not required to complete the initial 54-ability Magick runtime. The separate **Skills** namespace is reserved for future non-Magick techniques, including Limit Skills.
 
 ---
 
@@ -177,7 +179,7 @@ Once the player's core battle vocabulary is reliable, enemies need systems capab
 Primary work includes:
 
 - Implement Enemy AI
-- Define enemy skill-selection rules
+- Define enemy action-selection rules
 - Add status resistance / immunity data
 - Implement legal target selection for enemy actions
 - Support conditional and weighted decisions
@@ -289,17 +291,17 @@ Essence Evolution is complete when established recipes and rules can be discover
 
 ---
 
-# 🌟 Milestone 9: Advanced Character and Magic Systems
+# 🌟 Milestone 9: Advanced Character, Magick, and Skills Systems
 
 Several major battle systems are deliberately being left until the core runtime is mature enough to support them cleanly.
 
 Primary candidates include:
 
-- Summon Magic
+- Summon Magick
 - Limit Skills
 - Dual Techs
 - Expanded party switching behavior
-- Additional advanced skill interactions
+- Additional advanced Magick interactions
 
 These systems should be designed against the battle engine that actually exists at that stage rather than forcing premature assumptions into today's architecture.
 
@@ -405,7 +407,7 @@ Engine + Data Foundations
           ↓
     Status Runtime
           ↓
-    Skills Runtime
+    Magick Runtime
           ↓
     Essence Runtime
           ↓
@@ -458,8 +460,8 @@ This document does not currently define:
 - Final character canon
 - Essence Evolution recipes
 - Mastery Trial quest details
-- Summon Magic design
-- Limit Skill design
+- Summon Magick design
+- Limit Skills design
 - Dual Tech design
 
 Those decisions should become canonical when they are actually made.
@@ -478,7 +480,7 @@ The immediate answer is clear:
 
 > **Status Runtime.**
 
-That turns the 25-status design from canonical data into living battle behavior. Completing it unlocks deeper skill interactions, which strengthens the foundation for Essences, enemies, bosses, characters, and everything that follows.
+That turns the 25-status design from canonical data into living battle behavior. Completing it unlocks deeper Magick interactions, which strengthens the foundation for Essences, enemies, bosses, characters, and everything that follows.
 
 The road will change as the game teaches us what it needs. That is expected.
 

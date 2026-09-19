@@ -327,7 +327,7 @@ class BattleAnimationController {
 
   getActorTargetYOffset() {
     const scene = this.scene;
-    if (scene.actionPhase === "magicCast") {
+    if (scene.actionPhase === "magickCast") {
       return -12;
     }
 
@@ -345,9 +345,9 @@ class BattleAnimationController {
     const scene = this.scene;
 
     if (
-      scene.actionPhase === "magicEffect" &&
-      scene.magicEffectSkill &&
-      scene.magicEffectTarget === actor
+      scene.actionPhase === "magickEffect" &&
+      scene.magickEffect &&
+      scene.magickEffectTarget === actor
     ) {
       return 0.65;
     }
@@ -363,14 +363,14 @@ class BattleAnimationController {
       return 1;
     }
 
-    if (scene.actionPhase === "magicCast") {
+    if (scene.actionPhase === "magickCast") {
       const duration = 0.4;
       const progress = 1 - scene.actionPhaseTimer / duration;
 
       return 1 + 0.06 * progress;
     }
 
-    if (scene.actionPhase === "magicEffect") {
+    if (scene.actionPhase === "magickEffect") {
       const duration = 0.25;
       const progress = 1 - scene.actionPhaseTimer / duration;
 
@@ -409,7 +409,7 @@ class BattleAnimationController {
         loop: false,
       },
 
-      magic: {
+      magick: {
         frames: 4,
         frameDuration: 0.14,
         loop: false,
@@ -436,7 +436,7 @@ class BattleAnimationController {
     const rows = {
       idle: 0,
       attack: 1,
-      magic: 2,
+      magick: 2,
       hurt: 3,
       defeat: 4,
     };
@@ -447,9 +447,9 @@ class BattleAnimationController {
   getEnemyVisualAlpha(enemy = this.scene.enemy) {
     const scene = this.scene;
     if (
-      scene.actionPhase === "magicEffect" &&
-      scene.magicEffectSkill &&
-      scene.magicEffectTarget === enemy
+      scene.actionPhase === "magickEffect" &&
+      scene.magickEffect &&
+      scene.magickEffectTarget === enemy
     ) {
       return 0.45;
     }

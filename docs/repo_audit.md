@@ -2,6 +2,7 @@
 
 > Audit status: Static review complete; production fixes deferred  
 > Project: Sektor 1 / Corpse Engine
+> Terminology note: Pass 29 normalized references to the former Skills/Magic ability namespace to the current **Magick** terminology. The findings remain historical descriptions of the repository state at audit time.
 
 ## Audit Goals
 
@@ -30,7 +31,7 @@ important risks are:
 
 - Save data represents only the legacy leader actor and omits active battler
   statuses.
-- Several skill and status behaviors are present in data but have no complete
+- Several Magick and status behaviors are present in data but have no complete
   runtime execution path.
 - The battle scene has no identified runtime entry path and currently constructs
   a hard-coded encounter.
@@ -56,15 +57,15 @@ dynamic playtesting remains necessary before release.
 
 `DatabaseManager.loadDatabase()` loads `Essences.json`, but `DatabaseValidator.validate()` does not validate `database.essences`.
 
-Unlike Actors, Enemies, Items, Weapons, Armors, Skills, and Statuses, Essences do not currently receive even generic indexed-database validation.
+Unlike Actors, Enemies, Items, Weapons, Armors, Magick, and Statuses, Essences do not currently receive even generic indexed-database validation.
 
 The Essence schema is substantial. It contains abilities, progression levels, mastery configuration, and multiple passive-effect schemas with type-specific fields. `Game_Essence` also establishes runtime contracts for progression and ability data.
 
 Known runtime expectations include:
 
 - Level entries provide `level` and `resonanceRequired`.
-- Ability entries provide `unlockLevel` and `skillId`.
-- Ability skill IDs are expected to resolve through the Skills database.
+- Ability entries provide `unlockLevel` and `magickId`.
+- Ability Magick IDs are expected to resolve through the Magick database.
 
 **Deferred fix:** Design Essence-specific validation after the Essence runtime-consumer audit is complete. Validation should protect the real runtime contract rather than adding only superficial checks.
 
@@ -100,14 +101,14 @@ As a result, mutable state belonging to non-leader actors is not represented
 by the current save format.
 
 This includes potentially relevant actor state such as HP, MP, EXP, level,
-equipment, and learned skills.
+equipment, and learned Magick.
 
 Runtime status persistence is tracked separately because it introduces
 additional save/load semantics beyond the broader multi-actor serialization
 problem.
 
 Review of `Game_Actor` confirms that each actor owns independently mutable
-progression state including EXP, equipment IDs, and learned skills, in
+progression state including EXP, equipment IDs, and learned Magick, in
 addition to mutable state inherited from `Game_Battler`.
 
 This strengthens the requirement for future save serialization to operate
@@ -143,26 +144,26 @@ saving/loading and serialize only the appropriate runtime state.
 Status restoration must preserve required runtime metadata such as remaining
 duration without incorrectly reapplying initial status effects.
 
-#### Skills.json defines effects that Game_Actor.useSkill() cannot execute
+#### Magick.json defines effects that Game_Actor.useMagick() cannot execute
 
-**Files:** `data/Skills.json`, `js/objects/Game_Actor.js`
+**Files:** `data/Magick.json`, `js/objects/Game_Actor.js`
 
 Repository search for `Math.random` found only two runtime random rolls,
 both in `BattleManager.js` for hit and critical-hit resolution.
 
 No random roll for status application or removal probability was found.
 
-Therefore the numeric probabilities stored in skill `status` mappings are
+Therefore the numeric probabilities stored in Magick `status` mappings are
 currently data definitions without an identified runtime execution path.
 
 This includes ordinary status probabilities such as Poison at `0.48` or
 `0.72`, as well as specialized fields such as `allyStatusChance`.
 
 Status probability resolution should be designed as part of the eventual
-skill/status integration rather than implemented independently in individual
-skills.
+Magick/status integration rather than implemented independently in individual
+Magick.
 
-Repository inspection found multiple skill effect types in `Skills.json`,
+Repository inspection found multiple Magick effect types in `magick.json`,
 including:
 
 - `heal`
@@ -173,7 +174,7 @@ including:
 - `escape`
 - `banish`
 
-`Game_Actor.useSkill()` currently implements explicit runtime handling only
+`Game_Actor.useMagick()` currently implements explicit runtime handling only
 for `heal` and `damage`.
 
 All other effect values reach the fallback path that reports the effect as
@@ -181,7 +182,7 @@ not implemented and returns `false`.
 
 **Classification:** Confirmed issue / incomplete runtime implementation.
 
-The skill database therefore currently describes behavior that the skill
+The Magick database therefore currently describes behavior that the Magick
 runtime cannot execute.
 
 This overlaps with ongoing status-system development because
@@ -190,79 +191,79 @@ centralized status APIs rather than introduce separate status mutation
 logic.
 
 Do not implement these effects during the audit. First inventory the full
-skill-effect schema and identify the intended runtime owner for each effect.
+Magick-effect schema and identify the intended runtime owner for each effect.
 
-#### Skill `status` metadata has no identified runtime consumer
+#### Magick `status` metadata has no identified runtime consumer
 
-**Files:** `data/Skills.json`, `js/objects/Game_Actor.js`
+**Files:** `data/Magick.json`, `js/objects/Game_Actor.js`
 
-`Skills.json` uses a `status` object to attach status behavior to skills.
+`magick.json` uses a `status` object to attach status behavior to Magick.
 
 Repository searches for direct and bracket-style access patterns, including
-`skill.status`, `skill["status"]`, `["status"]`, and `.status[`, found no
-runtime consumer of this skill property.
+`magick.status`, `magick["status"]`, `["status"]`, and `.status[`, found no
+runtime consumer of this Magick property.
 
 A broader `.status` search found status-database access, battler runtime
 status storage, and status-window UI references, but no code that reads a
-skill's `status` metadata.
+Magick's `status` metadata.
 
-This affects more than skills whose primary `effect` is `inflictStatus` or
-`removeStatus`. Some skills with another primary effect, such as `damage`,
+This affects more than Magick whose primary `effect` is `inflictStatus` or
+`removeStatus`. Some Magick with another primary effect, such as `damage`,
 also define secondary `status` metadata.
 
 Therefore status processing cannot be modeled solely as an
 `inflictStatus` branch of the current primary-effect dispatcher. The
-eventual skill runtime must account for status metadata that can accompany
+eventual Magick runtime must account for status metadata that can accompany
 other primary effects.
 
-A complete inventory of the current `Skills.json` confirms that all 54
-skills define exactly one top-level `effect`.
+A complete inventory of the current `magick.json` confirms that all 54
+Magick entries define exactly one top-level `effect`.
 
 The observed effect vocabulary is:
 
-- `damage` — 25 skills
-- `inflictStatus` — 17 skills
-- `heal` — 4 skills
-- `removeStatus` — 4 skills
-- `revive` — 2 skills
-- `escape` — 1 skill
-- `banish` — 1 skill
+- `damage` — 25 Magick
+- `inflictStatus` — 17 Magick
+- `heal` — 4 Magick
+- `removeStatus` — 4 Magick
+- `revive` — 2 Magick
+- `escape` — 1 Magick
+- `banish` — 1 Magick
 
 This is therefore not sparse or experimental metadata. `effect` is a
-consistently populated part of the current skill schema, with seven
+consistently populated part of the current Magick schema, with seven
 observed values.
 
-`validateSkills()` does not currently validate the presence or vocabulary
+`validateMagick()` does not currently validate the presence or vocabulary
 of `effect`, so a missing, misspelled, or unsupported effect value could
 pass database validation.
 
 **Classification:** Confirmed issue / incomplete runtime implementation.
 
 Do not implement a fix during the audit. First inventory the remaining
-skill metadata and determine whether primary effects and secondary effects
+Magick metadata and determine whether primary effects and secondary effects
 should be resolved through separate runtime stages.
 
-#### Status and skill combat metadata are only partially integrated
+#### Status and Magick combat metadata are only partially integrated
 
-**Files:** `data/Skills.json`, `data/Statuses.json`, `docs/battle_system.md`
+**Files:** `data/Magick.json`, `data/Statuses.json`, `docs/battle_system.md`
 
-`Skills.json` defines `reflectable` metadata on skills, including both
+`magick.json` defines `reflectable` metadata on Magick, including both
 `true` and `false` values.
 
 `Statuses.json` also defines Reflect behavior through
-`reflectableSkills: true`, and the battle-system documentation describes
-Reflect as redirecting reflectable skills.
+`reflectableMagick: true`, and the battle-system documentation describes
+Reflect as redirecting reflectable Magick.
 
 Repository search for `reflectable` found these data and documentation
 definitions but no JavaScript runtime consumer.
 
 Therefore the engine currently has an expressed Reflect design contract
-without an identified runtime path that evaluates a skill's `reflectable`
+without an identified runtime path that evaluates a Magick's `reflectable`
 value or performs the corresponding reflection behavior.
 
 The Reflect status also defines a coordinated set of effect metadata:
 
-- `reflectableSkills: true`
+- `reflectableMagick: true`
 - `perTarget: true`
 - `maxReflections: 1`
 
@@ -271,13 +272,13 @@ Repository searches found each of these fields only in the Reflect definition in
 identified for any of the three fields.
 
 The metadata therefore describes an intended Reflect contract in which eligible
-skills may be reflected on a per-target basis with a bounded number of
+Magick may be reflected on a per-target basis with a bounded number of
 reflections, but no identified runtime path currently consumes these status
 effect fields.
 
-This should eventually be integrated with the existing skill `reflectable`
+This should eventually be integrated with the existing Magick `reflectable`
 metadata through a centralized reflection mechanic rather than implemented as
-status-ID or skill-ID-specific behavior.
+status-ID or Magick-ID-specific behavior.
 
 `classification.persistsAfterBattle` is defined across the status database and is
 explicitly validated as a boolean by `validateStatuses()`. Repository search found
@@ -540,8 +541,8 @@ values of `0.7` and `0.5` respectively. Repository search found both
 occurrences only in `Statuses.json`, with no identified JavaScript runtime
 consumer.
 
-The `blockedSkillTypes` field is defined only by Silence, with the value
-`["magic"]`. Repository search found this field only in `Statuses.json`, with
+The `blockedActionTypes` field is defined only by Silence, with the value
+`["magick"]`. Repository search found this field only in `Statuses.json`, with
 no identified JavaScript runtime consumer. The current repository evidence
 therefore does not establish runtime enforcement of this status metadata.
 
@@ -649,13 +650,13 @@ or validating behavior around them.
 
 Do not implement these mechanics piecemeal during the audit. Their eventual
 implementation should use centralized status, targeting, and effect-resolution
-paths rather than status-ID- or skill-ID-specific behavior.
+paths rather than status-ID- or Magick-ID-specific behavior.
 
 #### `allyStatusChance` currently has no runtime consumer
 
-**File:** `data/Skills.json`
+**File:** `data/Magick.json`
 
-Some skills define `allyStatusChance` separately from their normal status
+Some Magick entries define `allyStatusChance` separately from their normal status
 probability. Repository search found three data definitions but no JavaScript
 runtime references to `allyStatusChance`.
 
@@ -663,12 +664,12 @@ For example, Diminish defines `"small": 0.72` together with
 `allyStatusChance: 1.0`, matching its intended 72% enemy / 100% ally behavior.
 
 Because no runtime consumer was found, the ally-specific probability may
-currently be ignored when the skill is executed.
+currently be ignored when the Magick is executed.
 
 **Classification:** Confirmed issue.
 
 Determine where status application probability is resolved before implementing
-a fix. Do not change the skill data yet.
+a fix. Do not change the Magick data yet.
 
 **----------------------------------------------------------------------------------------**
 
@@ -676,16 +677,16 @@ a fix. Do not change the skill data yet.
 
 #### Legacy `$gameActor` dependency remains widespread
 
-**Files observed:** `js/main.js`, `js/core/SaveManager.js`, `js/objects/Game_Interpreter.js`, `js/objects/Game_Party.js`, `js/windows/Window_BattleMagic.js`, `js/windows/Window_Equipment.js`, `js/windows/Window_EquipSelect.js`, `js/windows/Window_Inventory.js`, `js/windows/Window_Magic.js`, `js/windows/Window_Status.js`
+**Files observed:** `js/main.js`, `js/core/SaveManager.js`, `js/objects/Game_Interpreter.js`, `js/objects/Game_Party.js`, `js/windows/Window_BattleMagick.js`, `js/windows/Window_Equipment.js`, `js/windows/Window_EquipSelect.js`, `js/windows/Window_Inventory.js`, `js/windows/Window_Magick.js`, `js/windows/Window_Status.js`
 
-`main.js` describes `$gameActor` as a backward-compatible leader alias, but a repository search found substantial active usage across saving/loading, menus, equipment, magic, inventory, interpreter logic, and battle UI.
+`main.js` describes `$gameActor` as a backward-compatible leader alias, but a repository search found substantial active usage across saving/loading, menus, equipment, Magick, inventory, interpreter logic, and battle UI.
 
 `SaveManager.js` contains particularly heavy `$gameActor` usage.
 
 Examples worth later investigation include:
 
 - `Game_Party.useItem(itemId, target = $gameActor)`
-- Battle magic code that can fall back from the current battler to `$gameActor`
+- Battle Magick code that can fall back from the current battler to `$gameActor`
 
 `Game_Party.useItem()` defaults its target to the global `$gameActor`
 compatibility alias even though Game_Party already owns the roster and
@@ -785,20 +786,20 @@ Audit Game_Party and SaveManager before determining whether actor ownership
 should remain individually exposed or move toward a collection-based model.
 Do not change this structure until save/load compatibility is understood.
 
-#### Temporary party skill setup lives in Game_System
+#### Temporary party Magick setup lives in Game_System
 
 **File:** `js/objects/Game_System.js`
 
-`Game_System` currently teaches skills 1 and 10 directly to actors 2, 3,
+`Game_System` currently teaches Magick 1 and 10 directly to actors 2, 3,
 and 4 during construction. The block is explicitly marked `TEMP`.
 
 This mixes temporary development/test party configuration with construction
 of the persistent game-state root.
 
-Repository search for `learnSkill(` confirms that all current external
-skill-learning calls originate from this temporary Game_System setup.
+Repository search for `learnMagick(` confirms that all current external
+Magick-learning calls originate from this temporary Game_System setup.
 
-No separate production skill-acquisition caller was identified during
+No separate production Magick-acquisition caller was identified during
 this search.
 
 **Classification:** Possible improvement.
@@ -896,66 +897,66 @@ deliberately support equipment ID `0` as the unequipped state.
 
 Keep equipment-state mutation centralized in Game_Actor where practical.
 
-#### Skill validation covers only target, scope, and MP cost
+#### Magick validation covers only target, scope, and MP cost
 
 **File:** `js/core/DatabaseValidator.js`
 
-`validateSkills()` currently validates:
+`validateMagick()` currently validates:
 
-- skill target values
-- skill scope values
+- Magick target values
+- Magick scope values
 - non-negative numeric MP cost
 
-It does not currently validate other major portions of the skill schema,
+It does not currently validate other major portions of the Magick schema,
 including `effect`, `status`, `allyStatusChance`, `power`, `type`,
 `category`, `element`, or `reflectable`.
 
-This is particularly relevant to status-related skills. `Skills.json`
+This is particularly relevant to status-related Magick. `magick.json`
 contains `inflictStatus` and `removeStatus` effects whose `status` objects
-map status keys to probability values, but `validateSkills()` does not
+map status keys to probability values, but `validateMagick()` does not
 validate those effect names, status keys, or probability ranges.
 
 As a result, misspelled or unsupported effect names, unknown status keys,
 and malformed status probabilities may pass database validation and only
 be discovered later through runtime behavior.
 
-Current `Skills.json` target data uses `ally` and `enemy`, either
+Current `magick.json` target data uses `ally` and `enemy`, either
 individually or together.
 
-`DatabaseValidator.validateSkills()` also permits `self`, but repository
-inspection found no current skill whose `target` data uses `self`.
+`DatabaseValidator.validateMagick()` also permits `self`, but repository
+inspection found no current Magick whose `target` data uses `self`.
 
 Runtime code does recognize `self` as a valid targeting concept, so this
 appears to be supported engine vocabulary that is simply unused by the
-current skill database.
+current Magick database.
 
 No unsupported target value was identified during this audit.
 
-Current `Skills.json` scope data uses the validator-supported `single` and
+Current `magick.json` scope data uses the validator-supported `single` and
 `all` vocabulary.
 
-Skills may support one scope or multiple scopes depending on their design.
+Magick entries may support one scope or multiple scopes depending on their design.
 No unsupported scope value was identified during this audit.
 
 The currently observed target and scope data therefore agrees with the
-vocabulary enforced by `validateSkills()`.
+vocabulary enforced by `validateMagick()`.
 
-Current `Skills.json` category data uses exactly four observed values:
+Current `magick.json` category data uses exactly four observed values:
 
 - `attack`
 - `restore`
 - `indirect`
 - `advanced`
 
-All 54 current skill records define a `category`, but `validateSkills()` does not currently validate that field.
+All 54 current Magick records define a `category`, but `validateMagick()` does not currently validate that field.
 
-All 54 current skill records also use `"type": "magic"`. Runtime consumers such as `Window_BattleMagic` and `Window_Magic` explicitly test `skill.type === "magic"`, while `validateSkills()` does not currently validate `type`.
+All 54 current Magick records also use `"type": "magick"`. Runtime consumers such as `Window_BattleMagick` and `Window_Magick` explicitly test `magick.type === "magick"`, while `validateMagick()` does not currently validate `type`.
 
 The current data is internally consistent, but unsupported or misspelled `category` and `type` values could therefore pass database validation and later produce incorrect runtime or UI behavior.
 
-All 54 current skill records also define an `element`.
+All 54 current Magick records also define an `element`.
 
-The observed skill-element vocabulary is:
+The observed Magick-element vocabulary is:
 
 - `none`
 - `restorative`
@@ -968,60 +969,60 @@ The observed skill-element vocabulary is:
 - `wind`
 
 Unlike purely descriptive metadata, `element` is actively consumed by runtime
-combat code. Repository search found `skill.element` usage in both
+combat code. Repository search found `magick.element` usage in both
 `BattleManager.js` and `Game_Actor.js`, including calls to
-`elementRate(skill.element)`.
+`elementRate(magick.element)`.
 
-No corresponding `skill.element` validation was found in
-`DatabaseValidator.validateSkills()`.
+No corresponding `magick.element` validation was found in
+`DatabaseValidator.validateMagick()`.
 
-Therefore, an absent, misspelled, or unsupported skill element could pass
+Therefore, an absent, misspelled, or unsupported Magick element could pass
 database validation even though runtime combat calculations depend on that
 value.
 
-#### Gravity skill percentage metadata has no identified runtime consumer
+#### Gravity Magick percentage metadata has no identified runtime consumer
 
-`Skills.json` defines three Gravity-style skills using `gravityPercent` values of
+`magick.json` defines three Gravity-style Magick using `gravityPercent` values of
 `0.25`, `0.5`, and `0.75`.
 
 Repository searches for both `gravityPercent` and the broader term `gravity`
 found no JavaScript runtime consumer for this metadata. The remaining matches
-are confined to skill and Essence data or documentation.
+are confined to Magick and Essence data or documentation.
 
-The skill descriptions define these abilities as dealing damage equal to a
+The Magick descriptions define these abilities as dealing damage equal to a
 percentage of the target's current HP, but no identified runtime path currently
 reads `gravityPercent` to perform that calculation.
 
-Therefore, the Gravity skill definitions currently describe intended behavior
+Therefore, the Gravity Magick definitions currently describe intended behavior
 that is not yet connected to an identified battle execution path.
 
-This should be implemented as part of the eventual skill-effect runtime rather
-than by hard-coding the three individual Gravity skills.
+This should be implemented as part of the eventual Magick-effect runtime rather
+than by hard-coding the three individual Gravity Magick.
 
 #### Multi-hit and per-hit random-target metadata have no identified runtime consumer
 
-`Skills.json` defines Meteor Barrage (ID 47) with:
+`magick.json` defines Meteor Barrage (ID 47) with:
 
 - `hits: 4`
 - `randomTargetPerHit: true`
 
-The skill description specifies four attacks against random enemies, indicating
+The Magick description specifies four attacks against random enemies, indicating
 that these fields describe a coordinated multi-hit targeting mechanic.
 
 Repository searches found no JavaScript runtime consumer for `hits` or
-`randomTargetPerHit`. A specific search for `skill.hits` also returned no
+`randomTargetPerHit`. A specific search for `magick.hits` also returned no
 results.
 
-Therefore, the current skill data describes repeated attacks with independent
+Therefore, the current Magick data describes repeated attacks with independent
 per-hit target selection, but no identified runtime execution path currently
 consumes the metadata required to perform that behavior.
 
-This mechanic should eventually be implemented generically through skill data
-rather than as a Meteor Barrage or skill-ID-specific special case.
+This mechanic should eventually be implemented generically through Magick data
+rather than as a Meteor Barrage or Magick-ID-specific special case.
 
-#### Skill effect vocabulary exceeds the implemented runtime dispatcher
+#### Magick effect vocabulary exceeds the implemented runtime dispatcher
 
-Current `Skills.json` data uses seven observed `effect` values:
+Current `magick.json` data uses seven observed `effect` values:
 
 - `heal`
 - `damage`
@@ -1031,13 +1032,13 @@ Current `Skills.json` data uses seven observed `effect` values:
 - `escape`
 - `banish`
 
-`Game_Actor.useSkill()` confirms this limitation explicitly. After validating the
-skill and target, the method contains dedicated execution branches for `heal`
-and `damage`. If neither branch matches, it logs that the skill's effect is
+`Game_Actor.useMagick()` confirms this limitation explicitly. After validating the
+Magick and target, the method contains dedicated execution branches for `heal`
+and `damage`. If neither branch matches, it logs that the Magick's effect is
 "not implemented yet" and returns `false`.
 
 The missing effect handling is therefore not inferred solely from the absence
-of repository search results. The current generic actor skill-execution path
+of repository search results. The current generic actor Magick-execution path
 explicitly treats effect values outside its implemented branches as unsupported.
 
 MP-cost payment is also performed inside the implemented `heal` and `damage`
@@ -1045,62 +1046,62 @@ branches. Future effect integration therefore needs to preserve coherent cost,
 target-validation, and execution behavior rather than merely adding isolated
 effect-specific calls.
 
-The inspected multi-target battle path delegates actual skill execution to
-`caster.useSkill(...)`. `BattleManager` records the target's HP before that
+The inspected multi-target battle path delegates actual Magick execution to
+`caster.useMagick(...)`. `BattleManager` records the target's HP before that
 call and, after successful execution, performs battle-layer follow-up such as
 damage measurement, elemental feedback, battle popups, and hurt/defeat state
 updates.
 
 This indicates a division of responsibility rather than a separate
-`BattleManager` implementation of the damage effect: `Game_Actor.useSkill()`
+`BattleManager` implementation of the damage effect: `Game_Actor.useMagick()`
 performs the identified HP-changing effect execution, while `BattleManager`
 reacts to the result in battle context.
 
-Because `BattleManager` continues to the next target when `useSkill()` returns
-`false`, unsupported effect values rejected by `Game_Actor.useSkill()` also do
+Because `BattleManager` continues to the next target when `useMagick()` returns
+`false`, unsupported effect values rejected by `Game_Actor.useMagick()` also do
 not reach this successful post-effect path.
 
-The inspected single-target magic path follows the same execution boundary.
-`BattleManager` records the target's HP, calls `caster.useSkill(...)`, and
-immediately clears the pending magic state and returns when that call fails.
+The inspected single-target Magick path follows the same execution boundary.
+`BattleManager` records the target's HP, calls `caster.useMagick(...)`, and
+immediately clears the pending Magick state and returns when that call fails.
 
 Successful single-target damage handling then measures the HP change produced
-by `useSkill()` and performs battle-context follow-up such as elemental
+by `useMagick()` and performs battle-context follow-up such as elemental
 feedback, battle messages, and hurt/defeat state changes.
 
-Unsupported skill effects are therefore rejected at the shared
-`Game_Actor.useSkill()` boundary before successful post-effect processing in
-both the inspected single-target and multi-target magic paths.
+Unsupported Magick effects are therefore rejected at the shared
+`Game_Actor.useMagick()` boundary before successful post-effect processing in
+both the inspected single-target and multi-target Magick paths.
 
-The inspected `BattleManager.executeMagic()` setup is more permissive than the
-eventual effect executor. It validates that the selected skill exists, that the
+The inspected `BattleManager.executeMagick()` setup is more permissive than the
+eventual effect executor. It validates that the selected Magick exists, that the
 actor can use it, and that the target manager provides supported target groups
-and scopes before storing the skill as `pendingMagicSkill`.
+and scopes before storing the Magick as `pendingMagick`.
 
 Target-group selection is driven by the allowed target metadata rather than by
-`skill.effect`; the implementation explicitly notes that its initial targeting
+`magick.effect`; the implementation explicitly notes that its initial targeting
 choice should not depend on the effect value.
 
-An effect value unsupported by `Game_Actor.useSkill()` can therefore progress
-through magic selection and target setup when its other metadata is valid. The
-identified rejection occurs later at the shared skill-execution boundary rather
-than during initial magic selection.
+An effect value unsupported by `Game_Actor.useMagick()` can therefore progress
+through Magick selection and target setup when its other metadata is valid. The
+identified rejection occurs later at the shared Magick-execution boundary rather
+than during initial Magick selection.
 
 The normal battle action-phase lifecycle also reaches this execution boundary.
-During the `"magicCast"` action phase, `BattleManager.updateActionPhase()` calls
-the scene-facing `battle.performMagicEffect()` method. `Scene_Battle` delegates
-that call to `BattleManager.performMagicEffect()`, which ultimately invokes
-`caster.useSkill(...)`.
+During the `"magickCast"` action phase, `BattleManager.updateActionPhase()` calls
+the scene-facing `battle.performMagickEffect()` method. `Scene_Battle` delegates
+that call to `BattleManager.performMagickEffect()`, which ultimately invokes
+`caster.useMagick(...)`.
 
-Afterward, the action sequence progresses through `"magicEffect"`,
-`"magicRecover"`, and `"magicWait"`, with the final phase performing normal
+Afterward, the action sequence progresses through `"magickEffect"`,
+`"magickRecover"`, and `"magickWait"`, with the final phase performing normal
 victory/defeat and party-turn progression.
 
-This establishes that the identified `Game_Actor.useSkill()` effect limitation
-lies on the normal player-magic battle execution path rather than only in an
+This establishes that the identified `Game_Actor.useMagick()` effect limitation
+lies on the normal player-Magick battle execution path rather than only in an
 isolated or unconfirmed helper.
 
-The inspected enemy-turn path is separate from this player skill-execution
+The inspected enemy-turn path is separate from this player Magick-execution
 pipeline. `BattleManager.performEnemyTurn()` currently selects the first living
 party member, calculates a direct physical attack from `enemy.totalAttack()` and
 `target.totalDefense()`, applies the defending reduction when applicable, and
@@ -1108,25 +1109,25 @@ calls `target.loseHp(damage)`.
 
 The class hierarchy intentionally separates shared and actor/enemy-specific
 responsibilities. `Game_Battler` documents itself as the shared combat
-foundation, with actor-specific equipment, skills, and EXP remaining in
+foundation, with actor-specific equipment, Magick, and EXP remaining in
 `Game_Actor`, while enemy-specific sprite/database behavior remains in
 `Game_Enemy`.
 
 The current `Game_Enemy` implementation extends `Game_Battler` and adds enemy
-database identity and battle-sprite metadata, but no enemy skill collection,
-skill-selection logic, AI/action-selection logic, or skill-effect executor was
+database identity and battle-sprite metadata, but no enemy Magick collection,
+Magick-selection logic, AI/action-selection logic, or Magick-effect executor was
 identified there.
 
 The inspected enemy-turn implementation therefore currently establishes a
 direct basic physical-attack path rather than an enemy equivalent of the player
-magic/skill execution pipeline. This does not by itself establish that enemies
-should reuse `Game_Actor.useSkill()`; the repository architecture explicitly
+Magick execution pipeline. This does not by itself establish that enemies
+should reuse `Game_Actor.useMagick()`; the repository architecture explicitly
 separates actor-specific and enemy-specific behavior.
 
-The current `Enemies.json` data also contains no identified enemy skill,
+The current `Enemies.json` data also contains no identified enemy Magick,
 action-selection, or AI-behavior metadata. The inspected Test Slime definition
 provides identity, elemental-rate, battle-sprite, and combat-stat data, but no
-`skills`, action list, spell list, or equivalent behavior configuration.
+`Magick`, action list, spell list, or equivalent behavior configuration.
 
 This is consistent with the currently identified `Game_Enemy` and
 `BattleManager.performEnemyTurn()` implementations: the enemy data supplies
@@ -1134,9 +1135,9 @@ combatant statistics and presentation metadata, while the inspected runtime
 enemy-turn path performs a direct basic physical attack.
 
 The current repository evidence therefore does not establish an enemy
-skill-effect pipeline equivalent to the actor magic system. This should be
+Magick-effect pipeline equivalent to the actor Magick system. This should be
 treated as a description of the current implementation rather than evidence
-that enemies are intended to reuse actor-specific skill behavior.
+that enemies are intended to reuse actor-specific Magick behavior.
 
 Enemy elemental-rate data has an identified end-to-end runtime path.
 
@@ -1149,18 +1150,18 @@ the configured elemental rates and exposes them through
 rate is not a finite number, and clamps valid configured rates to a minimum of
 `0`.
 
-Player magic consumes this data during actual damage calculation.
-`Game_Actor.magicDamage()` resolves the target's elemental multiplier through
-`target.elementRate(skill.element)` and calculates final damage from
+Player Magick consumes this data during actual damage calculation.
+`Game_Actor.magickDamage()` resolves the target's elemental multiplier through
+`target.elementRate(magick.element)` and calculates final damage from
 `rawDamage * elementMultiplier * scopeMultiplier`, rounded down with
 `Math.floor()` and clamped to a minimum of zero.
 
-`BattleManager` separately queries the same elemental rate after skill
+`BattleManager` separately queries the same elemental rate after Magick
 execution for battle feedback. A rate of `0` produces immune feedback, a rate
 greater than `1` produces weak feedback, and a rate below `1` produces resist
 feedback.
 
-Elemental-rate metadata is therefore connected both to actual magic damage and
+Elemental-rate metadata is therefore connected both to actual Magick damage and
 to the corresponding battle feedback rather than existing only as descriptive
 enemy data.
 
@@ -1185,7 +1186,7 @@ the database validator does not identify those malformed values at load time.
 
 **Classification:** Confirmed validation gap.
 
-The inspected enemy-turn path is separate from this player skill-execution
+The inspected enemy-turn path is separate from this player Magick-execution
 pipeline...
 
 #### Battle-sprite metadata is runtime-consumed but not specifically validated
@@ -1299,8 +1300,8 @@ validation step.
 
 The actor restore path expects `saveData.actor` and directly restores values
 including actor identity, level, EXP, HP/MP, combat statistics, equipment IDs,
-and skills. Most restored numeric values are accepted through nullish fallback
-rather than type, range, or finite-number validation. The skills collection
+and Magick. Most restored numeric values are accepted through nullish fallback
+rather than type, range, or finite-number validation. The Magick collection
 receives an array-shape check, but its individual entries are not validated in
 this restore block.
 
@@ -1519,25 +1520,25 @@ only two records each, so current content does not reach these capacity limits.
 The defects become visible as the databases and the party's owned collections
 grow.
 
-`Window_Magic` also renders its complete list of known magic skills into a fixed
-420-pixel-high window. Skill rows begin at `y + 105` and advance by 40 pixels,
-while the selected skill's MP, description, and category occupy the bottom region
+`Window_Magick` also renders its complete list of known Magick into a fixed
+420-pixel-high window. Magick rows begin at `y + 105` and advance by 40 pixels,
+while the selected Magick's MP, description, and category occupy the bottom region
 beginning at approximately `y + 325`.
 
-The seventh magic skill is drawn at `y + 345`, directly inside that details
-region. Later skills overlap the remaining details and eventually extend beyond
-the window. Navigation continues across the complete filtered skill array without
+The seventh Magick is drawn at `y + 345`, directly inside that details
+region. Later Magick overlap the remaining details and eventually extend beyond
+the window. Navigation continues across the complete filtered Magick array without
 keeping the selected entry inside a visible range.
 
-This window is used for field-menu magic and does not establish the presence of a
-separate battle-skill selection window.
+This window is used for field-menu Magick and does not establish the presence of a
+separate battle-Magick selection window.
 
-`Window_BattleMagic` uses the same 360-by-260-pixel layout and 40-pixel row
-spacing as `Window_BattleItem`. Its first magic skill is drawn at `y + 75`, so
-the sixth skill is drawn at `y + 275`, below the window's bottom boundary at
+`Window_BattleMagick` uses the same 360-by-260-pixel layout and 40-pixel row
+spacing as `Window_BattleItem`. Its first Magick is drawn at `y + 75`, so
+the sixth Magick is drawn at `y + 275`, below the window's bottom boundary at
 `y + 260`.
 
-The complete magic-skill array remains keyboard-selectable despite entries beyond
+The complete Magick array remains keyboard-selectable despite entries beyond
 the fifth not being visible inside the battle window.
 
 #### The battle scene has no identified runtime entry path and hardcodes its encounter
@@ -1627,7 +1628,7 @@ identified that exercises it.
 
 **Classification:** Confirmed map/event schema-validation gap.
 
-The inspected enemy-turn path is separate from this player skill-execution
+The inspected enemy-turn path is separate from this player Magick-execution
 pipeline. `BattleManager.performEnemyTurn()` selects the first living party
 member as its target and directly calculates physical damage from
 `enemy.totalAttack()` and `target.totalDefense()`.
@@ -1636,144 +1637,144 @@ It applies a defending reduction when appropriate and then calls
 `target.loseHp(damage)`, followed by battle-state, message, defeat, and
 enemy-turn progression handling.
 
-No skill lookup, `skill.effect` dispatch, or call to `Game_Actor.useSkill()`
+No Magick lookup, `magick.effect` dispatch, or call to `Game_Actor.useMagick()`
 was identified in this enemy-turn method. The inspected enemy turn therefore
 implements a direct basic physical attack rather than reusing the player
-magic/skill execution pipeline.
+Magick execution pipeline.
 
 This means the identified unsupported-effect behavior in
-`Game_Actor.useSkill()` describes the normal player-magic execution path, while
+`Game_Actor.useMagick()` describes the normal player-Magick execution path, while
 the inspected enemy-turn implementation does not currently establish an
-equivalent enemy skill-effect path.
+equivalent enemy Magick-effect path.
 
-Repository inspection found explicit `skill.effect` runtime handling for `heal`
+Repository inspection found explicit `magick.effect` runtime handling for `heal`
 and `damage` in `BattleManager.js` and `Game_Actor.js`.
 
-No corresponding skill-effect dispatch path was identified for
+No corresponding Magick-effect dispatch path was identified for
 `inflictStatus`, `removeStatus`, `revive`, `escape`, or `banish`.
 
-The two current `revive` skills also define `revivePercent` values of `0.25`
+The two current `revive` Magick also define `revivePercent` values of `0.25`
 and `1.0`, representing revival at 25% and 100% HP respectively. Repository
 search found no JavaScript runtime consumer for `revivePercent`, consistent
-with the absence of an identified `revive` skill-effect execution path.
+with the absence of an identified `revive` Magick-effect execution path.
 
-Revival-related metadata also appears outside the skill schema. Death defines
+Revival-related metadata also appears outside the Magick schema. Death defines
 `canBeRevived: true` in `Statuses.json`, while `Essences.json` contains an
 Essence entry with `type: "reviveGrantStatus"`.
 
 Repository searches found no identified JavaScript runtime consumer for
 `canBeRevived` or `reviveGrantStatus`. Combined with the absence of identified
-runtime consumers for the `revive` skill effect and `revivePercent`, revival
-vocabulary is currently present across the skill, status, and Essence data
+runtime consumers for the `revive` Magick effect and `revivePercent`, revival
+vocabulary is currently present across the Magick, status, and Essence data
 schemas without an identified runtime execution path connecting those concepts.
 
 The presence of these fields does not by itself establish their intended
 runtime semantics.
 
-Three current `inflictStatus` skills define `allyStatusChance: 1.0`. Their
+Three current Magick entries with `inflictStatus` define `allyStatusChance: 1.0`. Their
 descriptions specify a different status-application probability for allies than
 for enemies, indicating that `allyStatusChance` is intended as a target-dependent
 status-chance override.
 
-Two of those skills, Diminish and Beastshape, additionally define
-`toggleStatus: true`. Their descriptions specify that the skill can either
+Two of those Magick, Diminish and Beastshape, additionally define
+`toggleStatus: true`. Their descriptions specify that the Magick can either
 inflict or cure its associated status, indicating that `toggleStatus` is
 intended to switch behavior based on the target's current status state.
 
 Repository searches found no JavaScript runtime consumer for either
 `allyStatusChance` or `toggleStatus`.
 
-These fields therefore describe additional status-skill behavior that should be
+These fields therefore describe additional status-Magick behavior that should be
 integrated with the eventual `inflictStatus` / `removeStatus` execution path
-rather than implemented as isolated skill-specific cases.
+rather than implemented as isolated Magick-specific cases.
 
-Repository searches for `skill.status`, `skill["status"]`, and `.status` found
+Repository searches for `magick.status`, `magick["status"]`, and `.status` found
 no identified JavaScript runtime consumer of the `status` object stored on
-skill definitions.
+Magick definitions.
 
 The broader `.status` search did identify existing status infrastructure,
 including the status database managed by `DatabaseManager` and runtime battler
 status state maintained by `Game_Battler`. This indicates that status
-functionality exists independently of the skill-effect execution path.
+functionality exists independently of the Magick-effect execution path.
 
 The missing integration is therefore not status support in general, but an
-identified bridge from a skill's `status` metadata and status-related effect
+identified bridge from a Magick's `status` metadata and status-related effect
 fields into the existing battler status APIs.
 
 The underlying engine may already contain portions of the functionality needed
 by some of these effects. For example, `Game_Battler` exposes status-removal
-behavior through `removeStatus()`. However, no identified skill-effect path
+behavior through `removeStatus()`. However, no identified Magick-effect path
 connects `"effect": "removeStatus"` to that battler API.
 
 Similarly, repository searches for `escape` found runtime uses associated with
-the Escape input action, but no identified execution path for a skill whose
+the Escape input action, but no identified execution path for a Magick whose
 `effect` is `"escape"`.
 
-The current skill database therefore defines a broader effect vocabulary than
-the identified skill runtime dispatcher currently executes.
+The current Magick database therefore defines a broader effect vocabulary than
+the identified Magick runtime dispatcher currently executes.
 
-This should be resolved through a centralized, data-driven skill-effect
-execution path rather than by adding skill-ID-specific special cases.
+This should be resolved through a centralized, data-driven Magick-effect
+execution path rather than by adding Magick-ID-specific special cases.
 
 **Classification:** Possible improvement.
 
-Before expanding validation, inventory the complete `Skills.json` schema
+Before expanding validation, inventory the complete `magick.json` schema
 and its runtime consumers. Validation should reflect the intended data
 contract rather than prematurely rejecting fields that are still under
 development.
 
-#### Skill `scopePower` metadata is consumed but not validated
+#### Magick `scopePower` metadata is consumed but not validated
 
-**Files:** `data/Skills.json`, `js/core/DatabaseValidator.js`,
+**Files:** `data/Magick.json`, `js/core/DatabaseValidator.js`,
 `js/objects/Game_Actor.js`
 
-`Skills.json` currently contains 19 skills with `scopePower` metadata.
+`magick.json` currently contains 19 Magick with `scopePower` metadata.
 The inspected definitions consistently use `single` and `all` keys with
 numeric multiplier values.
 
 `Game_Actor.skillScopeMultiplier()` actively consumes this metadata for
-both `magicHealing()` and `magicDamage()`.
+both `magickHealing()` and `magickDamage()`.
 
 Missing `scopePower` is intentionally supported and falls back to a
 multiplier of `1`. If `scopePower` exists but the requested value cannot
 be converted to a finite number, runtime also falls back to `1`.
 
 Repository inspection found no corresponding `scopePower` validation in
-`DatabaseValidator.validateSkills()`.
+`DatabaseValidator.validateMagick()`.
 
-The current skill data appears internally consistent, so no present data
+The current Magick data appears internally consistent, so no present data
 defect was identified. However, malformed values, unsupported keys, or
 scope/data mismatches could potentially pass database validation and be
 silently replaced by the runtime fallback.
 
 **Classification:** Possible improvement.
 
-When skill-schema validation is expanded, consider validating that
+When Magick-schema validation is expanded, consider validating that
 `scopePower`, when present, is an object whose keys correspond to supported
-skill scopes and whose values are finite numeric multipliers.
+Magick scopes and whose values are finite numeric multipliers.
 
-#### Skill `power` metadata is consumed but not validated
+#### Magick `power` metadata is consumed but not validated
 
-**Files:** `data/Skills.json`, `js/core/DatabaseValidator.js`,
+**Files:** `data/Magick.json`, `js/core/DatabaseValidator.js`,
 `js/objects/Game_Actor.js`
 
-`Skills.json` defines numeric `power` values across the skill database,
-including legitimate zero-power skills.
+`magick.json` defines numeric `power` values across the Magick database,
+including legitimate zero-power Magick.
 
-`Game_Actor` actively consumes `skill.power` in both `magicHealing()` and
-`magicDamage()`, so this field directly participates in runtime HP
+`Game_Actor` actively consumes `magick.power` in both `magickHealing()` and
+`magickDamage()`, so this field directly participates in runtime HP
 calculation.
 
 Repository search found no corresponding `power` validation in
-`DatabaseValidator.validateSkills()`.
+`DatabaseValidator.validateMagick()`.
 
-The current inspected skill data uses numeric values, and no present data
+The current inspected Magick data uses numeric values, and no present data
 defect was identified. However, malformed `power` values could pass
 database validation and reach arithmetic performed by the runtime.
 
 **Classification:** Possible improvement.
 
-When skill-schema validation is expanded, consider requiring `power` to be
+When Magick-schema validation is expanded, consider requiring `power` to be
 a finite number while continuing to permit `0` as a valid value.
 
 #### Battle victories do not award experience
@@ -1865,7 +1866,7 @@ It:
 - Adds positive finite resonance.
 - Detects level increases.
 - Determines unlocked abilities from unlock levels.
-- Resolves unlocked ability skill IDs through `DatabaseManager`.
+- Resolves unlocked ability Magick IDs through `DatabaseManager`.
 
 The class does not currently process Essence passives, mastery, type, element, or max-level behavior directly.
 
@@ -1949,8 +1950,8 @@ Actor-specific ownership includes:
 - Battle-sprite configuration.
 - EXP and growth configuration.
 - Weapon and armor IDs.
-- Learned skills.
-- Skill use and targeting.
+- Learned Magick.
+- Magick use and targeting.
 - Actor level progression.
 - Equipment-aware combat-stat calculations.
 
@@ -1976,14 +1977,14 @@ than directly modifying EXP or duplicating level-up calculations.
 The remaining audit question concerns which actor or actors should receive
 event-command EXP, not the EXP mutation mechanism itself.
 
-#### Actor skill acquisition is centralized through Game_Actor
+#### Actor Magick acquisition is centralized through Game_Actor
 
 **Files:** `js/objects/Game_Actor.js`, `js/objects/Game_System.js`
 
-Repository search for `learnSkill(` found one implementation in
+Repository search for `learnMagick(` found one implementation in
 `Game_Actor` and six callers in `Game_System`.
 
-Skill acquisition is therefore routed through `Game_Actor.learnSkill()`
+Magick acquisition is therefore routed through `Game_Actor.learnMagick()`
 rather than being independently implemented by multiple systems.
 
 **Classification:** Intentional / verified design.
@@ -2002,76 +2003,76 @@ than directly modifying the actor's weapon or armor IDs.
 
 Equipment mutation is therefore centralized at the actor level.
 
-#### Game_Actor centralizes skill ownership and basic usability
+#### Game_Actor centralizes Magick ownership and basic usability
 
 **File:** `js/objects/Game_Actor.js`
 
-`Game_Actor` owns learned skill IDs and provides explicit APIs for learning,
-forgetting, querying, and resolving known skills.
+`Game_Actor` owns learned Magick IDs and provides explicit APIs for learning,
+forgetting, querying, and resolving known Magick.
 
-`learnSkill()` validates the skill database record and prevents duplicate
-skill acquisition.
+`learnMagick()` validates the Magick database record and prevents duplicate
+Magick acquisition.
 
-`canUseSkill()` centralizes the basic runtime requirements for skill use,
-including skill existence, learned-skill ownership, and MP affordability.
+`canUseMagick()` centralizes the basic runtime requirements for Magick use,
+including Magick existence, learned-Magick ownership, and MP affordability.
 
-`useSkill()` delegates to this usability check when MP cost payment is
+`useMagick()` delegates to this usability check when MP cost payment is
 required.
 
 **Classification:** Intentional / verified design.
 
-#### Skill status data uses canonical status-key mappings
+#### Magick status data uses canonical status-key mappings
 
-**File:** `data/Skills.json`
+**File:** `data/Magick.json`
 
-Status-related skills represent their affected statuses through a `status`
+Status-related Magick represent their affected statuses through a `status`
 object whose property names identify individual statuses and whose numeric values
 encode additional per-status metadata.
 
 The numeric value associated with each status key represents its application
 or removal probability, expressed from `0.0` to `1.0`.
 
-This is confirmed directly by skill descriptions. For example, Venom stores
+This is confirmed directly by Magick descriptions. For example, Venom stores
 `"poison": 0.48` and describes a 48% chance to inflict Poison, while Plague
 Nova stores `"poison": 0.72` and describes a 72% chance.
 
-Some skills also define special probability behavior separately. Diminish,
+Some Magick also define special probability behavior separately. Diminish,
 for example, stores `"small": 0.72` while defining `allyStatusChance: 1.0`,
 matching its 72% enemy / 100% ally behavior.
 
-The same schema supports both single-status and multi-status skills.
+The same schema supports both single-status and multi-status Magick.
 
-Examples include `removeStatus` skills such as Purge Venom, Soul Cleanse,
+Examples include `removeStatus` Magick such as Purge Venom, Soul Cleanse,
 Wardbreaker, and Nullify.
 
 Repository searches found no separate `statusId` or `statusKey` fields in
-the skill data.
+the Magick data.
 
 **Classification:** Intentional / verified design.
 
 This representation is compatible in principle with the status runtime's
-key-based APIs, although the skill-effect runtime does not yet consume
+key-based APIs, although the Magick-effect runtime does not yet consume
 these status mappings.
 
-#### Skill elemental metadata has active runtime integration
+#### Magick elemental metadata has active runtime integration
 
-**Files:** `data/Skills.json`, `js/battle/BattleManager.js`,
+**Files:** `data/Magick.json`, `js/battle/BattleManager.js`,
 `js/objects/Game_Actor.js`, `js/objects/Game_Battler.js`
 
-`Skills.json` defines elemental metadata through each skill's `element`
+`magick.json` defines elemental metadata through each Magick's `element`
 property.
 
 Repository inspection confirmed active runtime consumers of
-`skill.element` in both `BattleManager.js` and `Game_Actor.js`.
+`magick.element` in both `BattleManager.js` and `Game_Actor.js`.
 
 Elemental damage resolution queries the target battler through
-`elementRate(skill.element)`, while `Game_Battler` owns the underlying
+`elementRate(magick.element)`, while `Game_Battler` owns the underlying
 element-rate data and lookup behavior.
 
 Further inspection confirmed that these element-rate lookups serve distinct
 responsibilities rather than applying elemental damage multiple times.
 
-`Game_Actor.magicDamage()` uses the target's element rate as an actual
+`Game_Actor.magickDamage()` uses the target's element rate as an actual
 damage multiplier before HP loss is applied.
 
 `BattleManager` queries the element rate afterward for battle presentation,
@@ -2081,31 +2082,31 @@ resistance. Its separate lookups correspond to different targeting paths.
 No duplicate elemental damage application was identified.
 
 Repository search found no external runtime caller of
-`Game_Actor.magicDamage()`. Its only identified runtime call site is
-`Game_Actor.useSkill()`, confirming that elemental magic damage currently
-flows through the normal skill-execution path.
+`Game_Actor.magickDamage()`. Its only identified runtime call site is
+`Game_Actor.useMagick()`, confirming that elemental Magick damage currently
+flows through the normal Magick-execution path.
 
-This establishes an active data-to-runtime path from skill elemental
+This establishes an active data-to-runtime path from Magick elemental
 metadata through battler elemental rates into damage resolution.
 
-Unlike currently unconsumed skill metadata such as `status` and
+Unlike currently unconsumed Magick metadata such as `status` and
 `reflectable`, the `element` property is actively integrated with combat
 resolution.
 
 **Classification:** Intentional / verified design.
 
-#### Skill scope-power scaling is centralized in Game_Actor
+#### Magick scope-power scaling is centralized in Game_Actor
 
-**Files:** `data/Skills.json`, `js/objects/Game_Actor.js`
+**Files:** `data/Magick.json`, `js/objects/Game_Actor.js`
 
 `Game_Actor.skillScopeMultiplier()` provides the runtime interpretation of
-skill `scopePower` metadata.
+Magick `scopePower` metadata.
 
 Repository search found three references to `skillScopeMultiplier()`, all
 within `Game_Actor.js`: the method definition and calls from
-`magicHealing()` and `magicDamage()`.
+`magickHealing()` and `magickDamage()`.
 
-Both restorative and damaging magic therefore share the same scope-scaling
+Both restorative and damaging Magick therefore share the same scope-scaling
 helper rather than implementing separate multiplier rules.
 
 If `scopePower` is absent, or the requested scope does not resolve to a
@@ -2113,49 +2114,49 @@ finite numeric multiplier, the helper falls back to `1`.
 
 **Classification:** Intentional / verified design.
 
-#### Skill `type` metadata is consumed but not validated
+#### Magick `type` metadata is consumed but not validated
 
-**Files:** `data/Skills.json`, `js/core/DatabaseValidator.js`,
-`js/windows/Window_BattleMagic.js`, `js/windows/Window_Magic.js`
+**Files:** `data/Magick.json`, `js/core/DatabaseValidator.js`,
+`js/windows/Window_BattleMagick.js`, `js/windows/Window_Magick.js`
 
-Current `Skills.json` data uses `"magic"` for the observed `type` values.
+Current `magick.json` data uses `"magick"` for the observed `type` values.
 
-`Window_BattleMagic` and `Window_Magic` actively consume `skill.type` by
-filtering skills whose type is exactly `"magic"`.
+`Window_BattleMagick` and `Window_Magick` actively consume `magick.type` by
+filtering Magick whose type is exactly `"magick"`.
 
-Repository searches for `skill.type`, `skill.type ===`, `validTypes`, and
-the exact `"magic"` string found no corresponding skill-type validation in
+Repository searches for `magick.type`, `magick.type ===`, `validTypes`, and
+the exact `"magick"` string found no corresponding action-type validation in
 `DatabaseValidator`.
 
-The string `"magic"` also appears elsewhere in the repository for unrelated
+The string `"magick"` also appears elsewhere in the repository for unrelated
 concepts, including battle commands, battle targeting state, and status
-skill-type restrictions. These uses should not be treated as a shared
+action-type restrictions. These uses should not be treated as a shared
 repository-wide `type` schema.
 
-The currently inspected skill data is consistent with its runtime consumers,
+The currently inspected Magick data is consistent with its runtime consumers,
 and no present data defect was identified. However, an unsupported or
-misspelled skill `type` could pass database validation and cause that skill
-to be omitted from magic-skill filtering.
+misspelled Magick `type` could pass database validation and cause that Magick
+to be omitted from Magick filtering.
 
 **Classification:** Possible improvement.
 
-When skill-schema validation is expanded, consider defining and validating
-the supported skill-type vocabulary explicitly.
+When Magick-schema validation is expanded, consider defining and validating
+the supported action-type vocabulary explicitly.
 
-#### Skill MP-cost metadata has validation and runtime integration
+#### Magick MP-cost metadata has validation and runtime integration
 
-**Files:** `data/Skills.json`, `js/core/DatabaseValidator.js`,
-`js/objects/Game_Actor.js`, `js/windows/Window_BattleMagic.js`,
-`js/windows/Window_Magic.js`
+**Files:** `data/Magick.json`, `js/core/DatabaseValidator.js`,
+`js/objects/Game_Actor.js`, `js/windows/Window_BattleMagick.js`,
+`js/windows/Window_Magick.js`
 
-`DatabaseValidator.validateSkills()` requires `skill.mpCost` to be a
+`DatabaseValidator.validateMagick()` requires `magick.mpCost` to be a
 finite, non-negative number.
 
-`Game_Actor` actively consumes the value for skill MP-cost handling, while
-both the battle-magic and menu-magic windows use it when displaying skill
+`Game_Actor` actively consumes the value for Magick MP-cost handling, while
+both the battle-Magick and menu-Magick windows use it when displaying Magick
 costs.
 
-This establishes a complete data contract in which skill MP-cost metadata
+This establishes a complete data contract in which Magick MP-cost metadata
 is validated before being consumed by gameplay and presentation systems.
 
 Zero MP cost is explicitly permitted by the validator.
@@ -2206,7 +2207,7 @@ searches.
 - [x] `js/objects/Game_System.js`
   - Root game-state ownership reviewed.
   - Ownership relationship with main.js globals verified.
-  - Temporary skill-learning setup recorded.
+  - Temporary Magick-learning setup recorded.
   - Individually hard-coded actor ownership recorded for party/save audit.
   - No production code changed during audit.
 
@@ -2247,15 +2248,15 @@ in focused passes with regression tests.
    - Implement exactly-once victory finalization for EXP, currency, item drops,
      Essence Resonance, and post-battle status cleanup.
 
-3. **Centralize skill and status execution.**
-   - Implement the declared skill-effect vocabulary through one dispatcher.
-   - Bridge skill status metadata into `Game_Battler` status APIs.
+3. **Centralize Magick and status execution.**
+   - Implement the declared Magick-effect vocabulary through one dispatcher.
+   - Bridge Magick status metadata into `Game_Battler` status APIs.
    - Integrate reflectability, action restrictions, status modifiers, revival,
      target overrides, and per-hit behavior without ID-specific special cases.
 
 4. **Strengthen database and event validation.**
    - Add specific validation for Essences, Items, Weapons, Armors, Actors,
-     Enemies, Skills, battle-sprite metadata, and individual map files.
+     Enemies, Magick, battle-sprite metadata, and individual map files.
    - Validate numeric command payloads before arithmetic or inventory mutation.
    - Reject unsupported vocabulary and invalid cross-database references early.
 
@@ -2280,7 +2281,7 @@ The audit began at the engine entry point and followed foundational dependencies
 Essence passive and Mastery searches established that those systems are deliberately forward-designed and not yet active runtime features.
 
 The review then expanded through game-state ownership, party and actor behavior,
-save/load persistence, skill and status metadata, equipment and inventory,
+save/load persistence, Magick and status metadata, equipment and inventory,
 windows, map/event input, battle orchestration, targeting, scene reachability,
 and victory rewards.
 

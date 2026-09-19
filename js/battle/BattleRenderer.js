@@ -90,13 +90,13 @@ class BattleRenderer {
       !this.scene.victory &&
       !this.scene.defeat &&
       !this.scene.battleInputLocked &&
-      !this.scene.magicWindow.isOpen() &&
+      !this.scene.magickWindow.isOpen() &&
       !this.scene.itemWindow.isOpen()
     ) {
       this.scene.commandWindow.draw();
     }
 
-    this.scene.magicWindow.draw();
+    this.scene.magickWindow.draw();
     this.scene.itemWindow.draw();
 
     context.restore();

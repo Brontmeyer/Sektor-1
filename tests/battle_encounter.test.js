@@ -133,7 +133,7 @@ function testProjectDatabaseValidation() {
     items: readData("Items.json"),
     weapons: readData("Weapons.json"),
     armors: readData("Armors.json"),
-    skills: readData("Skills.json"),
+    magickData: readData("Magick.json"),
     essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),
   };
@@ -238,7 +238,7 @@ function testBattleSceneConstructionAndExit() {
       Game_Enemy,
       Image: class {},
       Window_BattleCommand: EmptySystem,
-      Window_BattleMagic: EmptySystem,
+      Window_BattleMagick: EmptySystem,
       Window_BattleItem: EmptySystem,
       Window_BattleResults: EmptySystem,
       BattleTargetManager: EmptySystem,
@@ -507,7 +507,7 @@ function testRealActorBattleResolutionPreservesPostBattleState() {
     armor() {
       return null;
     },
-    skill() {
+    magick() {
       return null;
     },
   };

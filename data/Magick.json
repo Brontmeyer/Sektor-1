@@ -5,21 +5,22 @@
     "id": 1,
     "name": "Mend",
     "description": "Heal a small amount of HP.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "restore",
     "element": "restorative",
     "effect": "heal",
-
     "mpCost": 5,
     "power": 5,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -30,21 +31,22 @@
     "id": 2,
     "name": "Greater Mend",
     "description": "Heal a moderate amount of HP.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "restore",
     "element": "restorative",
     "effect": "heal",
-
     "mpCost": 24,
     "power": 35,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -55,21 +57,22 @@
     "id": 3,
     "name": "Grand Mend",
     "description": "Heal a large amount of HP.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "restore",
     "element": "restorative",
     "effect": "heal",
-
     "mpCost": 64,
     "power": 130,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -80,36 +83,35 @@
     "id": 4,
     "name": "Purge Venom",
     "description": "Cures Poison.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "restore",
     "element": "restorative",
     "effect": "removeStatus",
-
     "mpCost": 3,
     "power": 0,
     "reflectable": true,
-
-    "status": { "poison": 1.0 },
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "status": {
+      "poison": 1.0
+    },
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 5: Soul Cleanse - Cure Multiple Statuses",
     "id": 5,
     "name": "Soul Cleanse",
     "description": "Cures Sleep, Poison, Sadness, Fury, Confusion, Silence, Frog, Small, Slow-numb, Petrify, Berserk, Paralyzed, and Darkness.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "restore",
     "element": "restorative",
     "effect": "removeStatus",
-
     "mpCost": 15,
     "power": 0,
     "reflectable": true,
-
     "status": {
       "sleep": 1.0,
       "poison": 1.0,
@@ -125,110 +127,118 @@
       "paralyze": 1.0,
       "darkness": 1.0
     },
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 6: Unchanging Will - Inflict Resist",
     "id": 6,
     "name": "Unchanging Will",
     "description": "Inflicts Resist status. Prevents status transformations.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "restorative",
     "effect": "inflictStatus",
-
     "mpCost": 120,
     "power": 0,
     "reflectable": true,
-
-    "status": { "resist": 1.0 },
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "status": {
+      "resist": 1.0
+    },
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 7: Rekindle - Revive with 25% HP",
     "id": 7,
     "name": "Rekindle",
     "description": "Revive a party member with 25% health.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "restore",
     "element": "restorative",
     "effect": "revive",
-
     "mpCost": 34,
     "revivePercent": 0.25,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 8: Reawakening - Revive with Full HP",
     "id": 8,
     "name": "Reawakening",
     "description": "Revive a party member with full health.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "restore",
     "element": "restorative",
     "effect": "revive",
-
     "mpCost": 100,
     "revivePercent": 1.0,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 9: Lifebloom - Gradual HP Restore with Regen",
     "id": 9,
     "name": "Lifebloom",
     "description": "Gradually restores HP; Inflicts Regen.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "restore",
     "element": "restorative",
     "effect": "inflictStatus",
-
     "mpCost": 30,
     "power": 0,
     "reflectable": true,
-
-    "status": { "regen": 1.0 },
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "status": {
+      "regen": 1.0
+    },
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 10: Ember - Low Fire Damage",
     "id": 10,
     "name": "Ember",
     "description": "Low fire-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "fire",
     "effect": "damage",
-
     "mpCost": 4,
     "power": 8,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -239,21 +249,22 @@
     "id": 11,
     "name": "Blaze",
     "description": "Moderate fire-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "fire",
     "effect": "damage",
-
     "mpCost": 22,
     "power": 20,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -264,21 +275,22 @@
     "id": 12,
     "name": "Inferno",
     "description": "High fire-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "fire",
     "effect": "damage",
-
     "mpCost": 52,
     "power": 64,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -289,21 +301,22 @@
     "id": 13,
     "name": "Frost",
     "description": "Low ice-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "ice",
     "effect": "damage",
-
     "mpCost": 4,
     "power": 8,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -314,21 +327,22 @@
     "id": 14,
     "name": "Glacial Lance",
     "description": "Moderate ice-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "ice",
     "effect": "damage",
-
     "mpCost": 22,
     "power": 20,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -339,21 +353,22 @@
     "id": 15,
     "name": "Absolute Zero",
     "description": "High ice-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "ice",
     "effect": "damage",
-
     "mpCost": 52,
     "power": 64,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -364,21 +379,22 @@
     "id": 16,
     "name": "Spark",
     "description": "Low lightning-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "lightning",
     "effect": "damage",
-
     "mpCost": 4,
     "power": 8,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -389,21 +405,22 @@
     "id": 17,
     "name": "Thunderstrike",
     "description": "Moderate lightning-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "lightning",
     "effect": "damage",
-
     "mpCost": 22,
     "power": 20,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -414,21 +431,22 @@
     "id": 18,
     "name": "Stormbreaker",
     "description": "High lightning-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "lightning",
     "effect": "damage",
-
     "mpCost": 52,
     "power": 64,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -439,21 +457,22 @@
     "id": 19,
     "name": "Stoneburst",
     "description": "Low earth-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "earth",
     "effect": "damage",
-
     "mpCost": 6,
     "power": 11,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -464,21 +483,22 @@
     "id": 20,
     "name": "Faultline",
     "description": "Moderate earth-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "earth",
     "effect": "damage",
-
     "mpCost": 28,
     "power": 24,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -489,21 +509,22 @@
     "id": 21,
     "name": "Worldshatter",
     "description": "High earth-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "earth",
     "effect": "damage",
-
     "mpCost": 68,
     "power": 70,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -514,408 +535,439 @@
     "id": 22,
     "name": "Venom",
     "description": "Low poison-elemental damage. 48% chance of inflicting Poison.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "poison",
     "effect": "damage",
-
     "mpCost": 8,
     "power": 10,
     "reflectable": true,
-
-    "status": { "poison": 0.48 },
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "status": {
+      "poison": 0.48
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 23: Toxic Surge - Moderate Poison Damage",
     "id": 23,
     "name": "Toxic Surge",
     "description": "Moderate poison-elemental damage. 48% chance of inflicting Poison.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "poison",
     "effect": "damage",
-
     "mpCost": 36,
     "power": 21,
     "reflectable": true,
-
-    "status": { "poison": 0.48 },
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "status": {
+      "poison": 0.48
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 24: Plague Nova - High Poison Damage",
     "id": 24,
     "name": "Plague Nova",
     "description": "High poison-elemental damage. 72% chance of inflicting Poison.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "poison",
     "effect": "damage",
-
     "mpCost": 80,
     "power": 68,
     "reflectable": true,
-
-    "status": { "poison": 0.72 },
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "status": {
+      "poison": 0.72
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 25: Burden - Low Gravity Damage",
     "id": 25,
     "name": "Burden",
     "description": "Gravity-elemental damage equal to 25% of target's current HP. Cannot be reflected.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "gravity",
     "effect": "damage",
-
     "mpCost": 14,
     "gravityPercent": 0.25,
     "reflectable": false,
-
     "status": {},
-
-    "target": ["enemy"],
-    "scope": ["single", "all"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ]
   },
   {
     "_comment": "ID 26: Heavyfall - Moderate Gravity Damage",
     "id": 26,
     "name": "Heavyfall",
     "description": "Gravity-elemental damage equal to 50% of target's current HP. Cannot be reflected.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "gravity",
     "effect": "damage",
-
     "mpCost": 33,
     "gravityPercent": 0.5,
     "reflectable": false,
-
     "status": {},
-
-    "target": ["enemy"],
-    "scope": ["single", "all"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ]
   },
   {
     "_comment": "ID 27: Cataclysm - High Gravity Damage",
     "id": 27,
     "name": "Cataclysm",
     "description": "Gravity-elemental damage equal to 75% of target's current HP. Cannot be reflected.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "attack",
     "element": "gravity",
     "effect": "damage",
-
     "mpCost": 48,
     "gravityPercent": 0.75,
     "reflectable": false,
-
     "status": {},
-
-    "target": ["enemy"],
-    "scope": ["single", "all"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ]
   },
   {
     "_comment": "ID 28: Dreambind - Inflict Sleep",
     "id": 28,
     "name": "Dreambind",
     "description": "72% chance of inflicting Sleep on target.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 8,
     "power": 0,
     "reflectable": true,
-
-    "status": { "sleep": 0.72 },
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "status": {
+      "sleep": 0.72
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 29: Mindtwist - Inflict Confuse",
     "id": 29,
     "name": "Mindtwist",
     "description": "60% chance of inflicting Confuse on target.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 18,
     "power": 0,
     "reflectable": true,
-
     "status": {
       "confuse": 0.6
     },
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 30: Spellseal - Inflict Silence",
     "id": 30,
     "name": "Spellseal",
     "description": "60% chance of inflicting Silence on target.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 24,
     "power": 0,
     "reflectable": true,
-
-    "status": { "silence": 0.6 },
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "status": {
+      "silence": 0.6
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 31: Diminish - Inflict or Cure Small",
     "id": 31,
     "name": "Diminish",
     "description": "Inflicts or cures Small on target. 72% probability on enemies, 100% on allies.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 10,
     "power": 0,
     "reflectable": true,
-
-    "status": { "small": 0.72 },
+    "status": {
+      "small": 0.72
+    },
     "allyStatusChance": 1.0,
     "toggleStatus": true,
-
-    "target": ["ally", "enemy"],
-    "scope": ["single"]
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 32: Beastshape - Inflict or Cure Frog",
     "id": 32,
     "name": "Beastshape",
     "description": "Inflicts or cures Frog on target. 72% probability on enemies, 100% on allies.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 14,
     "power": 0,
     "reflectable": true,
-
-    "status": { "frog": 0.72 },
+    "status": {
+      "frog": 0.72
+    },
     "allyStatusChance": 1.0,
     "toggleStatus": true,
-
-    "target": ["ally", "enemy"],
-    "scope": ["single"]
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 33: Bloodrage - Inflict Berserk",
     "id": 33,
     "name": "Bloodrage",
     "description": "Inflicts Berserk on target. 80% probability on enemies, 100% on allies.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 18,
     "power": 0,
     "reflectable": true,
-
-    "status": { "berserk": 0.8 },
+    "status": {
+      "berserk": 0.8
+    },
     "allyStatusChance": 1.0,
-
-    "target": ["ally", "enemy"],
-    "scope": ["single"]
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 34: Quickening - Grant Haste",
     "id": 34,
     "name": "Quickening",
     "description": "Grants Haste to target.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 18,
     "power": 0,
     "reflectable": true,
-
-    "status": { "haste": 1.0 },
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "status": {
+      "haste": 1.0
+    },
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 35: Time Bind - Inflict Slow",
     "id": 35,
     "name": "Time Bind",
     "description": "Inflicts Slow on target. Only enemy immunity can prevent it.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 20,
     "power": 0,
     "reflectable": true,
-
-    "status": { "slow": 1.0 },
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "status": {
+      "slow": 1.0
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 36: Time Lock - Inflict Stop",
     "id": 36,
     "name": "Time Lock",
     "description": "60% chance of inflicting Stop on target.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 34,
     "power": 0,
     "reflectable": true,
-
-    "status": { "stop": 0.6 },
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "status": {
+      "stop": 0.6
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 37: Iron Veil - Reduce Physical Damage",
     "id": 37,
     "name": "Iron Veil",
     "description": "Reduces physical damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 16,
     "power": 0,
     "reflectable": true,
-
-    "status": { "barrier": 1.0 },
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "status": {
+      "barrier": 1.0
+    },
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 38: Mystic Veil - Reduce Magical Damage",
     "id": 38,
     "name": "Mystic Veil",
-    "description": "Reduces magical damage.",
-
-    "type": "magic",
+    "description": "Reduces Magick damage.",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 24,
     "power": 0,
     "reflectable": true,
-
-    "status": { "mbarrier": 1.0 },
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "status": {
+      "mbarrier": 1.0
+    },
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 39: Mirror Ward - Grant Reflect",
     "id": 39,
     "name": "Mirror Ward",
     "description": "Grants Reflect. Cannot be reflected.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 30,
     "power": 0,
     "reflectable": false,
-
-    "status": { "reflect": 1.0 },
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "status": {
+      "reflect": 1.0
+    },
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 40: Wardbreaker - Remove Barrier, MBarrier, Reflect, and Shield",
     "id": 40,
     "name": "Wardbreaker",
     "description": "Remove Barrier, MBarrier, Reflect, and Shield statuses. Cannot be reflected.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "removeStatus",
-
     "mpCost": 12,
     "power": 0,
     "reflectable": false,
-
     "status": {
       "barrier": 1.0,
       "mbarrier": 1.0,
       "reflect": 1.0,
       "shield": 1.0
     },
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 41: Nulify - Remove Multiple Statuses",
     "id": 41,
     "name": "Nulify",
     "description": "Remove Haste, Slow, Stop, Regen, Barrier, MBarrier, Reflect, Shield, Death Force, and Resist statuses. Cannot be reflected.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "removeStatus",
-
     "mpCost": 20,
     "power": 0,
     "reflectable": false,
-
     "status": {
       "haste": 1.0,
       "slow": 1.0,
@@ -928,155 +980,163 @@
       "deathforce": 1.0,
       "resist": 1.0
     },
-
-    "target": ["ally", "enemy"],
-    "scope": ["single"]
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 42: Final Tol - Inflict Death with 44% chance",
     "id": 42,
     "name": "Final Tol",
     "description": "44% chance of inflicting Death.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 30,
     "power": 0,
     "reflectable": true,
-
-    "status": { "death": 0.44 },
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "status": {
+      "death": 0.44
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 43: Retreat - Instantly end battle without reward",
     "id": 43,
     "name": "Retreat",
     "description": "Instantly end battle without reward. Cannot be reflected.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "escape",
-
     "mpCost": 16,
     "power": 0,
     "reflectable": false,
-
     "status": {},
-
-    "target": ["ally"],
-    "scope": ["all"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "all"
+    ]
   },
   {
     "_comment": "ID 44: Banish - Remove an enemy from battle and flag as Dead",
     "id": 44,
     "name": "Banish",
     "description": "Remove an enemy from battle and flag as Dead. No Gil will be received from this enemy. Cannot be reflected.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "banish",
-
     "mpCost": 99,
     "power": 0,
     "reflectable": false,
-
     "status": {},
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 45: Twin Aegis - Grant Barrier and MBarrier",
     "id": 45,
     "name": "Twin Aegis",
     "description": "Grants Barrier and MBarrier.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "indirect",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 58,
     "power": 0,
     "reflectable": true,
-
     "status": {
       "barrier": 1.0,
       "mbarrier": 1.0
     },
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 46: Starfall - Major non-elemental damage",
     "id": 46,
     "name": "Starfall",
     "description": "Major non-elemental damage. Cannot be reflected.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "advanced",
     "element": "none",
     "effect": "damage",
-
     "mpCost": 70,
     "power": 80,
     "reflectable": false,
-
     "status": {},
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 47: Meteor Barrage - Moderate non-elemental damage to random enemies. Four attacks",
     "id": 47,
     "name": "Meteor Barrage",
     "description": "Moderate non-elemental damage to random enemies. Four attacks. Cannot be reflected.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "advanced",
     "element": "none",
     "effect": "damage",
-
     "mpCost": 110,
     "power": 30,
     "hits": 4,
     "randomTargetPerHit": true,
     "reflectable": false,
-
     "status": {},
-
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 48: Winter's Grasp - High ice-elemental damage. 68% chance of inflicting Stop.",
     "id": 48,
     "name": "Winter's Grasp",
     "description": "High ice-elemental damage. 68% chance of inflicting Stop.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "advanced",
     "element": "ice",
     "effect": "damage",
-
     "mpCost": 82,
     "power": 95,
     "reflectable": true,
-
-    "status": { "stop": 0.68 },
-
-    "target": ["enemy"],
-    "scope": ["single", "all"],
-
+    "status": {
+      "stop": 0.68
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -1087,21 +1147,23 @@
     "id": 49,
     "name": "Stone Prison",
     "description": "High earth-elemental damage. 32% chance of inflicting Petrify.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "advanced",
     "element": "earth",
     "effect": "damage",
-
     "mpCost": 86,
     "power": 100,
     "reflectable": true,
-
-    "status": { "petrify": 0.32 },
-
-    "target": ["enemy"],
-    "scope": ["single", "all"],
-
+    "status": {
+      "petrify": 0.32
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -1112,21 +1174,23 @@
     "id": 50,
     "name": "Tempest Spiral",
     "description": "High wind-elemental damage. 32% chance of inflicting Confusion.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "advanced",
     "element": "wind",
     "effect": "damage",
-
     "mpCost": 90,
     "power": 105,
     "reflectable": true,
-
-    "status": { "confuse": 0.32 },
-
-    "target": ["enemy"],
-    "scope": ["single", "all"],
-
+    "status": {
+      "confuse": 0.32
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -1137,21 +1201,21 @@
     "id": 51,
     "name": "Solar Eruption",
     "description": "Heavy fire-elemental damage.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "advanced",
     "element": "fire",
     "effect": "damage",
-
     "mpCost": 100,
     "power": 115,
     "reflectable": true,
-
     "status": {},
-
-    "target": ["enemy"],
-    "scope": ["single", "all"],
-
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -1162,59 +1226,61 @@
     "id": 52,
     "name": "Perfect Renewal",
     "description": "Fully restores target's HP. Cannot be reflected.",
-
-    "type": "magic",
+    "type": "magick",
     "category": "restore",
     "element": "restorative",
     "effect": "heal",
-
     "mpCost": 99,
     "healPercent": 1.0,
     "reflectable": false,
-
     "status": {},
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
-    "_comment": "ID 53: Astral Bulwark - Extreme magic defense. Cannot be reflected.",
+    "_comment": "ID 53: Astral Bulwark - Extreme magick defense. Cannot be reflected.",
     "id": 53,
     "name": "Astral Bulwark",
-    "description": "Extreme magic defense. Cannot be reflected.",
-
-    "type": "magic",
+    "description": "Extreme Magick Defense. Cannot be reflected.",
+    "type": "magick",
     "category": "advanced",
     "element": "none",
     "effect": "inflictStatus",
-
     "mpCost": 180,
     "power": 0,
     "reflectable": false,
-
-    "status": { "shield": 1.0 },
-
-    "target": ["ally"],
-    "scope": ["single"]
+    "status": {
+      "shield": 1.0
+    },
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
-    "_comment": "ID 54: Genesis Nova - Heavy non-elemental magic damage to all enemies. Cannot be reflected.",
+    "_comment": "ID 54: Genesis Nova - Heavy non-elemental magick damage to all enemies. Cannot be reflected.",
     "id": 54,
     "name": "Genesis Nova",
-    "description": "Heavy non-elemental magic damage to all enemies. Cannot be reflected.",
-
-    "type": "magic",
+    "description": "Heavy non-elemental Magick damage to all enemies. Cannot be reflected.",
+    "type": "magick",
     "category": "advanced",
     "element": "none",
     "effect": "damage",
-
     "mpCost": 130,
     "power": 105,
     "reflectable": false,
-
     "status": {},
-
-    "target": ["enemy"],
-    "scope": ["all"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "all"
+    ]
   }
 ]

@@ -13,7 +13,7 @@ class Scene_Menu extends Scene_Base {
     this.equipmentWindow = new Window_Equipment(actor);
     this.saveSlotsWindow = new Window_SaveSlots();
 
-    this.magicWindow = new Window_Magic(actor);
+    this.magickWindow = new Window_Magick(actor);
 
     this.saveMessage = "";
     this.saveMessageTimer = 0;
@@ -98,8 +98,8 @@ class Scene_Menu extends Scene_Base {
     // MAGIC WINDOW
     // ================================
 
-    if (this.magicWindow.isOpen()) {
-      this.magicWindow.update();
+    if (this.magickWindow.isOpen()) {
+      this.magickWindow.update();
 
       return;
     }
@@ -153,8 +153,8 @@ class Scene_Menu extends Scene_Base {
 
           break;
 
-        case "Magic":
-          this.magicWindow.show();
+        case "Magick":
+          this.magickWindow.show();
 
           break;
 
@@ -214,8 +214,8 @@ class Scene_Menu extends Scene_Base {
       this.saveSlotsWindow.draw();
     } else if (this.inventoryWindow.isOpen()) {
       this.inventoryWindow.draw();
-    } else if (this.magicWindow.isOpen()) {
-      this.magicWindow.draw();
+    } else if (this.magickWindow.isOpen()) {
+      this.magickWindow.draw();
     } else if (this.statusWindow.isOpen()) {
       this.statusWindow.draw();
     } else if (this.equipmentWindow.isOpen()) {

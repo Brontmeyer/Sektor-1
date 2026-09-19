@@ -11,7 +11,7 @@ const readData = (filename) =>
 
 const statuses = readData("Statuses.json");
 const actors = readData("Actors.json");
-const skills = readData("Skills.json");
+const magick = readData("Magick.json");
 const enemiesData = readData("Enemies.json");
 
 function loadClasses(relativePaths, exportExpression, globals = {}) {
@@ -35,18 +35,18 @@ function makeDatabaseManager() {
   return {
     statuses,
     actors,
-    skills,
+    magick,
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
     },
     actor(id) {
       return actors[id] || null;
     },
-    skill(id) {
-      return skills[id] || null;
+    magick(id) {
+      return magick[id] || null;
     },
-    skillName(id) {
-      return skills[id]?.name || "Unknown Skill";
+    magickName(id) {
+      return magick[id]?.name || "Unknown Magick";
     },
     weapon() {
       return null;
@@ -150,8 +150,8 @@ function makeBattleFixture({ random = () => 0, partyCount = 2, enemyCount = 2 } 
     targetScope: "single",
     pendingAttackTarget: null,
     pendingAttackDamage: false,
-    pendingMagicSkill: null,
-    pendingMagicTarget: null,
+    pendingMagick: null,
+    pendingMagickTarget: null,
     enemyTargetAction: null,
     selectingEnemyTarget: false,
     battleInputLocked: false,
@@ -264,27 +264,27 @@ function testConfuseRandomizesChosenAttackTarget() {
   );
 }
 
-function testConfuseRandomizesSingleTargetMagic() {
+function testConfuseRandomizesSingleTargetMagick() {
   const fixture = makeBattleFixture({ random: () => 0.75, partyCount: 2, enemyCount: 2 });
   const actor = fixture.party[0];
-  const skill = skills[10]; // Ember supports ally/enemy and single/all.
+  const selectedMagick = magick[10]; // Ember supports ally/enemy and single/all.
 
-  actor.learnSkill(skill.id);
+  actor.learnMagick(selectedMagick.id);
   actor.addStatus("confuse");
-  fixture.scene.magicWindow = {
-    currentSkill() {
-      return skill;
+  fixture.scene.magickWindow = {
+    currentMagick() {
+      return selectedMagick;
     },
     hide() {},
   };
   fixture.scene.setActorState = () => {};
 
-  fixture.manager.executeMagic();
+  fixture.manager.executeMagick();
 
-  assert.ok(fixture.scene.pendingMagicTarget);
+  assert.ok(fixture.scene.pendingMagickTarget);
   assert.equal(fixture.scene.selectingEnemyTarget, false);
   assert.equal(fixture.scene.battleInputLocked, true);
-  assert.equal(fixture.scene.actionPhase, "magicCast");
+  assert.equal(fixture.scene.actionPhase, "magickCast");
   assert.equal(
     fixture.messages.some((message) => message.includes("is confused and targets")),
     true,
@@ -292,8 +292,8 @@ function testConfuseRandomizesSingleTargetMagic() {
 }
 
 function testConfuseRandomizesAllTargetOnlyGroup() {
-  const originalScope = skills[10].scope;
-  skills[10].scope = ["all"];
+  const originalScope = magick[10].scope;
+  magick[10].scope = ["all"];
 
   try {
     const fixture = makeBattleFixture({
@@ -302,26 +302,26 @@ function testConfuseRandomizesAllTargetOnlyGroup() {
       enemyCount: 2,
     });
     const actor = fixture.party[0];
-    const skill = skills[10];
+    const selectedMagick = magick[10];
 
-    actor.learnSkill(skill.id);
+    actor.learnMagick(selectedMagick.id);
     actor.addStatus("confuse");
-    fixture.scene.magicWindow = {
-      currentSkill() {
-        return skill;
+    fixture.scene.magickWindow = {
+      currentMagick() {
+        return selectedMagick;
       },
       hide() {},
     };
 
-    fixture.manager.executeMagic();
+    fixture.manager.executeMagick();
 
     assert.equal(fixture.scene.targetScope, "all");
     assert.equal(fixture.scene.targetGroup, "enemy");
-    assert.equal(fixture.scene.pendingMagicTarget, null);
+    assert.equal(fixture.scene.pendingMagickTarget, null);
     assert.equal(fixture.scene.selectingEnemyTarget, false);
-    assert.equal(fixture.scene.actionPhase, "magicCast");
+    assert.equal(fixture.scene.actionPhase, "magickCast");
   } finally {
-    skills[10].scope = originalScope;
+    magick[10].scope = originalScope;
   }
 }
 
@@ -349,25 +349,25 @@ function testBattleManagerRejectsManualCommandWhileBerserk() {
 
   fixture.scene.commandWindow = {
     currentCommand() {
-      return "Magic";
+      return "Magick";
     },
     commandActionKey() {
-      return "magic";
+      return "magick";
     },
   };
-  let magicOpened = false;
-  fixture.scene.magicWindow = {
+  let magickOpened = false;
+  fixture.scene.magickWindow = {
     show() {
-      magicOpened = true;
+      magickOpened = true;
     },
   };
 
   fixture.manager.executeCommand();
 
-  assert.equal(magicOpened, false);
+  assert.equal(magickOpened, false);
   assert.equal(
     fixture.messages.at(-1),
-    `${actor.name} cannot use Magic right now!`,
+    `${actor.name} cannot use Magick right now!`,
   );
 }
 
@@ -393,7 +393,7 @@ function testBerserkCommandWindowIsNotPlayerControllable() {
   });
 
   assert.equal(window.isCommandEnabled("Attack"), false);
-  assert.equal(window.isCommandEnabled("Magic"), false);
+  assert.equal(window.isCommandEnabled("Magick"), false);
   assert.equal(window.isCommandEnabled("Item"), false);
   assert.equal(window.isCommandEnabled("Defend"), false);
   assert.equal(window.ensureEnabledSelection(), false);
@@ -427,7 +427,7 @@ testStatusControlFlagsAreDataDriven();
 testBerserkStartsForcedPhysicalAttack();
 testBerserkAndConfuseCanForceFriendlyFire();
 testConfuseRandomizesChosenAttackTarget();
-testConfuseRandomizesSingleTargetMagic();
+testConfuseRandomizesSingleTargetMagick();
 testConfuseRandomizesAllTargetOnlyGroup();
 testConfusedEnemyCanAttackItsOwnSide();
 testBattleManagerRejectsManualCommandWhileBerserk();

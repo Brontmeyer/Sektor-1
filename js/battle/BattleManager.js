@@ -644,8 +644,8 @@ class BattleManager {
     return [];
   }
 
-  reflectedSkillCandidates(skill, side) {
-    if (skill?.effect !== "revive") {
+  reflectedMagickCandidates(magick, side) {
+    if (magick?.effect !== "revive") {
       return this.livingBattlersForSide(side);
     }
 
@@ -726,19 +726,19 @@ class BattleManager {
     return this.livingBattlersForSide(this.opposingBattleSide(side));
   }
 
-  randomSkillTargetCandidates(skill) {
+  randomMagickTargetCandidates(magick) {
     const battle = this.scene;
 
-    if (!skill || !battle.targetManager) {
+    if (!magick || !battle.targetManager) {
       return [];
     }
 
     const candidates = [];
 
-    for (const group of battle.targetManager.allowedTargetGroups(skill)) {
+    for (const group of battle.targetManager.allowedTargetGroups(magick)) {
       const groupCandidates = battle.targetManager.selectableBattlers(
         group,
-        skill,
+        magick,
       );
 
       for (const battler of groupCandidates) {
@@ -786,12 +786,12 @@ class BattleManager {
     return true;
   }
 
-  resolveSkillReflection(skill, target, random = Math.random) {
+  resolveMagickReflection(magick, target, random = Math.random) {
     const reflections = [];
     let resolvedTarget = target;
     let reflectionLimit = null;
 
-    if (!skill || skill.reflectable !== true || !resolvedTarget) {
+    if (!magick || magick.reflectable !== true || !resolvedTarget) {
       return {
         target: resolvedTarget,
         reflected: false,
@@ -801,13 +801,13 @@ class BattleManager {
 
     while (
       resolvedTarget &&
-      typeof resolvedTarget.reflectsSkills === "function" &&
-      resolvedTarget.reflectsSkills()
+      typeof resolvedTarget.reflectsMagick === "function" &&
+      resolvedTarget.reflectsMagick()
     ) {
       if (reflectionLimit === null) {
         reflectionLimit =
-          typeof resolvedTarget.maxSkillReflections === "function"
-            ? resolvedTarget.maxSkillReflections()
+          typeof resolvedTarget.maxMagickReflections === "function"
+            ? resolvedTarget.maxMagickReflections()
             : 0;
       }
 
@@ -820,7 +820,7 @@ class BattleManager {
 
       const currentSide = this.battlerSide(resolvedTarget);
       const reflectedSide = this.opposingBattleSide(currentSide);
-      const candidates = this.reflectedSkillCandidates(skill, reflectedSide);
+      const candidates = this.reflectedMagickCandidates(magick, reflectedSide);
       const reflectedTarget = this.randomBattleTarget(candidates, random);
 
       if (!reflectedTarget) {
@@ -842,7 +842,7 @@ class BattleManager {
     };
   }
 
-  presentSkillReflection(skill, reflection) {
+  presentMagickReflection(magick, reflection) {
     const battle = this.scene;
 
     if (!reflection?.reflected || !Array.isArray(reflection.reflections)) {
@@ -852,48 +852,48 @@ class BattleManager {
     for (const step of reflection.reflections) {
       battle.addBattlePopup(step.from, "REFLECT", "status");
       battle.addBattleMessage(
-        `${step.from.name}'s Reflect redirects ${skill.name} to ${step.to.name}!`,
+        `${step.from.name}'s Reflect redirects ${magick.name} to ${step.to.name}!`,
       );
     }
 
     return reflection.reflections;
   }
 
-  skillHitCount(skill) {
-    const hits = Number(skill?.hits);
+  magickHitCount(magick) {
+    const hits = Number(magick?.hits);
 
     return Number.isInteger(hits) && hits > 0 ? hits : 1;
   }
 
-  skillUsesRandomTargetPerHit(skill) {
+  magickUsesRandomTargetPerHit(magick) {
     return (
-      skill?.randomTargetPerHit === true &&
-      this.skillHitCount(skill) > 1
+      magick?.randomTargetPerHit === true &&
+      this.magickHitCount(magick) > 1
     );
   }
 
-  resolveRandomMultiHitMagic(caster, skill, random = Math.random) {
-    if (!caster || !skill || !this.skillUsesRandomTargetPerHit(skill)) {
+  resolveRandomMultiHitMagick(caster, magick, random = Math.random) {
+    if (!caster || !magick || !this.magickUsesRandomTargetPerHit(magick)) {
       return [];
     }
 
     const resolutions = [];
     let paidCost = false;
-    const hitCount = this.skillHitCount(skill);
+    const hitCount = this.magickHitCount(magick);
 
     for (let hitIndex = 0; hitIndex < hitCount; hitIndex++) {
       // Rebuild candidates every hit so a target defeated by an earlier strike
       // is not selected again while another legal target remains.
-      const candidates = this.randomSkillTargetCandidates(skill);
+      const candidates = this.randomMagickTargetCandidates(magick);
       const target = this.randomBattleTarget(candidates, random);
 
       if (!target) {
         break;
       }
 
-      const resolution = this.resolveMagicEffectOnTarget(
+      const resolution = this.resolveMagickEffectOnTarget(
         caster,
-        skill,
+        magick,
         target,
         !paidCost,
         "single",
@@ -918,15 +918,15 @@ class BattleManager {
     return resolutions;
   }
 
-  performEscapeSkill(caster, skill) {
+  performEscapeMagick(caster, magick) {
     const battle = this.scene;
 
-    if (!caster || !skill || skill.effect !== "escape") {
+    if (!caster || !magick || magick.effect !== "escape") {
       return false;
     }
 
-    const success = caster.useSkill(
-      skill.id,
+    const success = caster.useMagick(
+      magick.id,
       caster,
       true,
       "all",
@@ -937,22 +937,22 @@ class BattleManager {
     }
 
     battle.addBattleMessage(
-      `${caster.name} casts ${skill.name}! The party escapes!`,
+      `${caster.name} casts ${magick.name}! The party escapes!`,
     );
     this.declareBattleOutcome(BattleManager.OUTCOME_ESCAPE);
 
     return true;
   }
 
-  resolveMagicEffectOnTarget(
+  resolveMagickEffectOnTarget(
     caster,
-    skill,
+    magick,
     requestedTarget,
     payCost = true,
     scope = "single",
     random = Math.random,
   ) {
-    if (!caster || !skill || !requestedTarget) {
+    if (!caster || !magick || !requestedTarget) {
       return {
         success: false,
         requestedTarget,
@@ -962,8 +962,8 @@ class BattleManager {
       };
     }
 
-    const reflection = this.resolveSkillReflection(
-      skill,
+    const reflection = this.resolveMagickReflection(
+      magick,
       requestedTarget,
       random,
     );
@@ -980,8 +980,8 @@ class BattleManager {
 
     const hpBefore = target.hp;
     const defeatedBefore = this.battlerIsDefeated(target);
-    const success = caster.useSkill(
-      skill.id,
+    const success = caster.useMagick(
+      magick.id,
       target,
       payCost,
       scope,
@@ -999,42 +999,42 @@ class BattleManager {
       };
     }
 
-    this.presentSkillReflection(skill, reflection);
+    this.presentMagickReflection(magick, reflection);
 
-    const statusResults = caster.skillStatusResults?.() || [];
-    this.presentSkillStatusResults(caster, skill, target, statusResults);
+    const statusResults = caster.magickStatusResults?.() || [];
+    this.presentMagickStatusResults(caster, magick, target, statusResults);
 
     let damageResult = null;
     let healing = 0;
 
-    if (skill.effect === "damage") {
-      damageResult = this.presentMagicDamage(caster, skill, target, hpBefore);
+    if (magick.effect === "damage") {
+      damageResult = this.presentMagickDamage(caster, magick, target, hpBefore);
     }
 
-    if (skill.effect === "heal") {
+    if (magick.effect === "heal") {
       healing = Math.max(0, target.hp - hpBefore);
 
       this.scene.addBattlePopup(target, `+${healing}`, "heal");
       this.scene.addBattleMessage(
-        `${caster.name} casts ${skill.name}! ` +
+        `${caster.name} casts ${magick.name}! ` +
           `${target.name} recovers ${healing} HP!`,
       );
     }
 
-    if (skill.effect === "revive") {
+    if (magick.effect === "revive") {
       healing = Math.max(0, target.hp - hpBefore);
 
       this.scene.addBattlePopup(target, `+${target.hp}`, "heal");
       this.scene.addBattleMessage(
-        `${caster.name} casts ${skill.name}! ` +
+        `${caster.name} casts ${magick.name}! ` +
           `${target.name} returns with ${target.hp} HP!`,
       );
     }
 
-    if (skill.effect === "banish") {
+    if (magick.effect === "banish") {
       this.scene.addBattlePopup(target, "BANISHED", "status");
       this.scene.addBattleMessage(
-        `${caster.name} casts ${skill.name}! ${target.name} is banished!`,
+        `${caster.name} casts ${magick.name}! ${target.name} is banished!`,
       );
     }
 
@@ -1054,7 +1054,7 @@ class BattleManager {
     };
   }
 
-  presentSkillStatusResults(caster, skill, target, results = []) {
+  presentMagickStatusResults(caster, magick, target, results = []) {
     const battle = this.scene;
 
     if (!Array.isArray(results) || results.length === 0) {
@@ -1092,13 +1092,13 @@ class BattleManager {
 
       if (result.reason === "unknownStatus") {
         console.warn(
-          `${skill.name} references unknown status "${result.key}".`,
+          `${magick.name} references unknown status "${result.key}".`,
         );
       }
     }
 
-    if (skill.effect === "inflictStatus" || skill.effect === "removeStatus") {
-      let message = `${caster.name} casts ${skill.name}!`;
+    if (magick.effect === "inflictStatus" || magick.effect === "removeStatus") {
+      let message = `${caster.name} casts ${magick.name}!`;
 
       if (applied.length > 0) {
         message += ` ${target.name} gains ${applied.join(", ")}!`;
@@ -1120,23 +1120,23 @@ class BattleManager {
     return results;
   }
 
-  presentMagicDamage(caster, skill, target, hpBefore) {
+  presentMagickDamage(caster, magick, target, hpBefore) {
     const battle = this.scene;
     const damage = Math.max(0, hpBefore - target.hp);
     const healing = Math.max(0, target.hp - hpBefore);
     const elementRate =
       typeof target.elementRate === "function"
-        ? target.elementRate(skill.element)
+        ? target.elementRate(magick.element)
         : 1;
     const absorbed =
       elementRate > 0 &&
-      typeof target.absorbsElementalMagic === "function" &&
-      target.absorbsElementalMagic(skill.element);
+      typeof target.absorbsElementalMagick === "function" &&
+      target.absorbsElementalMagick(magick.element);
 
     if (elementRate === 0) {
       battle.addBattlePopup(target, "IMMUNE", "immune");
       battle.addBattleMessage(
-        `${caster.name} casts ${skill.name}! ${target.name} is immune!`,
+        `${caster.name} casts ${magick.name}! ${target.name} is immune!`,
       );
 
       return { damage: 0, healing: 0, absorbed: false, elementRate };
@@ -1153,8 +1153,8 @@ class BattleManager {
         healing > 0 ? ` and recovers ${healing} HP!` : "!";
 
       battle.addBattleMessage(
-        `${caster.name} casts ${skill.name}! ` +
-          `${target.name} absorbs the magic${recoveryText}`,
+        `${caster.name} casts ${magick.name}! ` +
+          `${target.name} absorbs the magick${recoveryText}`,
       );
 
       return { damage: 0, healing, absorbed: true, elementRate };
@@ -1179,7 +1179,7 @@ class BattleManager {
     }
 
     battle.addBattleMessage(
-      `${caster.name} casts ${skill.name}! ${target.name} takes ${damage} damage!`,
+      `${caster.name} casts ${magick.name}! ${target.name} takes ${damage} damage!`,
     );
 
     return { damage, healing: 0, absorbed: false, elementRate };
@@ -1347,23 +1347,23 @@ class BattleManager {
       // MAGIC SEQUENCE
       // =====================================
 
-      case "magicCast":
-        battle.performMagicEffect();
-        battle.setActionPhase("magicEffect", 0.25);
+      case "magickCast":
+        battle.performMagickEffect();
+        battle.setActionPhase("magickEffect", 0.25);
         break;
 
-      case "magicEffect":
-        battle.magicEffectSkill = null;
-        battle.magicEffectTarget = null;
+      case "magickEffect":
+        battle.magickEffect = null;
+        battle.magickEffectTarget = null;
 
-        battle.setActionPhase("magicRecover", 0.25);
+        battle.setActionPhase("magickRecover", 0.25);
         break;
 
-      case "magicRecover":
-        battle.setActionPhase("magicWait", 0.25);
+      case "magickRecover":
+        battle.setActionPhase("magickWait", 0.25);
         break;
 
-      case "magicWait":
+      case "magickWait":
         this.finishPartyActionSequence();
         break;
 
@@ -1487,8 +1487,8 @@ class BattleManager {
         break;
       }
 
-      case "Magic":
-        battle.magicWindow.show();
+      case "Magick":
+        battle.magickWindow.show();
         break;
 
       case "Item":
@@ -1501,66 +1501,66 @@ class BattleManager {
     }
   }
 
-  executeMagic() {
+  executeMagick() {
     const battle = this.scene;
     const battler = this.party().currentBattler();
-    const skill = battle.magicWindow.currentSkill();
+    const magick = battle.magickWindow.currentMagick();
 
-    if (!skill) {
+    if (!magick) {
       return;
     }
 
-    if (!this.battlerCanUseAction(battler, "magic")) {
-      this.rejectRestrictedAction(battler, "Magic");
+    if (!this.battlerCanUseAction(battler, "magick")) {
+      this.rejectRestrictedAction(battler, "Magick");
       return;
     }
 
-    if (!battler.canUseSkill(skill.id)) {
+    if (!battler.canUseMagick(magick.id)) {
       return;
     }
 
-    const targetGroups = battle.targetManager.allowedTargetGroups(skill);
-    const scopes = battle.targetManager.allowedScopes(skill);
+    const targetGroups = battle.targetManager.allowedTargetGroups(magick);
+    const scopes = battle.targetManager.allowedScopes(magick);
 
     if (targetGroups.length === 0) {
-      console.warn(`Skill ${skill.name} has no valid target groups.`);
+      console.warn(`Magick ${magick.name} has no valid target groups.`);
       return;
     }
 
-    // Store the selected skill before entering target selection.
-    battle.pendingMagicSkill = skill;
+    // Store the selected magick before entering target selection.
+    battle.pendingMagick = magick;
 
-    // Start on the first valid scope defined by the skill.
+    // Start on the first valid scope defined by the magick.
     battle.targetScope = scopes.includes("single")
       ? "single"
       : scopes[0] || "single";
 
-    // Cast-level effects and per-hit random-target skills own their targeting
+    // Cast-level effects and per-hit random-target magick own their targeting
     // at resolution time. They should not ask the player to select a target
     // that will immediately be ignored.
-    if (skill.effect === "escape" || this.skillUsesRandomTargetPerHit(skill)) {
+    if (magick.effect === "escape" || this.magickUsesRandomTargetPerHit(magick)) {
       if (
-        this.skillUsesRandomTargetPerHit(skill) &&
-        this.randomSkillTargetCandidates(skill).length === 0
+        this.magickUsesRandomTargetPerHit(magick) &&
+        this.randomMagickTargetCandidates(magick).length === 0
       ) {
-        battle.addBattleMessage(`${skill.name} has no valid targets.`);
-        battle.pendingMagicSkill = null;
+        battle.addBattleMessage(`${magick.name} has no valid targets.`);
+        battle.pendingMagick = null;
         return;
       }
 
-      battle.pendingMagicTarget = null;
+      battle.pendingMagickTarget = null;
       battle.enemyTargetAction = null;
       battle.selectingEnemyTarget = false;
       battle.battleInputLocked = true;
-      battle.setActorState("magic", 0.9);
-      battle.setActionPhase("magicCast", 0.4);
-      battle.magicWindow.hide();
+      battle.setActorState("magick", 0.9);
+      battle.setActionPhase("magickCast", 0.4);
+      battle.magickWindow.hide();
       return;
     }
 
     // Start on the first allowed group that actually contains a legal target.
     // Enemy-first preserves the established offensive targeting preference,
-    // while revive/cleanse skills can select defeated allies through the same
+    // while revive/cleanse magick can select defeated allies through the same
     // target-validity contract used by execution.
     const preferredGroups = ["enemy", "ally"].filter((group) =>
       targetGroups.includes(group),
@@ -1571,8 +1571,8 @@ class BattleManager {
       battle.targetGroup = group;
       selectedTarget =
         group === "enemy"
-          ? battle.targetManager.selectFirstSelectableEnemy(skill)
-          : battle.targetManager.selectFirstSelectableAlly(skill);
+          ? battle.targetManager.selectFirstSelectableEnemy(magick)
+          : battle.targetManager.selectFirstSelectableAlly(magick);
 
       if (selectedTarget) {
         break;
@@ -1580,64 +1580,64 @@ class BattleManager {
     }
 
     if (!selectedTarget) {
-      battle.addBattleMessage(`${skill.name} has no valid targets.`);
-      battle.pendingMagicSkill = null;
+      battle.addBattleMessage(`${magick.name} has no valid targets.`);
+      battle.pendingMagick = null;
       return;
     }
 
-    // Confuse preserves the chosen action/skill but takes target selection away
-    // from the player. Single-target skills choose randomly from every target
-    // that is legal for the selected skill. All-target-only skills choose a
+    // Confuse preserves the chosen action/magick but takes target selection away
+    // from the player. Single-target magick choose randomly from every target
+    // that is legal for the selected magick. All-target-only magick choose a
     // random legal target group and then resolve against that whole side.
     if (this.battlerForcesRandomTarget(battler)) {
       if (battle.targetScope === "single") {
         const target = this.randomBattleTarget(
-          this.randomSkillTargetCandidates(skill),
+          this.randomMagickTargetCandidates(magick),
         );
 
         if (!target || !this.selectForcedTarget(target)) {
-          battle.addBattleMessage(`${skill.name} has no valid targets.`);
-          battle.pendingMagicSkill = null;
+          battle.addBattleMessage(`${magick.name} has no valid targets.`);
+          battle.pendingMagick = null;
           return;
         }
 
-        battle.pendingMagicTarget = target;
+        battle.pendingMagickTarget = target;
         battle.addBattleMessage(
-          `${battler.name} is confused and targets ${target.name} with ${skill.name}!`,
+          `${battler.name} is confused and targets ${target.name} with ${magick.name}!`,
         );
       } else {
         const legalGroups = targetGroups.filter(
           (group) =>
-            battle.targetManager.selectableBattlers(group, skill).length > 0,
+            battle.targetManager.selectableBattlers(group, magick).length > 0,
         );
         const targetGroup = this.randomBattleTarget(legalGroups);
 
         if (!targetGroup) {
-          battle.addBattleMessage(`${skill.name} has no valid targets.`);
-          battle.pendingMagicSkill = null;
+          battle.addBattleMessage(`${magick.name} has no valid targets.`);
+          battle.pendingMagick = null;
           return;
         }
 
         battle.targetGroup = targetGroup;
-        battle.pendingMagicTarget = null;
+        battle.pendingMagickTarget = null;
         battle.addBattleMessage(
-          `${battler.name} is confused and targets all ${targetGroup} battlers with ${skill.name}!`,
+          `${battler.name} is confused and targets all ${targetGroup} battlers with ${magick.name}!`,
         );
       }
 
       battle.enemyTargetAction = null;
       battle.selectingEnemyTarget = false;
       battle.battleInputLocked = true;
-      battle.setActorState("magic", 0.9);
-      battle.setActionPhase("magicCast", 0.4);
-      battle.magicWindow.hide();
+      battle.setActorState("magick", 0.9);
+      battle.setActionPhase("magickCast", 0.4);
+      battle.magickWindow.hide();
       return;
     }
 
-    battle.enemyTargetAction = "magic";
+    battle.enemyTargetAction = "magick";
     battle.selectingEnemyTarget = true;
 
-    battle.magicWindow.hide();
+    battle.magickWindow.hide();
   }
 
   executeItem() {
@@ -1816,13 +1816,13 @@ class BattleManager {
     battle.addBattleMessage(`${battler.name} attacks! ${damageMessage}`);
   }
 
-  performMagicEffect() {
+  performMagickEffect() {
     const battle = this.scene;
-    const skill = battle.pendingMagicSkill;
-    const requestedTarget = battle.pendingMagicTarget;
+    const magick = battle.pendingMagick;
+    const requestedTarget = battle.pendingMagickTarget;
     const caster = this.party().currentBattler();
 
-    if (!caster || !skill) {
+    if (!caster || !magick) {
       return;
     }
 
@@ -1830,16 +1830,16 @@ class BattleManager {
     // CAST-LEVEL ESCAPE EFFECT
     // =====================================
 
-    if (skill.effect === "escape") {
-      const success = this.performEscapeSkill(caster, skill);
+    if (magick.effect === "escape") {
+      const success = this.performEscapeMagick(caster, magick);
 
       if (success) {
-        battle.magicEffectSkill = skill;
-        battle.magicEffectTarget = caster;
+        battle.magickEffect = magick;
+        battle.magickEffectTarget = caster;
       }
 
-      battle.pendingMagicSkill = null;
-      battle.pendingMagicTarget = null;
+      battle.pendingMagick = null;
+      battle.pendingMagickTarget = null;
       return;
     }
 
@@ -1847,17 +1847,17 @@ class BattleManager {
     // RANDOM PER-HIT MAGIC EFFECT
     // =====================================
 
-    if (this.skillUsesRandomTargetPerHit(skill)) {
-      const resolutions = this.resolveRandomMultiHitMagic(caster, skill);
+    if (this.magickUsesRandomTargetPerHit(magick)) {
+      const resolutions = this.resolveRandomMultiHitMagick(caster, magick);
       const lastResolution = resolutions[resolutions.length - 1] || null;
 
       if (lastResolution) {
-        battle.magicEffectSkill = skill;
-        battle.magicEffectTarget = lastResolution.target;
+        battle.magickEffect = magick;
+        battle.magickEffectTarget = lastResolution.target;
       }
 
-      battle.pendingMagicSkill = null;
-      battle.pendingMagicTarget = null;
+      battle.pendingMagick = null;
+      battle.pendingMagickTarget = null;
       return;
     }
 
@@ -1882,9 +1882,9 @@ class BattleManager {
 
         // Reflection is resolved independently for every original target.
         // MP is still paid only once for the cast.
-        const resolution = this.resolveMagicEffectOnTarget(
+        const resolution = this.resolveMagickEffectOnTarget(
           caster,
-          skill,
+          magick,
           target,
           !paidCost,
           battle.targetScope,
@@ -1905,17 +1905,17 @@ class BattleManager {
       if (affectedTargets.length > 0) {
         const visualTargets = [...new Set(affectedTargets)];
 
-        if (skill.element === "fire") {
+        if (magick.element === "fire") {
           battle.startBattleEffect("fire", visualTargets, 0.4);
         }
 
-        if (skill.effect === "heal") {
+        if (magick.effect === "heal") {
           battle.startBattleEffect("cure", visualTargets, 0.5);
         }
       }
 
-      battle.pendingMagicSkill = null;
-      battle.pendingMagicTarget = null;
+      battle.pendingMagick = null;
+      battle.pendingMagickTarget = null;
 
       return;
     }
@@ -1928,17 +1928,17 @@ class BattleManager {
       return;
     }
 
-    const resolution = this.resolveMagicEffectOnTarget(
+    const resolution = this.resolveMagickEffectOnTarget(
       caster,
-      skill,
+      magick,
       requestedTarget,
       true,
       battle.targetScope,
     );
 
     if (!resolution.success) {
-      battle.pendingMagicSkill = null;
-      battle.pendingMagicTarget = null;
+      battle.pendingMagick = null;
+      battle.pendingMagickTarget = null;
 
       battle.setActorState("idle");
       return;
@@ -1946,19 +1946,19 @@ class BattleManager {
 
     const target = resolution.target;
 
-    battle.magicEffectSkill = skill;
-    battle.magicEffectTarget = target;
+    battle.magickEffect = magick;
+    battle.magickEffectTarget = target;
 
-    if (skill.element === "fire") {
+    if (magick.element === "fire") {
       battle.startBattleEffect("fire", target, 0.4);
     }
 
-    if (skill.effect === "heal") {
+    if (magick.effect === "heal") {
       battle.startBattleEffect("cure", target, 0.5);
     }
 
-    battle.pendingMagicSkill = null;
-    battle.pendingMagicTarget = null;
+    battle.pendingMagick = null;
+    battle.pendingMagickTarget = null;
   }
 
   performItemEffect() {

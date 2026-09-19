@@ -47,7 +47,7 @@ DatabaseManager.js
 Game_Battler.js
 Game_Actor.js
 Scene_Battle.js
-Window_Magic.js
+Window_Magick.js
 ```
 
 Files belong in the narrowest folder that describes their responsibility.
@@ -82,9 +82,9 @@ Use **camelCase** for methods, local variables, properties, and parameters:
 
 ```js
 currentBattler
-pendingMagicSkill
+pendingMagick
 battleInputLocked
-performMagicEffect()
+performMagickEffect()
 queueEnemyTurn()
 ```
 
@@ -98,6 +98,8 @@ questRequired
 ```
 
 Prefer established project terminology. If the canonical concept is `paralyze`, do not introduce `paralyzed` or `paralysis` as alternate internal names for the same status.
+
+The current Essence-linked supernatural ability system is **Magick**. Use `magick`, `magickId`, `magickIds`, and Magick-named APIs for that system. **Skills** is reserved for future non-Magick techniques and must not be used as an alias for Magick. Combat-stat names such as `magic`, `magicAttack`, and `magicDefense` remain unchanged because they describe statistics rather than the ability namespace.
 
 ---
 
@@ -185,11 +187,11 @@ Prefer early returns when a method cannot continue safely.
 Good:
 
 ```js
-if (!skill) {
+if (!magick) {
   return;
 }
 
-if (!battler.canUseSkill(skill.id)) {
+if (!battler.canUseMagick(magick.id)) {
   return;
 }
 ```
@@ -207,8 +209,8 @@ A method should have one clear job even when that job contains several steps.
 Good conceptual boundaries include:
 
 ```text
-executeMagic()        interpret the selected Magic command
-performMagicEffect()  resolve the selected magic effect
+executeMagick()        interpret the selected Magick command
+performMagickEffect()  resolve the selected Magick effect
 queueEnemyTurn()      schedule the enemy phase
 setTurnState()        change turn state
 ```
@@ -242,12 +244,12 @@ A window may display whether a command is available, but the underlying game sys
 
 # 🗃️ Data-Driven Gameplay
 
-Skills, Essences, statuses, enemies, items, and similar content should be represented as data wherever practical.
+Magick, Essences, statuses, enemies, items, and similar content should be represented as data wherever practical.
 
 Avoid code such as:
 
 ```js
-if (skill.name === "Inferno") {
+if (magick.name === "Inferno") {
   // special implementation of Inferno
 }
 ```
@@ -425,9 +427,9 @@ Do not invent placeholder numeric quest IDs merely to avoid `null`.
 
 ---
 
-# ✨ Skill Data Conventions
+# ✨ Magick Data Conventions
 
-Skill records should describe mechanics through reusable fields.
+Magick records should describe mechanics through reusable fields.
 
 Established vocabulary includes concepts such as:
 
@@ -443,9 +445,9 @@ randomTargetPerHit
 scopePower
 ```
 
-Use `scopePower` only for the portion of a power-based skill intentionally modified by target scope.
+Use `scopePower` only for the portion of a power-based Magick intentionally modified by target scope.
 
-Do not assume all-target casting automatically modifies status chance or every other property of the skill.
+Do not assume all-target casting automatically modifies status chance or every other property of the Magick.
 
 When adding a new field, define one mechanic clearly rather than creating an ambiguous catch-all property.
 
@@ -498,7 +500,7 @@ References should be validated where practical.
 
 Examples include:
 
-- Essence abilities referencing skill IDs
+- Essence abilities referencing Magick IDs
 - Mastery records eventually referencing quest IDs
 - Status expiration effects referencing canonical status keys
 
@@ -534,7 +536,7 @@ When an old comment no longer describes the current system, update or remove it.
 
 Use the project's debugging infrastructure when appropriate rather than scattering permanent `console.log()` calls throughout gameplay code.
 
-Warnings are appropriate when the engine encounters an invalid or unsupported state that developers should see, for example a skill with no legal target group.
+Warnings are appropriate when the engine encounters an invalid or unsupported state that developers should see, for example a Magick with no legal target group.
 
 Debug output should help answer a specific question.
 
@@ -634,7 +636,7 @@ A large file is not automatically bad. A file with too many unrelated reasons to
 
 # 🧪 Changes to Canonical Data
 
-When editing Skills, Essences, Statuses, or another canonical database:
+When editing Magick, Essences, Statuses, or another canonical database:
 
 1. Preserve valid JSON.
 2. Preserve established IDs unless the change explicitly requires migration.

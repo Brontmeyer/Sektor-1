@@ -11,7 +11,7 @@ const readData = (filename) =>
 
 const statuses = readData("Statuses.json");
 const actors = readData("Actors.json");
-const skills = readData("Skills.json");
+const magick = readData("Magick.json");
 
 function loadClasses(relativePaths, exportExpression, globals = {}) {
   const context = vm.createContext({ console, ...globals });
@@ -34,18 +34,18 @@ function makeDatabaseManager() {
   return {
     statuses,
     actors,
-    skills,
+    magick,
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
     },
     actor(id) {
       return actors[id] || null;
     },
-    skill(id) {
-      return skills[id] || null;
+    magick(id) {
+      return magick[id] || null;
     },
-    skillName(id) {
-      return skills[id]?.name || "Unknown Skill";
+    magickName(id) {
+      return magick[id]?.name || "Unknown Magick";
     },
     weapon() {
       return null;
@@ -71,34 +71,34 @@ function testSilenceBlocksMagicButNotOrdinaryCommands() {
   const { Game_Actor } = loadCombatClasses();
   const actor = new Game_Actor(1);
 
-  actor.learnSkill(10); // Ember
-  assert.equal(actor.canUseSkill(10), true);
+  actor.learnMagick(10); // Ember
+  assert.equal(actor.canUseMagick(10), true);
 
   actor.addStatus("silence");
 
   assert.equal(actor.canUseBattleAction("attack"), true);
-  assert.equal(actor.canUseBattleAction("magic"), false);
+  assert.equal(actor.canUseBattleAction("magick"), false);
   assert.equal(actor.canUseBattleAction("item"), true);
   assert.equal(actor.canUseBattleAction("defend"), true);
-  assert.equal(actor.canUseSkill(10), false);
+  assert.equal(actor.canUseMagick(10), false);
 
   actor.removeStatus("silence");
-  assert.equal(actor.canUseSkill(10), true);
+  assert.equal(actor.canUseMagick(10), true);
 }
 
 function testFrogRestrictsBattlerToAttack() {
   const { Game_Actor } = loadCombatClasses();
   const actor = new Game_Actor(1);
 
-  actor.learnSkill(10); // Ember
+  actor.learnMagick(10); // Ember
   actor.addStatus("frog");
 
   assert.deepEqual(Array.from(actor.allowedBattleActions()), ["attack"]);
   assert.equal(actor.canUseBattleAction("attack"), true);
-  assert.equal(actor.canUseBattleAction("magic"), false);
+  assert.equal(actor.canUseBattleAction("magick"), false);
   assert.equal(actor.canUseBattleAction("item"), false);
   assert.equal(actor.canUseBattleAction("defend"), false);
-  assert.equal(actor.canUseSkill(10), false);
+  assert.equal(actor.canUseMagick(10), false);
 }
 
 function testActionAllowListsIntersectAndBlockingStillWins() {
@@ -107,13 +107,13 @@ function testActionAllowListsIntersectAndBlockingStillWins() {
 
   const originalDefinitions = battler.activeStatusDefinitions.bind(battler);
   battler.activeStatusDefinitions = () => [
-    { effects: { allowedActions: ["attack", "magic"] } },
-    { effects: { allowedActions: ["magic", "item"] } },
-    { effects: { blockedSkillTypes: ["magic"] } },
+    { effects: { allowedActions: ["attack", "magick"] } },
+    { effects: { allowedActions: ["magick", "item"] } },
+    { effects: { blockedActionTypes: ["magick"] } },
   ];
 
-  assert.deepEqual(Array.from(battler.allowedBattleActions()), ["magic"]);
-  assert.equal(battler.canUseBattleAction("magic"), false);
+  assert.deepEqual(Array.from(battler.allowedBattleActions()), ["magick"]);
+  assert.equal(battler.canUseBattleAction("magick"), false);
   assert.equal(battler.canUseBattleAction("attack"), false);
 
   battler.activeStatusDefinitions = originalDefinitions;
@@ -126,7 +126,7 @@ function testActionPreventionOverridesSpecificRestrictions() {
   actor.addStatus("paralyze");
 
   assert.equal(actor.canUseBattleAction("attack"), false);
-  assert.equal(actor.canUseBattleAction("magic"), false);
+  assert.equal(actor.canUseBattleAction("magick"), false);
 }
 
 function testBattleCommandWindowDisablesAndSkipsRestrictedCommands() {
@@ -153,7 +153,7 @@ function testBattleCommandWindowDisablesAndSkipsRestrictedCommands() {
   const window = new Window_BattleCommand(scene);
 
   assert.equal(window.isCommandEnabled("Attack"), true);
-  assert.equal(window.isCommandEnabled("Magic"), false);
+  assert.equal(window.isCommandEnabled("Magick"), false);
   assert.equal(window.isCommandEnabled("Item"), false);
   assert.equal(window.isCommandEnabled("Defend"), false);
 
@@ -171,7 +171,7 @@ function testBattleManagerRejectsRestrictedCommandWithoutConsumingTurn() {
 
   const partyMembers = [actor];
   const messages = [];
-  let magicOpened = false;
+  let magickOpened = false;
 
   const partyController = {
     currentBattler() {
@@ -180,18 +180,18 @@ function testBattleManagerRejectsRestrictedCommandWithoutConsumingTurn() {
   };
   const commandWindow = {
     currentCommand() {
-      return "Magic";
+      return "Magick";
     },
     commandActionKey() {
-      return "magic";
+      return "magick";
     },
   };
   const scene = {
     partyController,
     commandWindow,
-    magicWindow: {
+    magickWindow: {
       show() {
-        magicOpened = true;
+        magickOpened = true;
       },
     },
     itemWindow: { show() {} },
@@ -221,9 +221,9 @@ function testBattleManagerRejectsRestrictedCommandWithoutConsumingTurn() {
 
   manager.executeCommand();
 
-  assert.equal(magicOpened, false);
+  assert.equal(magickOpened, false);
   assert.equal(scene.battleInputLocked, false);
-  assert.equal(messages.at(-1), `${actor.name} cannot use Magic right now!`);
+  assert.equal(messages.at(-1), `${actor.name} cannot use Magick right now!`);
 }
 
 function testRestrictionMetadataValidation() {
@@ -233,16 +233,16 @@ function testRestrictionMetadataValidation() {
     { DebugManager: { log() {} } },
   );
 
-  const validSkillErrors = [];
+  const validMagickErrors = [];
   const validStatusErrors = [];
-  DatabaseValidator.validateSkills(skills, validSkillErrors);
+  DatabaseValidator.validateMagick(magick, validMagickErrors);
   DatabaseValidator.validateStatuses(statuses, validStatusErrors);
 
-  assert.deepEqual(Array.from(validSkillErrors), []);
+  assert.deepEqual(Array.from(validMagickErrors), []);
   assert.deepEqual(Array.from(validStatusErrors), []);
 
-  const invalidSkillErrors = [];
-  DatabaseValidator.validateSkills(
+  const invalidMagickErrors = [];
+  DatabaseValidator.validateMagick(
     [
       null,
       {
@@ -255,21 +255,21 @@ function testRestrictionMetadataValidation() {
         status: {},
       },
     ],
-    invalidSkillErrors,
+    invalidMagickErrors,
   );
   assert.equal(
-    invalidSkillErrors.some((error) => error.includes("non-empty string type")),
+    invalidMagickErrors.some((error) => error.includes("non-empty string type")),
     true,
   );
 
   const invalidStatuses = JSON.parse(JSON.stringify(statuses));
-  invalidStatuses[12].effects.blockedSkillTypes = "magic";
+  invalidStatuses[12].effects.blockedActionTypes = "magick";
   invalidStatuses[19].effects.allowedActions = [];
   const invalidStatusErrors = [];
   DatabaseValidator.validateStatuses(invalidStatuses, invalidStatusErrors);
 
   assert.equal(
-    invalidStatusErrors.some((error) => error.includes("blockedSkillTypes")),
+    invalidStatusErrors.some((error) => error.includes("blockedActionTypes")),
     true,
   );
   assert.equal(
