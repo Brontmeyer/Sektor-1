@@ -57,6 +57,7 @@ function testActorGrowthExpAndSpriteContracts() {
   actors[1].exp = "0";
   actors[2].growth.magicAttack = null;
   actors[3].battleSpriteFrames = 0;
+  actors[4].maxValor = 0;
 
   DatabaseValidator.validateActors(actors, errors);
 
@@ -67,6 +68,10 @@ function testActorGrowthExpAndSpriteContracts() {
   );
   assert.equal(
     errors.some((error) => error.includes("Actor 3 battleSpriteFrames")),
+    true,
+  );
+  assert.equal(
+    errors.some((error) => error.includes("Actor 4 maxValor")),
     true,
   );
 }

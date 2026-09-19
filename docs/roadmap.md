@@ -40,7 +40,7 @@ Completed engine foundations include:
 - Turn queue
 - Multi-character turns
 - Data-driven actor collection ownership with explicit party/leader context
-- Save / Load with version-aware multi-actor Save Runtime v6, persistent Gil / accessory equipment / slot-aware Essence state, and v1-v5 migration
+- Save / Load with version-aware multi-actor Save Runtime v7, persistent Valor / Gil / accessory equipment / slot-aware Essence state, and v1-v6 migration
 - Equipment system with Weapon, Armor, and Accessory slots
 - Inventory system
 - Shops & Gil Spending v1 with canonical-price purchases for items and conventional equipment
@@ -109,9 +109,9 @@ Status Runtime Core v1, Status Combat Modifiers v1, Reflect Runtime v1, Action R
 - Shared `isDefeated()` semantics for HP-zero and status-defined defeat, including Petrify
 - Data-driven Death/KO revival with defeated-target selection and cleansing-aware Petrify handling
 - Stop-specific personal-clock freezing with side-round expiration
-- A reusable `limitGainMultiplier()` status contract for Fury / Sadness / Near-Death
+- A reusable `valorGainMultiplier()` status contract for Fury / Sadness / Near-Death
 
-The initial Status Runtime milestone is complete. The future Limit system will consume the already-exposed status multiplier contract when Limit-gauge mechanics are designed; that work belongs to the Limit feature rather than to Status Runtime.
+The initial Status Runtime milestone is complete. Valor Runtime now consumes the status multiplier contract while gauge ownership remains actor-specific rather than part of Status Runtime.
 
 Further status expansion should continue to use reusable metadata-driven processing rather than status-name-specific scripts.
 
@@ -138,7 +138,7 @@ Primary remaining work includes:
 
 The initial Magick System is runtime-complete when all 54 current Magick abilities can execute their intended mechanics without requiring name-specific patches for behavior that should be reusable.
 
-Summon Magick remains later Magick design work and is not required to complete the initial 54-ability Magick runtime. The separate **Skills** namespace is reserved for future non-Magick techniques, including Limit Skills.
+Summon Magick remains later Magick design work and is not required to complete the initial 54-ability Magick runtime. The separate **Skills** namespace is reserved for future non-Magick techniques, including future Valor Arts.
 
 ---
 
@@ -218,7 +218,7 @@ Primary work includes:
 - Party Switching
 - Character-specific battle differentiation
 - Design and implementation planning for Dual Techs
-- Design and implementation planning for Limit Skills
+- Design and implementation planning for Valor Arts
 
 Character expansion should create meaningful differences in party composition rather than merely increasing the number of available actors.
 
@@ -307,7 +307,7 @@ Several major battle systems are deliberately being left until the core runtime 
 Primary candidates include:
 
 - Summon Magick
-- Limit Skills
+- Valor Arts
 - Dual Techs
 - Expanded party switching behavior
 - Additional advanced Magick interactions
@@ -470,7 +470,7 @@ This document does not currently define:
 - Essence Evolution recipes
 - Mastery Trial quest details
 - Summon Magick design
-- Limit Skills design
+- Valor Arts design
 - Dual Tech design
 
 Those decisions should become canonical when they are actually made.

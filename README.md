@@ -36,6 +36,8 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Magick Terminology Migration v1
 -   ✅ Accessories Equipment v1
 -   ✅ Character Menu Navigation Consistency v1
+-   ✅ Enemy Actions & AI v1
+-   ✅ Valor Runtime v1
 
 ------------------------------------------------------------------------
 
@@ -51,7 +53,7 @@ Completed foundations include:
 -   ✅ Party foundation
 -   ✅ Multi-character turn system
 -   ✅ Turn queue
--   ✅ Save / Load (version-aware Save Runtime v6)
+-   ✅ Save / Load (version-aware Save Runtime v7)
 -   ✅ Equipment system (Weapon / Armor / Accessory)
 -   ✅ Inventory system
 
@@ -81,7 +83,8 @@ Systems currently being expanded include:
 -   🚧 Essence ability grants and passive runtime
 -   ✅ Enemy Actions & AI v1
 -   🚧 Boss mechanics
--   🚧 Limit Skills
+-   ✅ Valor Runtime v1
+-   🚧 Valor Arts
 
 ------------------------------------------------------------------------
 
@@ -99,7 +102,7 @@ Magick is data-driven through `data/Magick.json`, allowing battle
 behavior to be expanded without hard-coding individual spells throughout
 the engine.
 
-Summon Magick is a future Magick category. The separate **Skills** namespace is reserved for future non-Magick techniques, including concepts such as Limit Skills once their design is approved.
+Summon Magick is a future Magick category. The separate **Skills** namespace is reserved for future non-Magick techniques, including future **Valor Arts** and other non-Magick techniques once their designs are approved.
 
 Combat-stat terminology remains **Magic**, **Magic Attack**, and **Magic Defense**. Those names describe character statistics rather than the Magick ability namespace.
 
@@ -109,7 +112,17 @@ Combat-stat terminology remains **Magic**, **Magic Attack**, and **Magic Defense
 
 **Skills** is intentionally reserved for future physical, technical, tactical, or otherwise non-Magick abilities. It does not currently have a canonical database or runtime.
 
-This separation keeps Essence-linked supernatural abilities under **Magick** while leaving a clean namespace for future techniques that should not behave like spells.
+This separation keeps Essence-linked supernatural abilities under **Magick** while leaving a clean namespace for future techniques that should not behave like spells. Future **Valor Arts** belong to this non-Magick side of the combat vocabulary.
+
+------------------------------------------------------------------------
+
+# 🔥 Valor
+
+**Valor** is Sektor 1's pressure-response battle resource. Actors build Valor from actual direct HP loss, with the base gain proportional to the percentage of Max HP lost. Fury, Sadness, and Near-Death modify that gain through the shared data-driven `valorGainMultiplier` status contract.
+
+Current actors have a data-driven Max Valor of 100. Valor persists between battles and through Save Runtime v7, caps at the actor's configured maximum, and is shown in both the battle HUD and Status menu. A full gauge becomes **VALOR: READY**.
+
+Valor Runtime v1 establishes the gauge, gain rules, persistence, ready state, and consumption API. It does **not** yet define character-specific Valor Arts; those remain future Skills content so their costs, targeting, and progression can be designed deliberately.
 
 ------------------------------------------------------------------------
 
@@ -140,7 +153,7 @@ Accessories Equipment v1 adds a third conventional equipment slot beside Weapon 
 
 The initial accessory contract supports additive Attack, Defense, Magic Attack, Magic Defense, and Critical bonuses. This keeps the first runtime small while leaving status, elemental, and more specialized accessory effects for later data/runtime extensions.
 
-Save Runtime v6 persists both equipped accessory IDs and party accessory inventory. The existing test chest can award a Power Wrist through the validated accessory event-command path.
+Save Runtime v7 persists both equipped accessory IDs and party accessory inventory. The existing test chest can award a Power Wrist through the validated accessory event-command path.
 
 ------------------------------------------------------------------------
 
@@ -227,7 +240,7 @@ Major systems still planned include:
 -   Advanced enemy / boss scripting
 -   Boss scripting
 -   Party switching
--   Limit Skills
+-   Valor Arts
 -   Summon Magick
 -   World exploration
 -   Towns and dungeons

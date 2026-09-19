@@ -505,7 +505,7 @@ handles `hpDamagePercent` but has no corresponding `hpHealPercent` branch.
 Regen therefore has an identified runtime path through trigger dispatch, but no
 identified runtime implementation for its configured healing effect.
 
-The `limitGainMultiplier` field is defined by Fury, Sadness, and Near-Death,
+The `valorGainMultiplier` field is defined by Fury, Sadness, and Near-Death,
 with values of `2.0`, `0.5`, and `2.0` respectively. Repository search found
 all three occurrences only in `Statuses.json`, with no identified JavaScript
 runtime consumer.
@@ -524,7 +524,7 @@ clamping and assigning HP. This establishes an end-to-end runtime path from HP
 changes through derived-condition evaluation to automatic Near-Death status
 activation and removal.
 
-This is distinct from Near-Death's `limitGainMultiplier: 2.0`, for which no
+This is distinct from Near-Death's `valorGainMultiplier: 2.0`, for which no
 JavaScript runtime consumer has been identified.
 
 The `turnSpeedMultiplier` field is defined by Haste and Slow, with values of

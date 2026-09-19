@@ -99,6 +99,16 @@ Canonical mechanical rules belong in `docs/battle_system.md`.
 
 ---
 
+# 🔥 Valor Identity
+
+Valor represents a character's ability to turn battle pressure into decisive potential. It is not Magick, Essence Resonance, or a renamed copy of another game's special gauge. It belongs to Sektor 1's non-Magick character-combat identity.
+
+Valor should reward surviving danger rather than merely waiting. Actual direct HP loss builds the gauge in proportion to the percentage of Max HP lost. Fury accelerates that response, Sadness suppresses it, and Near-Death intensifies it. These interactions make emotional and critical states part of the same pressure-response language without hard-coding individual status names into the gauge.
+
+A full Valor gauge means the actor is **Valor Ready**. Future character-specific **Valor Arts** will consume that readiness through the Skills side of the combat vocabulary, but their exact techniques, unlock rules, costs, and targeting are intentionally not canonical yet.
+
+---
+
 # ✨ Magick Identity
 
 Magick is not intended to be only a ladder of progressively larger damage numbers.
@@ -112,7 +122,7 @@ Indirect Magick
 Advanced Magick
 ```
 
-Summon Magick is a future Magick category. **Skills** is reserved for future non-Magick techniques, including Limit Skills.
+Summon Magick is a future Magick category. **Skills** is reserved for future non-Magick techniques, including future Valor Arts.
 
 The Magick system should support:
 
@@ -391,7 +401,7 @@ Sektor 1 should allow mechanics to combine when their rules legitimately overlap
 
 The player should be rewarded for understanding those relationships.
 
-For example, the current design allows Fury and Near-Death Limit-gain multipliers to stack multiplicatively, producing a ×4 result when both conditions apply.
+For example, the current design allows Fury and Near-Death Valor-gain multipliers to stack multiplicatively, producing a ×4 result when both conditions apply.
 
 This is not a universal rule that every modifier must multiply.
 
@@ -426,7 +436,7 @@ Sektor 1 is designed around a multi-character party rather than a permanently si
 
 The engine already contains the foundation for multiple party members and a party turn queue.
 
-Future character design should make party composition matter through differences in abilities, equipment, statistics, Essences, Limit Skills, and other character-specific mechanics as those systems are designed.
+Future character design should make party composition matter through differences in abilities, equipment, statistics, Essences, Valor Arts, and other character-specific mechanics as those systems are designed.
 
 Characters should ideally create different tactical possibilities rather than feeling like identical stat containers with different portraits.
 

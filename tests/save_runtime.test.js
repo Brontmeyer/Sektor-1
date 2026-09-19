@@ -162,7 +162,7 @@ function rawSave(localStorage, SaveManager, slotId = 1) {
   return JSON.parse(localStorage.getItem(SaveManager.saveKey(slotId)));
 }
 
-function testV6SaveSerializesPartyEquipmentCurrencyEssencesAndStatuses() {
+function testV7SaveSerializesValorEquipmentCurrencyEssencesAndStatuses() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
 
@@ -172,6 +172,7 @@ function testV6SaveSerializesPartyEquipmentCurrencyEssencesAndStatuses() {
   second.learnMagick(2);
   second.addStatus("fury");
   second.addStatus("barrier");
+  second.setValor(67.5);
   assert.equal(second.equipEssence(1, 145), true);
   assert.equal(second.equipAccessory(3), true);
 
@@ -186,12 +187,13 @@ function testV6SaveSerializesPartyEquipmentCurrencyEssencesAndStatuses() {
   const saveData = rawSave(localStorage, SaveManager);
   const savedSecond = saveData.actors.find((actor) => actor.actorId === 2);
 
-  assert.equal(saveData.version, 6);
+  assert.equal(saveData.version, 7);
   assert.equal(saveData.actors.length, 4);
   assert.equal(Object.hasOwn(saveData, "actor"), false);
   assert.equal(savedSecond.exp, 321);
   assert.equal(savedSecond.level, 4);
   assert.equal(savedSecond.hp, 222);
+  assert.equal(savedSecond.valor, 67.5);
   assert.deepEqual(Array.from(savedSecond.magickIds), [1, 10, 2]);
   assert.equal(Object.hasOwn(savedSecond, "skills"), false);
   assert.deepEqual(
@@ -208,7 +210,7 @@ function testV6SaveSerializesPartyEquipmentCurrencyEssencesAndStatuses() {
   assert.deepEqual(Array.from(savedSecond.equippedEssenceIds), [1, null, null]);
 }
 
-async function testV6LoadRestoresAccessoryStateAndNormalizesInventory() {
+async function testV7LoadRestoresValorAccessoryStateAndNormalizesInventory() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
 
@@ -217,6 +219,7 @@ async function testV6LoadRestoresAccessoryStateAndNormalizesInventory() {
   second.maxHp = 900;
   second.setHp(300);
   second.addStatus("sadness");
+  second.setValor(88);
   assert.equal(second.equipEssence(4, 299), true);
   assert.equal(second.equipAccessory(1), true);
   party.items = { 1: 2 };
@@ -235,6 +238,7 @@ async function testV6LoadRestoresAccessoryStateAndNormalizesInventory() {
   second.maxHp = 100;
   second.setHp(100);
   second.statuses = [];
+  second.setValor(0);
   second.restoreEssenceLoadout([], []);
   second.accessoryId = 0;
   party.items = {};
@@ -246,6 +250,7 @@ async function testV6LoadRestoresAccessoryStateAndNormalizesInventory() {
   assert.equal(second.level, 5);
   assert.equal(second.maxHp, 900);
   assert.equal(second.hp, 300);
+  assert.equal(second.valor, 88);
   assert.equal(second.hasStatus("sadness"), true);
   assert.equal(second.hasStatus("barrier"), false);
   assert.equal(party.itemCount(1), 3);
@@ -257,6 +262,40 @@ async function testV6LoadRestoresAccessoryStateAndNormalizesInventory() {
   assert.equal(party.accessoryCount(2), 2);
   assert.equal(party.accessoryCount(999), 0);
   assert.equal(second.equippedEssence(4).resonance, 299);
+}
+
+async function testVersionSixSaveMigratesValorDefault() {
+  const { localStorage, party, partyActors, SaveManager } = createHarness();
+  const second = partyActors[1];
+
+  const v6 = {
+    version: 6,
+    metadata: { actorName: party.leader().name, level: 1, timestamp: Date.now() },
+    actors: partyActors.map((actor) => {
+      const serialized = SaveManager.serializeActor(actor);
+      const { valor: _valor, ...legacy } = serialized;
+      return legacy;
+    }),
+    party: {
+      items: {},
+      weapons: {},
+      armors: {},
+      accessories: {},
+      battleActorIds: [1, 2, 3, 4],
+      gil: 25,
+    },
+    switches: { data: {} },
+    variables: { data: {} },
+    selfSwitches: { data: {} },
+    location: { mapId: 1, x: 7, y: 8 },
+  };
+
+  second.setValor(90);
+  localStorage.setItem(SaveManager.saveKey(1), JSON.stringify(v6));
+
+  assert.equal(await SaveManager.load(1), true);
+  assert.equal(second.valor, 0);
+  assert.equal(party.gil(), 25);
 }
 
 async function testVersionFiveSaveMigratesAccessoryDefaults() {
@@ -498,8 +537,9 @@ function testSaveStorageFailureReturnsFalse() {
 }
 
 async function run() {
-  testV6SaveSerializesPartyEquipmentCurrencyEssencesAndStatuses();
-  await testV6LoadRestoresAccessoryStateAndNormalizesInventory();
+  testV7SaveSerializesValorEquipmentCurrencyEssencesAndStatuses();
+  await testV7LoadRestoresValorAccessoryStateAndNormalizesInventory();
+  await testVersionSixSaveMigratesValorDefault();
   await testVersionFiveSaveMigratesAccessoryDefaults();
   await testVersionFourSaveMigratesLegacyEssenceLoadout();
   await testVersionThreeSaveMigratesLegacySkillsToMagickIds();

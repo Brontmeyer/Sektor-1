@@ -168,7 +168,7 @@ Validation describes the shape and references of canonical data; it does not imp
 
 `SaveManager` owns serialization, migration, validation, and restoration of persistent game progress.
 
-Save Runtime v6 serializes the full `Game_Party` actor roster rather than only the legacy leader alias. Actor state includes mutable progression, HP/MP, combat stats, Weapon / Armor / Accessory equipment, learned Magick, save-eligible runtime statuses, persistent Essence progression, and explicit Essence slot assignments. Party state persists Gil plus item, weapon, armor, and accessory inventory alongside active battle composition. Status restoration does not re-run initial application effects; canonical derived statuses are recomputed from restored battler state. Save versions 1 through 5 migrate into the current schema.
+Save Runtime v7 serializes the full `Game_Party` actor roster rather than only the legacy leader alias. Actor state includes mutable progression, HP/MP, persistent Valor, combat stats, Weapon / Armor / Accessory equipment, learned Magick, save-eligible runtime statuses, persistent Essence progression, and explicit Essence slot assignments. Party state persists Gil plus item, weapon, armor, and accessory inventory alongside active battle composition. Status restoration does not re-run initial application effects; canonical derived statuses are recomputed from restored battler state. Save versions 1 through 6 migrate into the current schema.
 
 The loader recognizes the legacy version-1 leader-only shape plus later full-party save generations, filling newly introduced fields through versioned migration before validation. Unknown/future save versions and malformed structures fail through a normal error result instead of flowing directly into state mutation. Inventory quantities and location values are normalized at the save boundary, and storage-write failures are caught by the save layer.
 
@@ -218,7 +218,7 @@ Active status instances, status-effect queries, incoming physical/magical damage
 
 ## Game_Actor
 
-`Game_Actor` represents a playable combatant and actor-specific runtime state. Canonical starter Magick come from validated `Actors.json` `initialMagickIds` data rather than constructor-time setup in `Game_System`. Conventional equipment mutation is owned here through explicit Weapon, Armor, and Accessory equip / unequip APIs. Accessory combat bonuses flow through the actor's derived-stat methods instead of mutating base stats. Actor data also defines the Essence slot count. Essence progression is stored separately from slot assignment so unequipping does not destroy Resonance; slot APIs validate IDs, prevent duplicate assignment on the same actor, and expose the equipped `Game_Essence` instances used by battle Resonance.
+`Game_Actor` represents a playable combatant and actor-specific runtime state. Canonical starter Magick come from validated `Actors.json` `initialMagickIds` data rather than constructor-time setup in `Game_System`. Conventional equipment mutation is owned here through explicit Weapon, Armor, and Accessory equip / unequip APIs. Accessory combat bonuses flow through the actor's derived-stat methods instead of mutating base stats. `Game_Actor` also owns Valor gauge state, its data-driven maximum, damage-to-Valor conversion, ready-state detection, and full-gauge consumption; Save Runtime v7 persists the current gauge value. `BattleRenderer` and `Window_Status` only present that actor-owned state and never mutate it. Actor data also defines the Essence slot count. Essence progression is stored separately from slot assignment so unequipping does not destroy Resonance; slot APIs validate IDs, prevent duplicate assignment on the same actor, and expose the equipped `Game_Essence` instances used by battle Resonance.
 
 Actor behavior should build on shared battler behavior while retaining responsibilities that only make sense for player-controlled characters.
 
@@ -238,7 +238,7 @@ It forms the runtime foundation for multi-character gameplay and future party-ma
 
 `Game_Essence` represents runtime Essence progression state.
 
-The canonical Essence definitions live in `data/Essences.json`; mutable Resonance lives on `Game_Essence` instances instead of modifying database definitions. Resonance is capped at the canonical Mastery threshold, level progression is derived from validated thresholds, and the runtime reports the next progression milestone and when an Essence becomes Mastery Ready. Actor-owned Essence progression and slot assignments are serialized independently through Save Runtime v6 so unequipping preserves progression.
+The canonical Essence definitions live in `data/Essences.json`; mutable Resonance lives on `Game_Essence` instances instead of modifying database definitions. Resonance is capped at the canonical Mastery threshold, level progression is derived from validated thresholds, and the runtime reports the next progression milestone and when an Essence becomes Mastery Ready. Actor-owned Essence progression and slot assignments are serialized independently through Save Runtime v7 so unequipping preserves progression.
 
 `Window_Essence` provides the first player-facing equipment surface: party-member switching, data-driven slots, a scrollable canonical Essence catalog, and progression / Magick-awakening details. The v1 catalog is intentionally not an ownership system; long-term acquisition rules can later filter the selectable catalog without changing the slot API. Ability grants, passives, Mastery Trials, and evolution remain later work.
 
@@ -436,7 +436,7 @@ Windows present available commands and Magick to the player. `Window_BattleComma
 
 `Statuses.json` defines Status System v1.
 
-The active Status Runtime provides reusable application, removal, duration, countdown, derived-state, modifier, immunity/resistance, stacking, interaction, defeat-state, revival, and turn-progression behavior. `effects.countsAsDefeated` contributes to the shared defeated-state contract, while `effects.canBeRevived` controls whether a status-defined defeat can be removed through revival. `effects.haltsTurnProgression` freezes scheduled personal turns and ordinary battler-relative status progression while the halting status advances on the side-round clock so it can expire. The shared damage path consumes data-driven incoming damage, outgoing physical damage, physical accuracy, wake-on-hit, and elemental absorption properties without checking individual status names. `Game_Battler.limitGainMultiplier()` exposes the canonical Fury/Sadness/Near-Death modifier contract for the future Limit system without making Status Runtime own Limit-gauge state.
+The active Status Runtime provides reusable application, removal, duration, countdown, derived-state, modifier, immunity/resistance, stacking, interaction, defeat-state, revival, and turn-progression behavior. `effects.countsAsDefeated` contributes to the shared defeated-state contract, while `effects.canBeRevived` controls whether a status-defined defeat can be removed through revival. `effects.haltsTurnProgression` freezes scheduled personal turns and ordinary battler-relative status progression while the halting status advances on the side-round clock so it can expire. The shared damage path consumes data-driven incoming damage, outgoing physical damage, physical accuracy, wake-on-hit, and elemental absorption properties without checking individual status names. `Game_Battler.valorGainMultiplier()` exposes the canonical Fury/Sadness/Near-Death modifier contract. The shared direct-damage path invokes a generic post-damage hook after derived statuses update; `Game_Actor` uses that hook to generate actor-owned Valor from actual HP loss without making enemy or Status Runtime own the gauge.
 
 Battlers own their active status state while battle systems trigger and coordinate status effects at the appropriate points in combat.
 
@@ -531,7 +531,7 @@ The existing map, event, interpreter, switch, variable, and scene foundations ca
 Future battle architecture is expected to support systems such as:
 
 - Summon Magick
-- Limit Skills
+- Valor Arts
 - Party switching
 - Dual Techniques
 - More advanced enemy and boss behavior

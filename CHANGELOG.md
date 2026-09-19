@@ -12,6 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Valor Runtime v1 as Sektor 1's original pressure-response battle resource, replacing the earlier placeholder Limit terminology
+- Added actor-owned, data-driven Valor capacity and gauge state with damage-based generation, ready-state detection, capped gain, and full-gauge consumption APIs
+- Added Valor gain through the shared incoming-damage hook so actual resolved HP loss drives the gauge while nullified, absorbed, and lethal damage do not generate Valor
+- Added battle-HUD and Status-window Valor presentation with explicit ready feedback and dedicated regression coverage for Fury, Sadness, Near-Death, persistence, and rendering
 - Added Enemy Actions & AI v1 with validated, data-driven enemy action lists, weighted action selection, conditional decisions, target strategies, and safe Attack fallback
 - Added `BattleEnemyAI` as the decision layer for enemy action eligibility, target selection, HP-based conditions, and weighted choice while `BattleManager` remains responsible for effect execution and presentation
 - Added enemy Magick execution through the same shared battler Magick runtime used by actors, including MP costs, action restrictions, status payloads, Reflect, elemental damage, healing, and legal targeting
@@ -113,8 +117,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added UI Resilience v1 with shared scrolling list viewports for inventory, equipment selection, field Magick, battle items, and battle Magick
 - Added explicit battle-sprite load diagnostics plus named visual fallbacks and dedicated UI-resilience regression coverage
 
-- Added Audit Runtime Cleanup v1 with completed Stop turn-progression semantics and a reusable Limit-gain multiplier contract
-- Added dedicated regression coverage for Stop personal-clock freezing, Limit multiplier composition, and database-accessor fallback consistency
+- Added Audit Runtime Cleanup v1 with completed Stop turn-progression semantics and a reusable Valor-gain multiplier contract
+- Added dedicated regression coverage for Stop personal-clock freezing, Valor multiplier composition, and database-accessor fallback consistency
 - Added Battle Rewards v1 with persistent Gil, validated enemy drop tables, exactly-once drop resolution, and battle Resonance rewards
 - Added actor-owned equipped Essence progression state with 1500-Resonance Mastery-Ready capping and Save Runtime v3 persistence
 - Added dedicated battle-reward regression coverage for Banish no-Gil behavior, drop aggregation, surviving-participant Resonance, Mastery Ready transitions, and duplicate-finalization protection
@@ -124,6 +128,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Changed
 
+- Renamed the active `limitGainMultiplier` status contract to canonical `valorGainMultiplier` terminology and reserved future character-specific techniques as **Valor Arts** within the non-Magick Skills namespace
+- Upgraded persistent saves to version 7 so actor Valor survives save/load, with compatibility migration from save versions 1 through 6
 - Moved reusable Magick execution and relative ally/enemy target legality from `Game_Actor` to `Game_Battler` so actors and enemies share one Magick engine instead of duplicating spell logic
 - Upgraded the Test Slime from basic-attack-only behavior to a weighted Attack / Ember / conditional Mend action profile while preserving basic Attack as the universal fallback when configured actions are unusable
 - Updated `Scene_Menu` so Magick, Status, Equipment, and Essence receive explicit `Game_Party` context instead of fixed leader references
@@ -140,7 +146,7 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Marked the repository-audit closure phase complete after reconciling all 42 actionable findings
 - Standardized all indexed `DatabaseManager` record/name accessors behind one null-safe convention with diagnostic unknown-ID fallbacks
 - Made Stop freeze personal turn slots, turn-start triggers, fractional speed progress, and ordinary battler-relative timers while its own duration advances on the side-round clock
-- Reclassified Fury / Sadness / Near-Death Limit modifiers as a complete Status Runtime contract; future gauge accumulation remains owned by the future Limit system
+- Reclassified Fury / Sadness / Near-Death Valor modifiers as a complete Status Runtime contract; gauge accumulation is now owned by Valor Runtime
 - Reconciled the audit tracker to 42 fixed / 0 partial / 0 open items after Pass 27; repository-audit closure is complete
 - Expanded the project from single-character battle assumptions toward a multi-character party architecture
 - Established canonical terminology across Magick, Essences, and Statuses

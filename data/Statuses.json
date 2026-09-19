@@ -311,7 +311,7 @@
     "id": 16,
     "key": "fury",
     "name": "Fury",
-    "description": "Increases Limit generation at the cost of physical accuracy.",
+    "description": "Increases Valor generation at the cost of physical accuracy.",
     "classification": {
       "family": "mental",
       "negative": true,
@@ -322,7 +322,7 @@
       "type": "untilRemoved"
     },
     "effects": {
-      "limitGainMultiplier": 2.0,
+      "valorGainMultiplier": 2.0,
       "physicalAccuracyMultiplier": 0.7
     }
   },
@@ -331,7 +331,7 @@
     "id": 17,
     "key": "sadness",
     "name": "Sadness",
-    "description": "Reduces damage taken at the cost of slower Limit generation.",
+    "description": "Reduces damage taken at the cost of slower Valor generation.",
     "classification": {
       "family": "mental",
       "negative": true,
@@ -344,7 +344,7 @@
     "effects": {
       "physicalDamageTakenMultiplier": 0.7,
       "magicalDamageTakenMultiplier": 0.7,
-      "limitGainMultiplier": 0.5
+      "valorGainMultiplier": 0.5
     }
   },
   {
@@ -470,7 +470,7 @@
       "hpPercentAtOrBelow": 0.25
     },
     "effects": {
-      "limitGainMultiplier": 2.0
+      "valorGainMultiplier": 2.0
     }
   },
   {

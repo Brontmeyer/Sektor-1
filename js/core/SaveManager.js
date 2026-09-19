@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 6;
+    return 7;
   }
 
   static clearError() {
@@ -96,11 +96,13 @@ class SaveManager {
             } = source;
 
             const accessoryId = Number(source.accessoryId);
+            const valor = Number(source.valor);
 
             return {
               ...rest,
               accessoryId:
                 Number.isInteger(accessoryId) && accessoryId > 0 ? accessoryId : 0,
+              valor: Number.isFinite(valor) && valor >= 0 ? valor : 0,
               magickIds,
               essenceProgress,
               equippedEssenceIds,
@@ -122,7 +124,7 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if ([5, 4, 3, 2].includes(inferredVersion)) {
+    if ([6, 5, 4, 3, 2].includes(inferredVersion)) {
       return upgradeToCurrent(saveData);
     }
 
@@ -244,6 +246,19 @@ class SaveManager {
         }
 
         const runtimeActor = $gameParty?.actorById?.(actorId) || null;
+        const valor = Number(actorData.valor ?? 0);
+        const maxValor = Number(runtimeActor?.maxValor);
+
+        if (
+          !Number.isFinite(valor) ||
+          valor < 0 ||
+          (Number.isFinite(maxValor) && maxValor > 0 && valor > maxValor)
+        ) {
+          errors.push(
+            `Actor ${actorId} valor must be between 0 and ${Number.isFinite(maxValor) && maxValor > 0 ? maxValor : "its configured maximum"}.`,
+          );
+        }
+
         const progressIds = new Set();
 
         if (
@@ -433,6 +448,7 @@ class SaveManager {
       weaponId: actor.weaponId,
       armorId: actor.armorId,
       accessoryId: actor.accessoryId,
+      valor: actor.valor,
       magickIds: [...actor.magickIds],
       statuses:
         typeof actor.persistentStatusState === "function"
@@ -524,6 +540,10 @@ class SaveManager {
 
     const savedMp = finite(actorData.mp, actor.mp);
     actor.mp = Math.max(0, Math.min(actor.maxMp, savedMp));
+
+    if (typeof actor.setValor === "function") {
+      actor.setValor(finite(actorData.valor, 0));
+    }
 
     if (typeof actor.restorePersistentStatusState === "function") {
       actor.restorePersistentStatusState(actorData.statuses || []);

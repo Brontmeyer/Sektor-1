@@ -1020,6 +1020,10 @@ class DatabaseValidator {
       this.validateBattlerStats(actor, label, errors);
       this.validateBattleSprite(actor, label, "sideBattleSprite", errors);
       this.validateFiniteNumber(`${label} exp`, actor.exp, errors, { min: 0 });
+      this.validateFiniteNumber(`${label} maxValor`, actor.maxValor, errors, {
+        min: 1,
+        integer: true,
+      });
       this.validateFiniteNumber(
         `${label} essenceSlots`,
         actor.essenceSlots,
@@ -2132,7 +2136,7 @@ class DatabaseValidator {
       "haltsTurnProgression",
       "hpDamagePercent",
       "hpHealPercent",
-      "limitGainMultiplier",
+      "valorGainMultiplier",
       "magicalDamageTakenMultiplier",
       "maxReflections",
       "onExpire",
@@ -2163,7 +2167,7 @@ class DatabaseValidator {
       "setsHpToZero",
     ];
     const multiplierEffectKeys = [
-      "limitGainMultiplier",
+      "valorGainMultiplier",
       "magicalDamageTakenMultiplier",
       "physicalAccuracyMultiplier",
       "physicalDamageMultiplier",

@@ -14,6 +14,8 @@ Pass 33 likewise adds no reopened audit item. Character Menu Navigation Consiste
 
 Pass 34 likewise adds no reopened audit item. Enemy Actions & AI v1 is new post-audit gameplay development built on the already-closed battle, validation, action-restriction, targeting, and Magick boundaries. The pass moves shared Magick execution from actor-only ownership to `Game_Battler` so enemies reuse the same runtime rather than duplicating it; Save Runtime remains v6 because enemy AI state is defined by canonical battle data rather than persisted per-save state.
 
+Pass 35 likewise adds no reopened audit item. Valor Runtime v1 consumes the already-closed Fury/Sadness/Near-Death multiplier boundary, renames the placeholder Limit terminology to Sektor 1's canonical **Valor** vocabulary, and persists actor gauge state through Save Runtime v7 with v1-v6 migration. The historical audit terminology is normalized where it names that same mechanic, without changing the original finding status.
+
 This document reconciles the historical static review in `docs/repo_audit.md`
 against the **current repository**.
 
@@ -59,7 +61,7 @@ headings.
 | 4 | Runtime battler statuses are not persisted by SaveManager | Fixed | Pass 20 persists/restores status runtime state whose canonical status is allowed to persist after battle; derived states are recomputed. |
 | 5 | Magick.json defines effects that Game_Actor.useMagick() cannot execute | Fixed | Pass 23 completes the current effect vocabulary: escape is battle-owned, banish uses the shared Death/defeat bridge, and the previously completed heal/damage/status/revive effects remain on their reusable paths. |
 | 6 | Magick `status` metadata has no identified runtime consumer | Fixed | Pass 14 routes Magick status payloads through the shared status runtime. |
-| 7 | Status and Magick combat metadata are only partially integrated | Fixed | Pass 26 finishes Stop's `haltsTurnProgression` contract by freezing scheduled turns, personal turn progress, turn-start triggers, and ordinary battler-relative status timers while advancing Stop itself once per side round so it can expire. `Game_Battler.limitGainMultiplier()` now consumes Fury/Sadness/Near-Death modifier data as the reusable boundary for the future Limit gauge; actual Limit accumulation remains a future feature rather than unfinished Status Runtime. |
+| 7 | Status and Magick combat metadata are only partially integrated | Fixed | Pass 26 finishes Stop's `haltsTurnProgression` contract by freezing scheduled turns, personal turn progress, turn-start triggers, and ordinary battler-relative status timers while advancing Stop itself once per side round so it can expire. `Game_Battler.valorGainMultiplier()` exposes Fury/Sadness/Near-Death modifier data as the reusable boundary now consumed by post-audit Valor Runtime; gauge ownership remains outside Status Runtime. |
 | 8 | `allyStatusChance` currently has no runtime consumer | Fixed | Pass 14 applies ally-specific status chances through the shared Magick/status resolver. |
 | 9 | Legacy `$gameActor` dependency remains widespread | Fixed | Pass 24 removes active engine dependencies on `$gameActor`; menu/interpreter/battle fallbacks resolve actors through `Game_Party` or explicit actor context. `main.js` retains only the compatibility alias for external/legacy integrations. |
 | 10 | Database accessor consistency | Fixed | Pass 26 routes all indexed database accessors through one null-safe helper and standardizes unknown-name fallbacks to include the requested ID; keyed status-name fallback likewise includes the missing key. |
@@ -115,4 +117,4 @@ All 42 actionable audit headings are now **Fixed**, **Superseded**, or otherwise
 
 The historical audit remains valuable reference material, but it is no longer the primary pass-selection backlog. New Sektor 1 feature work may now be selected from `TODO.md`, `docs/roadmap.md`, and approved design priorities, while still checking the current repository before implementing overlapping work.
 
-The future Limit gauge is not an audit-closure dependency. Status Runtime already exposes the canonical `limitGainMultiplier()` contract that the eventual Limit system will consume.
+Valor gauge implementation was not an audit-closure dependency. Status Runtime closed the finding by exposing the canonical multiplier boundary, which Pass 35 later renamed to `valorGainMultiplier()` and consumed through actor-owned Valor Runtime.

@@ -109,13 +109,19 @@ class Window_Status {
     context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, leftX, this.y + 135);
     context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, rightX, this.y + 135);
 
+    const valorText = actor.isValorReady?.()
+      ? "Valor: READY"
+      : `Valor: ${Math.floor(Number(actor.valor) || 0)} / ${actor.maxValor}`;
+    context.font = "18px sans-serif";
+    context.fillText(valorText, leftX, this.y + 170);
+
     // =========================
     // DIVIDER
     // =========================
 
     context.beginPath();
-    context.moveTo(this.x + 30, this.y + 155);
-    context.lineTo(this.x + this.width - 30, this.y + 155);
+    context.moveTo(this.x + 30, this.y + 190);
+    context.lineTo(this.x + this.width - 30, this.y + 190);
     context.stroke();
 
     // =========================
@@ -124,7 +130,7 @@ class Window_Status {
 
     context.font = "20px sans-serif";
 
-    let leftY = this.y + 195;
+    let leftY = this.y + 225;
 
     const statSpacing = 34;
 
@@ -152,7 +158,7 @@ class Window_Status {
     // DERIVED STATS
     // =========================
 
-    let rightY = this.y + 195;
+    let rightY = this.y + 225;
 
     context.fillText(`Attack: ${actor.totalAttack()}`, rightX, rightY);
     rightY += statSpacing;

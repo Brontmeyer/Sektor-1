@@ -459,6 +459,16 @@ When adding a new field, define one mechanic clearly rather than creating an amb
 
 ---
 
+# 🔥 Valor Conventions
+
+Use **Valor** as the canonical name for Sektor 1's pressure-response gauge. Do not introduce `Limit`, `Limit Break`, or parallel gauge terminology in active code or data.
+
+Actor capacity belongs in `Actors.json` as the positive-integer `maxValor` field. Runtime gauge state belongs to `Game_Actor`; shared status data may modify gain through `effects.valorGainMultiplier`. The shared damage layer may notify actor-specific systems after resolved damage, but `Game_Battler` must not become the owner of actor Valor state.
+
+Future character-specific Valor actions are referred to as **Valor Arts** and belong to the future non-Magick Skills namespace.
+
+---
+
 # 🛡️ Status Data Conventions
 
 Status records should express reusable behavior through properties rather than status-name checks.

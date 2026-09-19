@@ -385,8 +385,8 @@ class Game_Battler {
     return this.hasStatusEffectFlag("haltsTurnProgression");
   }
 
-  limitGainMultiplier() {
-    return Math.max(0, this.statusEffectMultiplier("limitGainMultiplier"));
+  valorGainMultiplier() {
+    return Math.max(0, this.statusEffectMultiplier("valorGainMultiplier"));
   }
 
   incomingDamageMultiplier(category) {
@@ -1615,6 +1615,15 @@ class Game_Battler {
   }
 
   // =====================================
+  // Damage Hooks
+  // =====================================
+
+  onDamageReceived(_result) {
+    // Actor-specific systems may react to resolved incoming damage here.
+    return null;
+  }
+
+  // =====================================
   // HP Management
   // =====================================
 
@@ -1663,7 +1672,7 @@ class Game_Battler {
 
     DebugManager.log(`${this.name} lost ${damage} HP.`);
 
-    return {
+    const result = {
       damage,
       healing: 0,
       absorbed: false,
@@ -1674,6 +1683,12 @@ class Game_Battler {
       damageMultiplier,
       removedStatuses,
     };
+
+    if (damage > 0) {
+      this.onDamageReceived(result);
+    }
+
+    return result;
   }
 
   gainHp(amount) {

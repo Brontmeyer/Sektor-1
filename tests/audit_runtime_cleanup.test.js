@@ -221,26 +221,26 @@ function testHaltedProgressionRequiresFiniteExpiration() {
   );
 }
 
-function testLimitGainMultiplierContractIsDataDriven() {
+function testValorGainMultiplierContractIsDataDriven() {
   const { Game_Battler } = makeBattleFixture();
-  const battler = makeBattler(Game_Battler, "Limit Contract");
+  const battler = makeBattler(Game_Battler, "Valor Contract");
 
-  assert.equal(battler.limitGainMultiplier(), 1);
+  assert.equal(battler.valorGainMultiplier(), 1);
 
   battler.setHp(20);
   assert.equal(battler.hasStatus("nearDeath"), true);
-  assert.equal(battler.limitGainMultiplier(), 2);
+  assert.equal(battler.valorGainMultiplier(), 2);
 
   battler.addStatus("fury");
-  assert.equal(battler.limitGainMultiplier(), 4);
+  assert.equal(battler.valorGainMultiplier(), 4);
 
   battler.addStatus("sadness");
   assert.equal(battler.hasStatus("fury"), false);
-  assert.equal(battler.limitGainMultiplier(), 1);
+  assert.equal(battler.valorGainMultiplier(), 1);
 
   battler.setHp(100);
   assert.equal(battler.hasStatus("nearDeath"), false);
-  assert.equal(battler.limitGainMultiplier(), 0.5);
+  assert.equal(battler.valorGainMultiplier(), 0.5);
 }
 
 function run() {
@@ -248,7 +248,7 @@ function run() {
   testStopFreezesPersonalTurnsButExpiresOnSideRounds();
   testStopSkipsTurnStartTriggersForAlreadyQueuedTurns();
   testHaltedProgressionRequiresFiniteExpiration();
-  testLimitGainMultiplierContractIsDataDriven();
+  testValorGainMultiplierContractIsDataDriven();
 
   console.log("Audit runtime cleanup regression tests passed.");
 }

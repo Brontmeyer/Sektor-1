@@ -327,8 +327,26 @@ class BattleRenderer {
     }
   }
 
+  drawValorState(context, actor, x, y, font = "14px Arial") {
+    if (!actor || !Number.isFinite(actor.maxValor) || actor.maxValor <= 0) {
+      return;
+    }
+
+    const ready =
+      typeof actor.isValorReady === "function" && actor.isValorReady();
+    const value = Math.floor(Number(actor.valor) || 0);
+    const label = ready
+      ? "VALOR: READY"
+      : `VALOR: ${value} / ${actor.maxValor}`;
+
+    context.font = font;
+    context.fillStyle = ready ? "#ffd75a" : "#ffffff";
+    context.fillText(label, x, y);
+    context.fillStyle = "#ffffff";
+  }
+
   drawBattleHud(context) {
-    const hudHeight = 180;
+    const hudHeight = 190;
     const hudY = Graphics.height - hudHeight - 10;
 
     context.fillStyle = "rgba(0, 0, 0, 0.9)";
@@ -357,18 +375,19 @@ class BattleRenderer {
       const statusX = Graphics.width - 320;
 
       context.font = "22px Arial";
-      context.fillText(actor.name, statusX, hudY + 45);
+      context.fillText(actor.name, statusX, hudY + 40);
 
       context.font = "18px Arial";
-      context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 85);
-      context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 120);
+      context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 78);
+      context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 110);
+      this.drawValorState(context, actor, statusX, hudY + 140, "16px Arial");
 
       const summary =
         typeof actor.statusSummary === "function" ? actor.statusSummary(3) : "";
 
       if (summary) {
         context.font = "14px Arial";
-        context.fillText(summary, statusX, hudY + 150);
+        context.fillText(summary, statusX, hudY + 168);
       }
 
       return;
@@ -381,18 +400,19 @@ class BattleRenderer {
       const statusX = statusStartX + index * statusWidth;
 
       context.font = "20px Arial";
-      context.fillText(actor.name, statusX, hudY + 42);
+      context.fillText(actor.name, statusX, hudY + 38);
 
       context.font = "16px Arial";
-      context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 82);
-      context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 116);
+      context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 74);
+      context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 106);
+      this.drawValorState(context, actor, statusX, hudY + 134, "13px Arial");
 
       const summary =
         typeof actor.statusSummary === "function" ? actor.statusSummary(2) : "";
 
       if (summary) {
         context.font = "13px Arial";
-        context.fillText(summary, statusX, hudY + 147);
+        context.fillText(summary, statusX, hudY + 163);
       }
     });
   }

@@ -49,7 +49,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Petrify defeat-state handling
 - [x] Death defeat / revival handling
 - [x] Berserk forced physical attacks
-- [x] Fury / Sadness / Near-Death Limit multiplier runtime contract
+- [x] Fury / Sadness / Near-Death Valor multiplier runtime contract
 - [x] Darkness physical accuracy reduction
 - [x] Frog restricted actions
 - [x] Small physical damage modifiers
@@ -118,7 +118,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement status interaction with Magick
 - [ ] Implement undead restorative-damage interaction
 - [ ] Design Summon Magick
-- [ ] Implement Limit gauge/runtime and consume status Limit multipliers
+- [x] Implement Valor gauge/runtime and consume status Valor multipliers
 
 ---
 
@@ -126,7 +126,7 @@ Completed systems and design rules should be documented rather than duplicated h
 
 - [ ] Define the canonical Skills data model for non-Magick techniques
 - [ ] Define Skills costs/resources and battle execution rules
-- [ ] Design Limit Skills within the future Skills namespace
+- [ ] Design Valor Arts within the future Skills namespace
 
 ---
 
@@ -141,7 +141,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Character 8
 - [ ] Party Switching
 - [ ] Dual Techs
-- [ ] Limit Skills
+- [ ] Valor Arts
 
 ---
 
@@ -174,7 +174,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v6 with accessory inventory/equipment, slot-aware Essence progression persistence, and v1-v5 migration
+- [x] Save Runtime v7 with persistent Valor, accessory inventory/equipment, slot-aware Essence progression persistence, and v1-v6 migration
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies

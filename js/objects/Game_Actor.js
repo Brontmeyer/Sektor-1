@@ -20,6 +20,9 @@ class Game_Actor extends Game_Battler {
     this.exp = actorData.exp;
     this.growth = actorData.growth;
 
+    this.maxValor = actorData.maxValor;
+    this.valor = 0;
+
     this.weaponId = 0;
     this.armorId = 0;
     this.accessoryId = 0;
@@ -34,6 +37,74 @@ class Game_Actor extends Game_Battler {
     this._essenceSlotCount = actorData.essenceSlots;
     this._essenceProgress = new Map();
     this._equippedEssenceIds = Array(this._essenceSlotCount).fill(null);
+  }
+
+  // =====================================
+  // Valor Runtime
+  // =====================================
+
+  valorRate() {
+    if (!Number.isFinite(this.maxValor) || this.maxValor <= 0) {
+      return 0;
+    }
+
+    return this.valor / this.maxValor;
+  }
+
+  isValorReady() {
+    return this.maxValor > 0 && this.valor >= this.maxValor;
+  }
+
+  setValor(value) {
+    const numeric = Number(value);
+    const resolved = Number.isFinite(numeric) ? numeric : 0;
+
+    const bounded = Math.max(0, Math.min(resolved, this.maxValor));
+    this.valor = Math.round(bounded * 1000) / 1000;
+    return this.valor;
+  }
+
+  gainValor(amount) {
+    const numeric = Number(amount);
+
+    if (!Number.isFinite(numeric) || numeric <= 0 || this.isValorReady()) {
+      return 0;
+    }
+
+    const before = this.valor;
+    this.setValor(this.valor + numeric);
+    return this.valor - before;
+  }
+
+  consumeValor() {
+    if (!this.isValorReady()) {
+      return false;
+    }
+
+    this.valor = 0;
+    return true;
+  }
+
+  gainValorFromDamage(damage) {
+    const resolvedDamage = Number(damage);
+
+    if (
+      !Number.isFinite(resolvedDamage) ||
+      resolvedDamage <= 0 ||
+      this.maxHp <= 0 ||
+      !this.isAlive()
+    ) {
+      return 0;
+    }
+
+    const baseGain = (resolvedDamage / this.maxHp) * this.maxValor;
+    const multiplier = this.valorGainMultiplier();
+
+    return this.gainValor(baseGain * multiplier);
+  }
+
+  onDamageReceived(result) {
+    return this.gainValorFromDamage(result?.damage ?? 0);
   }
 
   // =====================================
