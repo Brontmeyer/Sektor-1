@@ -12,6 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Shops & Gil Spending v1 with validated event-defined merchant inventories, canonical database pricing, and purchases across items, weapons, armor, and accessories
+- Added an atomic `Game_Party.purchaseMerchandise()` transaction boundary so shop UI requests purchases while party ownership performs Gil and inventory mutation
+- Added `Scene_Shop` / `Window_Shop` with a scrollable merchandise list, live Gil and owned-count display, purchase feedback, and a test merchant in Map001
+- Added dedicated shop regression coverage for canonical pricing, insufficient-funds safety, UI presentation boundaries, event flow, and shop-data validation
 - Added Accessories Equipment v1 with a canonical `Accessories.json` database, one actor accessory slot, inventory ownership, equipment-menu selection, and additive combat-stat bonuses
 - Added `Game_Actor` accessory equip/unequip APIs and shared equipment-inventory helpers in `Game_Party` so weapons, armor, and accessories follow the same party storage contract
 - Added validated `gainAccessory` / `gainAccessoryMessage` event commands and a test-chest accessory pickup path

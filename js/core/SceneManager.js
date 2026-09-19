@@ -49,6 +49,16 @@ class SceneManager {
     DebugManager.log(`Scene pushed: ${sceneClass.name}`);
   }
 
+  static startShop(shopData) {
+    if (!shopData || !Array.isArray(shopData.goods) || shopData.goods.length === 0) {
+      console.error("Cannot start a shop without merchandise.");
+      return false;
+    }
+
+    this.push(Scene_Shop, shopData);
+    return true;
+  }
+
   static startBattle(encounterId, onComplete = null) {
     const encounter = DatabaseManager.encounter(encounterId);
 

@@ -78,7 +78,7 @@ Completed systems and design rules should be documented rather than duplicated h
 
 - [x] Persistent Gil rewards
 - [x] Price metadata for items, weapons, armor, and accessories
-- [ ] Shops / Gil Spending v1
+- [x] Shops / Gil Spending v1
 
 ---
 
@@ -182,6 +182,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Equipment system
 - [x] Accessories Equipment v1
 - [x] Inventory system
+- [x] Shops / Gil Spending v1
+- [ ] Standardize left/right party-member navigation in Magick, Status, Equipment, and Essence menus
 - [x] Complete status runtime
 - [ ] Complete Essence runtime
 - [ ] Enemy AI

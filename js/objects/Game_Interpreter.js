@@ -100,6 +100,8 @@ class Game_Interpreter {
         return this.commandGainExp(command);
       case "gainExpMessage":
         return this.commandGainExpMessage(command);
+      case "shop":
+        return this.commandShop(command);
       case "battle":
         return this.commandBattle(command);
 
@@ -539,6 +541,23 @@ class Game_Interpreter {
 
     this.messageWindow.show(message, "System");
 
+    this.index++;
+
+    return false;
+  }
+
+  commandShop(command) {
+    const started = SceneManager.startShop({
+      name: command.name || "Shop",
+      goods: command.goods || [],
+    });
+
+    if (!started) {
+      return true;
+    }
+
+    // Advance before the shop scene is pushed so returning to this map
+    // resumes with the command after the shop instead of reopening it.
     this.index++;
 
     return false;

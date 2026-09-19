@@ -8,6 +8,8 @@ Pass 30 likewise does not reopen the audit. Essence Equipment & Menu v1 builds o
 
 Pass 31 likewise adds no reopened audit item. Accessories Equipment v1 extends the already-closed equipment/database/save boundaries with a third conventional equipment type, and Save Runtime v6 migrates v1-v5 saves without changing any historical finding status.
 
+Pass 32 likewise adds no reopened audit item. Shops & Gil Spending v1 consumes the already-closed Gil, inventory, database-price, map/event-validation, and UI-list boundaries. It adds no new persistent state, so Save Runtime remains v6.
+
 This document reconciles the historical static review in `docs/repo_audit.md`
 against the **current repository**.
 

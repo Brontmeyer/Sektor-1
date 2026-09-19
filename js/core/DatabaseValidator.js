@@ -679,6 +679,7 @@ class DatabaseValidator {
       gainAccessoryMessage: ["code", "accessoryId", "amount", "source"],
       gainExp: ["code", "amount"],
       gainExpMessage: ["code", "amount"],
+      shop: ["code", "name", "goods"],
       battle: ["code", "encounterId"],
     };
 
@@ -843,6 +844,63 @@ class DatabaseValidator {
           min: Number.MIN_VALUE,
         });
         break;
+
+      case "shop": {
+        validateOptionalString("name");
+
+        if (!Array.isArray(command.goods) || command.goods.length === 0) {
+          errors.push(`${label}.goods must be a non-empty array.`);
+          break;
+        }
+
+        const seenGoods = new Set();
+        const collections = {
+          item: database?.items,
+          weapon: database?.weapons,
+          armor: database?.armors,
+          accessory: database?.accessories,
+        };
+
+        for (let index = 0; index < command.goods.length; index++) {
+          const good = command.goods[index];
+          const goodLabel = `${label}.goods[${index}]`;
+
+          if (!this.isPlainObject(good)) {
+            errors.push(`${goodLabel} must be an object.`);
+            continue;
+          }
+
+          this.validateKnownKeys(goodLabel, good, ["type", "id"], errors);
+
+          if (!Object.hasOwn(collections, good.type)) {
+            errors.push(
+              `${goodLabel}.type must be item, weapon, armor, or accessory.`,
+            );
+            continue;
+          }
+
+          if (
+            !this.validateDatabaseReference(
+              `${goodLabel}.id`,
+              good.id,
+              collections[good.type],
+              good.type,
+              errors,
+            )
+          ) {
+            continue;
+          }
+
+          const key = `${good.type}:${good.id}`;
+
+          if (seenGoods.has(key)) {
+            errors.push(`${goodLabel} duplicates shop good ${key}.`);
+          }
+
+          seenGoods.add(key);
+        }
+        break;
+      }
 
       case "battle":
         this.validateDatabaseReference(
@@ -1124,7 +1182,10 @@ class DatabaseValidator {
         errors.push(`${label} consumable must be true or false.`);
       }
 
-      this.validateFiniteNumber(`${label} price`, item.price, errors, { min: 0 });
+      this.validateFiniteNumber(`${label} price`, item.price, errors, {
+        min: 0,
+        integer: true,
+      });
 
       if (!this.isPlainObject(item.effect)) {
         errors.push(`${label} effect must be an object.`);
@@ -1166,7 +1227,10 @@ class DatabaseValidator {
         "magicAttack",
         "criticalBonus",
       ]) {
-        this.validateFiniteNumber(`${label} ${key}`, weapon[key], errors, { min: 0 });
+        this.validateFiniteNumber(`${label} ${key}`, weapon[key], errors, {
+          min: 0,
+          integer: key === "price",
+        });
       }
     }
   }
@@ -1184,7 +1248,10 @@ class DatabaseValidator {
       }
 
       const label = `Armor ${index}`;
-      this.validateFiniteNumber(`${label} price`, armor.price, errors, { min: 0 });
+      this.validateFiniteNumber(`${label} price`, armor.price, errors, {
+        min: 0,
+        integer: true,
+      });
       this.validateFiniteNumber(`${label} defense`, armor.defense, errors, { min: 0 });
     }
   }
@@ -1218,6 +1285,7 @@ class DatabaseValidator {
       );
       this.validateFiniteNumber(`${label} price`, accessory.price, errors, {
         min: 0,
+        integer: true,
       });
 
       if (!this.isPlainObject(accessory.bonuses)) {

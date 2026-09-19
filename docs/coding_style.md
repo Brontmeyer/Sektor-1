@@ -615,6 +615,8 @@ Database lookup
 
 If two systems need almost the same behavior, consider whether the shared portion belongs in a reusable helper or lower-level system.
 
+For player-facing transactions, keep presentation and mutation boundaries explicit. A window may report “buy this entry,” a scene may coordinate the request, and the party/inventory owner should perform the currency-plus-inventory transaction. Canonical prices should be read from canonical merchandise data rather than copied into event or UI definitions.
+
 Do not force unrelated mechanics together solely to eliminate a few repeated lines. Reuse should reflect shared responsibility, not code golf.
 
 ---

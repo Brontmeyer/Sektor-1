@@ -43,6 +43,7 @@ Completed engine foundations include:
 - Save / Load with version-aware multi-actor Save Runtime v6, persistent Gil / accessory equipment / slot-aware Essence state, and v1-v5 migration
 - Equipment system with Weapon, Armor, and Accessory slots
 - Inventory system
+- Shops & Gil Spending v1 with canonical-price purchases for items and conventional equipment
 - Battle Results Screen v1 for visible EXP, Gil, drop, level-up, and Essence progression feedback
 
 Completed canonical battle-data foundations include:
@@ -353,7 +354,7 @@ Major areas include:
 - Boss tuning
 - Economy and item balance
 - Equipment balance
-- UI consistency
+- UI consistency, including one shared left/right party-member navigation pattern across character-facing menus
 - Input consistency
 - Save compatibility
 - Performance

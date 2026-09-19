@@ -278,6 +278,16 @@ Owned accessories live in party inventory, while the equipped accessory ID belon
 
 ---
 
+# 💰 Shops and Gil
+
+Gil is the conventional purchase currency. Battle rewards already feed persistent party Gil, and Shops & Gil Spending v1 lets map merchants exchange that Gil for Items, Weapons, Armor, and Accessories.
+
+Merchant event data chooses **what is offered**, not **what it costs**. Price authority stays on the canonical merchandise record in its database, preventing a Potion or Steel Sword from accidentally acquiring conflicting prices in different map events. A purchase is owned by `Game_Party` so spending and inventory gain succeed or fail together.
+
+The initial shop contract purchases one unit at a time from unlimited merchant stock. Selling, resale percentages, limited stock, discounts, reputation pricing, and other economy modifiers are intentionally not canonical yet. They should be designed as economy rules before being added to presentation code.
+
+---
+
 # 💠 Essence Equipment
 
 Current playable actors have **3 Essence slots**, with the count defined in actor data so later characters can differ without changing menu or runtime code.

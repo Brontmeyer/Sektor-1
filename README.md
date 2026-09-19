@@ -139,7 +139,17 @@ Accessories Equipment v1 adds a third conventional equipment slot beside Weapon 
 
 The initial accessory contract supports additive Attack, Defense, Magic Attack, Magic Defense, and Critical bonuses. This keeps the first runtime small while leaving status, elemental, and more specialized accessory effects for later data/runtime extensions.
 
-Save Runtime v6 persists both equipped accessory IDs and party accessory inventory. The existing test chest can award a Power Wrist through the validated accessory event-command path so the system can be exercised before Shops are implemented.
+Save Runtime v6 persists both equipped accessory IDs and party accessory inventory. The existing test chest can award a Power Wrist through the validated accessory event-command path.
+
+------------------------------------------------------------------------
+
+# 💰 Shops & Economy
+
+Shops & Gil Spending v1 turns existing Gil rewards and merchandise price metadata into a playable purchase loop. Map events can open a merchant with a validated list of Items, Weapons, Armor, and Accessories. The merchant list identifies only merchandise type and ID; purchase prices always come from the canonical database record so map content cannot drift away from item/equipment pricing.
+
+`Game_Party` owns the purchase transaction. A successful purchase spends the exact canonical Gil price and adds the merchandise through the same inventory APIs used by rewards and equipment. Failed purchases, including insufficient funds, leave both Gil and inventory unchanged.
+
+The first shop version buys one unit at a time and intentionally does not define selling or resale values yet. Those rules remain a separate economy-design decision. Map001 includes a test merchant with all current merchandise categories. Save Runtime remains v6 because Shops consume already-persistent Gil and inventory state rather than introducing new save data.
 
 ------------------------------------------------------------------------
 

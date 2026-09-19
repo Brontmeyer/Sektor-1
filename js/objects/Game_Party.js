@@ -388,6 +388,110 @@ class Game_Party {
     return this.accessoryCount(accessoryId) > 0;
   }
 
+  // =================================
+  // Merchandise / Shop Transactions
+  // =================================
+
+  merchandiseRecord(type, id) {
+    switch (type) {
+      case "item":
+        return DatabaseManager.item(id);
+      case "weapon":
+        return DatabaseManager.weapon(id);
+      case "armor":
+        return DatabaseManager.armor(id);
+      case "accessory":
+        return DatabaseManager.accessory(id);
+      default:
+        return null;
+    }
+  }
+
+  merchandiseCount(type, id) {
+    switch (type) {
+      case "item":
+        return this.itemCount(id);
+      case "weapon":
+        return this.weaponCount(id);
+      case "armor":
+        return this.armorCount(id);
+      case "accessory":
+        return this.accessoryCount(id);
+      default:
+        return 0;
+    }
+  }
+
+  gainMerchandise(type, id, amount = 1) {
+    switch (type) {
+      case "item":
+        return this.gainItem(id, amount);
+      case "weapon":
+        return this.gainWeapon(id, amount);
+      case "armor":
+        return this.gainArmor(id, amount);
+      case "accessory":
+        return this.gainAccessory(id, amount);
+      default:
+        console.error(`Unknown merchandise type: ${type}`);
+        return false;
+    }
+  }
+
+  purchaseMerchandise(type, id, amount = 1) {
+    const record = this.merchandiseRecord(type, id);
+    const quantity = Number(amount);
+
+    if (!record) {
+      return { success: false, reason: "unknownMerchandise" };
+    }
+
+    if (!Number.isSafeInteger(quantity) || quantity <= 0) {
+      return { success: false, reason: "invalidQuantity" };
+    }
+
+    const unitPrice = Number(record.price);
+
+    if (!Number.isSafeInteger(unitPrice) || unitPrice < 0) {
+      return { success: false, reason: "invalidPrice" };
+    }
+
+    const totalPrice = unitPrice * quantity;
+
+    if (!Number.isSafeInteger(totalPrice)) {
+      return { success: false, reason: "invalidPrice" };
+    }
+
+    if (totalPrice > this._gil) {
+      return {
+        success: false,
+        reason: "insufficientGil",
+        requiredGil: totalPrice,
+        gil: this._gil,
+      };
+    }
+
+    if (!this.gainMerchandise(type, id, quantity)) {
+      return { success: false, reason: "inventoryRejected" };
+    }
+
+    if (!this.spendGil(totalPrice)) {
+      this.gainMerchandise(type, id, -quantity);
+      return { success: false, reason: "paymentRejected" };
+    }
+
+    return {
+      success: true,
+      type,
+      id: Number(id),
+      quantity,
+      unitPrice,
+      totalPrice,
+      gil: this._gil,
+      owned: this.merchandiseCount(type, id),
+    };
+  }
+
   clearInventory() {
     this.items = {};
     this.weapons = {};

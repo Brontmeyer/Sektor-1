@@ -4,7 +4,7 @@
   "width": 2400,
   "height": 1600,
   "playerStart": {
-    "x": 610,
+    "x": 600,
     "y": 400
   },
 
@@ -37,12 +37,12 @@
 
   "transfers": [
     {
-      "x": 575,
+      "x": 565,
       "y": 150,
       "width": 100,
       "height": 100,
       "targetMapId": 2,
-      "targetX": 610,
+      "targetX": 600,
       "targetY": 400
     }
   ],
@@ -215,7 +215,7 @@
       "id": 3,
       "name": "Battle Tester",
 
-      "x": 610,
+      "x": 550,
       "y": 300,
 
       "width": 32,
@@ -236,6 +236,43 @@
               "code": "text",
               "speaker": "System",
               "text": "The test encounter has ended."
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": 4,
+      "name": "Test Merchant",
+
+      "x": 650,
+      "y": 300,
+
+      "width": 32,
+      "height": 32,
+
+      "solid": true,
+
+      "pages": [
+        {
+          "conditions": {},
+
+          "commands": [
+            {
+              "code": "shop",
+              "name": "Test Merchant",
+              "goods": [
+                { "type": "item", "id": 1 },
+                { "type": "item", "id": 2 },
+                { "type": "weapon", "id": 1 },
+                { "type": "weapon", "id": 2 },
+                { "type": "armor", "id": 1 },
+                { "type": "armor", "id": 2 },
+                { "type": "accessory", "id": 1 },
+                { "type": "accessory", "id": 2 },
+                { "type": "accessory", "id": 3 }
+              ]
             }
           ]
         }

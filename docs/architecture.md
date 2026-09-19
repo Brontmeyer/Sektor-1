@@ -230,7 +230,7 @@ Enemy-specific runtime behavior, including future AI integration, belongs here o
 
 ## Game_Party
 
-`Game_Party` owns the player's party-level state, actor roster, leader resolution, active battle composition, inventory, Gil currency, and party operations. Weapon, armor, and accessory inventory use one shared equipment-count / mutation path while retaining type-specific public APIs. Leader-default actions resolve through party ownership rather than the legacy `$gameActor` global. Inventory-only reset behavior is exposed explicitly as `clearInventory()`.
+`Game_Party` owns the player's party-level state, actor roster, leader resolution, active battle composition, inventory, Gil currency, and party operations. Weapon, armor, and accessory inventory use one shared equipment-count / mutation path while retaining type-specific public APIs. Shops also terminate at this ownership boundary: `purchaseMerchandise()` resolves the canonical merchandise record and price, validates the requested quantity and available Gil, routes inventory gain through the existing type-specific APIs, and spends Gil only as part of the successful transaction. Shop windows therefore never become currency or inventory authority. Leader-default actions resolve through party ownership rather than the legacy `$gameActor` global. Inventory-only reset behavior is exposed explicitly as `clearInventory()`.
 
 It forms the runtime foundation for multi-character gameplay and future party-management features.
 
@@ -244,7 +244,7 @@ The canonical Essence definitions live in `data/Essences.json`; mutable Resonanc
 
 ## World Runtime Objects
 
-`Game_Map`, `Game_Player`, `Game_Event`, and `Game_Interpreter` form the foundation of world exploration and event execution. Loaded map/event JSON is validated before these objects receive it, including nested event conditions and command payloads. The interpreter still performs runtime checks at mutation boundaries so direct or future callers cannot rely solely on file validation.
+`Game_Map`, `Game_Player`, `Game_Event`, and `Game_Interpreter` form the foundation of world exploration and event execution. Loaded map/event JSON is validated before these objects receive it, including nested event conditions and command payloads. Shop commands define only a merchant name and a list of merchandise type/ID references; prices remain canonical item/equipment data. The interpreter advances past the shop command before pushing `Scene_Shop`, so returning to the map resumes the event instead of reopening the merchant. The interpreter still performs runtime checks at mutation boundaries so direct or future callers cannot rely solely on file validation.
 
 `Game_Switches`, `Game_SelfSwitches`, and `Game_Variables` provide persistent or event-facing state used to drive game logic. Additive variable operations normalize numeric input, while direct variable assignment remains intentionally capable of storing non-numeric event state.
 
@@ -320,6 +320,7 @@ Scene_Base.js
 Scene_Battle.js
 Scene_Map.js
 Scene_Menu.js
+Scene_Shop.js
 ```
 
 ## Scene_Base
@@ -338,6 +339,10 @@ Scene_Menu.js
 
 `Scene_Battle` coordinates the battle experience between battle systems, player commands, windows, and presentation. Victory now finalizes the authoritative battle result before presenting `Window_BattleResults`; the scene remains open until the player confirms, while the completion callback and scene pop still occur only once at exit.
 
+## Scene_Shop
+
+`Scene_Shop` coordinates the merchant interaction pushed from a map event. `Window_Shop` reports purchase/cancel requests; the scene forwards purchase requests to `Game_Party.purchaseMerchandise()` and translates the returned structured result into player-facing feedback. The scene does not calculate prices or mutate inventory itself. Closing the shop pops back to the existing map scene and its suspended interpreter state.
+
 A scene may coordinate several systems, but it should avoid becoming the permanent implementation home for mechanics that logically belong to battlers, targeting, effects, data, or other dedicated modules.
 
 ---
@@ -346,7 +351,7 @@ A scene may coordinate several systems, but it should avoid becoming the permane
 
 The `js/windows/` directory contains interactive menus and UI windows.
 
-Current windows include battle commands, battle items, battle Magick, battle results, choices, equipment, Essence equipment, inventory, Magick, menu commands, messages, save slots, and status display. Field-menu actor windows receive explicit leader context from `Scene_Menu`; battle Magick resolves its current battler through the party controller with a party-owned battle-leader fallback. Selectable list windows that can outgrow their fixed layout use the shared `Window_ListViewport` helper so keyboard selection remains visible without drawing into reserved detail regions. `Window_BattleResults` consumes the already-finalized structured battle result and never owns reward mutation, preserving the exactly-once reward boundary in `BattleManager`.
+Current windows include battle commands, battle items, battle Magick, battle results, choices, equipment, Essence equipment, inventory, Magick, menu commands, messages, save slots, shops, and status display. Field-menu actor windows receive explicit leader context from `Scene_Menu`; battle Magick resolves its current battler through the party controller with a party-owned battle-leader fallback. Selectable list windows that can outgrow their fixed layout use the shared `Window_ListViewport` helper so keyboard selection remains visible without drawing into reserved detail regions. `Window_BattleResults` consumes the already-finalized structured battle result and never owns reward mutation, preserving the exactly-once reward boundary in `BattleManager`.
 
 Windows should primarily be responsible for:
 
