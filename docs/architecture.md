@@ -167,7 +167,7 @@ Validation describes the shape and references of canonical data; it does not imp
 
 `SaveManager` owns serialization, migration, validation, and restoration of persistent game progress.
 
-Save Runtime v4 serializes the full `Game_Party` actor roster rather than only the legacy leader alias. Actor state includes mutable progression, HP/MP, combat stats, equipment, learned Magick, save-eligible runtime statuses, and equipped Essence progression state. Party state also persists Gil alongside inventory and active battle composition. Status restoration does not re-run initial application effects; canonical derived statuses are recomputed from restored battler state.
+Save Runtime v5 serializes the full `Game_Party` actor roster rather than only the legacy leader alias. Actor state includes mutable progression, HP/MP, combat stats, equipment, learned Magick, save-eligible runtime statuses, persistent Essence progression, and explicit Essence slot assignments. Party state also persists Gil alongside inventory and active battle composition. Status restoration does not re-run initial application effects; canonical derived statuses are recomputed from restored battler state. Save versions 1 through 4 migrate into the current schema.
 
 The loader recognizes both the legacy version-1 leader-only shape and version-2 and version-3 full-party saves, migrating legacy save shapes into the version-4 structure before validation. Unknown/future save versions and malformed structures fail through a normal error result instead of flowing directly into state mutation. Inventory quantities and location values are normalized at the save boundary, and storage-write failures are caught by the save layer.
 
@@ -217,7 +217,7 @@ Active status instances, status-effect queries, incoming physical/magical damage
 
 ## Game_Actor
 
-`Game_Actor` represents a playable combatant and actor-specific runtime state. Canonical starter Magick come from validated `Actors.json` `initialMagickIds` data rather than constructor-time setup in `Game_System`. Equipment mutation is owned here, including explicit equip and unequip APIs. Actors also own the currently equipped `Game_Essence` runtime instances used by battle Resonance; player-facing Essence slot rules and UI remain future Essence Runtime work.
+`Game_Actor` represents a playable combatant and actor-specific runtime state. Canonical starter Magick come from validated `Actors.json` `initialMagickIds` data rather than constructor-time setup in `Game_System`. Equipment mutation is owned here, including explicit equip and unequip APIs. Actor data also defines the Essence slot count. Essence progression is stored separately from slot assignment so unequipping does not destroy Resonance; slot APIs validate IDs, prevent duplicate assignment on the same actor, and expose the equipped `Game_Essence` instances used by battle Resonance.
 
 Actor behavior should build on shared battler behavior while retaining responsibilities that only make sense for player-controlled characters.
 
@@ -237,9 +237,9 @@ It forms the runtime foundation for multi-character gameplay and future party-ma
 
 `Game_Essence` represents runtime Essence progression state.
 
-The canonical Essence definitions live in `data/Essences.json`; mutable Resonance lives on `Game_Essence` instances instead of modifying database definitions. Resonance is capped at the canonical Mastery threshold, level progression is derived from validated thresholds, and the runtime reports when an Essence becomes Mastery Ready. Equipped Essence state is serialized through the owning actor in Save Runtime v4.
+The canonical Essence definitions live in `data/Essences.json`; mutable Resonance lives on `Game_Essence` instances instead of modifying database definitions. Resonance is capped at the canonical Mastery threshold, level progression is derived from validated thresholds, and the runtime reports the next progression milestone and when an Essence becomes Mastery Ready. Actor-owned Essence progression and slot assignments are serialized independently through Save Runtime v5 so unequipping preserves progression.
 
-The complete player-facing Essence Runtime is still under development: slot/UI rules, ability grants, passives, Mastery Trials, and evolution remain later work.
+`Window_Essence` provides the first player-facing equipment surface: party-member switching, data-driven slots, a scrollable canonical Essence catalog, and progression / Magick-awakening details. The v1 catalog is intentionally not an ownership system; long-term acquisition rules can later filter the selectable catalog without changing the slot API. Ability grants, passives, Mastery Trials, and evolution remain later work.
 
 ## World Runtime Objects
 
@@ -345,7 +345,7 @@ A scene may coordinate several systems, but it should avoid becoming the permane
 
 The `js/windows/` directory contains interactive menus and UI windows.
 
-Current windows include battle commands, battle items, battle Magick, battle results, choices, equipment, inventory, Magick, menu commands, messages, save slots, and status display. Field-menu actor windows receive explicit leader context from `Scene_Menu`; battle Magick resolves its current battler through the party controller with a party-owned battle-leader fallback. Selectable list windows that can outgrow their fixed layout use the shared `Window_ListViewport` helper so keyboard selection remains visible without drawing into reserved detail regions. `Window_BattleResults` consumes the already-finalized structured battle result and never owns reward mutation, preserving the exactly-once reward boundary in `BattleManager`.
+Current windows include battle commands, battle items, battle Magick, battle results, choices, equipment, Essence equipment, inventory, Magick, menu commands, messages, save slots, and status display. Field-menu actor windows receive explicit leader context from `Scene_Menu`; battle Magick resolves its current battler through the party controller with a party-owned battle-leader fallback. Selectable list windows that can outgrow their fixed layout use the shared `Window_ListViewport` helper so keyboard selection remains visible without drawing into reserved detail regions. `Window_BattleResults` consumes the already-finalized structured battle result and never owns reward mutation, preserving the exactly-once reward boundary in `BattleManager`.
 
 Windows should primarily be responsible for:
 
@@ -422,9 +422,9 @@ Windows present available commands and Magick to the player. `Window_BattleComma
 
 `Essences.json` defines Essence content, ability assignments, progression thresholds, passives, and mastery metadata.
 
-`Game_Essence` owns mutable Resonance progression and Mastery-Ready state, while `Game_Actor` owns the currently equipped Essence instances. Victory finalization awards the encounter's Resonance to every equipped Essence on each surviving active battle participant exactly once.
+`Game_Essence` owns mutable Resonance progression and Mastery-Ready state. `Game_Actor` owns both persistent Essence progression instances and a separate slot assignment list, so removing an Essence from a slot does not destroy its Resonance. Victory finalization awards the encounter's Resonance to every currently equipped Essence on each surviving active battle participant exactly once.
 
-Future Essence Runtime work will add player-facing equipment rules, Essence-granted ability availability, passives, Mastery Trials, and evolution without moving progression state back into canonical data.
+`Window_Essence` is a presentation layer over those actor APIs: it switches party-member context, displays slot state and progression, and asks the actor whether a catalog entry is legal before mutating the loadout. Future Essence Runtime work will add acquisition / ownership filtering, Essence-granted ability availability, passives, Mastery Trials, and evolution without moving progression state back into canonical data.
 
 ## Statuses
 

@@ -27,76 +27,218 @@ class Game_Actor extends Game_Battler {
       ? [...actorData.initialMagickIds]
       : [];
 
-    // Runtime Essence equipment state. Player-facing slot rules / UI remain
-    // part of the future Essence Runtime milestone.
-    this._equippedEssences = [];
+    // Essence progression belongs to the actor, while equipment slots only
+    // reference those persistent runtime instances. This keeps Resonance intact
+    // when an Essence is temporarily unequipped.
+    this._essenceSlotCount = actorData.essenceSlots;
+    this._essenceProgress = new Map();
+    this._equippedEssenceIds = Array(this._essenceSlotCount).fill(null);
   }
 
   // =====================================
   // Essence Equipment / Progression
   // =====================================
 
+  essenceSlotCount() {
+    return this._essenceSlotCount;
+  }
+
+  essenceProgress(essenceId) {
+    const id = Number(essenceId);
+    return this._essenceProgress.get(id) || null;
+  }
+
+  ensureEssenceProgress(essenceId, resonance = 0) {
+    const id = Number(essenceId);
+
+    if (!Number.isInteger(id) || id <= 0 || !DatabaseManager.essence(id)) {
+      return null;
+    }
+
+    const existing = this.essenceProgress(id);
+
+    if (existing) {
+      return existing;
+    }
+
+    const essence = new Game_Essence(id, resonance);
+    this._essenceProgress.set(id, essence);
+    return essence;
+  }
+
+  essenceProgressStates() {
+    return [...this._essenceProgress.values()]
+      .sort((a, b) => a.essenceId - b.essenceId)
+      .map((essence) => ({
+        essenceId: essence.essenceId,
+        resonance: essence.resonance,
+      }));
+  }
+
+  equippedEssenceIds() {
+    return [...this._equippedEssenceIds];
+  }
+
+  equippedEssenceAt(slotIndex) {
+    const slot = Number(slotIndex);
+
+    if (!Number.isInteger(slot) || slot < 0 || slot >= this._essenceSlotCount) {
+      return null;
+    }
+
+    const essenceId = this._equippedEssenceIds[slot];
+    return essenceId ? this.essenceProgress(essenceId) : null;
+  }
+
   equippedEssences() {
-    return [...this._equippedEssences];
+    return this._equippedEssenceIds
+      .map((essenceId) => (essenceId ? this.essenceProgress(essenceId) : null))
+      .filter((essence) => essence !== null);
   }
 
   equippedEssence(essenceId) {
     const id = Number(essenceId);
-    return this._equippedEssences.find((essence) => essence.essenceId === id) || null;
+
+    if (!this._equippedEssenceIds.includes(id)) {
+      return null;
+    }
+
+    return this.essenceProgress(id);
+  }
+
+  equippedEssenceSlot(essenceId) {
+    const id = Number(essenceId);
+    return this._equippedEssenceIds.indexOf(id);
+  }
+
+  canEquipEssenceInSlot(slotIndex, essenceId) {
+    const slot = Number(slotIndex);
+    const id = Number(essenceId);
+
+    if (
+      !Number.isInteger(slot) ||
+      slot < 0 ||
+      slot >= this._essenceSlotCount ||
+      !Number.isInteger(id) ||
+      id <= 0 ||
+      !DatabaseManager.essence(id)
+    ) {
+      return false;
+    }
+
+    const equippedSlot = this.equippedEssenceSlot(id);
+    return equippedSlot < 0 || equippedSlot === slot;
+  }
+
+  equipEssenceInSlot(slotIndex, essenceId, resonance = 0) {
+    const slot = Number(slotIndex);
+    const id = Number(essenceId);
+
+    if (!this.canEquipEssenceInSlot(slot, id)) {
+      return false;
+    }
+
+    const essence = this.ensureEssenceProgress(id, resonance);
+
+    if (!essence) {
+      return false;
+    }
+
+    this._equippedEssenceIds[slot] = id;
+    return true;
   }
 
   equipEssence(essenceId, resonance = 0) {
     const id = Number(essenceId);
 
-    if (!Number.isInteger(id) || id <= 0 || !DatabaseManager.essence(id)) {
-      return false;
-    }
-
     if (this.equippedEssence(id)) {
       return false;
     }
 
-    this._equippedEssences.push(new Game_Essence(id, resonance));
+    const openSlot = this._equippedEssenceIds.indexOf(null);
+
+    if (openSlot < 0) {
+      return false;
+    }
+
+    return this.equipEssenceInSlot(openSlot, id, resonance);
+  }
+
+  unequipEssenceSlot(slotIndex) {
+    const slot = Number(slotIndex);
+
+    if (
+      !Number.isInteger(slot) ||
+      slot < 0 ||
+      slot >= this._essenceSlotCount ||
+      this._equippedEssenceIds[slot] === null
+    ) {
+      return false;
+    }
+
+    this._equippedEssenceIds[slot] = null;
     return true;
   }
 
   unequipEssence(essenceId) {
-    const id = Number(essenceId);
-    const index = this._equippedEssences.findIndex(
-      (essence) => essence.essenceId === id,
-    );
-
-    if (index < 0) {
-      return false;
-    }
-
-    this._equippedEssences.splice(index, 1);
-    return true;
+    const slot = this.equippedEssenceSlot(essenceId);
+    return slot >= 0 ? this.unequipEssenceSlot(slot) : false;
   }
 
+  // Backward-compatible shape used by older battle/save tests and v4 saves.
   equippedEssenceStates() {
-    return this._equippedEssences.map((essence) => ({
+    return this.equippedEssences().map((essence) => ({
       essenceId: essence.essenceId,
       resonance: essence.resonance,
     }));
   }
 
-  restoreEquippedEssenceStates(states) {
-    this._equippedEssences = [];
+  restoreEssenceLoadout(progressStates, equippedIds) {
+    this._essenceProgress = new Map();
+    this._equippedEssenceIds = Array(this._essenceSlotCount).fill(null);
 
-    if (!Array.isArray(states)) {
+    if (Array.isArray(progressStates)) {
+      for (const state of progressStates) {
+        const essence = this.ensureEssenceProgress(
+          state?.essenceId,
+          state?.resonance ?? 0,
+        );
+
+        if (!essence) {
+          continue;
+        }
+      }
+    }
+
+    if (!Array.isArray(equippedIds)) {
       return;
     }
 
-    for (const state of states) {
-      this.equipEssence(state?.essenceId, state?.resonance ?? 0);
+    const slotLimit = Math.min(this._essenceSlotCount, equippedIds.length);
+
+    for (let slot = 0; slot < slotLimit; slot++) {
+      const essenceId = Number(equippedIds[slot]);
+
+      if (!Number.isInteger(essenceId) || essenceId <= 0) {
+        continue;
+      }
+
+      this.equipEssenceInSlot(slot, essenceId);
     }
+  }
+
+  restoreEquippedEssenceStates(states) {
+    const legacyStates = Array.isArray(states) ? states : [];
+    this.restoreEssenceLoadout(
+      legacyStates,
+      legacyStates.map((state) => state?.essenceId ?? null),
+    );
   }
 
   gainEquippedEssenceResonance(amount) {
     const results = [];
 
-    for (const essence of this._equippedEssences) {
+    for (const essence of this.equippedEssences()) {
       const progression = essence.addResonance(amount);
 
       if (!progression) {

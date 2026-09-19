@@ -154,7 +154,7 @@ function rawSave(localStorage, SaveManager, slotId = 1) {
   return JSON.parse(localStorage.getItem(SaveManager.saveKey(slotId)));
 }
 
-function testV4SaveSerializesPartyCurrencyEssencesAndPersistentStatuses() {
+function testV5SaveSerializesPartyCurrencyEssencesAndPersistentStatuses() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
 
@@ -176,7 +176,7 @@ function testV4SaveSerializesPartyCurrencyEssencesAndPersistentStatuses() {
   const saveData = rawSave(localStorage, SaveManager);
   const savedSecond = saveData.actors.find((actor) => actor.actorId === 2);
 
-  assert.equal(saveData.version, 4);
+  assert.equal(saveData.version, 5);
   assert.equal(saveData.actors.length, 4);
   assert.equal(Object.hasOwn(saveData, "actor"), false);
   assert.equal(savedSecond.exp, 321);
@@ -190,12 +190,13 @@ function testV4SaveSerializesPartyCurrencyEssencesAndPersistentStatuses() {
   );
   assert.deepEqual(saveData.party.battleActorIds, [1, 2, 3, 4]);
   assert.equal(saveData.party.gil, 77);
-  assert.deepEqual(Array.from(savedSecond.essences), [
+  assert.deepEqual(Array.from(savedSecond.essenceProgress), [
     { essenceId: 1, resonance: 145 },
   ]);
+  assert.deepEqual(Array.from(savedSecond.equippedEssenceIds), [1, null, null]);
 }
 
-async function testV4LoadRestoresActorStateCurrencyEssencesAndNormalizesInventory() {
+async function testV5LoadRestoresActorStateCurrencyEssencesAndNormalizesInventory() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
 
@@ -219,7 +220,7 @@ async function testV4LoadRestoresActorStateCurrencyEssencesAndNormalizesInventor
   second.maxHp = 100;
   second.setHp(100);
   second.statuses = [];
-  second.restoreEquippedEssenceStates([]);
+  second.restoreEssenceLoadout([], []);
   party.items = {};
   party.setGil(0);
 
@@ -237,6 +238,51 @@ async function testV4LoadRestoresActorStateCurrencyEssencesAndNormalizesInventor
   assert.equal(second.equippedEssence(4).resonance, 299);
 }
 
+async function testVersionFourSaveMigratesLegacyEssenceLoadout() {
+  const { localStorage, party, partyActors, SaveManager } = createHarness();
+  const second = partyActors[1];
+
+  const v4 = {
+    version: 4,
+    metadata: { actorName: party.leader().name, level: 1, timestamp: Date.now() },
+    actors: partyActors.map((actor) => {
+      const serialized = SaveManager.serializeActor(actor);
+      const { essenceProgress: _progress, equippedEssenceIds: _equipped, ...legacy } = serialized;
+
+      return {
+        ...legacy,
+        essences:
+          actor.actorId === 2
+            ? [
+                { essenceId: 4, resonance: 345 },
+                { essenceId: 5, resonance: 200 },
+                { essenceId: 6, resonance: 100 },
+                { essenceId: 7, resonance: 50 },
+              ]
+            : [],
+      };
+    }),
+    party: {
+      items: {},
+      weapons: {},
+      armors: {},
+      battleActorIds: [1, 2, 3, 4],
+      gil: 20,
+    },
+    switches: { data: {} },
+    variables: { data: {} },
+    selfSwitches: { data: {} },
+    location: { mapId: 1, x: 6, y: 7 },
+  };
+
+  localStorage.setItem(SaveManager.saveKey(1), JSON.stringify(v4));
+
+  assert.equal(await SaveManager.load(1), true);
+  assert.equal(second.equippedEssence(4)?.resonance, 345);
+  assert.deepEqual(Array.from(second.equippedEssenceIds()), [4, 5, 6]);
+  assert.equal(second.essenceProgress(7)?.resonance, 50);
+}
+
 async function testVersionThreeSaveMigratesLegacySkillsToMagickIds() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
@@ -246,8 +292,12 @@ async function testVersionThreeSaveMigratesLegacySkillsToMagickIds() {
     metadata: { actorName: party.leader().name, level: 1, timestamp: Date.now() },
     actors: partyActors.map((actor) => {
       const serialized = SaveManager.serializeActor(actor);
-      const { magickIds, ...legacy } = serialized;
-      return { ...legacy, skills: actor.actorId === 2 ? [2, 3] : magickIds };
+      const { magickIds, essenceProgress: _progress, equippedEssenceIds: _equipped, ...legacy } = serialized;
+      return {
+        ...legacy,
+        skills: actor.actorId === 2 ? [2, 3] : magickIds,
+        essences: [],
+      };
     }),
     party: {
       items: {},
@@ -282,7 +332,7 @@ async function testVersionTwoSaveMigratesCurrencyAndEssenceDefaults() {
     metadata: { actorName: party.leader().name, level: 1, timestamp: Date.now() },
     actors: partyActors.map((actor) => {
       const serialized = SaveManager.serializeActor(actor);
-      const { magickIds, essences: _essences, ...legacy } = serialized;
+      const { magickIds, essenceProgress: _progress, equippedEssenceIds: _equipped, ...legacy } = serialized;
       return { ...legacy, skills: magickIds };
     }),
     party: { items: {}, weapons: {}, armors: {}, battleActorIds: [1, 2, 3, 4] },
@@ -393,8 +443,9 @@ function testSaveStorageFailureReturnsFalse() {
 }
 
 async function run() {
-  testV4SaveSerializesPartyCurrencyEssencesAndPersistentStatuses();
-  await testV4LoadRestoresActorStateCurrencyEssencesAndNormalizesInventory();
+  testV5SaveSerializesPartyCurrencyEssencesAndPersistentStatuses();
+  await testV5LoadRestoresActorStateCurrencyEssencesAndNormalizesInventory();
+  await testVersionFourSaveMigratesLegacyEssenceLoadout();
   await testVersionThreeSaveMigratesLegacySkillsToMagickIds();
   await testVersionTwoSaveMigratesCurrencyAndEssenceDefaults();
   await testVersionOneSaveMigratesLeaderWithoutOverwritingOtherActors();

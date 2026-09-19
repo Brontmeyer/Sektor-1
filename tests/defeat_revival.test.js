@@ -380,6 +380,7 @@ function testBattleOutcomeAndRewardsTreatPetrifyAsDefeat() {
     },
   );
   const manager = new BattleManager(scene);
+  manager.rewardRandom = () => 1;
 
   assert.equal(manager.detectBattleOutcome(), BattleManager.OUTCOME_VICTORY);
 

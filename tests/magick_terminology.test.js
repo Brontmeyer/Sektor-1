@@ -106,7 +106,7 @@ function testCurrentRuntimeHasNoLegacySkillAbilityApi() {
     const source = read(relative);
 
     // SaveManager intentionally reads the legacy `skills` field so v1-v3 saves
-    // migrate into the v4 `magickIds` schema. No current API may use that name.
+    // can still migrate through the current save schema. No current API may use that name.
     for (const pattern of forbidden) {
       assert.equal(pattern.test(source), false, `${relative} contains ${pattern}`);
     }
@@ -131,9 +131,9 @@ function testCurrentRuntimeHasNoLegacySkillAbilityApi() {
 function testLegacySaveBridgeIsExplicitAndIsolated() {
   const saveManager = read("js/core/SaveManager.js");
   assert.match(saveManager, /Array\.isArray\(source\.skills\)/);
-  assert.match(saveManager, /const \{ skills: _legacySkills, \.\.\.rest \} = source/);
+  assert.match(saveManager, /skills:\s*_legacySkills[\s\S]*\.\.\.rest/);
   assert.match(saveManager, /magickIds/);
-  assert.match(saveManager, /return 4;/);
+  assert.match(saveManager, /return 5;/);
 }
 
 function testDocumentationDoesNotReferenceLegacyAbilityIdentifiers() {

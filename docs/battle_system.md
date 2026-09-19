@@ -388,7 +388,7 @@ At 1500 Resonance, an Essence becomes **Mastery Ready** and stops gaining Resona
 
 Completing that Essence's future Mastery Trial promotes it to Level 5 MASTERED.
 
-Battle Resonance awards and persistent equipped-Essence progression are now active. The remaining Essence Runtime work is player-facing equipping/slot rules, ability availability, passive evaluation, Mastery Trials, and Essence Evolution.
+Battle Resonance awards and persistent Essence progression are active. Essence Equipment & Menu v1 adds data-driven actor slots and preserves Resonance when an Essence is unequipped. The remaining Essence Runtime work is long-term acquisition / ownership rules, ability availability, passive evaluation, Mastery Trials, and Essence Evolution.
 
 ---
 

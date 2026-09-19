@@ -49,7 +49,7 @@ Completed foundations include:
 -   ✅ Party foundation
 -   ✅ Multi-character turn system
 -   ✅ Turn queue
--   ✅ Save / Load (version-aware Save Runtime v4)
+-   ✅ Save / Load (version-aware Save Runtime v5)
 -   ✅ Equipment system
 -   ✅ Inventory system
 
@@ -75,7 +75,8 @@ Current battle features include:
 
 Systems currently being expanded include:
 
--   🚧 Essence runtime and player-facing equipping
+-   ✅ Essence Equipment & Menu v1
+-   🚧 Essence ability grants and passive runtime
 -   🚧 Enemy AI
 -   🚧 Boss mechanics
 -   🚧 Limit Skills
@@ -124,6 +125,10 @@ At maximum Resonance, an Essence becomes **Mastery Ready**. Completing
 its eventual Mastery Trial allows it to reach its mastered state.
 
 The system is also designed to support future **Essence Evolution**.
+
+Essence Equipment & Menu v1 gives every current actor **3 data-driven Essence slots**, party-member switching in the menu, progression details, and a scrollable canonical Essence catalog. Resonance belongs to the actor's Essence progression state rather than to the slot, so unequipping and re-equipping an Essence preserves its growth.
+
+The v1 selector intentionally exposes the canonical Essence catalog while long-term acquisition / ownership rules remain undecided. Future acquisition can filter that catalog without changing the actor slot API.
 
 ------------------------------------------------------------------------
 

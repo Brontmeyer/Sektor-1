@@ -53,6 +53,44 @@ class Game_Essence {
     return currentLevel;
   }
 
+
+  nextProgressionMilestone() {
+    if (this.isMasteryReady()) {
+      return null;
+    }
+
+    const essence = this.data();
+    const currentLevel = this.level();
+
+    if (Array.isArray(essence?.levels)) {
+      const nextLevel = essence.levels.find(
+        (levelData) => levelData.level > currentLevel,
+      );
+
+      if (nextLevel) {
+        return {
+          label: `Level ${nextLevel.level}`,
+          resonanceRequired: nextLevel.resonanceRequired,
+        };
+      }
+    }
+
+    return {
+      label: "Mastery Ready",
+      resonanceRequired: this.masteryThreshold(),
+    };
+  }
+
+  resonanceToNextMilestone() {
+    const milestone = this.nextProgressionMilestone();
+
+    if (!milestone) {
+      return 0;
+    }
+
+    return Math.max(0, milestone.resonanceRequired - this.resonance);
+  }
+
   addResonance(amount) {
     const value = Number(amount);
 

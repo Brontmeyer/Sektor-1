@@ -12,6 +12,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Essence Equipment & Menu v1 with party-member switching, data-driven actor slot counts, a scrollable Essence catalog, and progression / Magick-awakening details
+- Added slot-aware Essence APIs that preserve Resonance when unequipped and prevent duplicate Essence assignment within the same actor loadout
+- Added dedicated Essence equipment regression coverage for slot rules, progression preservation, menu integration, actor switching, and validation
 - Added Magick Terminology Migration v1, moving the current supernatural ability system from the legacy Skills/Magic namespace to canonical **Magick** terminology
 - Renamed the canonical supernatural ability database to `data/Magick.json`, the field/battle Magick windows, Magick runtime APIs, Essence ability references, status metadata, regression suites, and player-facing command labels
 - Added a dedicated future **Skills** namespace for non-Magick techniques without implementing a premature Skills runtime
@@ -106,6 +109,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Changed
 
+- Upgraded persistent saves to version 5 so Essence progression and equipped slot IDs persist independently, with compatibility migration from save versions 1 through 4
+- Reconciled the stale actor-ownership regression with canonical `Actors.json` starter-Magick data instead of hard-coding a previous actor setup
+- Made the defeat/revival regression deterministic by disabling unrelated random item-drop resolution inside that test
 - Normalized the complete documentation suite, including the historical repository audit, to distinguish current **Magick** from future non-Magick **Skills** while preserving Magic / Magic Attack / Magic Defense as combat-stat terminology
 - Upgraded persistent saves to version 4 for the Magick terminology migration, with compatibility migration from save versions 1, 2, and 3
 - Upgraded persistent saves to version 3 so Gil and equipped Essence progression survive save/load, with migration from v1 and v2 formats

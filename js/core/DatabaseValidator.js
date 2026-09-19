@@ -940,6 +940,12 @@ class DatabaseValidator {
       this.validateBattlerStats(actor, label, errors);
       this.validateBattleSprite(actor, label, "sideBattleSprite", errors);
       this.validateFiniteNumber(`${label} exp`, actor.exp, errors, { min: 0 });
+      this.validateFiniteNumber(
+        `${label} essenceSlots`,
+        actor.essenceSlots,
+        errors,
+        { min: 1, integer: true },
+      );
 
       if (!Array.isArray(actor.initialMagickIds)) {
         errors.push(`${label} initialMagickIds must be an array.`);

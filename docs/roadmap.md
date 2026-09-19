@@ -40,7 +40,7 @@ Completed engine foundations include:
 - Turn queue
 - Multi-character turns
 - Data-driven actor collection ownership with explicit party/leader context
-- Save / Load with version-aware multi-actor Save Runtime v4, persistent Gil / Essence state, and v1/v2/v3 migration
+- Save / Load with version-aware multi-actor Save Runtime v5, persistent Gil / slot-aware Essence state, and v1-v4 migration
 - Equipment system
 - Inventory system
 - Battle Results Screen v1 for visible EXP, Gil, drop, level-up, and Essence progression feedback
@@ -146,19 +146,20 @@ The Essence data model, database loading, validation, and progression rules are 
 
 Completed runtime foundation now includes:
 
-- Equipped-Essence state APIs on actors
+- Data-driven Essence slot counts on actors
+- Player-facing Essence Equipment & Menu v1 with party-member switching
+- Persistent actor-owned Essence progression that survives unequipping
 - Battle Resonance gain for surviving active participants
-- Resonance-capped Essence leveling
+- Resonance-capped Essence leveling and next-milestone reporting
 - Mastery Ready transition at 1500 Resonance
-- Save / Load persistence for equipped Essence state
+- Save / Load persistence for Essence progression and slot assignments
 
 Primary remaining work includes:
 
-- Implement player-facing Essence equipping UI / slot rules
+- Define long-term Essence acquisition / ownership rules for filtering the equip catalog
 - Implement ability availability from equipped Essences
 - Implement Level 4 passive effects
 - Implement full Mastery state / Trial support
-- Expose required Essence information through UI
 
 Equipped Essences should gain full battle Resonance regardless of whether one of their abilities was cast.
 

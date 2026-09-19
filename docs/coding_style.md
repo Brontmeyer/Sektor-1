@@ -425,6 +425,8 @@ Until the quest system exists, Mastery records may intentionally use:
 
 Do not invent placeholder numeric quest IDs merely to avoid `null`.
 
+Actor Essence capacity belongs in actor data through the positive-integer `essenceSlots` field. UI code must query the actor's slot API rather than assuming a fixed slot count. Essence progression and slot assignment are separate runtime concepts so unequipping does not reset Resonance.
+
 ---
 
 # ✨ Magick Data Conventions

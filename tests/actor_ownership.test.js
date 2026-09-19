@@ -97,10 +97,12 @@ function testGameSystemBuildsActorsFromDatabaseAndInitialMagick() {
   assert.equal(Object.hasOwn(system, "actor3"), false);
   assert.equal(Object.hasOwn(system, "actor4"), false);
 
-  assert.deepEqual(Array.from(system.actors[0].magickIds), []);
-  assert.deepEqual(Array.from(system.actors[1].magickIds), [1, 10]);
-  assert.deepEqual(Array.from(system.actors[2].magickIds), [1, 10]);
-  assert.deepEqual(Array.from(system.actors[3].magickIds), [1, 10]);
+  for (const actor of system.actors) {
+    assert.deepEqual(
+      Array.from(actor.magickIds),
+      Array.from(actors[actor.actorId].initialMagickIds),
+    );
+  }
 }
 
 function testPartyOwnedDefaultItemTargetAndExplicitInventoryClear() {

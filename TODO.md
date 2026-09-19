@@ -84,10 +84,11 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Define Mastery Trial concept
 - [x] Define Essence Evolution eligibility
 - [x] Implement Essence database loading
-- [ ] Implement player-facing Essence equipping UI / slot rules
+- [x] Implement player-facing Essence equipping UI / slot rules
 - [x] Implement Resonance gain
 - [x] Implement Essence leveling
 - [x] Implement Mastery Ready state
+- [ ] Define long-term Essence acquisition / ownership rules
 - [ ] Implement Mastery Trial completion
 - [ ] Implement Level 4 passive effects
 - [ ] Design Mastery Trial quests
@@ -164,7 +165,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v4 with multi-actor, Gil, Essence-state persistence, and v1/v2/v3 migration
+- [x] Save Runtime v5 with slot-aware Essence progression persistence and v1-v4 migration
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies

@@ -42,7 +42,8 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": [1, 10]
+    "initialMagickIds": [1, 10],
+    "essenceSlots": 3
   },
   {
     "_comment": "Sarah",
@@ -86,7 +87,8 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": [1, 10]
+    "initialMagickIds": [1, 10],
+    "essenceSlots": 3
   },
   {
     "_comment": "Aboo",
@@ -130,7 +132,8 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": [1, 10]
+    "initialMagickIds": [1, 10],
+    "essenceSlots": 3
   },
   {
     "_comment": "G Prime",
@@ -174,6 +177,7 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": [1, 10]
+    "initialMagickIds": [1, 10],
+    "essenceSlots": 3
   }
 ]

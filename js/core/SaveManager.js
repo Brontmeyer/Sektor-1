@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 4;
+    return 5;
   }
 
   static clearError() {
@@ -73,12 +73,33 @@ class SaveManager {
               : Array.isArray(source.skills)
                 ? source.skills
                 : [];
-            const { skills: _legacySkills, ...rest } = source;
+            const legacyEssences = Array.isArray(source.essences)
+              ? source.essences
+              : [];
+            const essenceProgress = Array.isArray(source.essenceProgress)
+              ? source.essenceProgress
+              : legacyEssences;
+            const rawEquippedEssenceIds = Array.isArray(source.equippedEssenceIds)
+              ? source.equippedEssenceIds
+              : legacyEssences.map((state) => state?.essenceId ?? null);
+            const configuredSlots = Number(
+              DatabaseManager.actor?.(Number(source.actorId))?.essenceSlots,
+            );
+            const equippedEssenceIds =
+              Number.isInteger(configuredSlots) && configuredSlots > 0
+                ? rawEquippedEssenceIds.slice(0, configuredSlots)
+                : rawEquippedEssenceIds;
+            const {
+              skills: _legacySkills,
+              essences: _legacyEssences,
+              ...rest
+            } = source;
 
             return {
               ...rest,
               magickIds,
-              essences: Array.isArray(source.essences) ? source.essences : [],
+              essenceProgress,
+              equippedEssenceIds,
             };
           })
         : [],
@@ -94,7 +115,7 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if (inferredVersion === 3 || inferredVersion === 2) {
+    if ([4, 3, 2].includes(inferredVersion)) {
       return upgradeToCurrent(saveData);
     }
 
@@ -198,14 +219,18 @@ class SaveManager {
           errors.push(`Actor ${actorId} statuses must be an array.`);
         }
 
-        if (actorData.essences !== undefined && !Array.isArray(actorData.essences)) {
-          errors.push(`Actor ${actorId} essences must be an array.`);
-        } else if (Array.isArray(actorData.essences)) {
-          const seenEssenceIds = new Set();
+        const runtimeActor = $gameParty?.actorById?.(actorId) || null;
+        const progressIds = new Set();
 
-          for (const essenceState of actorData.essences) {
+        if (
+          actorData.essenceProgress !== undefined &&
+          !Array.isArray(actorData.essenceProgress)
+        ) {
+          errors.push(`Actor ${actorId} essenceProgress must be an array.`);
+        } else if (Array.isArray(actorData.essenceProgress)) {
+          for (const essenceState of actorData.essenceProgress) {
             if (!this.isPlainObject(essenceState)) {
-              errors.push(`Actor ${actorId} Essence state must be an object.`);
+              errors.push(`Actor ${actorId} Essence progress state must be an object.`);
               continue;
             }
 
@@ -218,10 +243,10 @@ class SaveManager {
               continue;
             }
 
-            if (seenEssenceIds.has(essenceId)) {
-              errors.push(`Actor ${actorId} equips Essence ${essenceId} more than once.`);
+            if (progressIds.has(essenceId)) {
+              errors.push(`Actor ${actorId} stores Essence ${essenceId} progress more than once.`);
             }
-            seenEssenceIds.add(essenceId);
+            progressIds.add(essenceId);
 
             const cap = Number(essenceData.mastery?.resonanceRequired);
             const maximum = Number.isFinite(cap) && cap >= 0 ? cap : 1500;
@@ -229,6 +254,55 @@ class SaveManager {
             if (!Number.isFinite(resonance) || resonance < 0 || resonance > maximum) {
               errors.push(
                 `Actor ${actorId} Essence ${essenceId} resonance must be between 0 and ${maximum}.`,
+              );
+            }
+          }
+        }
+
+        if (
+          actorData.equippedEssenceIds !== undefined &&
+          !Array.isArray(actorData.equippedEssenceIds)
+        ) {
+          errors.push(`Actor ${actorId} equippedEssenceIds must be an array.`);
+        } else if (Array.isArray(actorData.equippedEssenceIds)) {
+          const slotCount = runtimeActor?.essenceSlotCount?.() ?? 0;
+
+          if (
+            Number.isInteger(slotCount) &&
+            slotCount > 0 &&
+            actorData.equippedEssenceIds.length > slotCount
+          ) {
+            errors.push(
+              `Actor ${actorId} equippedEssenceIds exceeds its ${slotCount} Essence slots.`,
+            );
+          }
+
+          const equippedIds = new Set();
+
+          for (const rawEssenceId of actorData.equippedEssenceIds) {
+            if (rawEssenceId === null || rawEssenceId === undefined || rawEssenceId === 0) {
+              continue;
+            }
+
+            const essenceId = Number(rawEssenceId);
+
+            if (
+              !Number.isInteger(essenceId) ||
+              essenceId <= 0 ||
+              !DatabaseManager.essence?.(essenceId)
+            ) {
+              errors.push(`Actor ${actorId} equips unknown Essence ${rawEssenceId}.`);
+              continue;
+            }
+
+            if (equippedIds.has(essenceId)) {
+              errors.push(`Actor ${actorId} equips Essence ${essenceId} more than once.`);
+            }
+            equippedIds.add(essenceId);
+
+            if (!progressIds.has(essenceId)) {
+              errors.push(
+                `Actor ${actorId} equips Essence ${essenceId} without saved progression state.`,
               );
             }
           }
@@ -339,9 +413,13 @@ class SaveManager {
         typeof actor.persistentStatusState === "function"
           ? actor.persistentStatusState()
           : [],
-      essences:
-        typeof actor.equippedEssenceStates === "function"
-          ? actor.equippedEssenceStates()
+      essenceProgress:
+        typeof actor.essenceProgressStates === "function"
+          ? actor.essenceProgressStates()
+          : [],
+      equippedEssenceIds:
+        typeof actor.equippedEssenceIds === "function"
+          ? actor.equippedEssenceIds()
           : [],
     };
   }
@@ -421,8 +499,11 @@ class SaveManager {
       actor.restorePersistentStatusState(actorData.statuses || []);
     }
 
-    if (typeof actor.restoreEquippedEssenceStates === "function") {
-      actor.restoreEquippedEssenceStates(actorData.essences || []);
+    if (typeof actor.restoreEssenceLoadout === "function") {
+      actor.restoreEssenceLoadout(
+        actorData.essenceProgress || [],
+        actorData.equippedEssenceIds || [],
+      );
     }
   }
 

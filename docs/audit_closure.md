@@ -4,6 +4,8 @@
 
 Pass 29 does not reopen any audit finding. It renames the current supernatural ability system to **Magick**, reserves **Skills** for future non-Magick techniques, and bumps Save Runtime to v4 so legacy v1-v3 `skills` save fields migrate safely into `magickIds`. The historical audit text has been terminology-normalized for readability while retaining its original findings.
 
+Pass 30 likewise does not reopen the audit. Essence Equipment & Menu v1 builds on the already-closed Essence reward/persistence foundation, and Save Runtime v5 migrates v1-v4 saves into slot-aware Essence progression without changing any historical audit classification.
+
 This document reconciles the historical static review in `docs/repo_audit.md`
 against the **current repository**.
 

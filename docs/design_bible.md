@@ -262,6 +262,16 @@ Future evolution possibilities
 
 ---
 
+# 💠 Essence Equipment
+
+Current playable actors have **3 Essence slots**, with the count defined in actor data so later characters can differ without changing menu or runtime code.
+
+An actor cannot equip the same Essence definition in more than one of their own slots at the same time. Slot assignment and Essence progression are separate: removing an Essence from a slot does **not** erase its Resonance, level, or Mastery Ready progress.
+
+Essence Equipment & Menu v1 exposes the complete canonical Essence catalog because acquisition / ownership rules have not yet been established as canon. When those rules are designed, they should filter which Essences appear as equippable without changing the underlying slot or progression contracts.
+
+---
+
 # 🌱 Resonance
 
 Equipped Essences gain full battle Resonance regardless of whether one of their abilities was cast during the battle.
