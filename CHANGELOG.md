@@ -12,6 +12,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Character Menu Navigation Consistency v1 with shared left/right party-member switching across Magick, Status, Equipment, and Essence
+- Added `Window_ActorNavigator` to centralize party-member indexing, wraparound navigation, A/D and arrow-key input, and the shared `◀ Actor ▶` header
+- Added dedicated character-menu navigation regression coverage for actor switching, selection resets, equipment-selector synchronization, header rendering, and Scene_Menu party-context wiring
 - Added Shops & Gil Spending v1 with validated event-defined merchant inventories, canonical database pricing, and purchases across items, weapons, armor, and accessories
 - Added an atomic `Game_Party.purchaseMerchandise()` transaction boundary so shop UI requests purchases while party ownership performs Gil and inventory mutation
 - Added `Scene_Shop` / `Window_Shop` with a scrollable merchandise list, live Gil and owned-count display, purchase feedback, and a test merchant in Map001
@@ -117,6 +120,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Changed
 
+- Updated `Scene_Menu` so Magick, Status, Equipment, and Essence receive explicit `Game_Party` context instead of fixed leader references
+- Refactored Essence actor switching onto the same reusable navigation helper now used by the other character-specific field menus
 - Upgraded persistent saves to version 6 so actor accessory equipment and party accessory inventory persist, with compatibility migration from save versions 1 through 5
 - Extended the equipment selector and equipment overview to handle Weapon, Armor, and Accessory through the same UI path, including accessory stat previews
 - Upgraded persistent saves to version 5 so Essence progression and equipped slot IDs persist independently, with compatibility migration from save versions 1 through 4

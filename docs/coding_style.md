@@ -240,6 +240,8 @@ Presentation code should not quietly become gameplay authority.
 
 A window may display whether a command is available, but the underlying game system should determine whether it is actually legal.
 
+Character-specific field-menu windows should receive party context and use the shared `Window_ActorNavigator` helper for left/right actor switching and actor-header presentation. Window-specific code should only handle the local state that must reset when the selected actor changes.
+
 ---
 
 # 🗃️ Data-Driven Gameplay

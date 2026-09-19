@@ -1,11 +1,10 @@
 "use strict";
 
 class Window_Essence {
-  constructor(party) {
-    this.party = party;
+  constructor(source) {
+    this.actorNavigation = new Window_ActorNavigator(source);
     this.visible = false;
     this.mode = "slots";
-    this.actorIndex = 0;
     this.slotIndex = 0;
     this.catalogIndex = 0;
 
@@ -20,11 +19,11 @@ class Window_Essence {
   }
 
   members() {
-    return this.party?.members?.() || [];
+    return this.actorNavigation.members();
   }
 
   actor() {
-    return this.members()[this.actorIndex] || null;
+    return this.actorNavigation.actor();
   }
 
   catalogEssences() {
@@ -59,17 +58,18 @@ class Window_Essence {
     return this.currentSlotEssence();
   }
 
-  changeActor(offset) {
-    const members = this.members();
-
-    if (members.length === 0) {
-      this.actorIndex = 0;
-      return;
-    }
-
-    this.actorIndex = (this.actorIndex + offset + members.length) % members.length;
+  onActorChanged() {
     this.slotIndex = 0;
     this.mode = "slots";
+  }
+
+  changeActor(offset) {
+    if (!this.actorNavigation.changeActor(offset)) {
+      return false;
+    }
+
+    this.onActorChanged();
+    return true;
   }
 
   moveSlot(offset) {
@@ -184,12 +184,9 @@ class Window_Essence {
       return;
     }
 
-    if (Input.isTriggered("ArrowLeft") || Input.isTriggered("KeyA")) {
-      this.changeActor(-1);
-    }
-
-    if (Input.isTriggered("ArrowRight") || Input.isTriggered("KeyD")) {
-      this.changeActor(1);
+    if (this.actorNavigation.update()) {
+      this.onActorChanged();
+      return;
     }
 
     if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
@@ -208,7 +205,6 @@ class Window_Essence {
   show() {
     this.visible = true;
     this.mode = "slots";
-    this.actorIndex = Math.min(this.actorIndex, Math.max(0, this.members().length - 1));
     this.slotIndex = 0;
   }
 
@@ -230,25 +226,14 @@ class Window_Essence {
   }
 
   drawHeader(context) {
-    const actor = this.actor();
-
-    context.fillStyle = "#ffffff";
-    context.font = "28px sans-serif";
-    context.fillText("Essences", this.x + this.padding, this.y + 42);
-
-    context.font = "20px sans-serif";
-    context.textAlign = "right";
-    context.fillText(
-      actor ? `◀  ${actor.name}  ▶` : "No party members",
-      this.x + this.width - this.padding,
-      this.y + 42,
+    this.actorNavigation.drawHeader(
+      context,
+      "Essences",
+      this.x,
+      this.y,
+      this.width,
+      this.padding,
     );
-    context.textAlign = "left";
-
-    context.beginPath();
-    context.moveTo(this.x + this.padding, this.y + 62);
-    context.lineTo(this.x + this.width - this.padding, this.y + 62);
-    context.stroke();
   }
 
   drawSlots(context) {

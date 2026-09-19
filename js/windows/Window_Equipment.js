@@ -1,8 +1,8 @@
 "use strict";
 
 class Window_Equipment {
-  constructor(actor) {
-    this.actor = actor;
+  constructor(source) {
+    this.actorNavigation = new Window_ActorNavigator(source);
     this.visible = false;
 
     this.index = 0;
@@ -19,7 +19,25 @@ class Window_Equipment {
     this.x = (Graphics.width - this.width) / 2;
     this.y = (Graphics.height - this.height) / 2;
 
-    this.selectWindow = new Window_EquipSelect(actor);
+    this.selectWindow = new Window_EquipSelect(this.actor);
+  }
+
+  get actor() {
+    return this.actorNavigation.actor();
+  }
+
+  onActorChanged() {
+    this.index = 0;
+    this.selectWindow.actor = this.actor;
+  }
+
+  changeActor(offset) {
+    if (!this.actorNavigation.changeActor(offset)) {
+      return false;
+    }
+
+    this.onActorChanged();
+    return true;
   }
 
   slotEquipment(type) {
@@ -91,6 +109,11 @@ class Window_Equipment {
       return;
     }
 
+    if (this.actorNavigation.update()) {
+      this.onActorChanged();
+      return;
+    }
+
     if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
       this.index = (this.index - 1 + this.slots.length) % this.slots.length;
     }
@@ -139,14 +162,14 @@ class Window_Equipment {
     context.lineWidth = 2;
     context.strokeRect(this.x, this.y, this.width, this.height);
 
-    context.fillStyle = "#ffffff";
-    context.font = "28px sans-serif";
-    context.fillText("Equipment", this.x + this.padding, this.y + 45);
-
-    context.beginPath();
-    context.moveTo(this.x + this.padding, this.y + 65);
-    context.lineTo(this.x + this.width - this.padding, this.y + 65);
-    context.stroke();
+    this.actorNavigation.drawHeader(
+      context,
+      "Equipment",
+      this.x,
+      this.y,
+      this.width,
+      this.padding,
+    );
 
     context.font = "22px sans-serif";
 
@@ -206,7 +229,7 @@ class Window_Equipment {
 
     context.font = "16px sans-serif";
     context.fillText(
-      "Enter: Change    Q/Esc: Back",
+      "A/D or ←/→: Actor    Enter: Change    Q/Esc: Back",
       leftX,
       this.y + this.height - 28,
     );

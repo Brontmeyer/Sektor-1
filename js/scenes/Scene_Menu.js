@@ -9,11 +9,11 @@ class Scene_Menu extends Scene_Base {
     const actor = $gameParty.leader();
 
     this.inventoryWindow = new Window_Inventory(actor);
-    this.statusWindow = new Window_Status(actor);
-    this.equipmentWindow = new Window_Equipment(actor);
+    this.statusWindow = new Window_Status($gameParty);
+    this.equipmentWindow = new Window_Equipment($gameParty);
     this.saveSlotsWindow = new Window_SaveSlots();
 
-    this.magickWindow = new Window_Magick(actor);
+    this.magickWindow = new Window_Magick($gameParty);
     this.essenceWindow = new Window_Essence($gameParty);
 
     this.saveMessage = "";

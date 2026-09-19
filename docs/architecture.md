@@ -333,7 +333,7 @@ Scene_Shop.js
 
 ## Scene_Menu
 
-`Scene_Menu` coordinates the main menu experience and its windows.
+`Scene_Menu` coordinates the main menu experience and its windows. Character-specific field menus receive `Game_Party` rather than a fixed leader reference so they can resolve and switch their own current actor through the shared navigation helper.
 
 ## Scene_Battle
 
@@ -351,7 +351,7 @@ A scene may coordinate several systems, but it should avoid becoming the permane
 
 The `js/windows/` directory contains interactive menus and UI windows.
 
-Current windows include battle commands, battle items, battle Magick, battle results, choices, equipment, Essence equipment, inventory, Magick, menu commands, messages, save slots, shops, and status display. Field-menu actor windows receive explicit leader context from `Scene_Menu`; battle Magick resolves its current battler through the party controller with a party-owned battle-leader fallback. Selectable list windows that can outgrow their fixed layout use the shared `Window_ListViewport` helper so keyboard selection remains visible without drawing into reserved detail regions. `Window_BattleResults` consumes the already-finalized structured battle result and never owns reward mutation, preserving the exactly-once reward boundary in `BattleManager`.
+Current windows include battle commands, battle items, battle Magick, battle results, choices, equipment, Essence equipment, inventory, Magick, menu commands, messages, save slots, shops, and status display. Character-specific field-menu windows receive explicit party context from `Scene_Menu`. `Window_ActorNavigator` centralizes party-member indexing, left/right input, wraparound behavior, and the shared `◀ Actor ▶` header used by Magick, Status, Equipment, and Essence; each consuming window owns only its local selection reset when the actor changes. Battle Magick resolves its current battler through the party controller with a party-owned battle-leader fallback. Selectable list windows that can outgrow their fixed layout use the shared `Window_ListViewport` helper so keyboard selection remains visible without drawing into reserved detail regions. `Window_BattleResults` consumes the already-finalized structured battle result and never owns reward mutation, preserving the exactly-once reward boundary in `BattleManager`.
 
 Windows should primarily be responsible for:
 

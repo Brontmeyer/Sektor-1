@@ -10,6 +10,8 @@ Pass 31 likewise adds no reopened audit item. Accessories Equipment v1 extends t
 
 Pass 32 likewise adds no reopened audit item. Shops & Gil Spending v1 consumes the already-closed Gil, inventory, database-price, map/event-validation, and UI-list boundaries. It adds no new persistent state, so Save Runtime remains v6.
 
+Pass 33 likewise adds no reopened audit item. Character Menu Navigation Consistency v1 replaces fixed leader context in Magick, Status, and Equipment with the same explicit party-context navigation contract already established by Essence, using one shared UI helper without changing gameplay state or persistence.
+
 This document reconciles the historical static review in `docs/repo_audit.md`
 against the **current repository**.
 

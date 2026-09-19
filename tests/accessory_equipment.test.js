@@ -88,6 +88,7 @@ function createHarness() {
     "js/objects/Game_Party.js",
     "js/objects/Game_Interpreter.js",
     "js/windows/Window_ListViewport.js",
+    "js/windows/Window_ActorNavigator.js",
     "js/windows/Window_EquipSelect.js",
     "js/windows/Window_Equipment.js",
   ]

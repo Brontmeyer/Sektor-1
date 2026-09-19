@@ -35,6 +35,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Repository-audit closure
 -   ✅ Magick Terminology Migration v1
 -   ✅ Accessories Equipment v1
+-   ✅ Character Menu Navigation Consistency v1
 
 ------------------------------------------------------------------------
 
@@ -150,6 +151,14 @@ Shops & Gil Spending v1 turns existing Gil rewards and merchandise price metadat
 `Game_Party` owns the purchase transaction. A successful purchase spends the exact canonical Gil price and adds the merchandise through the same inventory APIs used by rewards and equipment. Failed purchases, including insufficient funds, leave both Gil and inventory unchanged.
 
 The first shop version buys one unit at a time and intentionally does not define selling or resale values yet. Those rules remain a separate economy-design decision. Map001 includes a test merchant with all current merchandise categories. Save Runtime remains v6 because Shops consume already-persistent Gil and inventory state rather than introducing new save data.
+
+------------------------------------------------------------------------
+
+# 👥 Character Menu Navigation
+
+Magick, Status, Equipment, and Essence now share the same party-member navigation contract. Each window receives `Game_Party` context, displays a shared `◀ Actor ▶` header, and uses A/D or left/right to move through the party roster.
+
+`Window_ActorNavigator` owns the common actor index, wraparound behavior, input interpretation, and header presentation. Individual windows only reset their own local selection state when the active actor changes.
 
 ------------------------------------------------------------------------
 

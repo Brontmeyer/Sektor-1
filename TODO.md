@@ -183,7 +183,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Accessories Equipment v1
 - [x] Inventory system
 - [x] Shops / Gil Spending v1
-- [ ] Standardize left/right party-member navigation in Magick, Status, Equipment, and Essence menus
+- [x] Standardize left/right party-member navigation in Magick, Status, Equipment, and Essence menus
 - [x] Complete status runtime
 - [ ] Complete Essence runtime
 - [ ] Enemy AI

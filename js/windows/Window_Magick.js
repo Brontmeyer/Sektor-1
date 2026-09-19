@@ -1,8 +1,8 @@
 "use strict";
 
 class Window_Magick {
-  constructor(actor) {
-    this.actor = actor;
+  constructor(source) {
+    this.actorNavigation = new Window_ActorNavigator(source);
     this.visible = false;
     this.index = 0;
 
@@ -16,6 +16,23 @@ class Window_Magick {
     this.x = (Graphics.width - this.width) / 2;
     this.y = (Graphics.height - this.height) / 2;
   }
+  get actor() {
+    return this.actorNavigation.actor();
+  }
+
+  onActorChanged() {
+    this.index = 0;
+    this.listViewport.reset(this.index, this.magickList().length);
+  }
+
+  changeActor(offset) {
+    if (!this.actorNavigation.changeActor(offset)) {
+      return false;
+    }
+
+    this.onActorChanged();
+    return true;
+  }
 
   update() {
     if (!this.visible) {
@@ -24,6 +41,11 @@ class Window_Magick {
 
     if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
       this.hide();
+      return;
+    }
+
+    if (this.actorNavigation.update()) {
+      this.onActorChanged();
       return;
     }
 
@@ -149,17 +171,14 @@ class Window_Magick {
     context.lineWidth = 2;
     context.strokeRect(this.x, this.y, this.width, this.height);
 
-    // Title
-    context.fillStyle = "#ffffff";
-    context.font = "26px sans-serif";
-
-    context.fillText("Magick", this.x + this.padding, this.y + 42);
-
-    // Divider
-    context.beginPath();
-    context.moveTo(this.x + this.padding, this.y + 60);
-    context.lineTo(this.x + this.width - this.padding, this.y + 60);
-    context.stroke();
+    this.actorNavigation.drawHeader(
+      context,
+      "Magick",
+      this.x,
+      this.y,
+      this.width,
+      this.padding,
+    );
 
     // =====================================
     // MAGICK LIST

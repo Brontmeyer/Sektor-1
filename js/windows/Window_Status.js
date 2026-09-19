@@ -1,8 +1,8 @@
 "use strict";
 
 class Window_Status {
-  constructor(actor) {
-    this.actor = actor;
+  constructor(source) {
+    this.actorNavigation = new Window_ActorNavigator(source);
     this.visible = false;
 
     this.width = 600;
@@ -14,6 +14,14 @@ class Window_Status {
     this.y = (Graphics.height - this.height) / 2;
   }
 
+  get actor() {
+    return this.actorNavigation.actor();
+  }
+
+  changeActor(offset) {
+    return this.actorNavigation.changeActor(offset);
+  }
+
   update() {
     if (!this.visible) {
       return;
@@ -21,7 +29,10 @@ class Window_Status {
 
     if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
       this.hide();
+      return;
     }
+
+    this.actorNavigation.update();
   }
 
   show() {
@@ -70,39 +81,41 @@ class Window_Status {
     const leftX = this.x + 40;
     const rightX = this.x + 330;
 
-    // =========================
-    // NAME
-    // =========================
-
-    context.font = "30px sans-serif";
-    context.fillText(actor.name, leftX, this.y + 50);
+    this.actorNavigation.drawHeader(
+      context,
+      "Status",
+      this.x,
+      this.y,
+      this.width,
+      this.padding,
+    );
 
     // =========================
     // LEVEL / EXP
     // =========================
 
     context.font = "20px sans-serif";
-    context.fillText(`Level: ${actor.level}`, leftX, this.y + 85);
+    context.fillText(`Level: ${actor.level}`, leftX, this.y + 100);
 
     const expNeeded = actor.expForNextLevel ? actor.expForNextLevel() : "?";
 
-    context.fillText(`EXP: ${actor.exp} / ${expNeeded}`, rightX, this.y + 85);
+    context.fillText(`EXP: ${actor.exp} / ${expNeeded}`, rightX, this.y + 100);
 
     // =========================
     // HP / MP
     // =========================
 
     context.font = "22px sans-serif";
-    context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, leftX, this.y + 125);
-    context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, rightX, this.y + 125);
+    context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, leftX, this.y + 135);
+    context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, rightX, this.y + 135);
 
     // =========================
     // DIVIDER
     // =========================
 
     context.beginPath();
-    context.moveTo(this.x + 30, this.y + 150);
-    context.lineTo(this.x + this.width - 30, this.y + 150);
+    context.moveTo(this.x + 30, this.y + 155);
+    context.lineTo(this.x + this.width - 30, this.y + 155);
     context.stroke();
 
     // =========================
@@ -111,7 +124,7 @@ class Window_Status {
 
     context.font = "20px sans-serif";
 
-    let leftY = this.y + 190;
+    let leftY = this.y + 195;
 
     const statSpacing = 34;
 
@@ -139,7 +152,7 @@ class Window_Status {
     // DERIVED STATS
     // =========================
 
-    let rightY = this.y + 190;
+    let rightY = this.y + 195;
 
     context.fillText(`Attack: ${actor.totalAttack()}`, rightX, rightY);
     rightY += statSpacing;
