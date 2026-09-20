@@ -93,7 +93,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Collapse optional All scope when only one legal target exists in the current target bucket
 - [x] Support four-direction spatial targeting across normal/back-attack/pincer layouts without wraparound
 - [x] Limit Pincer All targeting to one selected enemy flank at a time and allow left/right flank switching
-- [ ] Implement Scan & Tactical Help v1 with unknown/known enemy detail presentation
+- [x] Implement Scan & Tactical Help v1 with battle-local per-enemy knowledge, H-toggle help, live HP/MP, and elemental Weak/Resist/Immune detail
 - [ ] Explore Game Options v1 for battle speed, battle/field message speed, configurable battle cursor memory, Magick ordering, and control rebinding architecture
 
 ---

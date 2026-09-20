@@ -154,6 +154,10 @@ Pass 48 is post-audit combat-rule refinement and does not reopen a historical fi
 
 Pass 49 is post-audit battle-geometry work and does not reopen a historical finding. `Encounters.json` now supports up to eight enemy members across front/back rows with automatic centering or explicit slots, and pincer flanks reuse the same row contract. `BattleFormationManager` remains the sole coordinate owner, while targeting/rendering continue to consume its positions. Row metadata is geometry-only and adds no persistent state or row combat penalties, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Scan & Tactical Help v1
+
+Pass 50 is post-audit battle-information work and does not reopen a historical finding. `BattleScanManager` owns battle-local per-instance Scan knowledge and derives elemental affinity presentation from the same `elementRates` consumed by combat. `Scan` executes through the shared Skill/targeting/action path, while **H** only toggles a presentation panel and spends no action. No scanned knowledge persists beyond battle and no save fields change, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

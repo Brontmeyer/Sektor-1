@@ -245,6 +245,7 @@ function testBattleSceneConstructionAndExit() {
       Window_BattleItem: EmptySystem,
       Window_BattleResults: EmptySystem,
       BattleTargetManager: EmptySystem,
+      BattleScanManager: EmptySystem,
       BattleEffects: EmptySystem,
       BattleAnimationController: EmptySystem,
       BattleManager,

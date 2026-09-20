@@ -36,6 +36,7 @@ class BattleRenderer {
     this.drawBattlePopups(context);
 
     this.drawBattleBanner(context);
+    this.drawTacticalHelp(context);
     this.drawBattleHint(context);
 
     // -----------------------------
@@ -164,6 +165,102 @@ class BattleRenderer {
     context.restore();
   }
 
+  tacticalHelpControlHint() {
+    return this.scene.scanManager?.isHelpVisible?.()
+      ? "H: Hide Help"
+      : "H: Help";
+  }
+
+  tacticalAffinityText(values, unknown = "??") {
+    if (values === null) {
+      return unknown;
+    }
+
+    if (!Array.isArray(values) || values.length === 0) {
+      return "None";
+    }
+
+    return values.join(", ");
+  }
+
+  drawTacticalHelp(context) {
+    const manager = this.scene.scanManager;
+
+    if (!manager?.isHelpVisible?.() || this.scene.outcome) {
+      return;
+    }
+
+    const bounds = this.scene.hudLayout.tacticalHelpBounds();
+    const target = manager.currentEnemyTarget();
+    const profile = target ? manager.tacticalProfile(target) : null;
+
+    context.save();
+    context.fillStyle = "rgba(7, 10, 15, 0.96)";
+    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    context.strokeStyle = "rgba(255, 255, 255, 0.72)";
+    context.lineWidth = 2;
+    context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+
+    const left = bounds.x + 14;
+    const lineOneY = bounds.y + 17;
+    const lineTwoY = bounds.y + 40;
+    const lineThreeY = bounds.y + 62;
+
+    context.font = "bold 14px Arial";
+    context.fillStyle = "#ffd75a";
+    context.fillText("TACTICAL HELP", left, lineOneY);
+
+    context.font = "13px Arial";
+    context.fillStyle = "#b9c4d2";
+    context.textAlign = "right";
+    context.fillText(
+      "H: Hide",
+      bounds.x + bounds.width - 14,
+      lineOneY,
+    );
+
+    context.textAlign = "left";
+
+    if (!profile) {
+      context.fillStyle = "#ffffff";
+      context.fillText(
+        "Target an enemy to inspect tactical information.",
+        left,
+        lineTwoY,
+      );
+      context.restore();
+      return;
+    }
+
+    const hpText = profile.scanned
+      ? `${Math.floor(profile.hp)}/${Math.floor(profile.maxHp)}`
+      : "??/??";
+    const mpText = profile.scanned
+      ? `${Math.floor(profile.mp)}/${Math.floor(profile.maxMp)}`
+      : "??/??";
+    const weakText = this.tacticalAffinityText(profile.weak);
+    const resistText = this.tacticalAffinityText(profile.resist);
+    const immuneText = this.tacticalAffinityText(profile.immune);
+    const resourceDetail = `${profile.name}   HP ${hpText}   MP ${mpText}`;
+    const affinityDetail = `Weak: ${weakText}   Resist: ${resistText}   Immune: ${immuneText}`;
+    const maxWidth = bounds.width - 28;
+    const displayResource =
+      context.measureText(resourceDetail).width <= maxWidth
+        ? resourceDetail
+        : Window_TextLayout.ellipsize(context, resourceDetail, maxWidth);
+    const displayAffinity =
+      context.measureText(affinityDetail).width <= maxWidth
+        ? affinityDetail
+        : Window_TextLayout.ellipsize(context, affinityDetail, maxWidth);
+
+    context.fillStyle = profile.scanned ? "#ffffff" : "#aeb8c5";
+    context.fillText(displayResource, left, lineTwoY);
+    context.fillText(displayAffinity, left, lineThreeY);
+    context.restore();
+  }
+
   canToggleTargetScope() {
     if (
       !this.scene.selectingEnemyTarget ||
@@ -213,11 +310,11 @@ class BattleRenderer {
           ? "Arrows: Group"
           : "WASD / Arrows: Target";
 
-      return `${scope}   ${moveHint}   E / Enter: Confirm   Q / Esc: Back${scopeHint}`;
+      return `${scope}   ${moveHint}   E / Enter: Confirm   Q / Esc: Back${scopeHint}   ${this.tacticalHelpControlHint()}`;
     }
 
     if (this.hasOpenSelectionWindow()) {
-      return "W / S or ↑ / ↓: Choose   E / Enter: Select   Q / Esc: Back";
+      return `W / S or ↑ / ↓: Choose   E / Enter: Select   Q / Esc: Back   ${this.tacticalHelpControlHint()}`;
     }
 
     if (this.scene.battleInputLocked || this.scene.pendingEnemyTurn) {
@@ -237,10 +334,10 @@ class BattleRenderer {
       const enabled = commandWindow.isCommandEnabled?.(command) !== false;
       const availability = enabled ? "" : " (Unavailable)";
 
-      return `${command}${availability}   E / Enter: Confirm   Q / Esc: Back`;
+      return `${command}${availability}   E / Enter: Confirm   Q / Esc: Back   ${this.tacticalHelpControlHint()}`;
     }
 
-    return "W / S or ↑ / ↓: Command   ←: Escape   →: Defend   E / Enter: Select";
+    return `W / S or ↑ / ↓: Command   ←: Escape   →: Defend   E / Enter: Select   ${this.tacticalHelpControlHint()}`;
   }
 
   drawBattleHint(context) {

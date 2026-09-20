@@ -146,7 +146,11 @@ function testCanonicalArtsAndOwnership() {
     ],
   );
   assert.deepEqual(
-    actors.filter(Boolean).map((actor) => actor.initialSkillIds),
+    actors
+      .filter(Boolean)
+      .map((actor) =>
+        actor.initialSkillIds.filter((skillId) => skills[skillId]?.valorArt === true),
+      ),
     [[1], [2], [3], [4]],
   );
 }

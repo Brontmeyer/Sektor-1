@@ -97,6 +97,18 @@ class BattleHudLayout {
     };
   }
 
+  tacticalHelpBounds() {
+    const hud = this.hudBounds();
+    const height = 78;
+
+    return {
+      x: hud.x,
+      y: hud.y - height - 18,
+      width: hud.width,
+      height,
+    };
+  }
+
   bannerBounds(textWidth = 0) {
     const paddingX = 22;
     const width = Math.max(
@@ -114,6 +126,10 @@ class BattleHudLayout {
   }
 
   hintY() {
+    if (this.scene.scanManager?.isHelpVisible?.()) {
+      return this.tacticalHelpBounds().y - 8;
+    }
+
     return this.hudBounds().y - 10;
   }
 }

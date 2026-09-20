@@ -12,6 +12,13 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Scan & Tactical Help v1 with a canonical `Scan` Skill, battle-local per-enemy knowledge, and an optional H-key tactical information bar
+- Added `BattleScanManager` as the battle-local owner of Scan state, current tactical target lookup, and elemental Weak / Resist / Immune classification
+- Added unknown tactical presentation (`??`) for unscanned enemy HP/MP and affinity data, with live HP/MP values after that specific enemy instance is scanned
+- Added Scan Skill runtime integration through the shared Skill execution/targeting path rather than a special battle command
+- Added narrow Scan schema validation requiring enemy-only single-target Skills and granted Scan to Tyler's canonical starter Skill list for playtesting
+- Added dedicated Scan/Tactical Help regression coverage for battle-local instance knowledge, live resource display, elemental affinity classification, H-key toggling, rendering, Skill execution, schema validation, and script load order
+
 - Added Enemy Formation Rows v1 with a validated eight-enemy encounter cap, four front-row slots, four back-row slots, and row-aware battlefield geometry
 - Added automatic row centering when `slot` is omitted and handcrafted `slot: 0..3` placement when an encounter needs an exact formation
 - Added pincer-aware front/back rows on independent left/right flanks while keeping the eight-enemy cap global to the encounter
@@ -30,16 +37,16 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Collapsed optional All scope to Single when the current target bucket contains only one legal battler, while preserving intrinsically all-target actions
 - Added pincer flank-aware All targeting so multi-target actions affect only the selected enemy flank and can switch between left/right flanks through normal directional input
 - Updated all-target cursor rendering and battle hints to use the resolved target bucket rather than every selectable enemy in the battle
-- Added dedicated regression coverage for one-target scope collapse, two-target All, five-enemy directional navigation, pincer cross-flank selection, flank-limited All targeting, allied All targeting, and no-wrap screen-edge behavior
+- Added dedicated regression coverage for one-target scope collapse, two-target All, eight-enemy directional navigation, pincer cross-flank selection, flank-limited All targeting, allied All targeting, and no-wrap screen-edge behavior
 
 - Added Battle Presentation & Feedback v2, replacing the persistent top encounter/active header and recent-message strip with compact transient action/state banners
 - Added scene-owned banner queuing so formation/boss state announcements cannot be immediately overwritten by a following Magick/Skill/Item name
 - Added brief Critical screen flash while preserving existing floating damage plus Weak / Resist / Immune / Critical battlefield popups
 - Refined the bottom HUD into stable actor-name, command-reserve, and HP/MP/Valor regions; the command panel now overlays the middle reserve and Escape/Defend tabs sit flush against its top side edges
-- Expanded fixed enemy formation slots to 0-4 with a validated maximum of five enemies per encounter
+- Established the initial fixed enemy-slot groundwork later expanded by Enemy Formation Rows v1
 - Corrected Back Attack presentation so the party remains on the left facing away initially, with temporary action-facing and permanent turn-around after rear physical hits / the opening enemy round
 - Added explicit 1.5x rear-exposure damage for enemy physical damage against party members in Back Attack/Pincer geometry while leaving Magick damage facing-neutral
-- Expanded regression coverage for compact banner presentation, banner queuing, Critical flash, flush side-command geometry, five enemy slots, back-attack facing/exposure, and rear physical damage
+- Expanded regression coverage for compact banner presentation, banner queuing, Critical flash, flush side-command geometry, enemy-slot groundwork, back-attack facing/exposure, and rear physical damage
 - Added Battle HUD & Message Layout v1 with a stable four-row party HUD, compact HP/MP/Valor gauges, active-actor emphasis, top-of-screen battle messaging, and target-name feedback during target selection
 - Added `BattleHudLayout` as the presentation-only geometry owner for the top battle strip, four fixed party HUD slots, command-window reserve, and battle hint placement
 - Added dedicated Battle HUD regression coverage for stable four-actor rows, active-row emphasis, target feedback, message/HUD geometry, and script-load order

@@ -154,6 +154,18 @@ Action data should determine which target groups and scopes are legal. `BattleTa
 
 ---
 
+# 🔎 Scan & Tactical Help
+
+Scan & Tactical Help v1 is battle-local. `Scan` is an ordinary support Skill with `effect: "scan"`, `target: ["enemy"]`, and `scope: ["single"]`; it follows the same Skills window, spatial target selection, action restriction, turn cost, and action-phase execution as other Skills. There is no separate Scan command.
+
+`BattleScanManager` records concrete enemy instances rather than enemy species IDs. Scanning one slime therefore does not reveal every other slime in the encounter. The information also does not persist after battle in v1, so Save Runtime remains unchanged.
+
+Pressing **H** toggles Tactical Help without spending an action. While an enemy is actively targeted, an unscanned target displays its name but shows `??/??` for HP/MP and `??` for Weak / Resist / Immune. After that target has been scanned, the same bar reads live current/max HP and MP plus elemental affinity categories derived from `elementRates`: rates above `1` are Weak, rates between `0` and `1` are Resist, and rate `0` is Immune. Neutral/unspecified elements are omitted, and an empty known category displays `None`.
+
+The Tactical Help bar is presentation-only. It does not change damage, reveal status resistance in v1, alter target legality, or create a second weakness database.
+
+---
+
 # 🗡️ Physical Attacks
 
 The current basic physical attack foundation uses the attacker's total Attack and the target's total Defense.
@@ -182,7 +194,7 @@ Canonical non-Magick Skill definitions live in:
 data/Skills.json
 ```
 
-Skills Runtime v1 established the separate non-Magick technique contract, and later passes expanded that same schema without replacing it. Current Skills use `type: "skill"`, a validated `physical` / `support` / `control` category, a `damage` / `heal` / `inflictStatus` / `valor` effect, one or more legal `target` values (`self`, `ally`, `enemy`), and one or more legal scopes (`single`, `all`). Effect-specific metadata remains narrow: physical damage uses positive `powerMultiplier`, percentage healing uses bounded `healPercent`, reusable status application uses validated `status` chance maps, and deliberate gauge support uses positive `valorGain`. The canonical catalog now contains the four starter Valor Arts plus the first enemy technique, Goo Rush.
+Skills Runtime v1 established the separate non-Magick technique contract, and later passes expanded that same schema without replacing it. Current Skills use `type: "skill"`, a validated `physical` / `support` / `control` category, a `damage` / `heal` / `inflictStatus` / `valor` / `scan` effect, one or more legal `target` values (`self`, `ally`, `enemy`), and one or more legal scopes (`single`, `all`). Effect-specific metadata remains narrow: physical damage uses positive `powerMultiplier`, percentage healing uses bounded `healPercent`, reusable status application uses validated `status` chance maps, deliberate gauge support uses positive `valorGain`, and Scan uses no duplicate combat metadata at all; it reads the target's existing battle state and element rates. The canonical catalog now contains the four starter Valor Arts, Tyler's Scan support Skill, and the first enemy technique, Goo Rush.
 
 Actor Skill ownership is separate from Magick ownership. `initialSkillIds` seed actor knowledge and runtime `skillIds` are persisted through Save Runtime v9. The old pre-Pass-29 save field named `skills` is not current Skill ownership; it remains migration-only input for historical Magick saves.
 

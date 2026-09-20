@@ -266,6 +266,8 @@ Battlefield positions belong to `BattleFormationManager`. Do not hard-code actor
 
 Target navigation belongs to `BattleTargetManager`. Scene input should pass directional intent into the target manager rather than encoding left/right formation assumptions itself. Effective Single/All availability must come from the current legal target bucket, and Pincer All targeting must resolve one flank bucket at a time. Rendering may display the resolved bucket/cursors but must not independently reconstruct which battlers an All action will affect.
 
+Scan knowledge belongs to `BattleScanManager`. Do not store scanned flags on `Game_Enemy`, SaveManager, rendering code, or `Enemies.json`. Tactical presentation must derive weakness/resistance/immunity from the target's existing runtime `elementRates`; do not create duplicate scan-only affinity fields. `Scene_Battle` may toggle the help presentation and `BattleManager` may invoke Scan through Skill execution, but neither should reconstruct tactical profile rules independently.
+
 Keep command-navigation state separate from action authority. `Window_BattleCommand` may own which core/side command currently has focus and draw temporary side panels, but it must not decide battle outcomes or apply Defend. `Scene_Battle` owns navigation between command/list/target layers and the final scene handoff after successful Escape; `BattleManager` owns Escape probability/retry rules, Defend, and other battle-action execution. When canceling a nested target-selection layer, restore the originating selector rather than reconstructing a parallel cursor state in the scene.
 
 ---

@@ -50,6 +50,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Battle Targeting & Scope Navigation v2
 -   ✅ Valor & Escape Rules v1
 -   ✅ Enemy Formation Rows v1
+-   ✅ Scan & Tactical Help v1
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
 
@@ -93,7 +94,7 @@ Current battle features include:
 -   ✅ Animation controller
 -   ✅ Magick foundation
 -   ✅ Skills Runtime v1 foundation
--   ✅ Contextual controls, transient action/state banners, floating combat feedback, and four-actor HUD geometry
+-   ✅ Contextual controls, transient action/state banners, floating combat feedback, four-actor HUD geometry, and optional tactical enemy help
 -   ✅ Idempotent battle resolution and structured rewards
 -   ✅ Gil, enemy item drops, and Essence Resonance rewards
 
@@ -114,7 +115,7 @@ Systems currently being expanded include:
 -   ✅ Battle Formation & Party Layout v1
 -   ✅ Battle HUD & Message Layout v1
 
-Battle HUD & Message Layout v1 established reusable four-row geometry. Battle Presentation & Feedback v2 refines that experiment from hands-on playtesting: persistent top headers/messages are removed, action/state information uses compact transient banners, actor names stay in a fixed left roster, the main command window overlays a dedicated middle reserve, and HP/MP/Valor remain in stable right-side columns. Damage, Weak/Resist/Immune, and Critical feedback stay on the battlefield as popups; Critical also triggers a brief presentation-only flash. Battle Targeting & Scope Navigation v2 keeps targeting inside the same formation geometry: single-target selection now responds spatially in all four directions, optional All scope is hidden when the selected target bucket contains only one legal battler, and Pincer All targeting resolves against one selected enemy flank at a time rather than both flanks simultaneously. Enemy Formation Rows v1 expands encounter geometry to eight enemies through four front-row and four back-row positions. Rows auto-center when slots are omitted, or an encounter can explicitly choose `slot: 0..3`; pincer encounters apply the same row contract independently on each flank while retaining an eight-enemy total cap. Rows are positioning-only until weapon/ranged contracts intentionally give them combat meaning.
+Battle HUD & Message Layout v1 established reusable four-row geometry. Battle Presentation & Feedback v2 refines that experiment from hands-on playtesting: persistent top headers/messages are removed, action/state information uses compact transient banners, actor names stay in a fixed left roster, the main command window overlays a dedicated middle reserve, and HP/MP/Valor remain in stable right-side columns. Damage, Weak/Resist/Immune, and Critical feedback stay on the battlefield as popups; Critical also triggers a brief presentation-only flash. Battle Targeting & Scope Navigation v2 keeps targeting inside the same formation geometry: single-target selection now responds spatially in all four directions, optional All scope is hidden when the selected target bucket contains only one legal battler, and Pincer All targeting resolves against one selected enemy flank at a time rather than both flanks simultaneously. Enemy Formation Rows v1 expands encounter geometry to eight enemies through four front-row and four back-row positions. Rows auto-center when slots are omitted, or an encounter can explicitly choose `slot: 0..3`; pincer encounters apply the same row contract independently on each flank while retaining an eight-enemy total cap. Rows are positioning-only until weapon/ranged contracts intentionally give them combat meaning. Scan & Tactical Help v1 adds battle-local enemy analysis without duplicating combat data: pressing **H** toggles a compact lower-battlefield help bar, unscanned targets show `??`, and scanning a specific enemy instance reveals its live HP/MaxHP, MP/MaxMP, and elemental Weak/Resist/Immune categories derived directly from `elementRates`.
 
 ------------------------------------------------------------------------
 
@@ -142,9 +143,9 @@ Combat-stat terminology remains **Magic**, **Magic Attack**, and **Magic Defense
 
 **Skills Runtime v1** establishes Sektor 1's separate non-Magick technique system. Canonical definitions live in `data/Skills.json`, actors own learned Skill IDs independently from `magickIds`, and battle Skills use the same shared action-restriction and target-selection infrastructure without becoming Magick casts.
 
-Skills now support the reusable effect vocabulary required by the first canonical Valor Arts and later combat rules: physical damage through `powerMultiplier`, percentage healing through `healPercent`, status application through validated `status` chance maps, and deliberate Valor gain through positive `valorGain`. Damage continues to reuse the established physical hit, Defense, defending, incoming-damage, defeat, and hostile-source Valor pathways; healing, status application, and explicit Valor gain reuse battler APIs rather than creating character-specific branches. Legal `target` groups remain `self`, `ally`, and `enemy`, with `scope` values `single` and `all`.
+Skills now support the reusable effect vocabulary required by the first canonical Valor Arts and later combat rules: physical damage through `powerMultiplier`, percentage healing through `healPercent`, status application through validated `status` chance maps, deliberate Valor gain through positive `valorGain`, and enemy analysis through the battle-local `scan` effect. Damage continues to reuse the established physical hit, Defense, defending, incoming-damage, defeat, and hostile-source Valor pathways; healing, status application, and explicit Valor gain reuse battler APIs rather than creating character-specific branches. Legal `target` groups remain `self`, `ally`, and `enemy`, with `scope` values `single` and `all`.
 
-**Character Valor Arts v1** establishes one starter Art for each current actor through ordinary `initialSkillIds`: Tyler's **Unbroken** is a high-power single-target physical strike; Sarah's **Rallyheart** restores 35% Max HP to all injured allies; Aboo's **Wild Arc** damages all enemies and carries a 60% base Darkness chance; G Prime's **Zero Lock** attempts to Slow all enemies. These are data records, not actor-name checks in battle code.
+**Character Valor Arts v1** establishes one starter Art for each current actor through ordinary `initialSkillIds`. Tyler also begins with the non-Valor **Scan** support Skill for current battle testing. Tyler's **Unbroken** is a high-power single-target physical strike; Sarah's **Rallyheart** restores 35% Max HP to all injured allies; Aboo's **Wild Arc** damages all enemies and carries a 60% base Darkness chance; G Prime's **Zero Lock** attempts to Slow all enemies. These are data records, not actor-name checks in battle code.
 
 **Valor Arts Runtime v1** still specializes the same Skills namespace through `valorArt: true`. A Valor Art is usable only while its actor is Valor Ready and spends the existing full gauge exactly once when the action is committed against at least one legal target. Battle and field Skills windows mark Valor Arts with `[VALOR]`; no separate Valor-only command or combat engine exists.
 
@@ -156,7 +157,7 @@ Battle Command Navigation & Side Actions v1 keeps the visible command list to **
 
 # 🔥 Valor
 
-**Valor** is Sektor 1's pressure-response battle resource. Actors build Valor from actual direct HP loss, with the base gain proportional to the percentage of Max HP lost. Fury, Sadness, and Near-Death modify that gain through the shared data-driven `valorGainMultiplier` status contract.
+**Valor** is Sektor 1's pressure-response battle resource. Actors build passive Valor from actual hostile opposing-side battle-action HP loss, with the base gain proportional to the percentage of Max HP lost. Fury, Sadness, and Near-Death modify that gain through the shared data-driven `valorGainMultiplier` status contract.
 
 Current actors have a data-driven Max Valor of 100. Valor persists between battles and through Save Runtime v9, caps at the actor's configured maximum, and is shown in both the battle HUD and Status menu. A full gauge becomes **VALOR: READY**.
 

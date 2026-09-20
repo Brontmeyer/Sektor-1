@@ -84,6 +84,7 @@ class Scene_Battle extends Scene_Base {
     this.targetGroup = "enemy";
     this.targetScope = "single";
     this.targetManager = new BattleTargetManager(this);
+    this.scanManager = new BattleScanManager(this);
 
     // BATTLE ACTION PHASE SYSTEM
     this.actionPhase = "none";
@@ -169,6 +170,11 @@ class Scene_Battle extends Scene_Base {
         this.finishBattle();
       }
 
+      return;
+    }
+
+    if (Input.isTriggered("KeyH")) {
+      this.scanManager.toggleHelp();
       return;
     }
 

@@ -47,7 +47,8 @@
       10
     ],
     "initialSkillIds": [
-      1
+      1,
+      6
     ],
     "essenceSlots": 3,
     "maxValor": 100

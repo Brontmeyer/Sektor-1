@@ -2219,6 +2219,28 @@ class BattleManager {
     return true;
   }
 
+  performSkillScanTarget(caster, skill, target) {
+    const battle = this.scene;
+
+    if (!target || !battle.enemies.includes(target) || !battle.scanManager) {
+      return false;
+    }
+
+    const alreadyScanned = battle.scanManager.isScanned(target);
+
+    if (!battle.scanManager.scan(target)) {
+      return false;
+    }
+
+    battle.addBattlePopup(target, "SCANNED", "status");
+    battle.addBattleMessage(
+      alreadyScanned
+        ? `${caster.name} uses ${skill.name}! ${target.name}'s data is already known.`
+        : `${caster.name} uses ${skill.name}! ${target.name}'s tactical data is revealed!`,
+    );
+    return true;
+  }
+
   performSkillStatusTarget(caster, skill, target, random = Math.random) {
     const battle = this.scene;
     const statusResults =
@@ -2265,6 +2287,10 @@ class BattleManager {
 
     if (skill.effect === "valor") {
       return this.performSkillValorTarget(caster, skill, target);
+    }
+
+    if (skill.effect === "scan") {
+      return this.performSkillScanTarget(caster, skill, target);
     }
 
     console.warn(`Skill ${skill.name} effect "${skill.effect}" is not implemented.`);

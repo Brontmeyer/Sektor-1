@@ -150,7 +150,13 @@ function testCanonicalSkillsDatabaseSeparatesActorValorArtsAndEnemyTechniques() 
   assert.equal(enemyTechnique.name, "Goo Rush");
   assert.equal(enemyTechnique.valorArt, undefined);
   assert.deepEqual(
-    actors.filter(Boolean).map((actor) => actor.initialSkillIds),
+    actors
+      .filter(Boolean)
+      .map((actor) =>
+        actor.initialSkillIds.filter(
+          (skillId) => canonicalSkills[skillId]?.valorArt === true,
+        ),
+      ),
     [[1], [2], [3], [4]],
   );
 }

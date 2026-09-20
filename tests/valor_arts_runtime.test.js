@@ -202,7 +202,11 @@ function testCanonicalContentDefinesCharacterSpecificValorArts() {
     ],
   );
   assert.deepEqual(
-    actors.filter(Boolean).map((actor) => actor.initialSkillIds),
+    actors
+      .filter(Boolean)
+      .map((actor) =>
+        actor.initialSkillIds.filter((skillId) => canonicalSkills[skillId]?.valorArt === true),
+      ),
     [[1], [2], [3], [4]],
   );
 }

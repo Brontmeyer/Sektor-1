@@ -305,7 +305,7 @@ async function testVersionNineSavePreservesExplicitSkillState() {
   assert.deepEqual(Array.from(second.skillIds), []);
 }
 
-async function testVersionEightSaveMigratesCanonicalStarterValorArts() {
+async function testVersionEightSaveMigratesCanonicalStarterSkills() {
   const { localStorage, partyActors, SaveManager } = createHarness();
 
   const v8 = {
@@ -337,7 +337,7 @@ async function testVersionEightSaveMigratesCanonicalStarterValorArts() {
   assert.equal(await SaveManager.load(1), true);
   assert.deepEqual(
     partyActors.map((actor) => Array.from(actor.skillIds)),
-    [[1], [2], [3], [4]],
+    [[1, 6], [2], [3], [4]],
   );
 }
 
@@ -671,7 +671,7 @@ async function run() {
   testV9SaveSerializesSkillStateValorEquipmentCurrencyEssencesAndStatuses();
   await testV9LoadRestoresSkillStateValorAccessoryStateAndNormalizesInventory();
   await testVersionNineSavePreservesExplicitSkillState();
-  await testVersionEightSaveMigratesCanonicalStarterValorArts();
+  await testVersionEightSaveMigratesCanonicalStarterSkills();
   await testVersionSevenSaveMigratesSkillDefaults();
   await testVersionSixSaveMigratesValorDefault();
   await testVersionFiveSaveMigratesAccessoryDefaults();

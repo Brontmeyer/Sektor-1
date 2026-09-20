@@ -509,15 +509,15 @@ Battle-presentation directions and current status:
 - ✅ Battle Targeting & Scope Navigation v2 with four-direction spatial selection, one-target scope collapse, and pincer flank-limited All targeting
 - ✅ Valor & Escape Rules v1 with hostile-source Valor gain, explicit Valor-support Skills, and Agility/retry-based Escape attempts
 - ✅ Enemy Formation Rows v1 for up to eight centered/customizable front/back-row enemies with pincer-aware flank geometry
-- Scan & Tactical Help v1 for unknown/known enemy HP/MP and weakness/resistance/immunity details while targeting
+- ✅ Scan & Tactical Help v1 for battle-local per-enemy HP/MP and elemental weakness/resistance/immunity details while targeting
 - A separate Options/configuration system for battle speed, battle/field message speed, optional battle cursor memory, Magick ordering, and control-rebinding architecture
 
 ---
 
 Built with ❤️ by **Sarah & Tyler**
 
-## Next Battle Information Focus
+## Next Battle Configuration Focus
 
-Enemy Formation Rows v1 is complete: encounters can use up to eight enemies, four front/four back positions, automatic centering or explicit `slot: 0..3` placement, stable positions after defeats, and pincer-aware left/right flank rows. Rows remain geometry-only until weapon/ranged contracts justify mechanical row rules.
+Enemy Formation Rows v1 and Scan & Tactical Help v1 are complete. Battles now have stable multi-row geometry, spatial targeting, and optional per-target tactical information without introducing row penalties or persistent enemy-knowledge state.
 
-The next focused battle-information pass is Scan & Tactical Help v1: unknown/known enemy HP/MP plus weakness/resistance/immunity detail while targeting, built on the now-stable formation and targeting contracts.
+The next focused configuration direction is Game Options v1: battle speed, battle/field message speed, battle cursor memory, Magick ordering, and control-rebinding architecture should be designed against the existing runtime owners before presentation polish grows further.

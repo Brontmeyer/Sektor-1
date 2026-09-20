@@ -1651,7 +1651,13 @@ class DatabaseValidator {
     const validTargets = new Set(["self", "ally", "enemy"]);
     const validScopes = new Set(["single", "all"]);
     const validCategories = new Set(["physical", "support", "control"]);
-    const validEffects = new Set(["damage", "heal", "inflictStatus", "valor"]);
+    const validEffects = new Set([
+      "damage",
+      "heal",
+      "inflictStatus",
+      "valor",
+      "scan",
+    ]);
     const statusKeys = new Set(
       Array.isArray(statuses)
         ? statuses.filter(Boolean).map((status) => status.key)
@@ -1772,6 +1778,19 @@ class DatabaseValidator {
           if (!validTargets.has(target)) {
             errors.push(`${label} target has unsupported value "${target}".`);
           }
+        }
+      }
+
+      if (skill.effect === "scan") {
+        const targets = Array.isArray(skill.target) ? skill.target : [];
+        const scopes = Array.isArray(skill.scope) ? skill.scope : [];
+
+        if (targets.length !== 1 || targets[0] !== "enemy") {
+          errors.push(`${label} scan effect must target only enemy.`);
+        }
+
+        if (scopes.length !== 1 || scopes[0] !== "single") {
+          errors.push(`${label} scan effect must use single scope.`);
         }
       }
 

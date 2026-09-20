@@ -91,5 +91,20 @@
     "scope": [
       "single"
     ]
+  },
+  {
+    "_comment": "Tyler - Scan",
+    "id": 6,
+    "name": "Scan",
+    "description": "Analyze one enemy to reveal its tactical information for the current battle.",
+    "type": "skill",
+    "category": "support",
+    "effect": "scan",
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   }
 ]
