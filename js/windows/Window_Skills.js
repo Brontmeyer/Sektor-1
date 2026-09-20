@@ -160,16 +160,29 @@ class Window_Skills {
     const skill = this.currentSkill();
 
     if (skill) {
+      const dividerY = this.y + 295;
+      const detailX = this.x + this.padding;
+      const detailWidth = this.width - this.padding * 2;
+
+      context.beginPath();
+      context.moveTo(detailX, dividerY);
+      context.lineTo(this.x + this.width - this.padding, dividerY);
+      context.stroke();
+
       context.font = "18px sans-serif";
-      context.fillText(
+      Window_TextLayout.drawWrappedText(
+        context,
         skill.description || "",
-        this.x + this.padding,
-        this.y + this.height - 60,
+        detailX,
+        dividerY + 30,
+        detailWidth,
+        22,
+        3,
       );
       context.fillText(
         `Category: ${this.skillCategoryLabel(skill)}`,
-        this.x + this.padding,
-        this.y + this.height - 30,
+        detailX,
+        this.y + this.height - 13,
       );
     }
 

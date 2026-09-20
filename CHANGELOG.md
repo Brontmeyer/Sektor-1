@@ -12,6 +12,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Skills UI Integration Cleanup v1 so the battle Skills selector is rendered as a first-class battle selection window and suppresses the command window while open
+- Added shared `Window_TextLayout` wrapping/truncation for bounded ability descriptions and applied it to field Skills and Magick detail panels
+- Added dedicated Skills UI integration regression coverage for battle-window rendering, command-window suppression, bounded description layout, and script-load order
 - Added Character Valor Arts v1 with one canonical starter Art per current actor: Tyler's **Unbroken**, Sarah's **Rallyheart**, Aboo's **Wild Arc**, and G Prime's **Zero Lock**
 - Expanded the shared Skills effect vocabulary only as required by the approved Arts: percentage healing, reusable status application, and optional status payloads on physical-damage Skills
 - Added data-driven support/control Skill categories and status-reference validation without introducing character-name checks in battle execution
@@ -144,6 +147,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Changed
 
+- Centralized battle selection-window rendering over Skills, Magick, and Items so a newly opened selector cannot remain input-active but visually omitted from `BattleRenderer`
+- Extended shared list-viewport regression coverage to the Skills field/battle windows introduced after the original UI-resilience audit
+- Reconciled stale documentation that still described the first canonical character Valor Arts as future work
 - Renamed the active `limitGainMultiplier` status contract to canonical `valorGainMultiplier` terminology and reserved future character-specific techniques as **Valor Arts** within the non-Magick Skills namespace
 - Upgraded persistent saves to version 7 so actor Valor survives save/load, with compatibility migration from save versions 1 through 6
 - Moved reusable Magick execution and relative ally/enemy target legality from `Game_Actor` to `Game_Battler` so actors and enemies share one Magick engine instead of duplicating spell logic

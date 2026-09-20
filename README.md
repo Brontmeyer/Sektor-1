@@ -41,6 +41,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Skills Runtime v1
 -   ✅ Character Valor Arts v1
 -   ✅ Valor Arts Runtime v1
+-   ✅ Skills UI Integration Cleanup v1
 
 ------------------------------------------------------------------------
 
@@ -89,7 +90,8 @@ Systems currently being expanded include:
 -   🚧 Boss mechanics
 -   ✅ Valor Runtime v1
 -   ✅ Valor Arts Runtime v1
--   🚧 Character-specific Valor Art content
+-   ✅ Character-specific Valor Art content v1
+-   ✅ Skills UI Integration Cleanup v1
 
 ------------------------------------------------------------------------
 
@@ -107,7 +109,7 @@ Magick is data-driven through `data/Magick.json`, allowing battle
 behavior to be expanded without hard-coding individual spells throughout
 the engine.
 
-Summon Magick is a future Magick category. The separate **Skills** namespace now provides the runtime foundation for non-Magick techniques, including future **Valor Arts**, without reusing Magick ownership, MP costs, or spell terminology.
+Summon Magick is a future Magick category. The separate **Skills** namespace now provides the runtime foundation for non-Magick techniques, including **Valor Arts**, without reusing Magick ownership, MP costs, or spell terminology.
 
 Combat-stat terminology remains **Magic**, **Magic Attack**, and **Magic Defense**. Those names describe character statistics rather than the Magick ability namespace.
 
@@ -123,7 +125,7 @@ Skills now support the reusable effect vocabulary required by the first canonica
 
 **Valor Arts Runtime v1** still specializes the same Skills namespace through `valorArt: true`. A Valor Art is usable only while its actor is Valor Ready and spends the existing full gauge exactly once when the action is committed against at least one legal target. Battle and field Skills windows mark Valor Arts with `[VALOR]`; no separate Valor-only command or combat engine exists.
 
-The field Skills window remains a read-only learned-Skill viewer with the same shared actor navigation used by other character menus. Long-term Skill/Valor Art unlock progression, additional effect types, additional resource models, and enemy Skill actions remain future design work.
+The field Skills window remains a read-only learned-Skill viewer with the same shared actor navigation used by other character menus. Skills UI Integration Cleanup v1 makes the battle selector a first-class rendered battle window, suppresses the command window while that selector is open, and uses shared bounded text layout for long Skills/Magick descriptions in field menus. Long-term Skill/Valor Art unlock progression, additional effect types, additional resource models, and enemy Skill actions remain future design work.
 
 ------------------------------------------------------------------------
 
@@ -252,7 +254,6 @@ Major systems still planned include:
 -   Advanced enemy / boss scripting
 -   Boss scripting
 -   Party switching
--   Canonical character-specific Valor Arts
 -   Summon Magick
 -   World exploration
 -   Towns and dungeons

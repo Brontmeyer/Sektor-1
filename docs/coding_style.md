@@ -252,6 +252,8 @@ A window may display whether a command is available, but the underlying game sys
 
 Character-specific field-menu windows should receive party context and use the shared `Window_ActorNavigator` helper for left/right actor switching and actor-header presentation. Window-specific code should only handle the local state that must reset when the selected actor changes.
 
+Long descriptive text inside fixed UI panels should use shared `Window_TextLayout` wrapping instead of a raw unbounded `fillText()` call. Battle selection windows should be registered with the renderer as one selection group so input-active selectors are also visible and suppress the underlying command window consistently.
+
 ---
 
 # 🗃️ Data-Driven Gameplay

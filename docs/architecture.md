@@ -435,7 +435,7 @@ Windows present available commands and Magick to the player. `Window_BattleComma
 
 Valor Arts Runtime v1 uses `valorArt: true` Skill metadata. `Game_Actor` specializes the generic Skill-cost hooks so Valor Arts require `isValorReady()` and consume the full gauge through `consumeValor()`. The shared battler layer does not own Valor state, and `BattleManager` only asks the generic cost hook after confirming at least one legal target. This prevents failed/invalid target resolution from spending Valor while still charging once for a committed action even if a later physical hit misses or a status attempt is resisted.
 
-`Window_BattleSkills` presents known usable Skills during battle and marks Valor Arts with `[VALOR]`; `Window_Skills` is the field/menu read-only learned-Skill viewer, labels the same classification, and uses the shared `Window_ActorNavigator` contract. Character Valor Arts v1 now populates the canonical Skills catalog with one starter Art per current actor. Shared Skill execution supports physical damage, percentage healing, and status application; character identity remains data-driven, while long-term unlock/progression rules, additional effect families, and enemy Skill actions remain future work.
+`Window_BattleSkills` presents known usable Skills during battle and marks Valor Arts with `[VALOR]`; `Window_Skills` is the field/menu read-only learned-Skill viewer, labels the same classification, and uses the shared `Window_ActorNavigator` contract. `BattleRenderer` treats Skills, Magick, and Item selectors as one presentation group: any open selector suppresses the command window and every selector is drawn through the same rendering loop. Field Skills and Magick details use shared `Window_TextLayout` wrapping so canonical descriptions remain bounded by their panels. Character Valor Arts v1 now populates the canonical Skills catalog with one starter Art per current actor. Shared Skill execution supports physical damage, percentage healing, and status application; character identity remains data-driven, while long-term unlock/progression rules, additional effect families, and enemy Skill actions remain future work.
 
 ## Essences
 
@@ -544,7 +544,6 @@ The existing map, event, interpreter, switch, variable, and scene foundations ca
 Future battle architecture is expected to support systems such as:
 
 - Summon Magick
-- Canonical character-specific Valor Arts
 - Party switching
 - Dual Techniques
 - More advanced enemy and boss behavior

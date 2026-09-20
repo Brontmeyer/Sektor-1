@@ -132,7 +132,7 @@ Indirect Magick
 Advanced Magick
 ```
 
-Summon Magick is a future Magick category. **Skills** is the separate non-Magick technique namespace, including the future home of Valor Arts.
+Summon Magick is a future Magick category. **Skills** is the separate non-Magick technique namespace and is now the canonical home of Valor Arts.
 
 The Magick system should support:
 

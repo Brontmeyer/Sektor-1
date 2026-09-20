@@ -129,6 +129,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement actor-owned Skill learning/forgetting and independent `skillIds` persistence
 - [x] Implement battle Skill targeting/execution through shared action restrictions and the physical-damage pipeline
 - [x] Add battle and field Skills windows with shared character-menu navigation
+- [x] Integrate the battle Skills selector into rendering and bound long Skills/Magick field descriptions
 - [x] Add the first Skill resource specialization through Valor Arts Runtime v1
 - [ ] Define additional Skill costs/resources beyond Valor when approved designs require them
 - [x] Expand Skills beyond physical-damage techniques with reusable percentage-heal and status-application effects required by Character Valor Arts v1

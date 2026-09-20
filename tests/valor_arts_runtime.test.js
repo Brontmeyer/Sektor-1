@@ -119,6 +119,7 @@ function createHarness() {
     "js/battle/BattleEnemyAI.js",
     "js/battle/BattleManager.js",
     "js/windows/Window_BattleCommand.js",
+    "js/windows/Window_TextLayout.js",
     "js/windows/Window_BattleSkills.js",
     "js/windows/Window_Skills.js",
   ]

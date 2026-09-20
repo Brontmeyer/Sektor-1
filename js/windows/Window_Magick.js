@@ -229,24 +229,36 @@ class Window_Magick {
     const currentMagick = this.currentMagick();
 
     if (currentMagick) {
-      context.font = "18px sans-serif";
+      const dividerY = this.y + 295;
+      const detailX = this.x + this.padding;
+      const detailWidth = this.width - this.padding * 2;
 
+      context.beginPath();
+      context.moveTo(detailX, dividerY);
+      context.lineTo(this.x + this.width - this.padding, dividerY);
+      context.stroke();
+
+      context.font = "18px sans-serif";
       context.fillText(
         `MP: ${this.actor.mp} / ${this.actor.maxMp}`,
-        this.x + 24,
-        this.y + this.height - 95,
+        detailX,
+        dividerY + 23,
       );
 
-      context.fillText(
+      Window_TextLayout.drawWrappedText(
+        context,
         currentMagick.description || "",
-        this.x + 24,
-        this.y + this.height - 60,
+        detailX,
+        dividerY + 47,
+        detailWidth,
+        20,
+        3,
       );
 
       context.fillText(
         `Category: ${currentMagick.category || "other"}`,
-        this.x + 24,
-        this.y + this.height - 30,
+        detailX,
+        this.y + this.height - 13,
       );
     }
     context.restore();

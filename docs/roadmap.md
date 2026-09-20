@@ -45,6 +45,7 @@ Completed engine foundations include:
 - Inventory system
 - Shops & Gil Spending v1 with canonical-price purchases for items and conventional equipment
 - Character Menu Navigation Consistency v1 with shared party-member switching across Skills, Magick, Status, Equipment, and Essence
+- Skills UI Integration Cleanup v1 with first-class battle Skills rendering and bounded shared ability-description layout
 - Battle Results Screen v1 for visible EXP, Gil, drop, level-up, and Essence progression feedback
 
 Completed canonical battle-data foundations include:

@@ -52,13 +52,15 @@ function testListViewportKeepsSelectionVisible() {
   );
 }
 
-function testAllAuditedListWindowsUseSharedViewport() {
+function testScrollableListWindowsUseSharedViewport() {
   const windowFiles = [
     "js/windows/Window_Inventory.js",
     "js/windows/Window_EquipSelect.js",
     "js/windows/Window_Magick.js",
     "js/windows/Window_BattleItem.js",
     "js/windows/Window_BattleMagick.js",
+    "js/windows/Window_Skills.js",
+    "js/windows/Window_BattleSkills.js",
   ];
 
   for (const relativePath of windowFiles) {
@@ -172,7 +174,7 @@ function testMissingSpriteFallbackIsNamed() {
 
 function run() {
   testListViewportKeepsSelectionVisible();
-  testAllAuditedListWindowsUseSharedViewport();
+  testScrollableListWindowsUseSharedViewport();
   testBattleSpriteLoadFailureReportsAndRecovers();
   testMissingSpriteFallbackIsNamed();
 

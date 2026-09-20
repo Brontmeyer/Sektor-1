@@ -489,7 +489,7 @@ Battle resolution and battle presentation are separate responsibilities.
 
 `BattleAnimationController` coordinates visual action timing and animations.
 
-`BattleRenderer` draws the battle state.
+`BattleRenderer` draws the battle state. Skills, Magick, and Item selectors are treated as one rendered selection-window group so opening any selector suppresses the command window and cannot leave an input-active menu invisible.
 
 The battle scene can present:
 
@@ -628,7 +628,6 @@ Major battle features still planned include:
 - Advanced enemy / boss behavior
 - Boss mechanics
 - Summon Magick
-- Canonical character-specific Valor Arts
 - Party switching
 - Dual Techniques
 - Additional enemy and encounter systems

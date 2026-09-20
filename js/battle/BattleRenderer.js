@@ -86,18 +86,27 @@ class BattleRenderer {
     // Battle windows
     // -----------------------------
 
+    const selectionWindows = [
+      this.scene.skillsWindow,
+      this.scene.magickWindow,
+      this.scene.itemWindow,
+    ].filter(Boolean);
+    const selectionWindowOpen = selectionWindows.some((window) =>
+      window.isOpen(),
+    );
+
     if (
       !this.scene.victory &&
       !this.scene.defeat &&
       !this.scene.battleInputLocked &&
-      !this.scene.magickWindow.isOpen() &&
-      !this.scene.itemWindow.isOpen()
+      !selectionWindowOpen
     ) {
       this.scene.commandWindow.draw();
     }
 
-    this.scene.magickWindow.draw();
-    this.scene.itemWindow.draw();
+    for (const window of selectionWindows) {
+      window.draw();
+    }
 
     context.restore();
   }
