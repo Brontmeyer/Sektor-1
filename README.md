@@ -45,8 +45,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Battle Presentation & Feedback v1
 -   ✅ Battle Command Navigation & Side Actions v1
 -   ✅ Battle Formation & Party Layout v1
--   ✅ Battle Command Navigation & Side Actions v1
--   ✅ Battle Formation & Party Layout v1
+-   ✅ Battle HUD & Message Layout v1
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
 
@@ -88,7 +87,7 @@ Current battle features include:
 -   ✅ Animation controller
 -   ✅ Magick foundation
 -   ✅ Skills Runtime v1 foundation
--   ✅ Encounter/active-turn battle context, contextual control hints, and bounded recent battle messages
+-   ✅ Encounter/active-turn context, contextual controls, top battle messaging, and target feedback
 -   ✅ Idempotent battle resolution and structured rewards
 -   ✅ Gil, enemy item drops, and Essence Resonance rewards
 
@@ -107,6 +106,9 @@ Systems currently being expanded include:
 -   ✅ Battle Presentation & Feedback v1
 -   ✅ Battle Command Navigation & Side Actions v1
 -   ✅ Battle Formation & Party Layout v1
+-   ✅ Battle HUD & Message Layout v1
+
+Battle HUD & Message Layout v1 adds stable four-row party information, top battle messaging, target-name feedback, compact HP/MP/Valor gauges, and active-actor emphasis while leaving battle rules in their existing owners.
 
 ------------------------------------------------------------------------
 

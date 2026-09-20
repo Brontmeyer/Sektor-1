@@ -87,7 +87,16 @@ function testNestedEventContractsRejectMalformedCommands() {
     { code: "gainAccessory", accessoryId: 999, amount: 1 },
     { code: "mysteryCommand" },
   );
-  map.events[2].pages[0].commands[0].encounterId = 999;
+  const battleEvent = map.events.find((event) =>
+    event.pages?.some((page) =>
+      page.commands?.some((command) => command.code === "battle"),
+    ),
+  );
+  const battleCommand = battleEvent.pages
+    .flatMap((page) => page.commands || [])
+    .find((command) => command.code === "battle");
+
+  battleCommand.encounterId = 999;
 
   assert.throws(
     () => DatabaseValidator.validateMapData(map, database, 1),

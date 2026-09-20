@@ -509,6 +509,8 @@ Side-view formation should preserve that readability with four active actors. Th
 
 Battle feedback should also make the current interaction state legible without turning presentation into gameplay authority. Encounter context, the active party battler, current control hints, target-selection state, and recent combat messages should reflect the battle state that already exists rather than inventing parallel UI-only rules. Contextual instructions are preferred over permanent test/development wording in normal battle presentation.
 
+The current HUD direction favors a dark, restrained Sektor 1 presentation rather than reproducing another game's blue-window language. Four party members receive stable vertical HUD rows, while battle messages occupy a dedicated top strip so party resources and combat narration do not compete for the same space. Active-actor and target emphasis should stay subtle and informational; later asset-driven skinning can change frames, textures, icons, and gauges without changing these ownership or layout contracts.
+
 The core battle command presentation should stay compact. The persistent list is Attack, Skills, Magick, and Item; Escape and Defend are contextual horizontal side actions that remain hidden until the player deliberately requests them. Back navigation should move one interaction level at a time so choosing a Skill or Magick, entering target selection, and backing out returns to the originating selector instead of discarding navigation context.
 
 Style can become expressive without sacrificing information.

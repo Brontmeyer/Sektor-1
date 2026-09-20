@@ -105,6 +105,7 @@ class Scene_Battle extends Scene_Base {
     this.battleManager = new BattleManager(this);
     this.formationManager = new BattleFormationManager(this);
     this.partyController = new BattlePartyController(this);
+    this.hudLayout = new BattleHudLayout(this);
     this.renderer = new BattleRenderer(this);
 
     // PENDING ITEM ACTION

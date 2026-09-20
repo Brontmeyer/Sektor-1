@@ -134,6 +134,10 @@ Pass 43 is post-audit battle-UI/navigation work and does not reopen a historical
 
 Pass 44 is post-audit feature development and does not reopen a historical finding. Encounter formation data now resolves through `BattleFormationManager`, which owns side-view positions, scale, and facing for normal, back-attack, and pincer layouts. Existing targeting, effects, animation, and rendering consume that shared geometry rather than gaining formation-specific combat authority. Formation state is canonical encounter data plus transient presentation geometry, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Battle HUD & Message Layout v1
+
+Pass 45 is post-audit presentation work and does not reopen a historical finding. `BattleHudLayout` centralizes top-message and four-row party HUD geometry, while `BattleRenderer` reads existing battler, target, and turn state for display only. The pass also hardens two Map001 regression tests that had depended on event-array positions after later tester events were added. No combat or persistent-state contract changes, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

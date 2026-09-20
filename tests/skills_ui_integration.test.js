@@ -90,11 +90,14 @@ function testBattleRendererDrawsSkillsAndSuppressesCommandWindow() {
   };
   const renderer = new BattleRenderer(scene);
 
+  renderer.drawBattleHeader = () => {};
   renderer.drawFrontView = () => {};
   renderer.drawSideView = () => {};
   renderer.drawBattleHud = () => {};
   renderer.drawBattleEffect = () => {};
   renderer.drawBattlePopups = () => {};
+  renderer.drawBattleMessages = () => {};
+  renderer.drawBattleHint = () => {};
 
   renderer.draw();
 

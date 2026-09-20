@@ -10,6 +10,7 @@ const projectRoot = path.resolve(__dirname, "..");
 function loadPresentation(globals = {}) {
   const source = [
     "js/windows/Window_TextLayout.js",
+    "js/battle/BattleHudLayout.js",
     "js/battle/BattleRenderer.js",
   ]
     .map((relativePath) =>
@@ -19,7 +20,7 @@ function loadPresentation(globals = {}) {
   const context = vm.createContext({ console, ...globals });
 
   vm.runInContext(
-    `${source}\nglobalThis.__classes = { Window_TextLayout, BattleRenderer };`,
+    `${source}\nglobalThis.__classes = { Window_TextLayout, BattleHudLayout, BattleRenderer };`,
     context,
   );
 
@@ -55,6 +56,10 @@ function createContext() {
     measureText(text) {
       return { width: String(text).length * 8 };
     },
+    beginPath() {},
+    moveTo() {},
+    lineTo() {},
+    stroke() {},
   };
 }
 
@@ -85,8 +90,9 @@ function baseScene() {
 function testHeaderShowsEncounterAndActiveBattler() {
   const context = createContext();
   const Graphics = { width: 1600, height: 900, context };
-  const { BattleRenderer } = loadPresentation({ Graphics });
+  const { BattleHudLayout, BattleRenderer } = loadPresentation({ Graphics });
   const scene = baseScene();
+  scene.hudLayout = new BattleHudLayout(scene);
   const renderer = new BattleRenderer(scene);
 
   renderer.drawBattleHeader(context);
@@ -95,8 +101,8 @@ function testHeaderShowsEncounterAndActiveBattler() {
     .filter((call) => call[0] === "fillText")
     .map((call) => call[1]);
 
-  assert.equal(drawnText.includes("Battle — Test Slime Pair"), true);
-  assert.equal(drawnText.includes("Active: Tyler"), true);
+  assert.equal(drawnText.includes("BATTLE // Test Slime Pair"), true);
+  assert.equal(drawnText.includes("ACTIVE // Tyler"), true);
 
   context.calls.length = 0;
   scene.battleManager.currentTurnState = () => "action";
@@ -104,7 +110,7 @@ function testHeaderShowsEncounterAndActiveBattler() {
 
   assert.equal(
     context.calls.some(
-      (call) => call[0] === "fillText" && call[1] === "Active: Tyler",
+      (call) => call[0] === "fillText" && call[1] === "ACTIVE // Tyler",
     ),
     false,
   );
@@ -112,8 +118,9 @@ function testHeaderShowsEncounterAndActiveBattler() {
 
 function testCommandWindowIsSuppressedDuringTargetSelection() {
   const Graphics = { width: 1600, height: 900, context: createContext() };
-  const { BattleRenderer } = loadPresentation({ Graphics });
+  const { BattleHudLayout, BattleRenderer } = loadPresentation({ Graphics });
   const scene = baseScene();
+  scene.hudLayout = new BattleHudLayout(scene);
   const renderer = new BattleRenderer(scene);
 
   assert.equal(renderer.shouldDrawCommandWindow(false), true);
@@ -131,8 +138,9 @@ function testCommandWindowIsSuppressedDuringTargetSelection() {
 
 function testContextualHintsMatchBattleState() {
   const Graphics = { width: 1600, height: 900, context: createContext() };
-  const { BattleRenderer } = loadPresentation({ Graphics });
+  const { BattleHudLayout, BattleRenderer } = loadPresentation({ Graphics });
   const scene = baseScene();
+  scene.hudLayout = new BattleHudLayout(scene);
   const renderer = new BattleRenderer(scene);
 
   assert.match(renderer.battleHint(), /Escape/);
@@ -168,8 +176,9 @@ function testContextualHintsMatchBattleState() {
 function testBattleMessagesWrapInsideBoundedPanel() {
   const context = createContext();
   const Graphics = { width: 1000, height: 720, context };
-  const { BattleRenderer } = loadPresentation({ Graphics });
+  const { BattleHudLayout, BattleRenderer } = loadPresentation({ Graphics });
   const scene = baseScene();
+  scene.hudLayout = new BattleHudLayout(scene);
   scene.battleMessages = [
     "Tyler uses an intentionally long battle action message that should remain inside the feedback panel instead of spilling across the battlefield.",
     "Test Slime takes an equally long amount of descriptive feedback so the second recent message is bounded too.",
@@ -183,14 +192,14 @@ function testBattleMessagesWrapInsideBoundedPanel() {
 
   assert.notEqual(panel, undefined);
   assert.equal(textCalls.length > 0, true);
-  assert.equal(textCalls.length <= 4, true);
+  assert.equal(textCalls.length <= 3, true);
 
   const [, panelX, , panelWidth] = panel;
-  const innerWidth = panelWidth - 36;
+  const innerWidth = panelWidth - 32;
 
   for (const call of textCalls) {
     const [, text, x] = call;
-    assert.equal(x >= panelX + 18, true);
+    assert.equal(x >= panelX + 16, true);
     assert.equal(context.measureText(text).width <= innerWidth, true);
   }
 }

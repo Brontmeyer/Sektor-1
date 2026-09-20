@@ -94,6 +94,24 @@ class BattleRenderer {
       : null;
   }
 
+  hudActivePartyBattler() {
+    if (this.scene.outcome || this.scene.pendingEnemyTurn) {
+      return null;
+    }
+
+    const turnState = this.currentTurnState();
+
+    if (turnState !== null && !["command", "action"].includes(turnState)) {
+      return null;
+    }
+
+    const controller = this.scene.partyController;
+
+    return controller && typeof controller.currentBattler === "function"
+      ? controller.currentBattler()
+      : null;
+  }
+
   shouldDrawCommandWindow(selectionWindowOpen = this.hasOpenSelectionWindow()) {
     if (
       this.scene.victory ||
@@ -112,48 +130,83 @@ class BattleRenderer {
   }
 
   drawBattleHeader(context) {
+    const bounds = this.scene.hudLayout.topHeaderBounds();
     const encounterName = String(this.scene.encounter?.name || "").trim();
-    const title = encounterName ? `Battle — ${encounterName}` : "Battle";
+    const title = encounterName ? `BATTLE // ${encounterName}` : "BATTLE";
+
+    context.save();
+    context.fillStyle = "rgba(10, 14, 20, 0.88)";
+    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    context.strokeStyle = "rgba(120, 205, 255, 0.55)";
+    context.lineWidth = 1;
+    context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
 
     context.textAlign = "left";
-    context.textBaseline = "alphabetic";
-    context.font = "28px Arial";
+    context.textBaseline = "middle";
+    context.font = "20px Arial";
     context.fillStyle = "#ffffff";
-    const maxTitleWidth = Math.max(120, Graphics.width - 80);
+    const maxTitleWidth = Math.max(120, bounds.width * 0.58);
     const displayTitle =
       context.measureText(title).width <= maxTitleWidth
         ? title
         : Window_TextLayout.ellipsize(context, title, maxTitleWidth);
 
-    context.fillText(displayTitle, 40, 50);
+    context.fillText(displayTitle, bounds.x + 16, bounds.y + bounds.height / 2);
 
-    const battler = this.activePartyBattler();
+    const feedback = this.targetFeedback() || this.activeFeedback();
 
-    if (battler?.name) {
+    if (feedback) {
+      context.textAlign = "right";
       context.font = "16px Arial";
-      context.fillStyle = "#ffd75a";
-      context.fillText(`Active: ${battler.name}`, 42, 78);
-      context.fillStyle = "#ffffff";
+      context.fillStyle = this.scene.selectingEnemyTarget ? "#79d7ff" : "#ffd75a";
+      const feedbackWidth = Math.max(100, bounds.width * 0.36);
+      const displayFeedback =
+        context.measureText(feedback).width <= feedbackWidth
+          ? feedback
+          : Window_TextLayout.ellipsize(context, feedback, feedbackWidth);
+
+      context.fillText(
+        displayFeedback,
+        bounds.x + bounds.width - 16,
+        bounds.y + bounds.height / 2,
+      );
     }
+
+    context.restore();
+  }
+
+  activeFeedback() {
+    const battler = this.activePartyBattler();
+    return battler?.name ? `ACTIVE // ${battler.name}` : "";
+  }
+
+  targetFeedback() {
+    if (!this.scene.selectingEnemyTarget) {
+      return "";
+    }
+
+    if (this.scene.targetScope === "all") {
+      return this.scene.targetGroup === "ally"
+        ? "TARGET // ALL ALLIES"
+        : "TARGET // ALL ENEMIES";
+    }
+
+    const target = this.scene.targetManager?.getSelectedTarget?.() || null;
+    return target?.name ? `TARGET // ${target.name}` : "TARGET";
   }
 
   drawBattleMessages(context) {
     const messages = Array.isArray(this.scene.battleMessages)
       ? this.scene.battleMessages.slice(-2)
       : [];
-
-    if (messages.length === 0) {
-      return;
-    }
-
-    const maxWidth = Math.max(120, Math.min(920, Graphics.width - 120));
-    const lineHeight = 22;
-    const paddingX = 18;
-    const paddingY = 12;
+    const bounds = this.scene.hudLayout.messageBounds();
+    const lineHeight = 18;
+    const paddingX = 16;
+    const paddingY = 8;
     const lines = [];
 
     context.save();
-    context.font = "18px Arial";
+    context.font = "16px Arial";
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
 
@@ -161,39 +214,32 @@ class BattleRenderer {
       const wrapped = Window_TextLayout.wrapLines(
         context,
         message,
-        maxWidth - paddingX * 2,
+        bounds.width - paddingX * 2,
       );
-      const visible = wrapped.slice(0, 2);
-
-      if (wrapped.length > visible.length && visible.length > 0) {
-        const last = visible.length - 1;
-        visible[last] = Window_TextLayout.ellipsize(
-          context,
-          visible[last],
-          maxWidth - paddingX * 2,
-        );
-      }
-
-      lines.push(...visible);
+      lines.push(...wrapped);
     }
 
-    const panelHeight = paddingY * 2 + Math.max(1, lines.length) * lineHeight;
-    const hudTop = Graphics.height - 200;
-    const panelX = (Graphics.width - maxWidth) / 2;
-    const panelY = Math.max(92, hudTop - panelHeight - 10);
+    const visibleLines = lines.slice(-3);
 
-    context.fillStyle = "rgba(0, 0, 0, 0.78)";
-    context.fillRect(panelX, panelY, maxWidth, panelHeight);
-    context.strokeStyle = "rgba(255, 255, 255, 0.65)";
+    context.fillStyle = "rgba(8, 11, 17, 0.8)";
+    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    context.strokeStyle = "rgba(255, 255, 255, 0.24)";
     context.lineWidth = 1;
-    context.strokeRect(panelX, panelY, maxWidth, panelHeight);
+    context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
     context.fillStyle = "#ffffff";
 
-    for (let index = 0; index < lines.length; index++) {
+    for (let index = 0; index < visibleLines.length; index++) {
+      const line = visibleLines[index];
+      const maxLineWidth = bounds.width - paddingX * 2;
+      const displayLine =
+        context.measureText(line).width <= maxLineWidth
+          ? line
+          : Window_TextLayout.ellipsize(context, line, maxLineWidth);
+
       context.fillText(
-        lines[index],
-        panelX + paddingX,
-        panelY + paddingY + 17 + index * lineHeight,
+        displayLine,
+        bounds.x + paddingX,
+        bounds.y + paddingY + 15 + index * lineHeight,
       );
     }
 
@@ -277,7 +323,11 @@ class BattleRenderer {
         ? hint
         : Window_TextLayout.ellipsize(context, hint, maxWidth);
 
-    context.fillText(displayHint, Graphics.width - 30, Graphics.height - 30);
+    context.fillText(
+      displayHint,
+      Graphics.width - 30,
+      this.scene.hudLayout.hintY(),
+    );
     context.restore();
   }
 
@@ -522,94 +572,154 @@ class BattleRenderer {
     }
   }
 
-  drawValorState(context, actor, x, y, font = "14px Arial") {
-    if (!actor || !Number.isFinite(actor.maxValor) || actor.maxValor <= 0) {
-      return;
+
+  drawHudGauge(context, value, maximum, x, y, width, fillStyle) {
+    const max = Number(maximum);
+    const current = Number(value);
+    const rate =
+      Number.isFinite(max) && max > 0 && Number.isFinite(current)
+        ? Math.max(0, Math.min(1, current / max))
+        : 0;
+
+    context.fillStyle = "#252b34";
+    context.fillRect(x, y, width, 5);
+
+    if (rate > 0) {
+      context.fillStyle = fillStyle;
+      context.fillRect(x, y, width * rate, 5);
+    }
+  }
+
+  drawBattleHudActor(context, actor, index, activeActor) {
+    const row = this.scene.hudLayout.partyRowBounds(index);
+    const padding = 10;
+    const contentWidth = row.width - padding * 2;
+    const nameWidth = contentWidth * 0.25;
+    const hpWidth = contentWidth * 0.23;
+    const mpWidth = contentWidth * 0.19;
+    const valorWidth = contentWidth - nameWidth - hpWidth - mpWidth;
+    const centerY = row.y + row.height / 2;
+    const isActive = actor === activeActor;
+    const isDefeated = actor?.isDefeated?.() === true;
+
+    context.save();
+
+    if (isActive) {
+      context.fillStyle = "rgba(255, 215, 90, 0.11)";
+      context.fillRect(row.x, row.y + 1, row.width, row.height - 2);
+      context.fillStyle = "#ffd75a";
+      context.fillRect(row.x, row.y + 4, 4, row.height - 8);
     }
 
-    const ready =
-      typeof actor.isValorReady === "function" && actor.isValorReady();
-    const value = Math.floor(Number(actor.valor) || 0);
-    const label = ready
-      ? "VALOR: READY"
-      : `VALOR: ${value} / ${actor.maxValor}`;
+    if (index > 0) {
+      context.strokeStyle = "rgba(255, 255, 255, 0.1)";
+      context.lineWidth = 1;
+      context.beginPath();
+      context.moveTo(row.x + 6, row.y);
+      context.lineTo(row.x + row.width - 6, row.y);
+      context.stroke();
+    }
 
-    context.font = font;
-    context.fillStyle = ready ? "#ffd75a" : "#ffffff";
-    context.fillText(label, x, y);
+    context.globalAlpha = isDefeated ? 0.5 : 1;
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+
+    const nameX = row.x + padding;
+    const hpX = nameX + nameWidth;
+    const mpX = hpX + hpWidth;
+    const valorX = mpX + mpWidth;
+
+    context.font = "17px Arial";
+    context.fillStyle = isActive ? "#ffd75a" : "#ffffff";
+    context.fillText(actor.name, nameX, centerY - 8);
+
+    let status =
+      typeof actor.statusSummary === "function" ? actor.statusSummary(2) : "";
+
+    if (isDefeated && !status) {
+      status = "DEFEATED";
+    }
+
+    if (status) {
+      context.font = "12px Arial";
+      context.fillStyle = isDefeated ? "#ff8a8a" : "#aeb8c5";
+      const maxStatusWidth = Math.max(40, nameWidth - 12);
+      const displayStatus =
+        context.measureText(status).width <= maxStatusWidth
+          ? status
+          : Window_TextLayout.ellipsize(context, status, maxStatusWidth);
+      context.fillText(displayStatus, nameX, centerY + 10);
+    }
+
+    context.font = "14px Arial";
     context.fillStyle = "#ffffff";
+    context.fillText(`HP ${actor.hp}/${actor.maxHp}`, hpX, centerY - 5);
+    this.drawHudGauge(
+      context,
+      actor.hp,
+      actor.maxHp,
+      hpX,
+      centerY + 8,
+      Math.max(36, hpWidth - 18),
+      "#63d471",
+    );
+
+    context.fillText(`MP ${actor.mp}/${actor.maxMp}`, mpX, centerY - 5);
+    this.drawHudGauge(
+      context,
+      actor.mp,
+      actor.maxMp,
+      mpX,
+      centerY + 8,
+      Math.max(36, mpWidth - 18),
+      "#4fa3ff",
+    );
+
+    const valorReady = actor.isValorReady?.() === true;
+    const valorValue = Math.floor(Number(actor.valor) || 0);
+    const valorMaximum = Math.max(0, Number(actor.maxValor) || 0);
+    const valorLabel = valorReady
+      ? "VALOR READY"
+      : `VALOR ${valorValue}/${valorMaximum}`;
+
+    context.fillStyle = valorReady ? "#ffd75a" : "#ffffff";
+    context.fillText(valorLabel, valorX, centerY - 5);
+    this.drawHudGauge(
+      context,
+      valorValue,
+      valorMaximum,
+      valorX,
+      centerY + 8,
+      Math.max(42, valorWidth - 12),
+      valorReady ? "#ffd75a" : "#c86cff",
+    );
+
+    context.restore();
   }
 
   drawBattleHud(context) {
-    const hudHeight = 190;
-    const hudY = Graphics.height - hudHeight - 10;
+    const hud = this.scene.hudLayout.hudBounds();
+    const party = this.scene.hudLayout.partyBounds();
+    const members = $gameParty
+      .battleMembers()
+      .slice(0, BattleHudLayout.PARTY_SLOTS);
+    const activeActor = this.hudActivePartyBattler();
 
-    context.fillStyle = "rgba(0, 0, 0, 0.9)";
-
-    context.fillRect(20, hudY, Graphics.width - 40, hudHeight);
-
-    context.strokeStyle = "#ffffff";
+    context.save();
+    context.fillStyle = "rgba(7, 10, 15, 0.94)";
+    context.fillRect(hud.x, hud.y, hud.width, hud.height);
+    context.strokeStyle = "rgba(255, 255, 255, 0.72)";
     context.lineWidth = 2;
+    context.strokeRect(hud.x, hud.y, hud.width, hud.height);
 
-    context.strokeRect(20, hudY, Graphics.width - 40, hudHeight);
+    context.fillStyle = "rgba(120, 205, 255, 0.22)";
+    context.fillRect(party.x - 8, party.y, 1, party.height);
 
-    // Party status. With one member this preserves the current layout; with
-    // two or three members it automatically spreads the status blocks out.
-    const members = $gameParty.battleMembers();
-
-    context.textAlign = "left";
-    context.textBaseline = "alphabetic";
-    context.fillStyle = "#ffffff";
-
-    if (members.length <= 1) {
-      const actor = members[0];
-
-      if (!actor) {
-        return;
-      }
-      const statusX = Graphics.width - 320;
-
-      context.font = "22px Arial";
-      context.fillText(actor.name, statusX, hudY + 40);
-
-      context.font = "18px Arial";
-      context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 78);
-      context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 110);
-      this.drawValorState(context, actor, statusX, hudY + 140, "16px Arial");
-
-      const summary =
-        typeof actor.statusSummary === "function" ? actor.statusSummary(3) : "";
-
-      if (summary) {
-        context.font = "14px Arial";
-        context.fillText(summary, statusX, hudY + 168);
-      }
-
-      return;
+    for (let index = 0; index < members.length; index++) {
+      this.drawBattleHudActor(context, members[index], index, activeActor);
     }
 
-    const statusStartX = Math.max(300, Graphics.width - 690);
-    const statusWidth = (Graphics.width - statusStartX - 40) / members.length;
-
-    members.forEach((actor, index) => {
-      const statusX = statusStartX + index * statusWidth;
-
-      context.font = "20px Arial";
-      context.fillText(actor.name, statusX, hudY + 38);
-
-      context.font = "16px Arial";
-      context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, statusX, hudY + 74);
-      context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, statusX, hudY + 106);
-      this.drawValorState(context, actor, statusX, hudY + 134, "13px Arial");
-
-      const summary =
-        typeof actor.statusSummary === "function" ? actor.statusSummary(2) : "";
-
-      if (summary) {
-        context.font = "13px Arial";
-        context.fillText(summary, statusX, hudY + 163);
-      }
-    });
+    context.restore();
   }
 
   drawBattleEffect(context) {

@@ -504,7 +504,7 @@ Battle-presentation directions and current status:
 
 - ✅ Four-actor battlefield layout with reusable formation slots and safe sprite scaling
 - ✅ Normal / back-attack / pincer encounter formation contracts
-- Further Battle HUD and top-message layout refinement
+- ✅ Battle HUD & Message Layout v1 with four stable party rows, top battle messaging, active-actor emphasis, and target-name feedback
 - A separate Options/configuration system for battle speed, message speed, and optional battle cursor memory
 
 ---

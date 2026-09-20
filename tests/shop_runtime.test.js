@@ -397,16 +397,22 @@ function testShopEventValidationChecksGoodsAndDuplicates() {
   );
 
   const invalid = JSON.parse(JSON.stringify(map001));
-  invalid.events[3].pages[0].commands[0].goods = [
-    { type: "item", id: 999 },
-  ];
+  const invalidShopCommand = invalid.events
+    .flatMap((event) => event.pages || [])
+    .flatMap((page) => page.commands || [])
+    .find((command) => command.code === "shop");
+  invalidShopCommand.goods = [{ type: "item", id: 999 }];
   assert.throws(
     () => DatabaseValidator.validateMapData(invalid, database, 1),
     /unknown item ID 999/,
   );
 
   const duplicate = JSON.parse(JSON.stringify(map001));
-  duplicate.events[3].pages[0].commands[0].goods = [
+  const duplicateShopCommand = duplicate.events
+    .flatMap((event) => event.pages || [])
+    .flatMap((page) => page.commands || [])
+    .find((command) => command.code === "shop");
+  duplicateShopCommand.goods = [
     { type: "item", id: 1 },
     { type: "item", id: 1 },
   ];

@@ -510,7 +510,9 @@ Battle resolution and battle presentation are separate responsibilities.
 
 Battle Presentation & Feedback v1 extends that same read-only presentation boundary. The battle header names the current encounter and identifies the active party battler while the player owns command flow. Control hints change with battle state: command selection, side-action focus, list selection, target selection, action/enemy resolution, and battle outcome each advertise only their relevant controls. The main hint advertises left Escape and right Defend navigation; the Escape side panel itself reflects the encounter's existing `canEscape` contract without granting escape authority. The command window also stays hidden while target selection owns input, preventing the underlying command list from reappearing beneath the cursor.
 
-Recent battle messages are displayed in a bounded feedback panel above the party HUD. The scene still owns the recent-message queue and battle systems still author the message content; `BattleRenderer` only wraps/truncates that content with shared `Window_TextLayout` rules so long feedback cannot spill across the battlefield.
+Battle HUD & Message Layout v1 moves recent battle messages into a fixed bounded strip at the top of the battle screen. The scene still owns the recent-message queue and battle systems still author the content; `BattleRenderer` only wraps/truncates that content with shared `Window_TextLayout` rules. The top header also reports the current target during selection, or the active party battler during command flow.
+
+The bottom HUD now reserves four stable party rows rather than expanding actor blocks horizontally. Each row presents actor name, a compact status summary, HP, MP, and Valor with simple gauges. The active party battler receives visual emphasis only; turn ownership continues to live in `BattlePartyController` / `BattleManager`. `BattleHudLayout` owns only the geometry used to keep these regions stable alongside the command window and its temporary Escape/Defend side panels.
 
 The battle scene can present:
 

@@ -12,6 +12,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Battle HUD & Message Layout v1 with a stable four-row party HUD, compact HP/MP/Valor gauges, active-actor emphasis, top-of-screen battle messaging, and target-name feedback during target selection
+- Added `BattleHudLayout` as the presentation-only geometry owner for the top battle strip, four fixed party HUD slots, command-window reserve, and battle hint placement
+- Added dedicated Battle HUD regression coverage for stable four-actor rows, active-row emphasis, target feedback, message/HUD geometry, and script-load order
 - Added Battle Formation & Party Layout v1 with reusable `normal`, `backAttack`, and `pincer` encounter formation contracts
 - Added `BattleFormationManager` as the single owner of battlefield geometry, four-actor vertical party lanes, formation-aware enemy sides, sprite-facing direction, and safe sprite scaling
 - Added formation-aware actor/enemy movement, target cursors, and effect/pop-up anchoring so mirrored and pincer layouts reuse existing battle systems without hard-coded battler names
@@ -177,6 +180,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Changed
 
+- Moved battle messages from above the bottom HUD into a fixed top message strip so combat feedback no longer competes with four-actor party information
+- Reworked the bottom party HUD from horizontally expanding actor blocks into four stable vertical rows with name/status plus readable HP, MP, and Valor presentation
+- Moved contextual battle-control hints immediately above the bottom HUD and made the top battle header surface either active-actor context or the currently selected target
+- Hardened Map001 regression tests so battle/shop validation locates semantic commands instead of depending on event-array positions that can shift as tester events are added
 - Centralized battle selection-window rendering over Skills, Magick, and Items so a newly opened selector cannot remain input-active but visually omitted from `BattleRenderer`
 - Extended shared list-viewport regression coverage to the Skills field/battle windows introduced after the original UI-resilience audit
 - Reconciled stale documentation that still described the first canonical character Valor Arts as future work

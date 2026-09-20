@@ -308,9 +308,11 @@ A Magick's mechanical resolution and its visual presentation should remain separ
 
 ## BattleRenderer
 
-`BattleRenderer` presents the visual battle state.
+`BattleRenderer` presents the visual battle state. `BattleHudLayout` is the presentation-only geometry owner for the fixed top battle strip, bottom HUD bounds, four stable party rows, command-window reserve, and contextual hint placement. This keeps layout arithmetic reusable without giving the HUD ownership of turn state, targeting legality, or resource mutation.
 
 Battle Presentation & Feedback v1 keeps scene/gameplay ownership outside the renderer while making that state easier to read. The renderer derives encounter title, active party battler, selection/targeting control hints, and recent combat-message layout from existing `Scene_Battle`, `BattleManager`, and window state. It does not decide whether an action is legal, whether escape is allowed, or which battler is active. The command window is rendered only during actual player command flow and remains suppressed while a selector or target cursor owns input. Recent messages reuse `Window_TextLayout` so long feedback is bounded instead of relying on unrestricted canvas text.
+
+Battle HUD & Message Layout v1 keeps that same boundary while changing information hierarchy. Recent battle messages render in a fixed top strip; the top header surfaces encounter context plus either the active party battler or current target; and the bottom HUD uses four stable actor rows instead of resizing horizontal blocks as party size changes. HP, MP, Valor, and compact status summaries are read from battler state, while `BattleRenderer` remains presentation-only.
 
 Battle Command Navigation & Side Actions v1 keeps command-navigation state inside `Window_BattleCommand` while leaving action authority where it already belongs. The main list contains only Attack, Skills, Magick, and Item. Horizontal command input opens exactly one temporary side action: Escape on the left or Defend on the right. `Scene_Battle` confirms Escape through its established battle-finalization path and forwards Defend through `BattleManager`; the renderer only draws the current command-window state. Target-cancel flow is likewise one-level navigation: `Scene_Battle` clears pending target state, then reopens the originating Skill/Magick selector with its existing list cursor rather than dropping directly to the main command list.
 

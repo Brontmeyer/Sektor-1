@@ -58,6 +58,9 @@ function createHarness() {
     fillText(...args) {
       drawCalls.push(args);
     },
+    measureText(text) {
+      return { width: String(text).length * 8 };
+    },
   };
   const context = vm.createContext({
     console: { log() {}, warn() {}, error() {} },
@@ -70,6 +73,8 @@ function createHarness() {
     "js/objects/Game_Battler.js",
     "js/objects/Game_Essence.js",
     "js/objects/Game_Actor.js",
+    "js/windows/Window_TextLayout.js",
+    "js/battle/BattleHudLayout.js",
     "js/battle/BattleRenderer.js",
     "js/windows/Window_ActorNavigator.js",
     "js/windows/Window_Status.js",
@@ -80,11 +85,11 @@ function createHarness() {
     .join("\n");
 
   vm.runInContext(
-    `${source}\nglobalThis.__classes = { Game_Actor, BattleRenderer, Window_Status };`,
+    `${source}\nglobalThis.__classes = { Game_Actor, BattleHudLayout, BattleRenderer, Window_Status };`,
     context,
   );
 
-  const { Game_Actor, BattleRenderer, Window_Status } = context.__classes;
+  const { Game_Actor, BattleHudLayout, BattleRenderer, Window_Status } = context.__classes;
   const actor = new Game_Actor(1);
   context.$gameParty = {
     battleMembers() {
@@ -92,7 +97,7 @@ function createHarness() {
     },
   };
 
-  return { actor, context, drawCalls, BattleRenderer, Window_Status };
+  return { actor, context, drawCalls, BattleHudLayout, BattleRenderer, Window_Status };
 }
 
 function testValorUsesResolvedDamageAndStatusMultipliers() {
@@ -172,13 +177,22 @@ function testValorCapsAndConsumesOnlyWhenReady() {
 }
 
 function testBattleHudExposesValorState() {
-  const { actor, context, drawCalls, BattleRenderer } = createHarness();
-  const renderer = new BattleRenderer({});
+  const { actor, context, drawCalls, BattleHudLayout, BattleRenderer } =
+    createHarness();
+  const scene = {
+    commandWindow: null,
+    outcome: null,
+    pendingEnemyTurn: false,
+    battleManager: { currentTurnState: () => "command" },
+    partyController: { currentBattler: () => actor },
+  };
+  scene.hudLayout = new BattleHudLayout(scene);
+  const renderer = new BattleRenderer(scene);
 
   actor.setValor(42.8);
   renderer.drawBattleHud(context.Graphics.context);
   assert.equal(
-    drawCalls.some((call) => call[0] === "VALOR: 42 / 100"),
+    drawCalls.some((call) => call[0] === "VALOR 42/100"),
     true,
   );
 
@@ -186,7 +200,7 @@ function testBattleHudExposesValorState() {
   actor.setValor(100);
   renderer.drawBattleHud(context.Graphics.context);
   assert.equal(
-    drawCalls.some((call) => call[0] === "VALOR: READY"),
+    drawCalls.some((call) => call[0] === "VALOR READY"),
     true,
   );
 }
