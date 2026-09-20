@@ -114,6 +114,10 @@ Pass 38 remains post-audit feature development. It populates the already-closed 
 
 Pass 39 fixes post-audit UI integration defects found during hands-on Character Valor Arts testing rather than reopening a historical audit item. `BattleRenderer` now renders Skills alongside Magick and Items through one selection-window group, field Skills/Magick descriptions use shared bounded text layout, and the newer Skills windows are included in shared viewport regression coverage. No gameplay or save-state contract changes, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Battle Presentation & Feedback v1
+
+Pass 40 is post-audit presentation work and does not reopen a historical finding. `BattleRenderer` now derives encounter/active-turn context and state-sensitive controls from existing battle state, bounds recent combat messages with the shared text-layout helper, and keeps the command window suppressed while target selection owns input. The pass changes no combat rule or persistent state, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

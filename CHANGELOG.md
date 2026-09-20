@@ -12,6 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Battle Presentation & Feedback v1 with encounter-aware battle headers, active-party-battler context, and state-sensitive control hints instead of permanent test-battle copy
+- Added a bounded recent-message panel that reuses `Window_TextLayout` so long combat feedback wraps/truncates inside the battle presentation instead of overflowing the battlefield
+- Tightened battle-window state presentation so the command window remains suppressed during target selection as well as Skills/Magick/Item selection
+- Added dedicated Battle Presentation & Feedback regression coverage for encounter/turn context, target-selection command suppression, contextual controls, and bounded combat messages
 - Added Skills UI Integration Cleanup v1 so the battle Skills selector is rendered as a first-class battle selection window and suppresses the command window while open
 - Added shared `Window_TextLayout` wrapping/truncation for bounded ability descriptions and applied it to field Skills and Magick detail panels
 - Added dedicated Skills UI integration regression coverage for battle-window rendering, command-window suppression, bounded description layout, and script-load order

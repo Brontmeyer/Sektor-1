@@ -491,6 +491,10 @@ Battle resolution and battle presentation are separate responsibilities.
 
 `BattleRenderer` draws the battle state. Skills, Magick, and Item selectors are treated as one rendered selection-window group so opening any selector suppresses the command window and cannot leave an input-active menu invisible.
 
+Battle Presentation & Feedback v1 extends that same read-only presentation boundary. The battle header names the current encounter and identifies the active party battler while the player owns command flow. Control hints change with battle state: command selection, list selection, target selection, action/enemy resolution, and battle outcome each advertise only their relevant controls. Escape appears only when the encounter's existing `canEscape` contract permits it; presentation does not grant escape authority. The command window also stays hidden while target selection owns input, preventing the underlying command list from reappearing beneath the cursor.
+
+Recent battle messages are displayed in a bounded feedback panel above the party HUD. The scene still owns the recent-message queue and battle systems still author the message content; `BattleRenderer` only wraps/truncates that content with shared `Window_TextLayout` rules so long feedback cannot spill across the battlefield.
+
 The battle scene can present:
 
 - Damage popups

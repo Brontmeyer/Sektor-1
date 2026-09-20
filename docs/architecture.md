@@ -308,6 +308,8 @@ A Magick's mechanical resolution and its visual presentation should remain separ
 
 `BattleRenderer` presents the visual battle state.
 
+Battle Presentation & Feedback v1 keeps scene/gameplay ownership outside the renderer while making that state easier to read. The renderer derives encounter title, active party battler, selection/targeting control hints, and recent combat-message layout from existing `Scene_Battle`, `BattleManager`, and window state. It does not decide whether an action is legal, whether escape is allowed, or which battler is active. The command window is rendered only during actual player command flow and remains suppressed while a selector or target cursor owns input. Recent messages reuse `Window_TextLayout` so long feedback is bounded instead of relying on unrestricted canvas text.
+
 Rendering should read battle state and display it rather than becoming the authoritative owner of battle rules.
 
 ---

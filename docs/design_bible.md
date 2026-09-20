@@ -505,6 +505,8 @@ Sektor 1 currently uses a side-view battle presentation and HTML5 Canvas renderi
 
 Visual and audio identity should reinforce readability first. Players need to understand targets, damage, healing, critical hits, weaknesses, resistances, immunities, status changes, and battle outcomes without fighting the interface.
 
+Battle feedback should also make the current interaction state legible without turning presentation into gameplay authority. Encounter context, the active party battler, current control hints, target-selection state, and recent combat messages should reflect the battle state that already exists rather than inventing parallel UI-only rules. Contextual instructions are preferred over permanent test/development wording in normal battle presentation.
+
 Style can become expressive without sacrificing information.
 
 Detailed final art direction, UI language, animation standards, music direction, and audio identity remain open design areas until deliberately established.

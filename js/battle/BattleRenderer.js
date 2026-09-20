@@ -22,16 +22,7 @@ class BattleRenderer {
 
     context.fillRect(0, 0, Graphics.width, Graphics.height);
 
-    // -----------------------------
-    // Battle title
-    // -----------------------------
-
-    context.textAlign = "left";
-    context.textBaseline = "alphabetic";
-    context.font = "28px Arial";
-    context.fillStyle = "#ffffff";
-
-    context.fillText("Battle", 40, 50);
+    this.drawBattleHeader(context);
 
     // -----------------------------
     // Battle presentation
@@ -46,61 +37,17 @@ class BattleRenderer {
     this.drawBattleEffect(context);
     this.drawBattlePopups(context);
 
-    // -----------------------------
-    // Battle messages
-    // -----------------------------
-
-    if (this.scene.battleMessages.length > 0) {
-      context.textAlign = "center";
-      context.textBaseline = "alphabetic";
-      context.font = "20px Arial";
-      context.fillStyle = "#ffffff";
-
-      const startY = Graphics.height - 250;
-
-      for (let i = 0; i < this.scene.battleMessages.length; i++) {
-        context.fillText(
-          this.scene.battleMessages[i],
-          Graphics.width / 2,
-          startY + i * 28,
-        );
-      }
-    }
-
-    // -----------------------------
-    // Test battle exit hint
-    // -----------------------------
-
-    context.textAlign = "right";
-    context.textBaseline = "alphabetic";
-    context.font = "16px Arial";
-    context.fillStyle = "#ffffff";
-
-    context.fillText(
-      "Escape: Leave Test Battle",
-      Graphics.width - 30,
-      Graphics.height - 30,
-    );
+    this.drawBattleMessages(context);
+    this.drawBattleHint(context);
 
     // -----------------------------
     // Battle windows
     // -----------------------------
 
-    const selectionWindows = [
-      this.scene.skillsWindow,
-      this.scene.magickWindow,
-      this.scene.itemWindow,
-    ].filter(Boolean);
-    const selectionWindowOpen = selectionWindows.some((window) =>
-      window.isOpen(),
-    );
+    const selectionWindows = this.selectionWindows();
+    const selectionWindowOpen = this.hasOpenSelectionWindow(selectionWindows);
 
-    if (
-      !this.scene.victory &&
-      !this.scene.defeat &&
-      !this.scene.battleInputLocked &&
-      !selectionWindowOpen
-    ) {
+    if (this.shouldDrawCommandWindow(selectionWindowOpen)) {
       this.scene.commandWindow.draw();
     }
 
@@ -108,6 +55,223 @@ class BattleRenderer {
       window.draw();
     }
 
+    context.restore();
+  }
+
+  selectionWindows() {
+    return [
+      this.scene.skillsWindow,
+      this.scene.magickWindow,
+      this.scene.itemWindow,
+    ].filter(Boolean);
+  }
+
+  hasOpenSelectionWindow(windows = this.selectionWindows()) {
+    return windows.some(
+      (window) => typeof window.isOpen === "function" && window.isOpen(),
+    );
+  }
+
+  currentTurnState() {
+    const manager = this.scene.battleManager;
+
+    if (!manager || typeof manager.currentTurnState !== "function") {
+      return null;
+    }
+
+    return manager.currentTurnState();
+  }
+
+  activePartyBattler() {
+    if (this.scene.outcome || this.currentTurnState() !== "command") {
+      return null;
+    }
+
+    const controller = this.scene.partyController;
+
+    return controller && typeof controller.currentBattler === "function"
+      ? controller.currentBattler()
+      : null;
+  }
+
+  shouldDrawCommandWindow(selectionWindowOpen = this.hasOpenSelectionWindow()) {
+    if (
+      this.scene.victory ||
+      this.scene.defeat ||
+      this.scene.outcome ||
+      this.scene.battleInputLocked ||
+      this.scene.selectingEnemyTarget ||
+      selectionWindowOpen
+    ) {
+      return false;
+    }
+
+    const turnState = this.currentTurnState();
+
+    return turnState === null || turnState === "command";
+  }
+
+  drawBattleHeader(context) {
+    const encounterName = String(this.scene.encounter?.name || "").trim();
+    const title = encounterName ? `Battle — ${encounterName}` : "Battle";
+
+    context.textAlign = "left";
+    context.textBaseline = "alphabetic";
+    context.font = "28px Arial";
+    context.fillStyle = "#ffffff";
+    const maxTitleWidth = Math.max(120, Graphics.width - 80);
+    const displayTitle =
+      context.measureText(title).width <= maxTitleWidth
+        ? title
+        : Window_TextLayout.ellipsize(context, title, maxTitleWidth);
+
+    context.fillText(displayTitle, 40, 50);
+
+    const battler = this.activePartyBattler();
+
+    if (battler?.name) {
+      context.font = "16px Arial";
+      context.fillStyle = "#ffd75a";
+      context.fillText(`Active: ${battler.name}`, 42, 78);
+      context.fillStyle = "#ffffff";
+    }
+  }
+
+  drawBattleMessages(context) {
+    const messages = Array.isArray(this.scene.battleMessages)
+      ? this.scene.battleMessages.slice(-2)
+      : [];
+
+    if (messages.length === 0) {
+      return;
+    }
+
+    const maxWidth = Math.max(120, Math.min(920, Graphics.width - 120));
+    const lineHeight = 22;
+    const paddingX = 18;
+    const paddingY = 12;
+    const lines = [];
+
+    context.save();
+    context.font = "18px Arial";
+    context.textAlign = "left";
+    context.textBaseline = "alphabetic";
+
+    for (const message of messages) {
+      const wrapped = Window_TextLayout.wrapLines(
+        context,
+        message,
+        maxWidth - paddingX * 2,
+      );
+      const visible = wrapped.slice(0, 2);
+
+      if (wrapped.length > visible.length && visible.length > 0) {
+        const last = visible.length - 1;
+        visible[last] = Window_TextLayout.ellipsize(
+          context,
+          visible[last],
+          maxWidth - paddingX * 2,
+        );
+      }
+
+      lines.push(...visible);
+    }
+
+    const panelHeight = paddingY * 2 + Math.max(1, lines.length) * lineHeight;
+    const hudTop = Graphics.height - 200;
+    const panelX = (Graphics.width - maxWidth) / 2;
+    const panelY = Math.max(92, hudTop - panelHeight - 10);
+
+    context.fillStyle = "rgba(0, 0, 0, 0.78)";
+    context.fillRect(panelX, panelY, maxWidth, panelHeight);
+    context.strokeStyle = "rgba(255, 255, 255, 0.65)";
+    context.lineWidth = 1;
+    context.strokeRect(panelX, panelY, maxWidth, panelHeight);
+    context.fillStyle = "#ffffff";
+
+    for (let index = 0; index < lines.length; index++) {
+      context.fillText(
+        lines[index],
+        panelX + paddingX,
+        panelY + paddingY + 17 + index * lineHeight,
+      );
+    }
+
+    context.restore();
+  }
+
+  canToggleTargetScope() {
+    if (
+      !this.scene.selectingEnemyTarget ||
+      !["skill", "magick"].includes(this.scene.enemyTargetAction)
+    ) {
+      return false;
+    }
+
+    const definition = this.scene.pendingSkill || this.scene.pendingMagick;
+    const manager = this.scene.targetManager;
+
+    if (!definition || !manager || typeof manager.allowedScopes !== "function") {
+      return false;
+    }
+
+    return manager.allowedScopes(definition).length > 1;
+  }
+
+  battleHint() {
+    if (this.scene.outcome) {
+      return "E / Enter / Esc: Continue";
+    }
+
+    if (this.scene.selectingEnemyTarget) {
+      const group = this.scene.targetGroup === "ally" ? "Allies" : "Enemies";
+      const scope =
+        this.scene.targetScope === "all" ? `All ${group}` : `Single ${group}`;
+      const scopeHint = this.canToggleTargetScope() ? "   R: Scope" : "";
+
+      return `${scope}   WASD / Arrows: Target   E / Enter: Confirm   Q / Esc: Back${scopeHint}`;
+    }
+
+    if (this.hasOpenSelectionWindow()) {
+      return "W / S or ↑ / ↓: Choose   E / Enter: Select   Q / Esc: Back";
+    }
+
+    if (this.scene.battleInputLocked || this.scene.pendingEnemyTurn) {
+      return "Resolving battle...";
+    }
+
+    const turnState = this.currentTurnState();
+
+    if (turnState !== null && turnState !== "command") {
+      return "Resolving battle...";
+    }
+
+    const escapeHint = this.scene.encounter?.canEscape
+      ? "   Q / Esc: Escape"
+      : "";
+
+    return `W / S or ↑ / ↓: Command   E / Enter: Select${escapeHint}`;
+  }
+
+  drawBattleHint(context) {
+    const hint = this.battleHint();
+
+    if (!hint) {
+      return;
+    }
+
+    context.save();
+    context.textAlign = "right";
+    context.textBaseline = "alphabetic";
+    context.font = "15px Arial";
+    context.fillStyle = "#dddddd";
+    const maxWidth = Math.max(120, Graphics.width - 80);
+    const displayHint =
+      context.measureText(hint).width <= maxWidth
+        ? hint
+        : Window_TextLayout.ellipsize(context, hint, maxWidth);
+
+    context.fillText(displayHint, Graphics.width - 30, Graphics.height - 30);
     context.restore();
   }
 

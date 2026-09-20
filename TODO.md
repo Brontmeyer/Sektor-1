@@ -72,6 +72,10 @@ Completed systems and design rules should be documented rather than duplicated h
 
 - [x] Implement Battle Results Screen v1
 - [x] Present EXP, Gil, item drops, level-ups, Essence Resonance, awakened Magick abilities, and Mastery Ready transitions
+- [x] Implement Battle Presentation & Feedback v1
+- [x] Present encounter name and active party battler during player-command flow
+- [x] Replace permanent test-battle footer copy with context-sensitive command/selection/target/outcome hints
+- [x] Bound recent battle messages and keep the command window suppressed during target selection
 
 ---
 

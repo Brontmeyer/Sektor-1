@@ -33,6 +33,9 @@ function createDrawContext() {
     fillRect() {},
     strokeRect() {},
     fillText() {},
+    measureText(text) {
+      return { width: String(text).length * 8 };
+    },
     beginPath() {},
     moveTo() {},
     lineTo() {},

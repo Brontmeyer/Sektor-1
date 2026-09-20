@@ -42,6 +42,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Character Valor Arts v1
 -   ✅ Valor Arts Runtime v1
 -   ✅ Skills UI Integration Cleanup v1
+-   ✅ Battle Presentation & Feedback v1
 
 ------------------------------------------------------------------------
 
@@ -79,6 +80,7 @@ Current battle features include:
 -   ✅ Animation controller
 -   ✅ Magick foundation
 -   ✅ Skills Runtime v1 foundation
+-   ✅ Encounter/active-turn battle context, contextual control hints, and bounded recent battle messages
 -   ✅ Idempotent battle resolution and structured rewards
 -   ✅ Gil, enemy item drops, and Essence Resonance rewards
 
@@ -92,6 +94,7 @@ Systems currently being expanded include:
 -   ✅ Valor Arts Runtime v1
 -   ✅ Character-specific Valor Art content v1
 -   ✅ Skills UI Integration Cleanup v1
+-   ✅ Battle Presentation & Feedback v1
 
 ------------------------------------------------------------------------
 

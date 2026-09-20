@@ -254,6 +254,8 @@ Character-specific field-menu windows should receive party context and use the s
 
 Long descriptive text inside fixed UI panels should use shared `Window_TextLayout` wrapping instead of a raw unbounded `fillText()` call. Battle selection windows should be registered with the renderer as one selection group so input-active selectors are also visible and suppress the underlying command window consistently.
 
+Battle control hints and active-turn labels should be derived from existing scene/manager state. Do not create a second UI-only source of truth for whether escape is legal, whose turn it is, or which input mode currently owns control. Target selection should suppress the underlying command window just as an open selection window does.
+
 ---
 
 # 🗃️ Data-Driven Gameplay
