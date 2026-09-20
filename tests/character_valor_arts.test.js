@@ -131,7 +131,7 @@ function ready(actor) {
 
 function testCanonicalArtsAndOwnership() {
   assert.deepEqual(
-    skills.filter(Boolean).map((skill) => ({
+    skills.filter((skill) => skill?.valorArt === true).map((skill) => ({
       id: skill.id,
       name: skill.name,
       effect: skill.effect,

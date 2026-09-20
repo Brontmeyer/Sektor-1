@@ -137,7 +137,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add the first Skill resource specialization through Valor Arts Runtime v1
 - [ ] Define additional Skill costs/resources beyond Valor when approved designs require them
 - [x] Expand Skills beyond physical-damage techniques with reusable percentage-heal and status-application effects required by Character Valor Arts v1
-- [ ] Add enemy Skill actions when canonical enemy techniques are designed
+- [x] Add enemy Skill actions through the shared Skills runtime with the first canonical enemy technique
 - [x] Define Valor Arts Runtime v1 within the Skills namespace
 - [x] Design the first canonical character-specific Valor Arts
 - [ ] Design long-term Valor Art unlock/progression rules
@@ -163,6 +163,7 @@ Completed systems and design rules should be documented rather than duplicated h
 # 🤖 Enemies
 
 - [x] Enemy Actions & AI v1
+- [x] Enemy Skills & AI Integration v1
 - [ ] Boss scripting system
 - [ ] Status resistance / immunity data
 - [x] Enemy action-selection rules
@@ -202,6 +203,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Complete status runtime
 - [ ] Complete Essence runtime
 - [x] Enemy Actions & AI v1
+- [x] Enemy Skills & AI Integration v1
 - [ ] Boss scripting
 - [ ] Event scripting
 - [ ] Cutscene system

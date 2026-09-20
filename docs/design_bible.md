@@ -464,7 +464,7 @@ Bosses should be able to introduce additional structure such as phases, threshol
 
 Boss encounters should use the reusable battle engine wherever possible so their unusuality feels like the system being pushed creatively rather than the rules being discarded.
 
-Enemy Actions & AI v1 now lets ordinary enemies express weighted and conditional combat personalities through data while reusing the same battle vocabulary as the party. Boss scripting, phases, threshold reactions, and richer encounter-specific logic remain future extensions of that foundation.
+Enemy Actions & AI v1 lets ordinary enemies express weighted and conditional combat personalities through data, and Enemy Skills & AI Integration v1 now lets those action lists use the same canonical non-Magick Skills vocabulary as the party. The first enemy technique, Goo Rush, is a normal `Skills.json` record rather than bespoke slime logic. Actor-owned Valor Arts remain unavailable to enemies, preserving the resource boundary while still sharing damage/healing/status execution. Boss scripting, phases, threshold reactions, and richer encounter-specific logic remain future extensions of that foundation.
 
 ---
 

@@ -184,13 +184,13 @@ Mastery Trial quest content and Essence Evolution can remain later systems while
 
 Once the player's core battle vocabulary is reliable, enemies need systems capable of using and responding to that vocabulary.
 
-Enemy Actions & AI v1 now provides:
+Enemy Actions & AI v1 plus Enemy Skills & AI Integration v1 now provide:
 
 - Data-driven enemy action lists
 - Weighted action selection
 - HP / ally conditional decisions
 - Legal target selection and reusable target strategies
-- Physical Attack and shared-runtime Magick execution
+- Physical Attack plus shared-runtime Magick and non-Magick Skill execution
 - Basic Attack fallback when configured actions become unusable
 
 Remaining work includes:
@@ -489,7 +489,7 @@ No Architecture Fanfiction™ has been promoted to Roadmap Fanfiction™. 😄
 
 # ❤️ The Road Ahead
 
-Sektor 1 now has mature battle foundations for statuses, Magick, enemy decision-making, Skills, Valor, and the first character-specific Valor Arts. The next useful work should build on those foundations rather than recreating them.
+Sektor 1 now has mature battle foundations for statuses, Magick, enemy decision-making across Attack/Magick/Skills, Skills, Valor, and the first character-specific Valor Arts. The next useful work should build on those foundations rather than recreating them.
 
 The strongest open directions are character/party expansion, long-term Skill and Valor Art progression, richer enemy/boss behavior, and world/event systems that can support the content around those mechanics. The exact next pass should come from the current `TODO.md` plus the design priority we deliberately choose at that time.
 

@@ -179,7 +179,7 @@ Canonical non-Magick Skill definitions live in:
 data/Skills.json
 ```
 
-Skills Runtime v1 establishes a deliberately narrow physical-technique contract. A v1 Skill has `type: "skill"`, `category: "physical"`, `effect: "damage"`, a positive `powerMultiplier`, one or more legal `target` values (`self`, `ally`, `enemy`), and one or more legal scopes (`single`, `all`). The canonical catalog intentionally begins as `[null]`; current actors begin with no learned Skills so the runtime does not invent character content before those designs are approved.
+Skills Runtime v1 established the separate non-Magick technique contract, and later passes expanded that same schema without replacing it. Current Skills use `type: "skill"`, a validated `physical` / `support` / `control` category, a `damage` / `heal` / `inflictStatus` effect, one or more legal `target` values (`self`, `ally`, `enemy`), and one or more legal scopes (`single`, `all`). Effect-specific metadata remains narrow: physical damage uses positive `powerMultiplier`, percentage healing uses bounded `healPercent`, and reusable status application uses validated `status` chance maps. The canonical catalog now contains the four starter Valor Arts plus the first enemy technique, Goo Rush.
 
 Actor Skill ownership is separate from Magick ownership. `initialSkillIds` seed actor knowledge and runtime `skillIds` are persisted through Save Runtime v9. The old pre-Pass-29 save field named `skills` is not current Skill ownership; it remains migration-only input for historical Magick saves.
 
@@ -594,13 +594,14 @@ Current action types are:
 ```text
 attack
 magick
+skill
 ```
 
-Current target strategies are `first`, `random`, `lowestHp`, and `lowestHpRate`. Magick actions may constrain their relative target group (`ally`, `enemy`, or `self`) and legal scope (`single` / `all`) according to the referenced Magick definition. Current condition types include `always`, `selfHpBelow`, `selfHpAbove`, `allyHpBelow`, and `allyDefeated`.
+Current target strategies are `first`, `random`, `lowestHp`, and `lowestHpRate`. Magick and Skill actions may constrain their relative target group (`ally`, `enemy`, or `self`) and legal scope (`single` / `all`) according to the referenced canonical definition. Current condition types include `always`, `selfHpBelow`, `selfHpAbove`, `allyHpBelow`, and `allyDefeated`.
 
-Enemy Magick uses the same `Game_Battler` runtime as actor Magick. MP payment, Silence/action restrictions, damage, healing, status payloads, Reflect, elemental rules, defeated-state handling, and target legality therefore stay shared rather than being reimplemented in AI. If every configured action is unusable, AI falls back to a normal Attack when Attack itself remains legal. Confuse still overrides ordinary target preference through the shared forced-random-target contract.
+Enemy Magick uses the same `Game_Battler` runtime as actor Magick. MP payment, Silence/action restrictions, damage, healing, status payloads, Reflect, elemental rules, defeated-state handling, and target legality therefore stay shared rather than being reimplemented in AI. Enemy Skills likewise reuse the canonical Skill legality, physical-damage, percentage-healing, status-application, and target-validation paths. `BattleManager.performSkillTarget()` is the shared effect-dispatch boundary used by party and enemy Skills; enemy AI only chooses the action and target set. Valor Arts remain actor-owned: `Game_Enemy` refuses their Skill cost contract and database validation rejects Valor-Art `skillId` references in enemy actions.
 
-The Test Slime currently demonstrates weighted Attack / Ember behavior and conditionally considers Mend while below half HP.
+If every configured action is unusable, AI falls back to a normal Attack when Attack itself remains legal. Confuse still overrides ordinary target preference through the shared forced-random-target contract. The Test Slime currently demonstrates weighted Attack / Goo Rush / Ember behavior and conditionally considers Mend while below half HP. Goo Rush is the first canonical enemy Skill and applies its Slow rider through the same status runtime as actor Skills.
 
 AI chooses what an enemy attempts to do. Shared battle systems remain responsible for mechanical legality and effect resolution.
 

@@ -34,6 +34,7 @@ class DatabaseValidator {
       database.items,
       errors,
       database.magickData,
+      database.skills,
     );
     this.validateItems(database.items, errors);
     this.validateWeapons(database.weapons, errors);
@@ -1099,7 +1100,13 @@ class DatabaseValidator {
     }
   }
 
-  static validateEnemies(enemies, items, errors = null, magickDatabase = null) {
+  static validateEnemies(
+    enemies,
+    items,
+    errors = null,
+    magickDatabase = null,
+    skillsDatabase = null,
+  ) {
     // Keep the direct helper backward-compatible with older tests/tools that
     // passed only (enemies, errors). Full database validation supplies Items
     // so drop-table references can be checked as well.
@@ -1179,7 +1186,7 @@ class DatabaseValidator {
         if (!Array.isArray(enemy.actions)) {
           errors.push(`${label} actions must be an array when provided.`);
         } else {
-          const validActionTypes = new Set(["attack", "magick"]);
+          const validActionTypes = new Set(["attack", "magick", "skill"]);
           const validTargetStrategies = new Set([
             "first",
             "random",
@@ -1209,6 +1216,7 @@ class DatabaseValidator {
               [
                 "type",
                 "magickId",
+                "skillId",
                 "weight",
                 "targetGroup",
                 "targetStrategy",
@@ -1235,21 +1243,27 @@ class DatabaseValidator {
               );
             }
 
-            if (action.type === "magick") {
-              const magickIdValid =
-                Number.isInteger(action.magickId) && action.magickId > 0;
-              const magick =
-                magickIdValid && Array.isArray(magickDatabase)
-                  ? magickDatabase[action.magickId]
-                  : null;
+            if (["magick", "skill"].includes(action.type)) {
+              const isMagick = action.type === "magick";
+              const idKey = isMagick ? "magickId" : "skillId";
+              const database = isMagick ? magickDatabase : skillsDatabase;
+              const id = action[idKey];
+              const idValid = Number.isInteger(id) && id > 0;
+              const ability =
+                idValid && Array.isArray(database) ? database[id] : null;
+              const labelName = isMagick ? "Magick" : "Skill";
 
-              if (!magickIdValid) {
+              if (!idValid) {
+                errors.push(`${actionLabel}.${idKey} must be a positive integer.`);
+              } else if (Array.isArray(database) && !ability) {
                 errors.push(
-                  `${actionLabel}.magickId must be a positive integer.`,
+                  `${actionLabel}.${idKey} must reference valid ${labelName}.`,
                 );
-              } else if (Array.isArray(magickDatabase) && !magick) {
+              }
+
+              if (!isMagick && ability?.valorArt === true) {
                 errors.push(
-                  `${actionLabel}.magickId must reference valid Magick.`,
+                  `${actionLabel}.skillId cannot reference a Valor Art for an enemy action.`,
                 );
               }
 
@@ -1259,24 +1273,32 @@ class DatabaseValidator {
                     `${actionLabel}.targetGroup has unsupported value "${action.targetGroup}".`,
                   );
                 } else if (
-                  magick &&
-                  (!Array.isArray(magick.target) ||
-                    !magick.target.includes(action.targetGroup))
+                  ability &&
+                  (!Array.isArray(ability.target) ||
+                    !ability.target.includes(action.targetGroup))
                 ) {
                   errors.push(
-                    `${actionLabel}.targetGroup must be allowed by ${magick.name}.`,
+                    `${actionLabel}.targetGroup must be allowed by ${ability.name}.`,
                   );
                 }
               }
 
               if (
                 action.scope !== undefined &&
-                magick &&
-                (!Array.isArray(magick.scope) ||
-                  !magick.scope.includes(action.scope))
+                ability &&
+                (!Array.isArray(ability.scope) ||
+                  !ability.scope.includes(action.scope))
               ) {
                 errors.push(
-                  `${actionLabel}.scope must be allowed by ${magick.name}.`,
+                  `${actionLabel}.scope must be allowed by ${ability.name}.`,
+                );
+              }
+
+              const unrelatedIdKey = isMagick ? "skillId" : "magickId";
+              if (action[unrelatedIdKey] !== undefined) {
+                const unrelatedLabel = isMagick ? "Skill" : "Magick";
+                errors.push(
+                  `${actionLabel}.${unrelatedIdKey} is only valid for ${unrelatedLabel} actions.`,
                 );
               }
             } else {
@@ -1284,12 +1306,20 @@ class DatabaseValidator {
                 errors.push(`${actionLabel}.magickId is only valid for Magick actions.`);
               }
 
+              if (action.skillId !== undefined) {
+                errors.push(`${actionLabel}.skillId is only valid for Skill actions.`);
+              }
+
               if (action.targetGroup !== undefined) {
-                errors.push(`${actionLabel}.targetGroup is only valid for Magick actions.`);
+                errors.push(
+                  `${actionLabel}.targetGroup is only valid for Magick or Skill actions.`,
+                );
               }
 
               if (action.scope !== undefined) {
-                errors.push(`${actionLabel}.scope is only valid for Magick actions.`);
+                errors.push(
+                  `${actionLabel}.scope is only valid for Magick or Skill actions.`,
+                );
               }
             }
 

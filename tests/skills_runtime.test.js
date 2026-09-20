@@ -141,12 +141,14 @@ function createHarness() {
   };
 }
 
-function testCanonicalSkillsDatabaseDefinesOneStarterValorArtPerActor() {
+function testCanonicalSkillsDatabaseSeparatesActorValorArtsAndEnemyTechniques() {
   const skills = canonicalSkills.filter(Boolean);
+  const valorArts = skills.filter((skill) => skill.valorArt === true);
+  const enemyTechnique = canonicalSkills[5];
 
-  assert.equal(skills.length, 4);
-  assert.deepEqual(skills.map((skill) => skill.id), [1, 2, 3, 4]);
-  assert.equal(skills.every((skill) => skill.valorArt === true), true);
+  assert.deepEqual(valorArts.map((skill) => skill.id), [1, 2, 3, 4]);
+  assert.equal(enemyTechnique.name, "Goo Rush");
+  assert.equal(enemyTechnique.valorArt, undefined);
   assert.deepEqual(
     actors.filter(Boolean).map((actor) => actor.initialSkillIds),
     [[1], [2], [3], [4]],
@@ -308,7 +310,7 @@ function testSkillExecutionReusesPhysicalDamagePipeline() {
 }
 
 function run() {
-  testCanonicalSkillsDatabaseDefinesOneStarterValorArtPerActor();
+  testCanonicalSkillsDatabaseSeparatesActorValorArtsAndEnemyTechniques();
   testActorSkillOwnershipIsSeparateFromMagick();
   testSkillLegalityUsesSharedActionRestrictions();
   testSkillTargetingUsesSkillDefinitionNotMagickRules();

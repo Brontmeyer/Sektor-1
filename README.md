@@ -43,6 +43,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Valor Arts Runtime v1
 -   ✅ Skills UI Integration Cleanup v1
 -   ✅ Battle Presentation & Feedback v1
+-   ✅ Enemy Skills & AI Integration v1
 
 ------------------------------------------------------------------------
 
@@ -89,6 +90,7 @@ Systems currently being expanded include:
 -   ✅ Essence Equipment & Menu v1
 -   🚧 Essence ability grants and passive runtime
 -   ✅ Enemy Actions & AI v1
+-   ✅ Enemy Skills & AI Integration v1
 -   🚧 Boss mechanics
 -   ✅ Valor Runtime v1
 -   ✅ Valor Arts Runtime v1
@@ -128,7 +130,7 @@ Skills now support the reusable effect vocabulary required by the first canonica
 
 **Valor Arts Runtime v1** still specializes the same Skills namespace through `valorArt: true`. A Valor Art is usable only while its actor is Valor Ready and spends the existing full gauge exactly once when the action is committed against at least one legal target. Battle and field Skills windows mark Valor Arts with `[VALOR]`; no separate Valor-only command or combat engine exists.
 
-The field Skills window remains a read-only learned-Skill viewer with the same shared actor navigation used by other character menus. Skills UI Integration Cleanup v1 makes the battle selector a first-class rendered battle window, suppresses the command window while that selector is open, and uses shared bounded text layout for long Skills/Magick descriptions in field menus. Long-term Skill/Valor Art unlock progression, additional effect types, additional resource models, and enemy Skill actions remain future design work.
+The field Skills window remains a read-only learned-Skill viewer with the same shared actor navigation used by other character menus. Skills UI Integration Cleanup v1 makes the battle selector a first-class rendered battle window, suppresses the command window while that selector is open, and uses shared bounded text layout for long Skills/Magick descriptions in field menus. Enemy Skills & AI Integration v1 now lets enemy action data reference the same canonical Skill records through `skillId`; enemy use still follows the shared Skill legality, targeting, physical damage, healing, and status-effect contracts. Long-term Skill/Valor Art unlock progression, additional effect types, and additional resource models remain future design work.
 
 ------------------------------------------------------------------------
 
@@ -185,11 +187,11 @@ The first shop version buys one unit at a time and intentionally does not define
 
 # 🤖 Enemy Actions & AI
 
-Enemy Actions & AI v1 gives enemy definitions validated action lists in `data/Enemies.json`. Actions can be weighted, gated by HP/ally conditions, choose legal targets through reusable strategies, and execute either physical Attack or canonical Magick. If every configured action is unusable, the AI falls back to a normal Attack when legal.
+Enemy Actions & AI v1 gives enemy definitions validated action lists in `data/Enemies.json`. Enemy Skills & AI Integration v1 extends those lists with canonical non-Magick Skill actions, so current action types are Attack, Magick, and Skill. Actions can be weighted, gated by HP/ally conditions, choose legal targets through reusable strategies, and fall back to a normal Attack when every configured choice is unusable.
 
-`BattleEnemyAI` decides **what** an enemy attempts and **who** it targets. `BattleManager` and the shared `Game_Battler` Magick runtime still own action legality, MP costs, damage, healing, status resolution, Reflect, elemental handling, and battle outcomes. This keeps enemy personalities data-driven without creating a second combat engine.
+`BattleEnemyAI` decides **what** an enemy attempts and **who** it targets. `BattleManager` and shared `Game_Battler` runtimes still own mechanical legality and effect resolution. Enemy Magick therefore keeps using MP, Reflect, elemental, healing, and status rules from the Magick runtime, while enemy Skills use the same physical-damage, healing, status, targeting, and action-restriction contracts as actor Skills. Valor Arts remain actor-owned and are rejected as enemy actions.
 
-The current Test Slime demonstrates the contract with weighted Attack and Ember choices plus a conditional Mend option below half HP. Boss phases, scripted threshold reactions, and richer enemy condition types remain future extensions of this same foundation.
+The current Test Slime demonstrates the combined contract with weighted Attack, **Goo Rush**, and Ember choices plus a conditional Mend option below half HP. Goo Rush is defined in `Skills.json`, deals physical Skill damage, and carries a Slow status rider without any Test-Slime-specific execution branch. Boss phases, scripted threshold reactions, and richer enemy condition types remain future extensions of this same foundation.
 
 ------------------------------------------------------------------------
 

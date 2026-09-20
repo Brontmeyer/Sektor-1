@@ -190,7 +190,7 @@ function createSkillEffectScene(actor, enemiesList, skill, targetScope = "single
 }
 
 function testCanonicalContentDefinesCharacterSpecificValorArts() {
-  const skills = canonicalSkills.filter(Boolean);
+  const skills = canonicalSkills.filter((skill) => skill?.valorArt === true);
 
   assert.deepEqual(
     skills.map((skill) => [skill.id, skill.name, skill.valorArt]),

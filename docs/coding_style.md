@@ -225,7 +225,7 @@ setTurnState()        change turn state
 
 If a method begins handling unrelated targeting, persistence, rendering, database loading, and battle resolution at once, it is probably becoming too broad.
 
-Enemy AI follows the same ownership rule: enemy action definitions belong in `Enemies.json`, `BattleEnemyAI` decides among legal configured choices, and shared battler/battle systems resolve the chosen action. Do not hard-code named enemies into `BattleManager` when a reusable action, condition, or target-strategy contract can express the behavior.
+Enemy AI follows the same ownership rule: enemy action definitions belong in `Enemies.json`, `BattleEnemyAI` decides among legal configured Attack/Magick/Skill choices, and shared battler/battle systems resolve the chosen action. Enemy Skill actions reference canonical `Skills.json` records through `skillId`; do not duplicate Skill formulas or branch on named enemies in `BattleManager` when a reusable action, condition, target-strategy, or Skill-effect contract can express the behavior.
 
 Before adding logic to an existing large method, ask whether the behavior belongs in a smaller reusable helper or another system entirely.
 

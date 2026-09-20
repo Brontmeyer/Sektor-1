@@ -1,7 +1,7 @@
 [
   null,
   {
-    "_comment": "ID 1: 🫟 Slime",
+    "_comment": "ID 1: \ud83e\udedf Slime",
     "id": 1,
     "name": "Test Slime",
     "elementRates": {
@@ -44,6 +44,14 @@
         "type": "attack",
         "weight": 4,
         "targetStrategy": "random"
+      },
+      {
+        "type": "skill",
+        "skillId": 5,
+        "weight": 2,
+        "targetGroup": "enemy",
+        "targetStrategy": "random",
+        "scope": "single"
       },
       {
         "type": "magick",

@@ -1963,11 +1963,12 @@ class BattleManager {
     }
   }
 
-  performSkillDamageTarget(caster, skill, target) {
+  performSkillDamageTarget(caster, skill, target, random = Math.random) {
     const battle = this.scene;
     const hitChance = this.physicalHitChance(caster);
+    const roll = typeof random === "function" ? Number(random()) : Math.random();
 
-    if (Math.random() * 100 >= hitChance) {
+    if (roll * 100 >= hitChance) {
       battle.addBattlePopup(target, "MISS", "miss");
       battle.addBattleMessage(
         `${caster.name} uses ${skill.name}! ${caster.name} misses ${target.name}!`,
@@ -1981,7 +1982,7 @@ class BattleManager {
     const damage = result.damage;
     const statusResults =
       typeof caster.resolveSkillStatusEffects === "function"
-        ? caster.resolveSkillStatusEffects(skill, target)
+        ? caster.resolveSkillStatusEffects(skill, target, random)
         : [];
     const statusNames = this.appliedSkillStatusNames(statusResults);
 
@@ -2040,11 +2041,11 @@ class BattleManager {
     return false;
   }
 
-  performSkillStatusTarget(caster, skill, target) {
+  performSkillStatusTarget(caster, skill, target, random = Math.random) {
     const battle = this.scene;
     const statusResults =
       typeof caster.resolveSkillStatusEffects === "function"
-        ? caster.resolveSkillStatusEffects(skill, target)
+        ? caster.resolveSkillStatusEffects(skill, target, random)
         : [];
     const statusNames = this.appliedSkillStatusNames(statusResults);
 
@@ -2069,6 +2070,23 @@ class BattleManager {
     }
 
     return statusNames.length > 0;
+  }
+
+  performSkillTarget(caster, skill, target, random = Math.random) {
+    if (skill.effect === "damage") {
+      return this.performSkillDamageTarget(caster, skill, target, random);
+    }
+
+    if (skill.effect === "heal") {
+      return this.performSkillHealTarget(caster, skill, target);
+    }
+
+    if (skill.effect === "inflictStatus") {
+      return this.performSkillStatusTarget(caster, skill, target, random);
+    }
+
+    console.warn(`Skill ${skill.name} effect "${skill.effect}" is not implemented.`);
+    return false;
   }
 
   performSkillEffect() {
@@ -2099,21 +2117,7 @@ class BattleManager {
     let affected = false;
 
     for (const target of validTargets) {
-      let targetAffected = false;
-
-      if (skill.effect === "damage") {
-        targetAffected = this.performSkillDamageTarget(caster, skill, target);
-      } else if (skill.effect === "heal") {
-        targetAffected = this.performSkillHealTarget(caster, skill, target);
-      } else if (skill.effect === "inflictStatus") {
-        targetAffected = this.performSkillStatusTarget(caster, skill, target);
-      } else {
-        console.warn(
-          `Skill ${skill.name} effect "${skill.effect}" is not implemented.`,
-        );
-      }
-
-      affected = targetAffected || affected;
+      affected = this.performSkillTarget(caster, skill, target) || affected;
     }
 
     battle.pendingSkill = null;
@@ -2458,6 +2462,55 @@ class BattleManager {
     return true;
   }
 
+  performEnemySkillAction(enemy, action, random = Math.random) {
+    const battle = this.scene;
+    const skill = DatabaseManager.skill?.(action?.skillId) || null;
+
+    if (!enemy || !skill || !enemy.canUseSkill?.(skill.id)) {
+      return false;
+    }
+
+    const scope = action.scope || "single";
+    const allowedScopes = Array.isArray(skill.scope) ? skill.scope : ["single"];
+
+    if (!allowedScopes.includes(scope)) {
+      battle.addBattleMessage(`${enemy.name} cannot use ${skill.name}!`);
+      this.completeEnemyTurn(enemy, false);
+      return false;
+    }
+
+    const targets =
+      scope === "all"
+        ? this.enemyAI.targetCandidates(enemy, action)
+        : [this.enemyAI.selectTarget(enemy, action, random)].filter(Boolean);
+    const validTargets = targets.filter((target) =>
+      enemy.isValidSkillTarget?.(skill, target),
+    );
+
+    if (validTargets.length === 0 || !enemy.paySkillCost?.(skill)) {
+      battle.addBattleMessage(`${enemy.name} cannot use ${skill.name}!`);
+      this.completeEnemyTurn(enemy, false);
+      return false;
+    }
+
+    battle.setEnemyState("attack", 0.4, enemy);
+
+    for (const target of validTargets) {
+      this.performSkillTarget(enemy, skill, target, random);
+    }
+
+    const outcome = this.detectBattleOutcome();
+
+    if (outcome) {
+      battle.enemyTurnIndex = 0;
+      this.declareBattleOutcome(outcome);
+      return true;
+    }
+
+    this.completeEnemyTurn(enemy, false);
+    return true;
+  }
+
   performEnemyMagickAction(enemy, action, random = Math.random) {
     const battle = this.scene;
     const magick = DatabaseManager.magick(action?.magickId);
@@ -2635,6 +2688,11 @@ class BattleManager {
 
     if (action.type === "magick") {
       this.performEnemyMagickAction(enemy, action, random);
+      return;
+    }
+
+    if (action.type === "skill") {
+      this.performEnemySkillAction(enemy, action, random);
       return;
     }
 

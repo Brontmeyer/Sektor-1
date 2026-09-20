@@ -12,6 +12,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Enemy Skills & AI Integration v1 so enemy action definitions can reference canonical non-Magick Skills through validated `skillId`, target-group, scope, weight, and condition metadata
+- Added Test Slime's first canonical enemy technique, **Goo Rush**, as a regular physical Skill with a Slow status rider rather than an enemy-only combat special case
+- Reused the shared Skill target/effect runtime for enemy damage, healing, and control techniques while keeping `BattleEnemyAI` responsible only for decision-making and target strategy
+- Added enemy Skill ownership checks and explicit Valor-Art rejection so actor-owned Valor resources do not silently become available to enemies
+- Added dedicated Enemy Skill action regression coverage for damage/status resolution, support targeting, all-target control, Valor-Art exclusion, weighted selection, and database validation
+
 - Added Battle Presentation & Feedback v1 with encounter-aware battle headers, active-party-battler context, and state-sensitive control hints instead of permanent test-battle copy
 - Added a bounded recent-message panel that reuses `Window_TextLayout` so long combat feedback wraps/truncates inside the battle presentation instead of overflowing the battlefield
 - Tightened battle-window state presentation so the command window remains suppressed during target selection as well as Skills/Magick/Item selection

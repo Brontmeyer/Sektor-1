@@ -118,6 +118,10 @@ Pass 39 fixes post-audit UI integration defects found during hands-on Character 
 
 Pass 40 is post-audit presentation work and does not reopen a historical finding. `BattleRenderer` now derives encounter/active-turn context and state-sensitive controls from existing battle state, bounds recent combat messages with the shared text-layout helper, and keeps the command window suppressed while target selection owns input. The pass changes no combat rule or persistent state, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Enemy Skills & AI Integration v1
+
+Pass 41 adds no reopened audit item. Enemy Skills & AI Integration v1 is post-audit feature work that extends the already-closed enemy-action and Skills boundaries: `BattleEnemyAI` now selects canonical Skill actions, `Game_Enemy` derives Skill knowledge from action data, and `BattleManager` reuses the same Skill effect-dispatch helpers for both battle sides. Valor Arts remain actor-owned and are rejected for enemy actions. Save Runtime remains v9 because enemy Skill choices are canonical database content rather than persisted battle state.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

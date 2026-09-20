@@ -45,6 +45,21 @@ class Game_Enemy extends Game_Battler {
     );
   }
 
+  knowsSkill(skillId) {
+    const id = Number(skillId);
+    return this.actions.some(
+      (action) => action.type === "skill" && Number(action.skillId) === id,
+    );
+  }
+
+  canPaySkillCost(skill) {
+    if (skill?.valorArt === true) {
+      return false;
+    }
+
+    return super.canPaySkillCost(skill);
+  }
+
   banish() {
     if (this.isDefeated()) {
       return {

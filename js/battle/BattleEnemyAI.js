@@ -3,6 +3,7 @@
 class BattleEnemyAI {
   static ACTION_ATTACK = "attack";
   static ACTION_MAGICK = "magick";
+  static ACTION_SKILL = "skill";
 
   constructor(manager) {
     this.manager = manager;
@@ -86,7 +87,19 @@ class BattleEnemyAI {
     return [];
   }
 
-  targetGroupForAction(enemy, action, magick = null) {
+  actionAbility(action) {
+    if (action?.type === BattleEnemyAI.ACTION_MAGICK) {
+      return DatabaseManager.magick(action.magickId);
+    }
+
+    if (action?.type === BattleEnemyAI.ACTION_SKILL) {
+      return DatabaseManager.skill?.(action.skillId) || null;
+    }
+
+    return null;
+  }
+
+  targetGroupForAction(enemy, action, ability = null) {
     if (action?.targetGroup) {
       return action.targetGroup;
     }
@@ -95,7 +108,7 @@ class BattleEnemyAI {
       return "enemy";
     }
 
-    const groups = Array.isArray(magick?.target) ? magick.target : [];
+    const groups = Array.isArray(ability?.target) ? ability.target : [];
 
     if (groups.includes("enemy")) {
       return "enemy";
@@ -112,7 +125,19 @@ class BattleEnemyAI {
     return "enemy";
   }
 
-  targetIsMeaningful(enemy, action, target, magick = null) {
+  abilityTargetIsValid(enemy, action, ability, target) {
+    if (action.type === BattleEnemyAI.ACTION_MAGICK) {
+      return enemy.isValidMagickTarget(ability, target);
+    }
+
+    if (action.type === BattleEnemyAI.ACTION_SKILL) {
+      return enemy.isValidSkillTarget(ability, target);
+    }
+
+    return false;
+  }
+
+  targetIsMeaningful(enemy, action, target, ability = null) {
     if (!target) {
       return false;
     }
@@ -121,16 +146,16 @@ class BattleEnemyAI {
       return !this.manager.battlerIsDefeated(target);
     }
 
-    if (!magick || !enemy.isValidMagickTarget(magick, target)) {
+    if (!ability || !this.abilityTargetIsValid(enemy, action, ability, target)) {
       return false;
     }
 
-    if (magick.effect === "heal") {
+    if (ability.effect === "heal") {
       return typeof target.isFullHp !== "function" || !target.isFullHp();
     }
 
-    if (magick.effect === "removeStatus") {
-      const statuses = Object.keys(magick.status || {});
+    if (ability.effect === "removeStatus") {
+      const statuses = Object.keys(ability.status || {});
       return statuses.some(
         (statusKey) =>
           typeof target.hasStatus === "function" && target.hasStatus(statusKey),
@@ -145,11 +170,8 @@ class BattleEnemyAI {
       return [];
     }
 
-    const magick =
-      action.type === BattleEnemyAI.ACTION_MAGICK
-        ? DatabaseManager.magick(action.magickId)
-        : null;
-    const includeDefeated = magick?.effect === "revive";
+    const ability = this.actionAbility(action);
+    const includeDefeated = ability?.effect === "revive";
 
     if (this.manager.battlerForcesRandomTarget(enemy)) {
       if (action.type === BattleEnemyAI.ACTION_ATTACK) {
@@ -166,14 +188,14 @@ class BattleEnemyAI {
           return false;
         }
 
-        return this.targetIsMeaningful(enemy, action, target, magick);
+        return this.targetIsMeaningful(enemy, action, target, ability);
       });
     }
 
-    const group = this.targetGroupForAction(enemy, action, magick);
+    const group = this.targetGroupForAction(enemy, action, ability);
 
     return this.relativeBattlers(enemy, group, { includeDefeated }).filter(
-      (target) => this.targetIsMeaningful(enemy, action, target, magick),
+      (target) => this.targetIsMeaningful(enemy, action, target, ability),
     );
   }
 
@@ -190,7 +212,7 @@ class BattleEnemyAI {
     }
 
     if (action.type === BattleEnemyAI.ACTION_MAGICK) {
-      const magick = DatabaseManager.magick(action.magickId);
+      const magick = this.actionAbility(action);
 
       if (
         !magick ||
@@ -201,6 +223,23 @@ class BattleEnemyAI {
       }
 
       const scopes = Array.isArray(magick.scope) ? magick.scope : ["single"];
+      const scope = action.scope || "single";
+
+      return scopes.includes(scope) && this.targetCandidates(enemy, action).length > 0;
+    }
+
+    if (action.type === BattleEnemyAI.ACTION_SKILL) {
+      const skill = this.actionAbility(action);
+
+      if (
+        !skill ||
+        !this.manager.battlerCanUseAction(enemy, "skill") ||
+        !enemy.canUseSkill(action.skillId)
+      ) {
+        return false;
+      }
+
+      const scopes = Array.isArray(skill.scope) ? skill.scope : ["single"];
       const scope = action.scope || "single";
 
       return scopes.includes(scope) && this.targetCandidates(enemy, action).length > 0;
