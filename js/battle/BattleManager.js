@@ -1948,6 +1948,129 @@ class BattleManager {
     battle.addBattleMessage(`${battler.name} attacks! ${damageMessage}`);
   }
 
+  appliedSkillStatusNames(statusResults) {
+    return statusResults
+      .filter((result) => result?.applied === true)
+      .map((result) => result.name || result.key)
+      .filter(Boolean);
+  }
+
+  showSkillStatusPopups(target, statusNames) {
+    const battle = this.scene;
+
+    for (const statusName of statusNames) {
+      battle.addBattlePopup(target, String(statusName).toUpperCase(), "status");
+    }
+  }
+
+  performSkillDamageTarget(caster, skill, target) {
+    const battle = this.scene;
+    const hitChance = this.physicalHitChance(caster);
+
+    if (Math.random() * 100 >= hitChance) {
+      battle.addBattlePopup(target, "MISS", "miss");
+      battle.addBattleMessage(
+        `${caster.name} uses ${skill.name}! ${caster.name} misses ${target.name}!`,
+      );
+      return false;
+    }
+
+    const result = this.applyPhysicalDamage(caster, target, {
+      powerMultiplier: caster.skillPowerMultiplier?.(skill) ?? 1,
+    });
+    const damage = result.damage;
+    const statusResults =
+      typeof caster.resolveSkillStatusEffects === "function"
+        ? caster.resolveSkillStatusEffects(skill, target)
+        : [];
+    const statusNames = this.appliedSkillStatusNames(statusResults);
+
+    battle.addBattlePopup(
+      target,
+      damage > 0 ? `-${damage}` : "BLOCK",
+      damage > 0 ? "damage" : "immune",
+    );
+    this.showSkillStatusPopups(target, statusNames);
+
+    const statusMessage =
+      statusNames.length > 0 ? ` ${statusNames.join(", ")} takes hold!` : "";
+    battle.addBattleMessage(
+      `${caster.name} uses ${skill.name}! ${target.name} ${
+        damage > 0 ? `takes ${damage} damage!` : "blocks the technique!"
+      }${statusMessage}`,
+    );
+
+    if (this.battlerIsDefeated(target)) {
+      if ($gameParty.battleMembers().includes(target)) {
+        battle.setActorState("defeat", 0, target);
+      } else {
+        battle.setEnemyState("defeat", 0, target);
+      }
+    } else if (damage > 0) {
+      if ($gameParty.battleMembers().includes(target)) {
+        battle.setActorState("hurt", 0.3, target);
+      } else {
+        battle.setEnemyState("hurt", 0.3, target);
+      }
+    }
+
+    return true;
+  }
+
+  performSkillHealTarget(caster, skill, target) {
+    const battle = this.scene;
+    const hpBefore = target.hp;
+    const requestedHealing = caster.skillHealing?.(skill, target) ?? 0;
+
+    if (requestedHealing <= 0 || typeof target.gainHp !== "function") {
+      return false;
+    }
+
+    target.gainHp(requestedHealing);
+    const healing = Math.max(0, target.hp - hpBefore);
+
+    if (healing > 0) {
+      battle.addBattlePopup(target, `+${healing}`, "heal");
+      battle.addBattleMessage(
+        `${caster.name} uses ${skill.name}! ${target.name} recovers ${healing} HP!`,
+      );
+      return true;
+    }
+
+    return false;
+  }
+
+  performSkillStatusTarget(caster, skill, target) {
+    const battle = this.scene;
+    const statusResults =
+      typeof caster.resolveSkillStatusEffects === "function"
+        ? caster.resolveSkillStatusEffects(skill, target)
+        : [];
+    const statusNames = this.appliedSkillStatusNames(statusResults);
+
+    this.showSkillStatusPopups(target, statusNames);
+
+    if (statusNames.length > 0) {
+      battle.addBattleMessage(
+        `${caster.name} uses ${skill.name}! ${target.name} is afflicted by ${statusNames.join(", ")}!`,
+      );
+    } else {
+      battle.addBattleMessage(
+        `${caster.name} uses ${skill.name}! ${target.name} resists the technique!`,
+      );
+    }
+
+    if (this.battlerIsDefeated(target)) {
+      if ($gameParty.battleMembers().includes(target)) {
+        battle.setActorState("defeat", 0, target);
+      } else {
+        battle.setEnemyState("defeat", 0, target);
+      }
+    }
+
+    return statusNames.length > 0;
+  }
+
   performSkillEffect() {
     const battle = this.scene;
     const caster = this.party().currentBattler();
@@ -1959,9 +2082,10 @@ class BattleManager {
       return false;
     }
 
-    const targets = battle.targetScope === "all"
-      ? battle.targetManager.getCurrentTargets()
-      : [battle.pendingSkillTarget].filter(Boolean);
+    const targets =
+      battle.targetScope === "all"
+        ? battle.targetManager.getCurrentTargets()
+        : [battle.pendingSkillTarget].filter(Boolean);
     const validTargets = targets.filter((target) =>
       caster.isValidSkillTarget?.(skill, target),
     );
@@ -1975,46 +2099,21 @@ class BattleManager {
     let affected = false;
 
     for (const target of validTargets) {
-      const hitChance = this.physicalHitChance(caster);
-      if (Math.random() * 100 >= hitChance) {
-        battle.addBattlePopup(target, "MISS", "miss");
-        battle.addBattleMessage(
-          `${caster.name} uses ${skill.name}! ${caster.name} misses ${target.name}!`,
+      let targetAffected = false;
+
+      if (skill.effect === "damage") {
+        targetAffected = this.performSkillDamageTarget(caster, skill, target);
+      } else if (skill.effect === "heal") {
+        targetAffected = this.performSkillHealTarget(caster, skill, target);
+      } else if (skill.effect === "inflictStatus") {
+        targetAffected = this.performSkillStatusTarget(caster, skill, target);
+      } else {
+        console.warn(
+          `Skill ${skill.name} effect "${skill.effect}" is not implemented.`,
         );
-        continue;
       }
 
-      const result = this.applyPhysicalDamage(caster, target, {
-        powerMultiplier: caster.skillPowerMultiplier?.(skill) ?? 1,
-      });
-      const damage = result.damage;
-
-      battle.addBattlePopup(
-        target,
-        damage > 0 ? `-${damage}` : "BLOCK",
-        damage > 0 ? "damage" : "immune",
-      );
-      battle.addBattleMessage(
-        `${caster.name} uses ${skill.name}! ${target.name} ${
-          damage > 0 ? `takes ${damage} damage!` : "blocks the technique!"
-        }`,
-      );
-
-      if (this.battlerIsDefeated(target)) {
-        if ($gameParty.battleMembers().includes(target)) {
-          battle.setActorState("defeat", 0, target);
-        } else {
-          battle.setEnemyState("defeat", 0, target);
-        }
-      } else if (damage > 0) {
-        if ($gameParty.battleMembers().includes(target)) {
-          battle.setActorState("hurt", 0.3, target);
-        } else {
-          battle.setEnemyState("hurt", 0.3, target);
-        }
-      }
-
-      affected = true;
+      affected = targetAffected || affected;
     }
 
     battle.pendingSkill = null;

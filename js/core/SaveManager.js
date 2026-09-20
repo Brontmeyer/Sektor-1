@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 8;
+    return 9;
   }
 
   static clearError() {
@@ -62,7 +62,7 @@ class SaveManager {
         ? 1
         : null;
 
-    const upgradeToCurrent = (data) => ({
+    const upgradeToCurrent = (data, { includeStarterSkills = false } = {}) => ({
       ...data,
       version: this.currentVersion(),
       actors: Array.isArray(data.actors)
@@ -73,9 +73,17 @@ class SaveManager {
               : Array.isArray(source.skills)
                 ? source.skills
                 : [];
-            const skillIds = Array.isArray(source.skillIds)
+            const savedSkillIds = Array.isArray(source.skillIds)
               ? source.skillIds
               : [];
+            const actorDefinition =
+              DatabaseManager.actor?.(Number(source.actorId)) || null;
+            const starterSkillIds = Array.isArray(actorDefinition?.initialSkillIds)
+              ? actorDefinition.initialSkillIds
+              : [];
+            const skillIds = includeStarterSkills
+              ? [...new Set([...savedSkillIds, ...starterSkillIds])]
+              : savedSkillIds;
             const legacyEssences = Array.isArray(source.essences)
               ? source.essences
               : [];
@@ -128,8 +136,8 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if ([7, 6, 5, 4, 3, 2].includes(inferredVersion)) {
-      return upgradeToCurrent(saveData);
+    if ([8, 7, 6, 5, 4, 3, 2].includes(inferredVersion)) {
+      return upgradeToCurrent(saveData, { includeStarterSkills: true });
     }
 
     if (inferredVersion === 1) {
@@ -137,10 +145,13 @@ class SaveManager {
         ? { ...saveData.actor, essences: [] }
         : null;
 
-      return upgradeToCurrent({
-        ...saveData,
-        actors: legacyActor ? [legacyActor] : [],
-      });
+      return upgradeToCurrent(
+        {
+          ...saveData,
+          actors: legacyActor ? [legacyActor] : [],
+        },
+        { includeStarterSkills: true },
+      );
     }
 
     return null;

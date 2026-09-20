@@ -12,6 +12,11 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Character Valor Arts v1 with one canonical starter Art per current actor: Tyler's **Unbroken**, Sarah's **Rallyheart**, Aboo's **Wild Arc**, and G Prime's **Zero Lock**
+- Expanded the shared Skills effect vocabulary only as required by the approved Arts: percentage healing, reusable status application, and optional status payloads on physical-damage Skills
+- Added data-driven support/control Skill categories and status-reference validation without introducing character-name checks in battle execution
+- Added Save Runtime v9 with v1-v8 migration so pre-Pass-38 saves receive each actor's newly canonical starter Valor Art while current v9 saves preserve explicit learned-Skill state
+- Added dedicated Character Valor Arts regression coverage for canonical ownership, single-target burst damage, party healing, all-target damage/status application, battlefield control, and Valor consumption
 - Added Valor Arts Runtime v1 as a thin specialization of the existing Skills runtime through optional validated `valorArt: true` metadata
 - Added generic Skill-cost hooks to shared Skill legality/execution while keeping full-gauge Valor ownership and payment in `Game_Actor`
 - Added Valor-ready gating, one-time full-gauge consumption on committed legal use, no-cost behavior for regular Skills, and protection against spending Valor when no legal target remains

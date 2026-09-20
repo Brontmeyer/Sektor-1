@@ -975,6 +975,66 @@ class Game_Battler {
     return Number.isFinite(multiplier) && multiplier > 0 ? multiplier : 1;
   }
 
+  skillHealing(skill, target) {
+    const healPercent = Number(skill?.healPercent);
+    const maximumHp = Number(target?.maxHp);
+
+    if (
+      !Number.isFinite(healPercent) ||
+      healPercent <= 0 ||
+      !Number.isFinite(maximumHp) ||
+      maximumHp <= 0
+    ) {
+      return 0;
+    }
+
+    return Math.max(1, Math.floor(maximumHp * healPercent));
+  }
+
+  resolveSkillStatusEffects(skill, target, random = Math.random) {
+    const payload = skill?.status;
+
+    if (
+      !target ||
+      !payload ||
+      typeof payload !== "object" ||
+      Array.isArray(payload)
+    ) {
+      return [];
+    }
+
+    const results = [];
+
+    for (const [statusKey, baseChance] of Object.entries(payload)) {
+      const definition =
+        typeof target.statusDefinition === "function"
+          ? target.statusDefinition(statusKey)
+          : null;
+      const statusName = definition?.name || statusKey;
+
+      if (typeof target.tryAddStatus !== "function") {
+        results.push({
+          key: statusKey,
+          name: statusName,
+          applied: false,
+          refreshed: false,
+          reason: "unsupportedTarget",
+          chance: 0,
+        });
+        continue;
+      }
+
+      const application = target.tryAddStatus(statusKey, baseChance, random);
+      results.push({
+        key: statusKey,
+        name: statusName,
+        ...application,
+      });
+    }
+
+    return results;
+  }
+
   // =====================================
   // Shared Magick Runtime
   // =====================================
@@ -1577,9 +1637,24 @@ class Game_Battler {
       return false;
     }
 
-    return typeof target.isDefeated === "function"
-      ? !target.isDefeated()
-      : !(typeof target.isDead === "function" && target.isDead());
+    const defeated =
+      typeof target.isDefeated === "function"
+        ? target.isDefeated()
+        : typeof target.isDead === "function" && target.isDead();
+
+    if (defeated) {
+      return false;
+    }
+
+    if (
+      skill.effect === "heal" &&
+      typeof target.isFullHp === "function" &&
+      target.isFullHp()
+    ) {
+      return false;
+    }
+
+    return true;
   }
 
   isValidMagickTarget(magick, target) {

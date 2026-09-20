@@ -105,7 +105,7 @@ Valor represents a character's ability to turn battle pressure into decisive pot
 
 Valor should reward surviving danger rather than merely waiting. Actual direct HP loss builds the gauge in proportion to the percentage of Max HP lost. Fury accelerates that response, Sadness suppresses it, and Near-Death intensifies it. These interactions make emotional and critical states part of the same pressure-response language without hard-coding individual status names into the gauge.
 
-A full Valor gauge means the actor is **Valor Ready**. **Valor Arts Runtime v1** consumes that readiness through the established Skills side of the combat vocabulary: a Skill marked `valorArt: true` requires a full gauge and spends it once when the action is committed against at least one legal target. The exact character-specific Arts, unlock rules, and targeting choices are intentionally not canonical yet.
+A full Valor gauge means the actor is **Valor Ready**. **Valor Arts Runtime v1** consumes that readiness through the established Skills side of the combat vocabulary: a Skill marked `valorArt: true` requires a full gauge and spends it once when the action is committed against at least one legal target. Character Valor Arts v1 now gives the four current actors distinct first mechanical signatures without making battle code branch on their names; future unlock/progression rules and later Arts remain open design space.
 
 ---
 
@@ -113,9 +113,9 @@ A full Valor gauge means the actor is **Valor Ready**. **Valor Arts Runtime v1**
 
 Skills represent deliberate non-Magick techniques: physical, technical, tactical, or character-specific actions that should not inherit spell identity merely because they are selectable battle abilities. The namespace is intentionally separate from Essence-linked Magick.
 
-Skills Runtime v1 establishes that identity before populating the catalog. `data/Skills.json` therefore begins content-neutral, and current actors begin with no starter Skills. The first runtime vocabulary supports data-driven physical-damage techniques with reusable targeting and power multipliers, but it does not imply that every future Skill must deal damage or remain cost-free. New effects and resource models should be added only when actual Skill designs require them.
+Skills Runtime v1 established that identity before populating the catalog. Character Valor Arts v1 is the first canonical content pass and expands the reusable Skill vocabulary only where those designs require it: physical damage, percentage healing, and status application. That does not imply every future Skill must fit those effects or use Valor; new effects and resource models should still be added only when approved designs need them.
 
-**Valor Arts** belong here. Valor Arts Runtime v1 now treats them as special Skills that consume Valor readiness through the existing Valor API rather than spawning a third unrelated ability engine. `Game_Actor` owns the Valor-specific cost behavior while the shared Skill runtime remains resource-agnostic. Canonical character-specific Art content remains deliberately undecided.
+**Valor Arts** belong here. Valor Arts Runtime v1 treats them as special Skills that consume Valor readiness through the existing Valor API rather than spawning a third unrelated ability engine. `Game_Actor` owns the Valor-specific cost behavior while the shared Skill runtime remains resource-agnostic. The first canonical set is **Unbroken** (Tyler), **Rallyheart** (Sarah), **Wild Arc** (Aboo), and **Zero Lock** (G Prime). These establish mechanical signatures, not a complete final character canon.
 
 ---
 

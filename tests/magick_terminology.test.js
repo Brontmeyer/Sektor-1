@@ -102,7 +102,7 @@ function testLegacySkillsSaveBridgeStillMeansOldMagickOnly() {
 
   assert.match(saveManager, /Array\.isArray\(source\.skills\)/);
   assert.match(saveManager, /skills:\s*_legacySkills[\s\S]*\.\.\.rest/);
-  assert.match(saveManager, /const skillIds = Array\.isArray\(source\.skillIds\)/);
+  assert.match(saveManager, /const savedSkillIds = Array\.isArray\(source\.skillIds\)/);
   assert.match(saveManager, /magickIds,/);
   assert.match(saveManager, /skillIds,/);
 

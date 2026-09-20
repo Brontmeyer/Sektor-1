@@ -170,6 +170,7 @@ function testMagickRuntimeMetadataContracts() {
 
 function testSkillsRuntimeMetadataContracts() {
   const DatabaseValidator = loadValidator();
+  const statuses = readData("Statuses.json");
   const skills = [
     null,
     {
@@ -180,14 +181,39 @@ function testSkillsRuntimeMetadataContracts() {
       category: "physical",
       effect: "damage",
       powerMultiplier: 1.5,
+      status: { darkness: 0.5 },
       valorArt: true,
       target: ["enemy"],
       scope: ["single"],
     },
+    {
+      id: 2,
+      name: "Test Rally",
+      description: "Test-only healing technique.",
+      type: "skill",
+      category: "support",
+      effect: "heal",
+      healPercent: 0.25,
+      valorArt: true,
+      target: ["ally"],
+      scope: ["all"],
+    },
+    {
+      id: 3,
+      name: "Test Lock",
+      description: "Test-only control technique.",
+      type: "skill",
+      category: "control",
+      effect: "inflictStatus",
+      status: { slow: 1 },
+      valorArt: true,
+      target: ["enemy"],
+      scope: ["all"],
+    },
   ];
   const errors = [];
 
-  assert.equal(DatabaseValidator.validateSkills(skills, errors), undefined);
+  assert.equal(DatabaseValidator.validateSkills(skills, statuses, errors), undefined);
   assert.deepEqual(errors, []);
 
   const invalid = clone(skills);
@@ -195,8 +221,10 @@ function testSkillsRuntimeMetadataContracts() {
   invalid[1].powerMultiplier = 0;
   invalid[1].valorArt = "yes";
   invalid[1].target = ["somewhere"];
+  invalid[2].healPercent = 2;
+  invalid[3].status.typoStatus = 0.5;
   const invalidErrors = [];
-  DatabaseValidator.validateSkills(invalid, invalidErrors);
+  DatabaseValidator.validateSkills(invalid, statuses, invalidErrors);
 
   assert.equal(invalidErrors.some((error) => error.includes('type must be "skill"')), true);
   assert.equal(invalidErrors.some((error) => error.includes("powerMultiplier")), true);
@@ -205,6 +233,11 @@ function testSkillsRuntimeMetadataContracts() {
     true,
   );
   assert.equal(invalidErrors.some((error) => error.includes("unsupported value")), true);
+  assert.equal(invalidErrors.some((error) => error.includes("healPercent")), true);
+  assert.equal(
+    invalidErrors.some((error) => error.includes('unknown status key "typoStatus"')),
+    true,
+  );
 }
 
 function testStatusNestedSchemaRejectsUnknownAndMalformedFields() {

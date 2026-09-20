@@ -39,6 +39,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Enemy Actions & AI v1
 -   ✅ Valor Runtime v1
 -   ✅ Skills Runtime v1
+-   ✅ Character Valor Arts v1
 -   ✅ Valor Arts Runtime v1
 
 ------------------------------------------------------------------------
@@ -55,7 +56,7 @@ Completed foundations include:
 -   ✅ Party foundation
 -   ✅ Multi-character turn system
 -   ✅ Turn queue
--   ✅ Save / Load (version-aware Save Runtime v8)
+-   ✅ Save / Load (version-aware Save Runtime v9)
 -   ✅ Equipment system (Weapon / Armor / Accessory)
 -   ✅ Inventory system
 
@@ -116,13 +117,13 @@ Combat-stat terminology remains **Magic**, **Magic Attack**, and **Magic Defense
 
 **Skills Runtime v1** establishes Sektor 1's separate non-Magick technique system. Canonical definitions live in `data/Skills.json`, actors own learned Skill IDs independently from `magickIds`, and battle Skills use the same shared action-restriction and target-selection infrastructure without becoming Magick casts.
 
-The v1 execution vocabulary is deliberately narrow: a Skill can currently define a physical-damage technique through `powerMultiplier`, legal `target` groups (`self`, `ally`, `enemy`), and `scope` (`single`, `all`). Damage reuses the established physical hit, Defense, defending, status-removal, incoming-damage, defeat, and Valor pathways instead of creating a second physical-combat formula.
+Skills now support the reusable effect vocabulary required by the first canonical Valor Arts: physical damage through `powerMultiplier`, percentage healing through `healPercent`, and status application through validated `status` chance maps. Damage continues to reuse the established physical hit, Defense, defending, incoming-damage, defeat, and Valor pathways; healing and status application reuse battler HP/status APIs rather than creating character-specific branches. Legal `target` groups remain `self`, `ally`, and `enemy`, with `scope` values `single` and `all`.
 
-`data/Skills.json` intentionally begins content-neutral as `[null]`, and current actors begin with empty `initialSkillIds`. Pass 36 defines the architecture before inventing canonical techniques. Progression/unlock rules, richer effects, enemy Skill actions, and canonical character Skill content remain future design work.
+**Character Valor Arts v1** establishes one starter Art for each current actor through ordinary `initialSkillIds`: Tyler's **Unbroken** is a high-power single-target physical strike; Sarah's **Rallyheart** restores 35% Max HP to all injured allies; Aboo's **Wild Arc** damages all enemies and carries a 60% base Darkness chance; G Prime's **Zero Lock** attempts to Slow all enemies. These are data records, not actor-name checks in battle code.
 
-**Valor Arts Runtime v1** specializes this same Skills namespace through optional `valorArt: true` metadata. A Valor Art is usable only while its actor is Valor Ready, pays the existing full-gauge Valor cost exactly once when the action is committed against at least one legal target, and otherwise uses the normal Skill targeting and physical-resolution pipeline. Regular Skills remain cost-neutral. Battle and field Skills windows mark Valor Arts with `[VALOR]`; no separate Valor-only command or combat engine exists.
+**Valor Arts Runtime v1** still specializes the same Skills namespace through `valorArt: true`. A Valor Art is usable only while its actor is Valor Ready and spends the existing full gauge exactly once when the action is committed against at least one legal target. Battle and field Skills windows mark Valor Arts with `[VALOR]`; no separate Valor-only command or combat engine exists.
 
-The field Skills window is currently a read-only learned-Skill viewer with the same shared actor navigation used by other character menus. Battle use is available whenever an actor actually knows a usable Skill. Canonical character-specific Valor Arts are intentionally still deferred until their identities, names, targeting, and unlock rules are approved.
+The field Skills window remains a read-only learned-Skill viewer with the same shared actor navigation used by other character menus. Long-term Skill/Valor Art unlock progression, additional effect types, additional resource models, and enemy Skill actions remain future design work.
 
 ------------------------------------------------------------------------
 
@@ -130,9 +131,9 @@ The field Skills window is currently a read-only learned-Skill viewer with the s
 
 **Valor** is Sektor 1's pressure-response battle resource. Actors build Valor from actual direct HP loss, with the base gain proportional to the percentage of Max HP lost. Fury, Sadness, and Near-Death modify that gain through the shared data-driven `valorGainMultiplier` status contract.
 
-Current actors have a data-driven Max Valor of 100. Valor persists between battles and through Save Runtime v8, caps at the actor's configured maximum, and is shown in both the battle HUD and Status menu. A full gauge becomes **VALOR: READY**.
+Current actors have a data-driven Max Valor of 100. Valor persists between battles and through Save Runtime v9, caps at the actor's configured maximum, and is shown in both the battle HUD and Status menu. A full gauge becomes **VALOR: READY**.
 
-Valor Runtime v1 establishes the gauge, gain rules, persistence, ready state, and consumption API. Valor Arts Runtime v1 now consumes that API through the Skills cost hook without moving gauge ownership out of `Game_Actor`. The runtime contract exists, while character-specific Valor Art content, targeting choices, and progression/unlock rules remain future design work.
+Valor Runtime v1 establishes the gauge, gain rules, persistence, ready state, and consumption API. Valor Arts Runtime v1 consumes that API through the Skills cost hook without moving gauge ownership out of `Game_Actor`, and Character Valor Arts v1 now supplies the first four canonical Arts. Their future unlock/progression rules and later Art sets remain separate design work.
 
 ------------------------------------------------------------------------
 
@@ -163,7 +164,7 @@ Accessories Equipment v1 adds a third conventional equipment slot beside Weapon 
 
 The initial accessory contract supports additive Attack, Defense, Magic Attack, Magic Defense, and Critical bonuses. This keeps the first runtime small while leaving status, elemental, and more specialized accessory effects for later data/runtime extensions.
 
-The current Save Runtime v8 persists both equipped accessory IDs and party accessory inventory. The existing test chest can award a Power Wrist through the validated accessory event-command path.
+The current Save Runtime v9 persists both equipped accessory IDs and party accessory inventory. The existing test chest can award a Power Wrist through the validated accessory event-command path.
 
 ------------------------------------------------------------------------
 
@@ -332,6 +333,7 @@ continues to grow.
 
 -   ✅ Magick System v1
 -   ✅ Skills Runtime v1
+-   ✅ Character Valor Arts v1
 -   ✅ Essence System v1
 -   ✅ Status System v1
 

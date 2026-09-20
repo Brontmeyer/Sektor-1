@@ -40,7 +40,7 @@ Completed engine foundations include:
 - Turn queue
 - Multi-character turns
 - Data-driven actor collection ownership with explicit party/leader context
-- Save / Load with version-aware multi-actor Save Runtime v8, persistent learned Skills / Valor / Gil / accessory equipment / slot-aware Essence state, and v1-v7 migration
+- Save / Load with version-aware multi-actor Save Runtime v9, persistent learned Skills / Valor / Gil / accessory equipment / slot-aware Essence state, and v1-v8 migration including starter-Valor-Art content migration
 - Equipment system with Weapon, Armor, and Accessory slots
 - Inventory system
 - Shops & Gil Spending v1 with canonical-price purchases for items and conventional equipment
@@ -53,6 +53,7 @@ Completed canonical battle-data foundations include:
 - 54 initial Magick abilities
 - Skills Runtime v1 with separate `Skills.json`, actor ownership, battle execution, menu presentation, and v8 persistence
 - Valor Arts Runtime v1 with actor-owned ready-state cost payment layered onto the shared Skills action pipeline
+- Character Valor Arts v1 with one canonical starter Art per current actor plus reusable healing/status Skill effects
 - Restore Magick
 - Attack Magick
 - Indirect Magick
@@ -220,7 +221,7 @@ Primary work includes:
 - Party Switching
 - Character-specific battle differentiation
 - Design and implementation planning for Dual Techs
-- Design and implementation planning for canonical character-specific Valor Arts
+- Expand the first canonical Valor Arts into broader character differentiation and progression
 
 Character expansion should create meaningful differences in party composition rather than merely increasing the number of available actors.
 
@@ -308,10 +309,10 @@ Several major battle systems are deliberately being left until the core runtime 
 
 The base Skills runtime and Valor Arts resource specialization now exist, so advanced work can build on them rather than creating another action engine. Primary candidates include:
 
-- Canonical Skill content and progression rules
-- Expanded reusable Skill effects/resources
+- Additional canonical Skill content and progression rules
+- Additional reusable Skill effects/resources
 - Summon Magick
-- Canonical character-specific Valor Arts
+- Additional character-specific Valor Arts and long-term unlock/progression rules
 - Dual Techs
 - Expanded party switching behavior
 - Additional advanced Magick interactions
@@ -474,7 +475,7 @@ This document does not currently define:
 - Essence Evolution recipes
 - Mastery Trial quest details
 - Summon Magick design
-- Final character-specific Valor Art content and unlock/progression design
+- Long-term Valor Art unlock/progression design and later Art sets
 - Dual Tech design
 
 Those decisions should become canonical when they are actually made.
@@ -485,19 +486,11 @@ No Architecture Fanfiction™ has been promoted to Roadmap Fanfiction™. 😄
 
 # ❤️ The Road Ahead
 
-Sektor 1 no longer needs to grow by asking what system we could build next.
+Sektor 1 now has mature battle foundations for statuses, Magick, enemy decision-making, Skills, Valor, and the first character-specific Valor Arts. The next useful work should build on those foundations rather than recreating them.
 
-It can grow by asking what foundation the next meaningful system needs.
+The strongest open directions are character/party expansion, long-term Skill and Valor Art progression, richer enemy/boss behavior, and world/event systems that can support the content around those mechanics. The exact next pass should come from the current `TODO.md` plus the design priority we deliberately choose at that time.
 
-The immediate answer is clear:
-
-> **Status Runtime.**
-
-That turns the 25-status design from canonical data into living battle behavior. Completing it unlocks deeper Magick interactions, which strengthens the foundation for Essences, enemies, bosses, characters, and everything that follows.
-
-The road will change as the game teaches us what it needs. That is expected.
-
-The important part is that we now have a road.
+The road will change as the game teaches us what it needs. That is expected. The important part is that new work now has dependable systems to stand on.
 
 ---
 

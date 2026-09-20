@@ -131,10 +131,11 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add battle and field Skills windows with shared character-menu navigation
 - [x] Add the first Skill resource specialization through Valor Arts Runtime v1
 - [ ] Define additional Skill costs/resources beyond Valor when approved designs require them
-- [ ] Expand Skills beyond physical-damage techniques when approved designs require new reusable effects
+- [x] Expand Skills beyond physical-damage techniques with reusable percentage-heal and status-application effects required by Character Valor Arts v1
 - [ ] Add enemy Skill actions when canonical enemy techniques are designed
 - [x] Define Valor Arts Runtime v1 within the Skills namespace
-- [ ] Design canonical character-specific Valor Arts and unlock/progression rules
+- [x] Design the first canonical character-specific Valor Arts
+- [ ] Design long-term Valor Art unlock/progression rules
 
 ---
 
@@ -149,7 +150,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Character 8
 - [ ] Party Switching
 - [ ] Dual Techs
-- [ ] Canonical character-specific Valor Arts
+- [x] Canonical character-specific Valor Arts v1
+- [ ] Additional character Valor Arts and progression
 
 ---
 
@@ -182,7 +184,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v8 with persistent learned Skills, Valor, accessory inventory/equipment, slot-aware Essence progression persistence, and v1-v7 migration
+- [x] Save Runtime v9 with persistent learned Skills/Valor/equipment/Essence state plus v1-v8 migration and Pass-38 starter-Art content migration
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies

@@ -39,7 +39,7 @@ class DatabaseValidator {
     this.validateWeapons(database.weapons, errors);
     this.validateArmors(database.armors, errors);
     this.validateAccessories(database.accessories, errors);
-    this.validateSkills(database.skills, errors);
+    this.validateSkills(database.skills, database.statuses, errors);
     this.validateMagick(database.magickData, database.statuses, errors);
     this.validateStatuses(database.statuses, errors);
     this.validateEssences(
@@ -1511,13 +1511,27 @@ class DatabaseValidator {
     }
   }
 
-  static validateSkills(skills, errors) {
+  static validateSkills(skills, statuses, errors = null) {
+    // Backward-compatible helper shape used by focused tests that pass only
+    // (skills, errors). Full validation supplies Statuses.json as well.
+    if (!Array.isArray(errors)) {
+      errors = statuses;
+      statuses = [];
+    }
+
     if (!Array.isArray(skills)) {
       return;
     }
 
     const validTargets = new Set(["self", "ally", "enemy"]);
     const validScopes = new Set(["single", "all"]);
+    const validCategories = new Set(["physical", "support", "control"]);
+    const validEffects = new Set(["damage", "heal", "inflictStatus"]);
+    const statusKeys = new Set(
+      Array.isArray(statuses)
+        ? statuses.filter(Boolean).map((status) => status.key)
+        : [],
+    );
 
     for (let index = 1; index < skills.length; index++) {
       const skill = skills[index];
@@ -1540,6 +1554,8 @@ class DatabaseValidator {
           "category",
           "effect",
           "powerMultiplier",
+          "healPercent",
+          "status",
           "valorArt",
           "target",
           "scope",
@@ -1551,20 +1567,62 @@ class DatabaseValidator {
         errors.push(`${label} type must be "skill".`);
       }
 
-      if (skill.category !== "physical") {
-        errors.push(`${label} category must be "physical" in Skills Runtime v1.`);
+      if (!validCategories.has(skill.category)) {
+        errors.push(`${label} has unsupported category "${skill.category}".`);
       }
 
-      if (skill.effect !== "damage") {
-        errors.push(`${label} effect must be "damage" in Skills Runtime v1.`);
+      if (!validEffects.has(skill.effect)) {
+        errors.push(`${label} has unsupported effect "${skill.effect}".`);
       }
 
-      this.validateFiniteNumber(
-        `${label} powerMultiplier`,
-        skill.powerMultiplier,
-        errors,
-        { min: Number.MIN_VALUE },
-      );
+      if (skill.effect === "damage") {
+        this.validateFiniteNumber(
+          `${label} powerMultiplier`,
+          skill.powerMultiplier,
+          errors,
+          { min: Number.MIN_VALUE },
+        );
+      } else if (skill.powerMultiplier !== undefined) {
+        errors.push(`${label} powerMultiplier is only supported by damage Skills.`);
+      }
+
+      if (skill.effect === "heal") {
+        this.validateFiniteNumber(
+          `${label} healPercent`,
+          skill.healPercent,
+          errors,
+          { min: Number.MIN_VALUE, max: 1 },
+        );
+      } else if (skill.healPercent !== undefined) {
+        errors.push(`${label} healPercent is only supported by heal Skills.`);
+      }
+
+      if (skill.status !== undefined) {
+        if (!["damage", "inflictStatus"].includes(skill.effect)) {
+          errors.push(
+            `${label} status metadata is only supported by damage or inflictStatus Skills.`,
+          );
+        }
+
+        if (!this.isPlainObject(skill.status) || Object.keys(skill.status).length === 0) {
+          errors.push(`${label} status must be a non-empty object when provided.`);
+        } else {
+          for (const [statusKey, chance] of Object.entries(skill.status)) {
+            if (statusKeys.size > 0 && !statusKeys.has(statusKey)) {
+              errors.push(`${label} status references unknown status key "${statusKey}".`);
+            }
+
+            this.validateFiniteNumber(
+              `${label} status.${statusKey}`,
+              chance,
+              errors,
+              { min: 0, max: 1 },
+            );
+          }
+        }
+      } else if (skill.effect === "inflictStatus") {
+        errors.push(`${label} inflictStatus effect requires status metadata.`);
+      }
 
       if (skill.valorArt !== undefined && typeof skill.valorArt !== "boolean") {
         errors.push(`${label} valorArt must be a boolean when provided.`);

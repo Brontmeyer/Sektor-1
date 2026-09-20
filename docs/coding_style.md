@@ -105,9 +105,9 @@ The current Essence-linked supernatural ability system is **Magick**. Use `magic
 
 # 🥋 Skill Data Conventions
 
-Non-Magick Skill content belongs in `data/Skills.json`. Skills Runtime v1 accepts only the physical-damage vocabulary the runtime actually consumes: `type`, `category`, `effect`, `powerMultiplier`, `target`, and `scope` plus identity/description fields. Do not add speculative cost, cooldown, status, or Valor fields until a runtime contract exists for them.
+Non-Magick Skill content belongs in `data/Skills.json`. The current consumed vocabulary includes `type`, `category`, `effect`, targeting/scope, `powerMultiplier` for physical damage, `healPercent` for percentage healing, `status` chance maps for reusable status application, and `valorArt` for the established Valor cost specialization. Current categories are `physical`, `support`, and `control`; current effects are `damage`, `heal`, and `inflictStatus`. Do not add speculative costs, cooldowns, effect fields, or categories until a runtime contract exists for them.
 
-Skill behavior should be expressed through reusable metadata and shared combat helpers. Do not branch on a Skill's display name to decide damage, targeting, or future special behavior when a general data contract can represent the rule.
+Skill behavior should be expressed through reusable metadata and shared combat helpers. Do not branch on a Skill's display name or owning actor name to decide damage, healing, statuses, targeting, or future special behavior when a general data contract can represent the rule.
 
 ---
 

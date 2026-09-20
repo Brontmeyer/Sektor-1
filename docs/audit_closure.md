@@ -106,6 +106,10 @@ Pass 36 intentionally activates the **Skills** namespace that Pass 29 reserved f
 
 Pass 37 extends the post-audit Skills foundation rather than reopening an audit item. Valor Arts are represented by validated `valorArt: true` Skill metadata, use generic Skill-cost hooks, and delegate full-gauge readiness/payment to actor-owned Valor APIs. No new persistent state is introduced, so Save Runtime remains v8. Canonical character-specific Art content remains future design work.
 
+## Post-Audit Feature Note: Character Valor Arts v1
+
+Pass 38 remains post-audit feature development. It populates the already-closed Skills/Valor architecture with one starter Valor Art per current actor and widens the shared Skill effect vocabulary to percentage healing and status application only where those canonical Arts require it. Battle execution remains data-driven with no actor-name branches. Save Runtime v9 migrates v1-v8 saves so existing actors receive their newly canonical starter Arts without changing any historical audit classification.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

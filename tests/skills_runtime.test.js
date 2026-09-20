@@ -126,6 +126,7 @@ function createHarness() {
   const { Game_Actor, Game_Enemy, BattleTargetManager, BattleManager } =
     context.__classes;
   const actor = new Game_Actor(1);
+  actor.skillIds = [];
   const enemy = new Game_Enemy(1);
   partyMembers.push(actor);
 
@@ -140,11 +141,16 @@ function createHarness() {
   };
 }
 
-function testCanonicalSkillsDatabaseStartsContentNeutral() {
-  assert.deepEqual(canonicalSkills, [null]);
-  for (const actor of actors.filter(Boolean)) {
-    assert.deepEqual(actor.initialSkillIds, []);
-  }
+function testCanonicalSkillsDatabaseDefinesOneStarterValorArtPerActor() {
+  const skills = canonicalSkills.filter(Boolean);
+
+  assert.equal(skills.length, 4);
+  assert.deepEqual(skills.map((skill) => skill.id), [1, 2, 3, 4]);
+  assert.equal(skills.every((skill) => skill.valorArt === true), true);
+  assert.deepEqual(
+    actors.filter(Boolean).map((actor) => actor.initialSkillIds),
+    [[1], [2], [3], [4]],
+  );
 }
 
 function testActorSkillOwnershipIsSeparateFromMagick() {
@@ -302,7 +308,7 @@ function testSkillExecutionReusesPhysicalDamagePipeline() {
 }
 
 function run() {
-  testCanonicalSkillsDatabaseStartsContentNeutral();
+  testCanonicalSkillsDatabaseDefinesOneStarterValorArtPerActor();
   testActorSkillOwnershipIsSeparateFromMagick();
   testSkillLegalityUsesSharedActionRestrictions();
   testSkillTargetingUsesSkillDefinitionNotMagickRules();

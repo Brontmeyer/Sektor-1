@@ -142,6 +142,7 @@ function createHarness() {
     Window_Skills,
   } = context.__classes;
   const actor = new Game_Actor(1);
+  actor.skillIds = [];
   const enemy = new Game_Enemy(1);
   partyMembers.push(actor);
 
@@ -187,11 +188,22 @@ function createSkillEffectScene(actor, enemiesList, skill, targetScope = "single
   return { scene, messages, popups };
 }
 
-function testCanonicalContentStillDefersCharacterSpecificValorArts() {
-  assert.deepEqual(canonicalSkills, [null]);
-  for (const actor of actors.filter(Boolean)) {
-    assert.deepEqual(actor.initialSkillIds, []);
-  }
+function testCanonicalContentDefinesCharacterSpecificValorArts() {
+  const skills = canonicalSkills.filter(Boolean);
+
+  assert.deepEqual(
+    skills.map((skill) => [skill.id, skill.name, skill.valorArt]),
+    [
+      [1, "Unbroken", true],
+      [2, "Rallyheart", true],
+      [3, "Wild Arc", true],
+      [4, "Zero Lock", true],
+    ],
+  );
+  assert.deepEqual(
+    actors.filter(Boolean).map((actor) => actor.initialSkillIds),
+    [[1], [2], [3], [4]],
+  );
 }
 
 function testValorArtReadinessLivesOnActorSkillCostHook() {
@@ -334,7 +346,7 @@ function testValorArtPresentationStaysInsideSkillsUi() {
 }
 
 function run() {
-  testCanonicalContentStillDefersCharacterSpecificValorArts();
+  testCanonicalContentDefinesCharacterSpecificValorArts();
   testValorArtReadinessLivesOnActorSkillCostHook();
   testRegularSkillsRemainCostNeutral();
   testValorArtConsumesFullGaugeOnceWhenCommitted();
