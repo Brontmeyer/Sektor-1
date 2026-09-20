@@ -3,9 +3,10 @@
   "name": "Sektor 1 Test Zone",
   "width": 2400,
   "height": 1600,
+
   "playerStart": {
     "x": 600,
-    "y": 400
+    "y": 300
   },
 
   "obstacles": [
@@ -17,33 +18,34 @@
     },
     {
       "x": 200,
-      "y": 50,
+      "y": 0,
       "width": 800,
       "height": 50
     },
     {
-      "x": 950,
-      "y": 50,
+      "x": 1000,
+      "y": 0,
       "width": 50,
-      "height": 500
+      "height": 600
     },
     {
-      "x": 200,
-      "y": 50,
+      "x": 150,
+      "y": 0,
       "width": 50,
-      "height": 500
+      "height": 600
     }
   ],
 
   "transfers": [
     {
-      "x": 565,
-      "y": 150,
-      "width": 100,
-      "height": 100,
+      "x": 550,
+      "y": 50,
+      "width": 150,
+      "height": 150,
+
       "targetMapId": 2,
       "targetX": 600,
-      "targetY": 400
+      "targetY": 300
     }
   ],
 
@@ -52,8 +54,8 @@
       "id": 1,
       "name": "Test NPC",
 
-      "x": 450,
-      "y": 300,
+      "x": 400,
+      "y": 100,
 
       "width": 32,
       "height": 32,
@@ -139,8 +141,8 @@
       "id": 2,
       "name": "Test Chest",
 
-      "x": 750,
-      "y": 300,
+      "x": 400,
+      "y": 200,
 
       "width": 32,
       "height": 32,
@@ -213,40 +215,9 @@
 
     {
       "id": 3,
-      "name": "Battle Tester",
-
-      "x": 550,
-      "y": 300,
-
-      "width": 32,
-      "height": 32,
-
-      "solid": true,
-
-      "pages": [
-        {
-          "conditions": {},
-
-          "commands": [
-            {
-              "code": "battle",
-              "encounterId": 1
-            },
-            {
-              "code": "text",
-              "speaker": "System",
-              "text": "The test encounter has ended."
-            }
-          ]
-        }
-      ]
-    },
-
-    {
-      "id": 4,
       "name": "Test Merchant",
 
-      "x": 650,
+      "x": 400,
       "y": 300,
 
       "width": 32,
@@ -280,11 +251,42 @@
     },
 
     {
+      "id": 4,
+      "name": "Battle Tester",
+
+      "x": 800,
+      "y": 100,
+
+      "width": 32,
+      "height": 32,
+
+      "solid": true,
+
+      "pages": [
+        {
+          "conditions": {},
+
+          "commands": [
+            {
+              "code": "battle",
+              "encounterId": 1
+            },
+            {
+              "code": "text",
+              "speaker": "System",
+              "text": "The test encounter has ended."
+            }
+          ]
+        }
+      ]
+    },
+
+    {
       "id": 5,
       "name": "Boss Battle Tester",
 
-      "x": 850,
-      "y": 300,
+      "x": 800,
+      "y": 200,
 
       "width": 32,
       "height": 32,
@@ -314,7 +316,7 @@
       "id": 6,
       "name": "Back Attack Tester",
 
-      "x": 900,
+      "x": 800,
       "y": 300,
 
       "width": 32,
@@ -345,8 +347,8 @@
       "id": 7,
       "name": "Pincer Tester",
 
-      "x": 950,
-      "y": 300,
+      "x": 800,
+      "y": 400,
 
       "width": 32,
       "height": 32,
