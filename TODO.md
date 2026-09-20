@@ -79,7 +79,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Battle Command Navigation & Side Actions v1
 - [x] Keep the visible command list to Attack / Skills / Magick / Item with temporary Escape-left and Defend-right panels
 - [x] Return target-cancel input to the originating Skills/Magick selector with cursor position preserved
-- [ ] Explore Battle Formation & Party Layout v1 (normal / back attack / pincer)
+- [x] Implement Battle Formation & Party Layout v1 (normal / back attack / pincer)
 - [ ] Explore four-actor Battle HUD & Message Layout refinement
 - [ ] Explore Game Options v1 for battle speed, message speed, and configurable battle cursor memory
 

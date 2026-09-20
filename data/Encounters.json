@@ -14,7 +14,8 @@
         "enemyId": 1,
         "slot": 1
       }
-    ]
+    ],
+    "formation": "normal"
   },
   {
     "_comment": "ID 2: Test Slime Alpha - Phase Boss",
@@ -25,6 +26,53 @@
       {
         "enemyId": 2,
         "slot": 0
+      }
+    ],
+    "formation": "normal"
+  },
+  {
+    "_comment": "ID 3: Slime Pair - Back Attack",
+    "id": 3,
+    "name": "Test Slime Back Attack",
+    "canEscape": true,
+    "formation": "backAttack",
+    "members": [
+      {
+        "enemyId": 1,
+        "slot": 0
+      },
+      {
+        "enemyId": 1,
+        "slot": 1
+      }
+    ]
+  },
+  {
+    "_comment": "ID 4: Slime Pincer",
+    "id": 4,
+    "name": "Test Slime Pincer",
+    "canEscape": true,
+    "formation": "pincer",
+    "members": [
+      {
+        "enemyId": 1,
+        "slot": 0,
+        "side": "left"
+      },
+      {
+        "enemyId": 1,
+        "slot": 1,
+        "side": "left"
+      },
+      {
+        "enemyId": 1,
+        "slot": 0,
+        "side": "right"
+      },
+      {
+        "enemyId": 1,
+        "slot": 1,
+        "side": "right"
       }
     ]
   }

@@ -248,6 +248,20 @@ function testBattleSceneConstructionAndExit() {
       BattleEffects: EmptySystem,
       BattleAnimationController: EmptySystem,
       BattleManager,
+      BattleFormationManager: class {
+        constructor(scene) {
+          this.scene = scene;
+        }
+
+        enemyPosition(index) {
+          const positions = [
+            { x: 900, y: 400 },
+            { x: 800, y: 290 },
+            { x: 920, y: 220 },
+          ];
+          return positions[this.scene.encounter.members[index]?.slot] || positions[0];
+        }
+      },
       BattlePartyController: EmptySystem,
       BattleRenderer: EmptySystem,
       DatabaseManager: { system: { battleView: "side" } },

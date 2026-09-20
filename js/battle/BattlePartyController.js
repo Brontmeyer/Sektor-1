@@ -54,6 +54,10 @@ class BattlePartyController {
   }
 
   battlePosition(index) {
+    if (this.scene.formationManager) {
+      return this.scene.formationManager.partyPosition(index);
+    }
+
     const positions = this.formationPositions();
     const safeIndex = Math.max(0, Math.min(index, positions.length - 1));
 
@@ -61,19 +65,21 @@ class BattlePartyController {
   }
 
   formationPositions() {
+    if (this.scene.formationManager) {
+      return this.scene.formationManager.verticalPartyPositions().map(
+        (position, index) => ({
+          x: this.scene.formationManager.partyPosition(index).x,
+          y: position.y,
+        }),
+      );
+    }
+
     const battlefieldBottom = Graphics.height - 190;
 
     return [
-      // Tyler - upper left
       { x: 400, y: battlefieldBottom - 180 },
-
-      // Sarah - middle left
       { x: 140, y: battlefieldBottom - 180 },
-
-      // Aboo - middle right
       { x: 260, y: battlefieldBottom - 310 },
-
-      // G Prime - lower left/center
       { x: 260, y: battlefieldBottom - 50 },
     ];
   }

@@ -44,6 +44,9 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Skills UI Integration Cleanup v1
 -   ✅ Battle Presentation & Feedback v1
 -   ✅ Battle Command Navigation & Side Actions v1
+-   ✅ Battle Formation & Party Layout v1
+-   ✅ Battle Command Navigation & Side Actions v1
+-   ✅ Battle Formation & Party Layout v1
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
 
@@ -79,6 +82,8 @@ Current battle features include:
 -   ✅ All-target actions
 -   ✅ Ally targeting
 -   ✅ Enemy targeting
+-   ✅ Four-actor vertical battlefield layout with safe sprite scaling
+-   ✅ Normal / Back Attack / Pincer encounter formations
 -   ✅ Battle effects
 -   ✅ Animation controller
 -   ✅ Magick foundation
@@ -100,6 +105,8 @@ Systems currently being expanded include:
 -   ✅ Character-specific Valor Art content v1
 -   ✅ Skills UI Integration Cleanup v1
 -   ✅ Battle Presentation & Feedback v1
+-   ✅ Battle Command Navigation & Side Actions v1
+-   ✅ Battle Formation & Party Layout v1
 
 ------------------------------------------------------------------------
 

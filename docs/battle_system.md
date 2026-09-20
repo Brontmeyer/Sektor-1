@@ -37,9 +37,7 @@ Canonical encounter definitions live in:
 data/Encounters.json
 ```
 
-Each encounter defines its enemy members, formation slots, and whether the
-party may escape. Enemy IDs reference `Enemies.json`; formation slots are
-validated before the game begins.
+Each encounter defines its enemy members, formation slots, optional formation type, and whether the party may escape. Enemy IDs reference `Enemies.json`; formation metadata is validated before the game begins. `normal` and `backAttack` use globally unique enemy slots. `pincer` encounters additionally require every member to declare a `left` or `right` side, with slot uniqueness enforced independently per side.
 
 Map events start an encounter through the `battle` event command and an
 `encounterId`. `Game_Interpreter` delegates that request to
@@ -481,6 +479,22 @@ Defend is a battle action rather than Magick. It is reached through the temporar
 The current physical attack path checks whether the target is defending and reduces incoming basic physical attack damage by 50%.
 
 As battle mechanics expand, any broader Defend interactions should be documented here and implemented in the appropriate shared battle layer.
+
+---
+
+# 🧭 Battle Formations
+
+Battle Formation & Party Layout v1 supports three side-view encounter layouts:
+
+- `normal` - party on the left, enemies on the right
+- `backAttack` - party/enemy sides and facing are mirrored
+- `pincer` - the four-actor party is centered while enemies occupy explicit left/right flanks
+
+`BattleFormationManager` owns this geometry. It places all active party members into a stable four-lane vertical stack, scales the party uniformly only when required by available battlefield height, scales oversized enemies conservatively, and provides the facing/advance direction used by battle animation. Target cursors, effects, and popups resolve their anchors from these same formation positions and scale helpers.
+
+Formation currently changes battlefield geometry, facing, and attack/recoil direction only. It does **not** imply surprise turns, initiative penalties, damage modifiers, accuracy changes, or escape restrictions. Those mechanical rules remain deliberately uncommitted so later encounter design can decide them explicitly instead of hiding them inside rendering code.
+
+Canonical test coverage includes Encounter 3 (`backAttack`) and Encounter 4 (`pincer`), both reachable from Map001 test events for hands-on verification.
 
 ---
 

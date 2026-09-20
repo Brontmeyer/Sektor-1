@@ -47,6 +47,7 @@ Completed engine foundations include:
 - Character Menu Navigation Consistency v1 with shared party-member switching across Skills, Magick, Status, Equipment, and Essence
 - Skills UI Integration Cleanup v1 with first-class battle Skills rendering and bounded shared ability-description layout
 - Battle Presentation & Feedback v1 with encounter/active-turn context, state-sensitive controls, bounded recent battle messages, and target-selection command suppression
+- Battle Formation & Party Layout v1 with four-actor vertical lanes, mirrored back attacks, and left/right pincer flanks
 - Battle Command Navigation & Side Actions v1 with a four-command core list, hidden-on-demand Escape/Defend side panels, and one-level target-cancel restoration
 - Battle Results Screen v1 for visible EXP, Gil, drop, level-up, and Essence progression feedback
 
@@ -499,10 +500,10 @@ The strongest open directions are character/party expansion, long-term Skill and
 
 The road will change as the game teaches us what it needs. That is expected. The important part is that new work now has dependable systems to stand on.
 
-Future battle-presentation directions approved for exploration, not yet locked as final implementations:
+Battle-presentation directions and current status:
 
-- Four-actor battlefield layout refinement with reusable formation slots
-- Normal / back-attack / pincer encounter formation contracts
+- ✅ Four-actor battlefield layout with reusable formation slots and safe sprite scaling
+- ✅ Normal / back-attack / pincer encounter formation contracts
 - Further Battle HUD and top-message layout refinement
 - A separate Options/configuration system for battle speed, message speed, and optional battle cursor memory
 

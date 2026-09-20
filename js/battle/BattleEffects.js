@@ -79,14 +79,18 @@ class BattleEffects {
       enemyX = allyPosition.x + visualX;
 
       enemyY =
-        allyPosition.y + visualY - effect.target.battleSpriteHeight * 0.5 - 35;
+        allyPosition.y +
+        visualY -
+        scene.getActorSpriteHeight(effect.target) * 0.5 -
+        35;
     } else {
       const enemyPosition = scene.getEnemyPosition(effect.target);
       const battleData = scene.getEnemyBattleData(effect.target);
 
       enemyX = enemyPosition.x + (battleData?.visualX || 0);
 
-      enemyY = enemyPosition.y - effect.target.battleSpriteHeight * 0.5;
+      enemyY =
+        enemyPosition.y - scene.getEnemySpriteHeight(effect.target) * 0.5;
     }
     // Strongest in the middle of the effect
     const burst = Math.sin(progress * Math.PI);
@@ -252,7 +256,9 @@ class BattleEffects {
 
       playerX = enemyPosition.x + visualX;
       playerY =
-        enemyPosition.y + visualY - effect.target.battleSpriteHeight * 0.5;
+        enemyPosition.y +
+        visualY -
+        scene.getEnemySpriteHeight(effect.target) * 0.5;
     }
 
     const rise = progress * 70;

@@ -2378,6 +2378,15 @@ class DatabaseValidator {
         errors.push(`Encounter ${index} canEscape must be a boolean.`);
       }
 
+      const formation = encounter.formation || "normal";
+      const validFormations = new Set(["normal", "backAttack", "pincer"]);
+
+      if (!validFormations.has(formation)) {
+        errors.push(
+          `Encounter ${index} formation must be normal, backAttack, or pincer.`,
+        );
+      }
+
       if (!Array.isArray(encounter.members) || encounter.members.length === 0) {
         errors.push(`Encounter ${index} must define at least one member.`);
         continue;
@@ -2398,12 +2407,50 @@ class DatabaseValidator {
           errors.push(`${label} references unknown enemy ID ${member.enemyId}.`);
         }
 
-        if (!Number.isInteger(member.slot) || member.slot < 0 || member.slot > 2) {
+        if (
+          !Number.isInteger(member.slot) ||
+          member.slot < 0 ||
+          member.slot > 2
+        ) {
           errors.push(`${label} slot must be an integer from 0 to 2.`);
-        } else if (slots.has(member.slot)) {
-          errors.push(`Encounter ${index} uses slot ${member.slot} more than once.`);
+        }
+
+        if (formation === "pincer") {
+          if (!["left", "right"].includes(member.side)) {
+            errors.push(
+              `${label} side must be left or right for a pincer formation.`,
+            );
+          } else if (
+            Number.isInteger(member.slot) &&
+            member.slot >= 0 &&
+            member.slot <= 2
+          ) {
+            const slotKey = `${member.side}:${member.slot}`;
+
+            if (slots.has(slotKey)) {
+              errors.push(
+                `Encounter ${index} uses ${member.side} slot ${member.slot} more than once.`,
+              );
+            } else {
+              slots.add(slotKey);
+            }
+          }
         } else {
-          slots.add(member.slot);
+          if (member.side !== undefined) {
+            errors.push(`${label} side is only valid for a pincer formation.`);
+          }
+
+          if (
+            Number.isInteger(member.slot) &&
+            member.slot >= 0 &&
+            member.slot <= 2
+          ) {
+            if (slots.has(member.slot)) {
+              errors.push(`Encounter ${index} uses slot ${member.slot} more than once.`);
+            } else {
+              slots.add(member.slot);
+            }
+          }
         }
       }
     }

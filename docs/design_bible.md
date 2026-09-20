@@ -505,6 +505,8 @@ Sektor 1 currently uses a side-view battle presentation and HTML5 Canvas renderi
 
 Visual and audio identity should reinforce readability first. Players need to understand targets, damage, healing, critical hits, weaknesses, resistances, immunities, status changes, and battle outcomes without fighting the interface.
 
+Side-view formation should preserve that readability with four active actors. The canonical layout foundation uses a stable vertical party stack and reusable `normal`, `backAttack`, and `pincer` encounter formations. Formation determines where battlers stand and face, not hidden combat bonuses. Any future mechanical consequence for a back attack or pincer must be designed explicitly rather than inferred from screen position.
+
 Battle feedback should also make the current interaction state legible without turning presentation into gameplay authority. Encounter context, the active party battler, current control hints, target-selection state, and recent combat messages should reflect the battle state that already exists rather than inventing parallel UI-only rules. Contextual instructions are preferred over permanent test/development wording in normal battle presentation.
 
 The core battle command presentation should stay compact. The persistent list is Attack, Skills, Magick, and Item; Escape and Defend are contextual horizontal side actions that remain hidden until the player deliberately requests them. Back navigation should move one interaction level at a time so choosing a Skill or Magick, entering target selection, and backing out returns to the originating selector instead of discarding navigation context.

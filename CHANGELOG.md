@@ -12,6 +12,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Battle Formation & Party Layout v1 with reusable `normal`, `backAttack`, and `pincer` encounter formation contracts
+- Added `BattleFormationManager` as the single owner of battlefield geometry, four-actor vertical party lanes, formation-aware enemy sides, sprite-facing direction, and safe sprite scaling
+- Added formation-aware actor/enemy movement, target cursors, and effect/pop-up anchoring so mirrored and pincer layouts reuse existing battle systems without hard-coded battler names
+- Added Back Attack and Pincer test encounters plus Map001 testers for hands-on playtesting
+- Added dedicated battle-formation regression coverage for canonical encounter data, four-actor layout/scaling, mirrored facing, pincer side placement, schema validation, and script load order
+
 - Added Battle Command Navigation & Side Actions v1 with a permanent four-command core list: Attack, Skills, Magick, and Item
 - Added temporary Escape-left and Defend-right side command panels that remain invisible until horizontal input requests them, then require normal confirm input before execution
 - Kept boss/non-escapable Escape discoverable but disabled, preserving explicit "You cannot escape!" feedback instead of silently removing the option

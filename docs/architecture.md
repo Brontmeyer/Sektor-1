@@ -286,6 +286,8 @@ It should orchestrate battle systems rather than permanently absorbing every spe
 
 `BattlePartyController` handles battle-facing party coordination and supports the multi-character battle structure. It asks `BattleManager` for the party's scheduled turn-slot queue at the start of each party side round, then advances through those slots while preserving formation order and repeated Haste turns.
 
+`BattleFormationManager` owns side-view battlefield geometry independently from turn order. It resolves the encounter's `normal`, `backAttack`, or `pincer` formation into four stable party lanes and formation-aware enemy positions, computes safe sprite scaling, and exposes facing/advance directions used by rendering and animation. `BattlePartyController` delegates battle-position lookup to this manager instead of embedding actor-specific coordinates. `BattleRenderer`, `BattleEffects`, `BattleTargetManager`, and `BattleAnimationController` consume those shared positions so targeting, effects, cursor anchors, and motion stay aligned when the battlefield is mirrored or split. Formation data does not own target legality or combat formulas.
+
 ## BattleTargetManager
 
 `BattleTargetManager` owns targeting responsibilities such as selecting and resolving valid battle targets. It can also bind an already-resolved battler back into the current ally/enemy selection state, allowing forced targeting to reuse the same downstream attack and Magick execution paths as manual selection.

@@ -308,6 +308,68 @@
           ]
         }
       ]
+    },
+
+    {
+      "id": 6,
+      "name": "Back Attack Tester",
+
+      "x": 900,
+      "y": 300,
+
+      "width": 32,
+      "height": 32,
+
+      "solid": true,
+
+      "pages": [
+        {
+          "conditions": {},
+
+          "commands": [
+            {
+              "code": "battle",
+              "encounterId": 3
+            },
+            {
+              "code": "text",
+              "speaker": "System",
+              "text": "The back-attack test encounter has ended."
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": 7,
+      "name": "Pincer Tester",
+
+      "x": 950,
+      "y": 300,
+
+      "width": 32,
+      "height": 32,
+
+      "solid": true,
+
+      "pages": [
+        {
+          "conditions": {},
+
+          "commands": [
+            {
+              "code": "battle",
+              "encounterId": 4
+            },
+            {
+              "code": "text",
+              "speaker": "System",
+              "text": "The pincer test encounter has ended."
+            }
+          ]
+        }
+      ]
     }
   ]
 }

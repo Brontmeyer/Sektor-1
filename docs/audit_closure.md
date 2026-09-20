@@ -130,6 +130,10 @@ Pass 42 is post-audit feature development and does not reopen a historical findi
 
 Pass 43 is post-audit battle-UI/navigation work and does not reopen a historical finding. The persistent command list is reduced to Attack / Skills / Magick / Item, while Escape and Defend are temporary side-command focus states owned by `Window_BattleCommand`. `Scene_Battle` keeps Escape finalization and hierarchical back-navigation authority, and `BattleManager` keeps Defend/action execution authority. Skill/Magick target cancel reopens the originating selector with its existing cursor position. No persistent player state changes, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Battle Formation & Party Layout v1
+
+Pass 44 is post-audit feature development and does not reopen a historical finding. Encounter formation data now resolves through `BattleFormationManager`, which owns side-view positions, scale, and facing for normal, back-attack, and pincer layouts. Existing targeting, effects, animation, and rendering consume that shared geometry rather than gaining formation-specific combat authority. Formation state is canonical encounter data plus transient presentation geometry, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

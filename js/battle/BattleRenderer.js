@@ -289,7 +289,8 @@ class BattleRenderer {
     const width = actor.battleSpriteWidth;
     const height = actor.battleSpriteHeight;
 
-    const scale = this.scene.getActorVisualScale(actor);
+    const scale = this.scene.getActorRenderScale(actor);
+    const facing = this.scene.getActorFacing(actor);
     const alpha = this.scene.getActorVisualAlpha(actor);
 
     const battleData = this.scene.getPartyBattleData(actor);
@@ -299,9 +300,8 @@ class BattleRenderer {
 
     context.globalAlpha = alpha;
 
-    context.translate(x, y - height / 2);
-
-    context.scale(scale, scale);
+    context.translate(x, y);
+    context.scale(facing * scale, scale);
 
     if (image && image.complete && image.naturalWidth > 0) {
       const state = battleData?.state || "idle";
@@ -332,13 +332,17 @@ class BattleRenderer {
         sourceFrameHeight,
 
         -width / 2,
-        -height / 2,
+        -height,
         width,
         height,
       );
 
       context.restore();
       return;
+    }
+
+    if (facing < 0) {
+      context.scale(-1, 1);
     }
 
     this.drawMissingSpriteFallback(context, width, height, actor.name);
@@ -353,6 +357,8 @@ class BattleRenderer {
 
     const width = enemy.battleSpriteWidth;
     const height = enemy.battleSpriteHeight;
+    const scale = this.scene.getEnemyFormationScale(enemy);
+    const facing = this.scene.getEnemyFacing(enemy);
     const alpha = this.scene.getEnemyVisualAlpha(enemy);
     const image = enemy.battleSprite
       ? this.scene.enemyImages.get(enemy.battleSprite)
@@ -360,7 +366,8 @@ class BattleRenderer {
 
     context.save();
     context.globalAlpha = alpha;
-    context.translate(x, y - height / 2);
+    context.translate(x, y);
+    context.scale(facing * scale, scale);
 
     if (image && image.complete && image.naturalWidth > 0) {
       const frameCount = enemy.battleSpriteFrames || 1;
@@ -383,7 +390,7 @@ class BattleRenderer {
         sourceFrameWidth,
         sourceFrameHeight,
         -width / 2,
-        -height / 2,
+        -height,
         width,
         height,
       );
@@ -391,6 +398,10 @@ class BattleRenderer {
       context.restore();
       this.drawStatusIndicator(context, enemy, x, y + 18);
       return;
+    }
+
+    if (facing < 0) {
+      context.scale(-1, 1);
     }
 
     this.drawMissingSpriteFallback(context, width, height, enemy.name);
@@ -401,13 +412,18 @@ class BattleRenderer {
   drawMissingSpriteFallback(context, width, height, name) {
     context.strokeStyle = "#ffffff";
     context.lineWidth = 3;
-    context.strokeRect(-width / 2, -height / 2, width, height);
+    context.strokeRect(-width / 2, -height, width, height);
 
     context.fillStyle = "#ffffff";
     context.font = "14px sans-serif";
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillText(name || "Missing Sprite", 0, 0, Math.max(0, width - 10));
+    context.fillText(
+      name || "Missing Sprite",
+      0,
+      -height / 2,
+      Math.max(0, width - 10),
+    );
   }
 
   drawStatusIndicator(context, battler, x, y, maxEntries = 2) {
@@ -455,10 +471,10 @@ class BattleRenderer {
 
       if ($gameParty.battleMembers().includes(target)) {
         position = this.scene.getAllyPosition(target);
-        offsetY = -120;
+        offsetY = -this.scene.getActorSpriteHeight(target) * 0.7;
       } else if (this.scene.enemies.includes(target)) {
         position = this.scene.getEnemyPosition(target);
-        offsetY = -80;
+        offsetY = -this.scene.getEnemySpriteHeight(target) * 0.7;
       }
 
       if (!position) {
@@ -641,7 +657,8 @@ class BattleRenderer {
 
         for (const ally of allies) {
           const position = this.scene.getAllyPosition(ally);
-          context.fillText("▼", position.x, position.y - 160);
+          const height = this.scene.getActorSpriteHeight(ally);
+          context.fillText("▼", position.x, position.y - height - 18);
         }
       } else {
         const selectableEnemies = new Set(
@@ -656,8 +673,9 @@ class BattleRenderer {
           }
 
           const position = this.scene.getEnemyBattlePosition(i);
+          const height = this.scene.getEnemySpriteHeight(enemy);
 
-          context.fillText("▼", position.x, position.y - 110);
+          context.fillText("▼", position.x, position.y - height - 18);
         }
       }
 
@@ -677,15 +695,18 @@ class BattleRenderer {
         this.scene.selectedAllyIndex,
       );
 
+      const ally =
+        this.scene.getBattlePartyMembers()[this.scene.selectedAllyIndex];
       x = position.x;
-      y = position.y - 160;
+      y = position.y - this.scene.getActorSpriteHeight(ally) - 18;
     } else {
       const position = this.scene.getEnemyBattlePosition(
         this.scene.selectedEnemyIndex,
       );
 
+      const enemy = this.scene.enemies[this.scene.selectedEnemyIndex];
       x = position.x;
-      y = position.y - 110;
+      y = position.y - this.scene.getEnemySpriteHeight(enemy) - 18;
     }
 
     context.fillText("▼", x, y);

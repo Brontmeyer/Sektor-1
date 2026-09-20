@@ -140,11 +140,12 @@ class BattleAnimationController {
     }
 
     let targetX = 0;
+    const direction = scene.formationManager.enemyAdvanceDirection(enemy);
 
     if (battleData.state === "attack") {
-      targetX = -35;
+      targetX = 35 * direction;
     } else if (battleData.state === "hurt") {
-      targetX = 18;
+      targetX = -18 * direction;
     }
 
     battleData.visualX = scene.moveToward(
@@ -290,26 +291,30 @@ class BattleAnimationController {
     const scene = this.scene;
 
     // Attack movement is controlled by action phases.
+    const activeActor = scene.partyController.currentBattler();
+    const direction = activeActor
+      ? scene.formationManager.actorAdvanceDirection(activeActor)
+      : 1;
+
     if (scene.actionPhase === "lunge") {
-      return 45;
+      return 45 * direction;
     }
 
     if (scene.actionPhase === "hit") {
-      return 45;
+      return 45 * direction;
     }
 
     if (scene.actionPhase === "return") {
       return 0;
     }
 
-    const activeActor = scene.partyController.currentBattler();
     const activeActorData = activeActor
       ? scene.getPartyBattleData(activeActor)
       : null;
 
     // Hurt recoil takes priority over command positioning.
     if (activeActorData?.state === "hurt") {
-      return -18;
+      return -18 * direction;
     }
 
     // Active battler stands slightly forward while choosing a command.
@@ -319,7 +324,7 @@ class BattleAnimationController {
       scene.actionPhase === "none" &&
       (!activeActorData || activeActorData.state === "idle")
     ) {
-      return 18;
+      return 18 * direction;
     }
 
     return 0;

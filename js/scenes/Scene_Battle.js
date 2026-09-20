@@ -103,6 +103,7 @@ class Scene_Battle extends Scene_Base {
     this.battleEffects = new BattleEffects(this);
     this.animationController = new BattleAnimationController(this);
     this.battleManager = new BattleManager(this);
+    this.formationManager = new BattleFormationManager(this);
     this.partyController = new BattlePartyController(this);
     this.renderer = new BattleRenderer(this);
 
@@ -688,24 +689,53 @@ class Scene_Battle extends Scene_Base {
   }
 
   getEnemyBattlePosition(index) {
-    const positions = [
-      {
-        x: Graphics.width * 0.9,
-        y: 400,
-      },
-      {
-        x: Graphics.width * 0.8,
-        y: 290,
-      },
-      {
-        x: Graphics.width * 0.92,
-        y: 220,
-      },
-    ];
+    return this.formationManager.enemyPosition(index);
+  }
 
-    const slot = this.encounter.members[index]?.slot;
+  getFormationType() {
+    return this.formationManager.formation();
+  }
 
-    return positions[slot] || positions[0];
+  getActorFormationScale(actor) {
+    return this.formationManager.partyScale(actor);
+  }
+
+  getActorRenderScale(actor) {
+    return this.getActorFormationScale(actor) * this.getActorVisualScale(actor);
+  }
+
+  getEnemyFormationScale(enemy) {
+    if (this.battleView === "front") {
+      return 1;
+    }
+
+    return this.formationManager.enemyScale(enemy);
+  }
+
+  getActorSpriteHeight(actor) {
+    return (
+      (Number(actor?.battleSpriteHeight) || 0) *
+      this.getActorFormationScale(actor)
+    );
+  }
+
+  getEnemySpriteHeight(enemy) {
+    return (
+      (Number(enemy?.battleSpriteHeight) || 0) *
+      this.getEnemyFormationScale(enemy)
+    );
+  }
+
+  getActorFacing(actor) {
+    return this.formationManager.actorFacing(actor);
+  }
+
+  getEnemyFacing(enemy) {
+    if (this.battleView === "front") {
+      return 1;
+    }
+
+    return this.formationManager.enemyFacing(enemy);
   }
 
   getEnemyPosition(enemy) {
