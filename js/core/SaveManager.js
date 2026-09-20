@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 7;
+    return 8;
   }
 
   static clearError() {
@@ -73,6 +73,9 @@ class SaveManager {
               : Array.isArray(source.skills)
                 ? source.skills
                 : [];
+            const skillIds = Array.isArray(source.skillIds)
+              ? source.skillIds
+              : [];
             const legacyEssences = Array.isArray(source.essences)
               ? source.essences
               : [];
@@ -104,6 +107,7 @@ class SaveManager {
                 Number.isInteger(accessoryId) && accessoryId > 0 ? accessoryId : 0,
               valor: Number.isFinite(valor) && valor >= 0 ? valor : 0,
               magickIds,
+              skillIds,
               essenceProgress,
               equippedEssenceIds,
             };
@@ -124,7 +128,7 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if ([6, 5, 4, 3, 2].includes(inferredVersion)) {
+    if ([7, 6, 5, 4, 3, 2].includes(inferredVersion)) {
       return upgradeToCurrent(saveData);
     }
 
@@ -236,6 +240,31 @@ class SaveManager {
 
         if (actorData.magickIds !== undefined && !Array.isArray(actorData.magickIds)) {
           errors.push(`Actor ${actorId} magickIds must be an array.`);
+        }
+
+        if (actorData.skillIds !== undefined && !Array.isArray(actorData.skillIds)) {
+          errors.push(`Actor ${actorId} skillIds must be an array.`);
+        } else if (Array.isArray(actorData.skillIds)) {
+          const seenSkillIds = new Set();
+
+          for (const rawSkillId of actorData.skillIds) {
+            const skillId = Number(rawSkillId);
+
+            if (
+              !Number.isInteger(skillId) ||
+              skillId <= 0 ||
+              !DatabaseManager.skill?.(skillId)
+            ) {
+              errors.push(`Actor ${actorId} references unknown Skill ${rawSkillId}.`);
+              continue;
+            }
+
+            if (seenSkillIds.has(skillId)) {
+              errors.push(`Actor ${actorId} stores Skill ${skillId} more than once.`);
+            }
+
+            seenSkillIds.add(skillId);
+          }
         }
 
         if (
@@ -450,6 +479,7 @@ class SaveManager {
       accessoryId: actor.accessoryId,
       valor: actor.valor,
       magickIds: [...actor.magickIds],
+      skillIds: [...actor.skillIds],
       statuses:
         typeof actor.persistentStatusState === "function"
           ? actor.persistentStatusState()
@@ -530,6 +560,21 @@ class SaveManager {
                 Number.isInteger(magickId) &&
                 magickId > 0 &&
                 DatabaseManager.magick(magickId),
+            ),
+        ),
+      ];
+    }
+
+    if (Array.isArray(actorData.skillIds)) {
+      actor.skillIds = [
+        ...new Set(
+          actorData.skillIds
+            .map((skillId) => Number(skillId))
+            .filter(
+              (skillId) =>
+                Number.isInteger(skillId) &&
+                skillId > 0 &&
+                DatabaseManager.skill?.(skillId),
             ),
         ),
       ];

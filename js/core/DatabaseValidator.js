@@ -15,6 +15,7 @@ class DatabaseValidator {
       ["Armors", database.armors],
       ["Accessories", database.accessories],
       ["Magick", database.magickData],
+      ["Skills", database.skills],
       ["Essences", database.essences],
       ["Statuses", database.statuses],
     ]) {
@@ -22,7 +23,12 @@ class DatabaseValidator {
     }
 
     this.validateMapInfos(database.mapInfos, errors);
-    this.validateActors(database.actors, errors, database.magickData);
+    this.validateActors(
+      database.actors,
+      errors,
+      database.magickData,
+      database.skills,
+    );
     this.validateEnemies(
       database.enemies,
       database.items,
@@ -33,6 +39,7 @@ class DatabaseValidator {
     this.validateWeapons(database.weapons, errors);
     this.validateArmors(database.armors, errors);
     this.validateAccessories(database.accessories, errors);
+    this.validateSkills(database.skills, errors);
     this.validateMagick(database.magickData, database.statuses, errors);
     this.validateStatuses(database.statuses, errors);
     this.validateEssences(
@@ -988,7 +995,7 @@ class DatabaseValidator {
     }
   }
 
-  static validateActors(actors, errors, magick = null) {
+  static validateActors(actors, errors, magick = null, skills = null) {
     if (!Array.isArray(actors)) {
       return;
     }
@@ -1050,6 +1057,29 @@ class DatabaseValidator {
 
           if (Array.isArray(magick) && !magick[magickId]) {
             errors.push(`${label} initialMagickIds references unknown magick ID ${magickId}.`);
+          }
+        }
+      }
+
+      if (!Array.isArray(actor.initialSkillIds)) {
+        errors.push(`${label} initialSkillIds must be an array.`);
+      } else {
+        const seenSkillIds = new Set();
+
+        for (const skillId of actor.initialSkillIds) {
+          if (!Number.isInteger(skillId) || skillId <= 0) {
+            errors.push(`${label} initialSkillIds entries must be positive integers.`);
+            continue;
+          }
+
+          if (seenSkillIds.has(skillId)) {
+            errors.push(`${label} initialSkillIds must not contain duplicate skill ID ${skillId}.`);
+          }
+
+          seenSkillIds.add(skillId);
+
+          if (Array.isArray(skills) && !skills[skillId]) {
+            errors.push(`${label} initialSkillIds references unknown skill ID ${skillId}.`);
           }
         }
       }
@@ -1477,6 +1507,89 @@ class DatabaseValidator {
           errors,
           { min: 0 },
         );
+      }
+    }
+  }
+
+  static validateSkills(skills, errors) {
+    if (!Array.isArray(skills)) {
+      return;
+    }
+
+    const validTargets = new Set(["self", "ally", "enemy"]);
+    const validScopes = new Set(["single", "all"]);
+
+    for (let index = 1; index < skills.length; index++) {
+      const skill = skills[index];
+
+      if (!skill) {
+        continue;
+      }
+
+      const label = `Skill ${index}`;
+
+      this.validateKnownKeys(
+        label,
+        skill,
+        [
+          "_comment",
+          "id",
+          "name",
+          "description",
+          "type",
+          "category",
+          "effect",
+          "powerMultiplier",
+          "target",
+          "scope",
+        ],
+        errors,
+      );
+
+      if (skill.type !== "skill") {
+        errors.push(`${label} type must be "skill".`);
+      }
+
+      if (skill.category !== "physical") {
+        errors.push(`${label} category must be "physical" in Skills Runtime v1.`);
+      }
+
+      if (skill.effect !== "damage") {
+        errors.push(`${label} effect must be "damage" in Skills Runtime v1.`);
+      }
+
+      this.validateFiniteNumber(
+        `${label} powerMultiplier`,
+        skill.powerMultiplier,
+        errors,
+        { min: Number.MIN_VALUE },
+      );
+
+      if (!Array.isArray(skill.target) || skill.target.length === 0) {
+        errors.push(`${label} target must be a non-empty array.`);
+      } else {
+        for (const target of skill.target) {
+          if (!validTargets.has(target)) {
+            errors.push(`${label} target has unsupported value "${target}".`);
+          }
+        }
+      }
+
+      if (!Array.isArray(skill.scope) || skill.scope.length === 0) {
+        errors.push(`${label} scope must be a non-empty array.`);
+      } else {
+        for (const scope of skill.scope) {
+          if (!validScopes.has(scope)) {
+            errors.push(`${label} scope has unsupported value "${scope}".`);
+          }
+        }
+      }
+
+      if (
+        skill.description !== undefined &&
+        typeof skill.description !== "string"
+      ) {
+        errors.push(`${label} description must be a string when provided.`);
       }
     }
   }

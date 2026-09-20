@@ -105,7 +105,17 @@ Valor represents a character's ability to turn battle pressure into decisive pot
 
 Valor should reward surviving danger rather than merely waiting. Actual direct HP loss builds the gauge in proportion to the percentage of Max HP lost. Fury accelerates that response, Sadness suppresses it, and Near-Death intensifies it. These interactions make emotional and critical states part of the same pressure-response language without hard-coding individual status names into the gauge.
 
-A full Valor gauge means the actor is **Valor Ready**. Future character-specific **Valor Arts** will consume that readiness through the Skills side of the combat vocabulary, but their exact techniques, unlock rules, costs, and targeting are intentionally not canonical yet.
+A full Valor gauge means the actor is **Valor Ready**. Future character-specific **Valor Arts** will consume that readiness through the established Skills side of the combat vocabulary, but their exact techniques, unlock rules, costs, and targeting are intentionally not canonical yet.
+
+---
+
+# 🥋 Skills Identity
+
+Skills represent deliberate non-Magick techniques: physical, technical, tactical, or character-specific actions that should not inherit spell identity merely because they are selectable battle abilities. The namespace is intentionally separate from Essence-linked Magick.
+
+Skills Runtime v1 establishes that identity before populating the catalog. `data/Skills.json` therefore begins content-neutral, and current actors begin with no starter Skills. The first runtime vocabulary supports data-driven physical-damage techniques with reusable targeting and power multipliers, but it does not imply that every future Skill must deal damage or remain cost-free. New effects and resource models should be added only when actual Skill designs require them.
+
+**Valor Arts** belong here. They should become special character-specific Skills that consume Valor readiness through the existing Valor API rather than spawning a third unrelated ability engine.
 
 ---
 
@@ -122,7 +132,7 @@ Indirect Magick
 Advanced Magick
 ```
 
-Summon Magick is a future Magick category. **Skills** is reserved for future non-Magick techniques, including future Valor Arts.
+Summon Magick is a future Magick category. **Skills** is the separate non-Magick technique namespace, including the future home of Valor Arts.
 
 The Magick system should support:
 

@@ -40,17 +40,18 @@ Completed engine foundations include:
 - Turn queue
 - Multi-character turns
 - Data-driven actor collection ownership with explicit party/leader context
-- Save / Load with version-aware multi-actor Save Runtime v7, persistent Valor / Gil / accessory equipment / slot-aware Essence state, and v1-v6 migration
+- Save / Load with version-aware multi-actor Save Runtime v8, persistent learned Skills / Valor / Gil / accessory equipment / slot-aware Essence state, and v1-v7 migration
 - Equipment system with Weapon, Armor, and Accessory slots
 - Inventory system
 - Shops & Gil Spending v1 with canonical-price purchases for items and conventional equipment
-- Character Menu Navigation Consistency v1 with shared party-member switching across Magick, Status, Equipment, and Essence
+- Character Menu Navigation Consistency v1 with shared party-member switching across Skills, Magick, Status, Equipment, and Essence
 - Battle Results Screen v1 for visible EXP, Gil, drop, level-up, and Essence progression feedback
 
 Completed canonical battle-data foundations include:
 
 - `Magick.json` v1
 - 54 initial Magick abilities
+- Skills Runtime v1 with separate `Skills.json`, actor ownership, battle execution, menu presentation, and v8 persistence
 - Restore Magick
 - Attack Magick
 - Indirect Magick
@@ -125,7 +126,7 @@ Status Runtime is complete when the engine can load the canonical status databas
 
 Magick v1 already defines the initial 54 abilities, but some mechanics still depend on systems that are unfinished.
 
-**Terminology boundary:** Magick is the current Essence-linked supernatural ability system. **Skills** is reserved for future non-Magick techniques and does not yet have a canonical runtime or database.
+**Terminology boundary:** Magick is the Essence-linked supernatural ability system. **Skills** is now the separate canonical non-Magick technique namespace. Skills Runtime v1 provides its database, actor ownership, battle/menu entry points, physical-damage execution contract, targeting, and persistence without reusing Magick state or MP rules.
 
 The current `Magick.json` runtime vocabulary is now connected through reusable execution paths: power-based damage/healing, status application/removal, revival, Gravity current-HP damage, percentage healing, multi-hit/random-per-hit casting, Retreat escape, and Banish all execute without Magick-name patches. Ally-specific status chances, target resistance/immunity, per-target reflection, defeated-target selection, revival HP percentages, scope-dependent power, and one-cost multi-target / multi-hit casting all flow through shared rules.
 
@@ -138,7 +139,7 @@ Primary remaining work includes:
 
 The initial Magick System is runtime-complete when all 54 current Magick abilities can execute their intended mechanics without requiring name-specific patches for behavior that should be reusable.
 
-Summon Magick remains later Magick design work and is not required to complete the initial 54-ability Magick runtime. The separate **Skills** namespace is reserved for future non-Magick techniques, including future Valor Arts.
+Summon Magick remains later Magick design work and is not required to complete the initial 54-ability Magick runtime. The separate **Skills** namespace is active as a runtime foundation; canonical Skill content, broader effects, resource rules, and future Valor Arts remain later design work.
 
 ---
 
@@ -304,8 +305,10 @@ Essence Evolution is complete when established recipes and rules can be discover
 
 Several major battle systems are deliberately being left until the core runtime is mature enough to support them cleanly.
 
-Primary candidates include:
+The base Skills runtime now exists, so advanced work can build on it rather than creating another action engine. Primary candidates include:
 
+- Canonical Skill content and progression rules
+- Expanded reusable Skill effects/resources
 - Summon Magick
 - Valor Arts
 - Dual Techs

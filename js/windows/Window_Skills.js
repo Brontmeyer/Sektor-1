@@ -1,0 +1,168 @@
+"use strict";
+
+class Window_Skills {
+  constructor(source) {
+    this.actorNavigation = new Window_ActorNavigator(source);
+    this.visible = false;
+    this.index = 0;
+
+    this.width = 500;
+    this.height = 420;
+    this.padding = 24;
+    this.itemHeight = 40;
+    this.listViewport = new Window_ListViewport(5);
+
+    this.x = (Graphics.width - this.width) / 2;
+    this.y = (Graphics.height - this.height) / 2;
+  }
+
+  get actor() {
+    return this.actorNavigation.actor();
+  }
+
+  skillList() {
+    if (!this.actor || typeof this.actor.knownSkills !== "function") {
+      return [];
+    }
+
+    return this.actor.knownSkills().filter((skill) => skill?.type === "skill");
+  }
+
+  currentSkill() {
+    return this.skillList()[this.index] || null;
+  }
+
+  onActorChanged() {
+    this.index = 0;
+    this.listViewport.reset(this.index, this.skillList().length);
+  }
+
+  update() {
+    if (!this.visible) {
+      return;
+    }
+
+    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+      this.hide();
+      return;
+    }
+
+    if (this.actorNavigation.update()) {
+      this.onActorChanged();
+      return;
+    }
+
+    const skills = this.skillList();
+
+    if (skills.length === 0) {
+      return;
+    }
+
+    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+      this.index = (this.index - 1 + skills.length) % skills.length;
+    }
+
+    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+      this.index = (this.index + 1) % skills.length;
+    }
+
+    this.listViewport.ensureVisible(this.index, skills.length);
+  }
+
+  show() {
+    this.visible = true;
+    this.index = 0;
+    this.listViewport.reset(this.index, this.skillList().length);
+  }
+
+  hide() {
+    this.visible = false;
+  }
+
+  isOpen() {
+    return this.visible;
+  }
+
+  drawScrollIndicators(context, totalEntries) {
+    context.save();
+    context.fillStyle = "#ffffff";
+    context.font = "16px sans-serif";
+    context.textAlign = "right";
+
+    if (this.listViewport.hasPrevious()) {
+      context.fillText("▲", this.x + this.width - 8, this.y + 105);
+    }
+
+    if (this.listViewport.hasNext(totalEntries)) {
+      context.fillText("▼", this.x + this.width - 8, this.y + 285);
+    }
+
+    context.restore();
+  }
+
+  draw() {
+    if (!this.visible) {
+      return;
+    }
+
+    const context = Graphics.context;
+    const skills = this.skillList();
+
+    context.save();
+    context.fillStyle = "rgba(0, 0, 0, 0.95)";
+    context.fillRect(this.x, this.y, this.width, this.height);
+    context.strokeStyle = "#ffffff";
+    context.lineWidth = 2;
+    context.strokeRect(this.x, this.y, this.width, this.height);
+
+    this.actorNavigation.drawHeader(
+      context,
+      "Skills",
+      this.x,
+      this.y,
+      this.width,
+      this.padding,
+    );
+
+    context.fillStyle = "#ffffff";
+    context.font = "22px sans-serif";
+    context.textAlign = "left";
+    context.textBaseline = "alphabetic";
+
+    if (skills.length === 0) {
+      context.fillText("(No skills)", this.x + this.padding, this.y + 105);
+      context.restore();
+      return;
+    }
+
+    const range = this.listViewport.visibleRange(this.index, skills.length);
+    let drawY = this.y + 105;
+
+    for (let i = range.start; i < range.end; i++) {
+      const skill = skills[i];
+      const prefix = i === this.index ? "▶ " : "   ";
+      context.fillText(`${prefix}${skill.name}`, this.x + this.padding, drawY);
+      drawY += this.itemHeight;
+    }
+
+    this.drawScrollIndicators(context, skills.length);
+
+    const skill = this.currentSkill();
+
+    if (skill) {
+      context.font = "18px sans-serif";
+      context.fillText(
+        skill.description || "",
+        this.x + this.padding,
+        this.y + this.height - 60,
+      );
+      context.fillText(
+        `Category: ${skill.category || "other"}`,
+        this.x + this.padding,
+        this.y + this.height - 30,
+      );
+    }
+
+    context.restore();
+  }
+}

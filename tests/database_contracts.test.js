@@ -39,6 +39,7 @@ function projectDatabase() {
     armors: readData("Armors.json"),
     accessories: readData("Accessories.json"),
     magickData: readData("Magick.json"),
+    skills: readData("Skills.json"),
     essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),
   };
@@ -166,6 +167,40 @@ function testMagickRuntimeMetadataContracts() {
   assert.equal(errors.some((error) => error.includes("unknown status key")), true);
 }
 
+
+function testSkillsRuntimeMetadataContracts() {
+  const DatabaseValidator = loadValidator();
+  const skills = [
+    null,
+    {
+      id: 1,
+      name: "Test Technique",
+      description: "Test-only physical technique.",
+      type: "skill",
+      category: "physical",
+      effect: "damage",
+      powerMultiplier: 1.5,
+      target: ["enemy"],
+      scope: ["single"],
+    },
+  ];
+  const errors = [];
+
+  assert.equal(DatabaseValidator.validateSkills(skills, errors), undefined);
+  assert.deepEqual(errors, []);
+
+  const invalid = clone(skills);
+  invalid[1].type = "magick";
+  invalid[1].powerMultiplier = 0;
+  invalid[1].target = ["somewhere"];
+  const invalidErrors = [];
+  DatabaseValidator.validateSkills(invalid, invalidErrors);
+
+  assert.equal(invalidErrors.some((error) => error.includes('type must be "skill"')), true);
+  assert.equal(invalidErrors.some((error) => error.includes("powerMultiplier")), true);
+  assert.equal(invalidErrors.some((error) => error.includes("unsupported value")), true);
+}
+
 function testStatusNestedSchemaRejectsUnknownAndMalformedFields() {
   const DatabaseValidator = loadValidator();
   const statuses = clone(readData("Statuses.json"));
@@ -221,6 +256,7 @@ function run() {
   testEnemyElementRateAndSpriteContracts();
   testItemAndEquipmentContracts();
   testMagickRuntimeMetadataContracts();
+  testSkillsRuntimeMetadataContracts();
   testStatusNestedSchemaRejectsUnknownAndMalformedFields();
   testEssenceProgressionAndReferencesAreValidated();
 

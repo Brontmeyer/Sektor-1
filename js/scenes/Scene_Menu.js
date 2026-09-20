@@ -14,6 +14,7 @@ class Scene_Menu extends Scene_Base {
     this.saveSlotsWindow = new Window_SaveSlots();
 
     this.magickWindow = new Window_Magick($gameParty);
+    this.skillsWindow = new Window_Skills($gameParty);
     this.essenceWindow = new Window_Essence($gameParty);
 
     this.saveMessage = "";
@@ -105,6 +106,15 @@ class Scene_Menu extends Scene_Base {
       return;
     }
 
+    // ================================
+    // SKILLS WINDOW
+    // ================================
+
+    if (this.skillsWindow.isOpen()) {
+      this.skillsWindow.update();
+      return;
+    }
+
     // =====================================
     // ESSENCE OPEN
     // =====================================
@@ -166,6 +176,11 @@ class Scene_Menu extends Scene_Base {
 
         case "Magick":
           this.magickWindow.show();
+
+          break;
+
+        case "Skills":
+          this.skillsWindow.show();
 
           break;
 
@@ -232,6 +247,8 @@ class Scene_Menu extends Scene_Base {
       this.inventoryWindow.draw();
     } else if (this.magickWindow.isOpen()) {
       this.magickWindow.draw();
+    } else if (this.skillsWindow.isOpen()) {
+      this.skillsWindow.draw();
     } else if (this.essenceWindow.isOpen()) {
       this.essenceWindow.draw();
     } else if (this.statusWindow.isOpen()) {

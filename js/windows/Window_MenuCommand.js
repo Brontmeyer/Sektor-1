@@ -7,6 +7,7 @@ class Window_MenuCommand {
     this.commands = [
       "Items",
       "Magick",
+      "Skills",
       "Essence",
       "Status",
       "Equipment",

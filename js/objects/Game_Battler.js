@@ -366,6 +366,20 @@ class Game_Battler {
     return this.canUseBattleAction(magickType);
   }
 
+  canUseSkillDefinition(skill) {
+    if (!skill || typeof skill !== "object") {
+      return false;
+    }
+
+    const skillType = this.normalizedActionKey(skill.type);
+
+    if (skillType !== "skill") {
+      return false;
+    }
+
+    return this.canUseBattleAction(skillType);
+  }
+
   physicalDamageMultiplier() {
     return Math.max(0, this.statusEffectMultiplier("physicalDamageMultiplier"));
   }
@@ -928,6 +942,29 @@ class Game_Battler {
     }
 
     return visible.join(", ");
+  }
+
+  // =====================================
+  // Shared Skill Legality
+  // =====================================
+
+  canUseSkill(skillId) {
+    const skill = DatabaseManager.skill?.(skillId) || null;
+
+    if (!skill) {
+      return false;
+    }
+
+    if (typeof this.knowsSkill === "function" && !this.knowsSkill(skillId)) {
+      return false;
+    }
+
+    return this.canUseSkillDefinition(skill);
+  }
+
+  skillPowerMultiplier(skill) {
+    const multiplier = Number(skill?.powerMultiplier);
+    return Number.isFinite(multiplier) && multiplier > 0 ? multiplier : 1;
   }
 
   // =====================================
@@ -1506,6 +1543,35 @@ class Game_Battler {
     const side = this.battleSideType();
     const targetSide = target.battleSideType();
     return side !== null && targetSide !== null && targetSide !== side;
+  }
+
+  isValidSkillTarget(skill, target) {
+    if (!skill || !target) {
+      return false;
+    }
+
+    const allowedTargets = Array.isArray(skill.target) ? skill.target : [];
+    let targetGroupAllowed = allowedTargets.length === 0;
+
+    if (allowedTargets.includes("self") && target === this) {
+      targetGroupAllowed = true;
+    }
+
+    if (allowedTargets.includes("ally") && this.isSameBattleSide(target)) {
+      targetGroupAllowed = true;
+    }
+
+    if (allowedTargets.includes("enemy") && this.isOpposingBattleSide(target)) {
+      targetGroupAllowed = true;
+    }
+
+    if (!targetGroupAllowed) {
+      return false;
+    }
+
+    return typeof target.isDefeated === "function"
+      ? !target.isDefeated()
+      : !(typeof target.isDead === "function" && target.isDead());
   }
 
   isValidMagickTarget(magick, target) {

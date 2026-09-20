@@ -46,6 +46,7 @@ class Scene_Battle extends Scene_Base {
     this.loadBattleSprites();
     this.commandWindow = new Window_BattleCommand(this);
     this.magickWindow = new Window_BattleMagick(this);
+    this.skillsWindow = new Window_BattleSkills(this);
     this.itemWindow = new Window_BattleItem();
     this.resultsWindow = new Window_BattleResults(this);
 
@@ -87,6 +88,10 @@ class Scene_Battle extends Scene_Base {
     this.actionPhaseTimer = 0;
     this.pendingAttackDamage = false;
     this.pendingAttackTarget = null;
+
+    // PENDING SKILL ACTION
+    this.pendingSkill = null;
+    this.pendingSkillTarget = null;
 
     // PENDING MAGIC ACTION
     this.pendingMagick = null;
@@ -160,27 +165,31 @@ class Scene_Battle extends Scene_Base {
     // -----------------------------
 
     if (this.selectingEnemyTarget) {
-      if (this.enemyTargetAction === "magick" && Input.isTriggered("KeyR")) {
-        const magick = this.pendingMagick;
+      if (
+        ["magick", "skill"].includes(this.enemyTargetAction) &&
+        Input.isTriggered("KeyR")
+      ) {
+        const definition = this.pendingSkill || this.pendingMagick;
 
-        if (magick) {
-          this.targetManager.toggleScope(magick);
+        if (definition) {
+          this.targetManager.toggleScope(definition);
         }
       }
 
       if (this.targetGroup === "enemy" && this.targetScope === "single") {
         if (Input.isTriggered("KeyA") || Input.isTriggered("ArrowLeft")) {
-          const magick = this.pendingMagick;
+          const definition = this.pendingSkill || this.pendingMagick;
 
           const canSwitchToAlly =
             this.enemyTargetAction === "attack" ||
-            (magick && this.targetManager.canTargetGroup(magick, "ally"));
+            (definition &&
+              this.targetManager.canTargetGroup(definition, "ally"));
 
           if (canSwitchToAlly) {
             this.targetGroup = "ally";
 
-            if (magick) {
-              this.targetManager.selectFrontSelectableAlly(magick);
+            if (definition) {
+              this.targetManager.selectFrontSelectableAlly(definition);
             } else {
               this.targetManager.selectFrontLivingAlly();
             }
@@ -225,17 +234,18 @@ class Scene_Battle extends Scene_Base {
           const moved = this.targetManager.moveSpatialSelection("ally", 1, 0);
 
           if (!moved) {
-            const magick = this.pendingMagick;
+            const definition = this.pendingSkill || this.pendingMagick;
 
             const canSwitchToEnemy =
               this.enemyTargetAction === "attack" ||
-              (magick && this.targetManager.canTargetGroup(magick, "enemy"));
+              (definition &&
+                this.targetManager.canTargetGroup(definition, "enemy"));
 
             if (canSwitchToEnemy) {
               this.targetGroup = "enemy";
 
-              if (magick) {
-                this.targetManager.selectFrontSelectableEnemy(magick);
+              if (definition) {
+                this.targetManager.selectFrontSelectableEnemy(definition);
               } else {
                 this.targetManager.selectFrontLivingEnemy();
               }
@@ -259,6 +269,15 @@ class Scene_Battle extends Scene_Base {
           if (this.enemyTargetAction === "attack") {
             this.enemyTargetAction = null;
             this.performAttack();
+          } else if (this.enemyTargetAction === "skill") {
+            this.enemyTargetAction = null;
+            const skill = this.pendingSkill;
+            if (skill) {
+              this.pendingSkillTarget = target;
+              this.battleInputLocked = true;
+              this.setActorState("attack", 0.7);
+              this.setActionPhase("skillUse", 0.25);
+            }
           } else if (this.enemyTargetAction === "magick") {
             this.enemyTargetAction = null;
 
@@ -280,6 +299,8 @@ class Scene_Battle extends Scene_Base {
       if (Input.isTriggered("KeyQ") || Input.isTriggered("Escape")) {
         this.selectingEnemyTarget = false;
         this.enemyTargetAction = null;
+        this.pendingSkill = null;
+        this.pendingSkillTarget = null;
         this.pendingMagick = null;
         this.targetGroup = "enemy";
         this.targetScope = "single";
@@ -305,6 +326,23 @@ class Scene_Battle extends Scene_Base {
         this.executeItem();
       }
 
+      return;
+    }
+
+    // -----------------------------
+    // HANDLE SKILLS WINDOW INPUT
+    // -----------------------------
+
+    if (this.skillsWindow.isOpen()) {
+      this.skillsWindow.update();
+      if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+        this.skillsWindow.hide();
+        return;
+      }
+
+      if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+        this.executeSkill();
+      }
       return;
     }
 
@@ -676,6 +714,10 @@ class Scene_Battle extends Scene_Base {
     return this.battleManager.performAttackHit();
   }
 
+  performSkillEffect() {
+    return this.battleManager.performSkillEffect();
+  }
+
   performMagickEffect() {
     return this.battleManager.performMagickEffect();
   }
@@ -690,6 +732,10 @@ class Scene_Battle extends Scene_Base {
 
   executeCommand() {
     return this.battleManager.executeCommand();
+  }
+
+  executeSkill() {
+    return this.battleManager.executeSkill();
   }
 
   executeMagick() {

@@ -12,6 +12,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Skills Runtime v1 as Sektor 1's canonical non-Magick technique foundation, with a separate `data/Skills.json` database and actor-owned `initialSkillIds` / `skillIds` state
+- Added validated physical-damage Skill metadata (`powerMultiplier`, target groups, and single/all scope) while intentionally leaving the canonical Skills catalog content-neutral until actual techniques are designed
+- Added shared Skill legality and target validation on `Game_Battler`, reusing existing action restrictions and the established physical hit/damage/status/defeat/Valor pipeline instead of creating parallel combat rules
+- Added battle and field Skills windows, shared actor navigation in the character menu, and battle command availability based on learned usable Skills
+- Added Save Runtime v8 with learned-Skill persistence plus v1-v7 migration, preserving the historical pre-Pass-29 `skills` save field solely as the legacy bridge into `magickIds`
+- Added dedicated Skills runtime regression coverage and evolved the Magick terminology guard so canonical non-Magick Skills can coexist with the old-save Magick migration contract
 - Added Valor Runtime v1 as Sektor 1's original pressure-response battle resource, replacing the earlier placeholder Limit terminology
 - Added actor-owned, data-driven Valor capacity and gauge state with damage-based generation, ready-state detection, capped gain, and full-gauge consumption APIs
 - Added Valor gain through the shared incoming-damage hook so actual resolved HP loss drives the gauge while nullified, absorbed, and lethal damage do not generate Valor

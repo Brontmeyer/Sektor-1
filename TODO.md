@@ -5,6 +5,7 @@ This file tracks unfinished development work only.
 Canonical game data belongs in the appropriate database files:
 - `data/Accessories.json`
 - `data/Magick.json`
+- `data/Skills.json`
 - `data/Essences.json`
 - `data/Statuses.json`
 
@@ -122,11 +123,16 @@ Completed systems and design rules should be documented rather than duplicated h
 
 ---
 
-# 🥋 Skills (Future Non-Magick Techniques)
+# 🥋 Skills
 
-- [ ] Define the canonical Skills data model for non-Magick techniques
-- [ ] Define Skills costs/resources and battle execution rules
-- [ ] Design Valor Arts within the future Skills namespace
+- [x] Define the canonical Skills Runtime v1 data model for non-Magick physical techniques
+- [x] Implement actor-owned Skill learning/forgetting and independent `skillIds` persistence
+- [x] Implement battle Skill targeting/execution through shared action restrictions and the physical-damage pipeline
+- [x] Add battle and field Skills windows with shared character-menu navigation
+- [ ] Define Skills costs/resources beyond the current cost-neutral v1 foundation
+- [ ] Expand Skills beyond physical-damage techniques when approved designs require new reusable effects
+- [ ] Add enemy Skill actions when canonical enemy techniques are designed
+- [ ] Design Valor Arts within the Skills namespace
 
 ---
 
@@ -174,7 +180,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v7 with persistent Valor, accessory inventory/equipment, slot-aware Essence progression persistence, and v1-v6 migration
+- [x] Save Runtime v8 with persistent learned Skills, Valor, accessory inventory/equipment, slot-aware Essence progression persistence, and v1-v7 migration
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies
@@ -183,7 +189,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Accessories Equipment v1
 - [x] Inventory system
 - [x] Shops / Gil Spending v1
-- [x] Standardize left/right party-member navigation in Magick, Status, Equipment, and Essence menus
+- [x] Standardize left/right party-member navigation in Skills, Magick, Status, Equipment, and Essence menus
 - [x] Complete status runtime
 - [ ] Complete Essence runtime
 - [x] Enemy Actions & AI v1

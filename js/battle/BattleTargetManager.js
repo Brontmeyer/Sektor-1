@@ -16,28 +16,28 @@ class BattleTargetManager {
   // Scope and Target Management
   // =================================
 
-  allowedScopes(magick) {
-    if (!magick) {
+  allowedScopes(definition) {
+    if (!definition) {
       return ["single"];
     }
 
-    if (Array.isArray(magick.scope)) {
-      return magick.scope;
+    if (Array.isArray(definition.scope)) {
+      return definition.scope;
     }
 
-    if (typeof magick.scope === "string") {
-      return [magick.scope];
+    if (typeof definition.scope === "string") {
+      return [definition.scope];
     }
 
     return ["single"];
   }
 
-  canUseScope(magick, scope) {
-    return this.allowedScopes(magick).includes(scope);
+  canUseScope(definition, scope) {
+    return this.allowedScopes(definition).includes(scope);
   }
 
-  toggleScope(magick) {
-    const scopes = this.allowedScopes(magick);
+  toggleScope(definition) {
+    const scopes = this.allowedScopes(definition);
 
     if (scopes.length <= 1) {
       this.scene.targetScope = scopes[0] || "single";
@@ -53,24 +53,37 @@ class BattleTargetManager {
     return this.scene.targetScope;
   }
 
-  allowedTargetGroups(magick) {
-    if (!magick) {
+  allowedTargetGroups(definition) {
+    if (!definition) {
       return ["enemy"];
     }
 
-    if (Array.isArray(magick.target)) {
-      return magick.target;
+    const targets = Array.isArray(definition.target)
+      ? definition.target
+      : typeof definition.target === "string"
+        ? [definition.target]
+        : [];
+    const groups = [];
+
+    for (const target of targets) {
+      // Self-targeted actions use the ally-side selector, while target validity
+      // still restricts the legal battler to the caster itself.
+      const group = target === "self" ? "ally" : target;
+
+      if (["ally", "enemy"].includes(group) && !groups.includes(group)) {
+        groups.push(group);
+      }
     }
 
-    if (typeof magick.target === "string") {
-      return [magick.target];
-    }
-
-    return ["enemy"];
+    return groups.length > 0 ? groups : ["enemy"];
   }
 
-  canTargetGroup(magick, group) {
-    return this.allowedTargetGroups(magick).includes(group);
+  canTargetGroup(definition, group) {
+    return this.allowedTargetGroups(definition).includes(group);
+  }
+
+  currentActionDefinition() {
+    return this.scene.pendingSkill || this.scene.pendingMagick || null;
   }
 
   currentMagick() {
@@ -81,16 +94,20 @@ class BattleTargetManager {
     return this.scene?.partyController?.currentBattler?.() || null;
   }
 
-  isSelectableTarget(battler, magick = this.currentMagick()) {
+  isSelectableTarget(battler, definition = this.currentActionDefinition()) {
     if (!battler) {
       return false;
     }
 
-    if (magick) {
+    if (definition) {
       const caster = this.currentCaster();
 
-      if (caster && typeof caster.isValidMagickTarget === "function") {
-        return caster.isValidMagickTarget(magick, battler);
+      if (definition.type === "skill" && caster?.isValidSkillTarget) {
+        return caster.isValidSkillTarget(definition, battler);
+      }
+
+      if (definition.type === "magick" && caster?.isValidMagickTarget) {
+        return caster.isValidMagickTarget(definition, battler);
       }
     }
 
@@ -101,11 +118,13 @@ class BattleTargetManager {
     return !(typeof battler.isDead === "function" && battler.isDead());
   }
 
-  selectableBattlers(group, magick = this.currentMagick()) {
+  selectableBattlers(group, definition = this.currentActionDefinition()) {
     const battlers =
       group === "ally" ? $gameParty.battleMembers() : this.scene.enemies;
 
-    return battlers.filter((battler) => this.isSelectableTarget(battler, magick));
+    return battlers.filter((battler) =>
+      this.isSelectableTarget(battler, definition),
+    );
   }
 
   selectBattler(target) {
@@ -258,10 +277,10 @@ class BattleTargetManager {
   // Target Selection
   // =================================
 
-  selectFirstSelectableEnemy(magick = this.currentMagick()) {
+  selectFirstSelectableEnemy(definition = this.currentActionDefinition()) {
     const { enemies } = this.scene;
     const index = enemies.findIndex((enemy) =>
-      this.isSelectableTarget(enemy, magick),
+      this.isSelectableTarget(enemy, definition),
     );
 
     if (index < 0) {
@@ -272,10 +291,10 @@ class BattleTargetManager {
     return enemies[index];
   }
 
-  selectFirstSelectableAlly(magick = this.currentMagick()) {
+  selectFirstSelectableAlly(definition = this.currentActionDefinition()) {
     const allies = $gameParty.battleMembers();
     const index = allies.findIndex((ally) =>
-      this.isSelectableTarget(ally, magick),
+      this.isSelectableTarget(ally, definition),
     );
 
     if (index < 0) {
@@ -294,12 +313,12 @@ class BattleTargetManager {
     return this.selectFirstSelectableAlly(null);
   }
 
-  selectFrontSelectableAlly(magick = this.currentMagick()) {
+  selectFrontSelectableAlly(definition = this.currentActionDefinition()) {
     const allies = $gameParty.battleMembers();
     const enemy = this.getSelectedEnemy();
 
     if (!enemy) {
-      return this.selectFirstSelectableAlly(magick);
+      return this.selectFirstSelectableAlly(definition);
     }
 
     const enemyPosition = this.scene.getEnemyPosition(enemy);
@@ -310,7 +329,7 @@ class BattleTargetManager {
     for (let i = 0; i < allies.length; i++) {
       const ally = allies[i];
 
-      if (!this.isSelectableTarget(ally, magick)) {
+      if (!this.isSelectableTarget(ally, definition)) {
         continue;
       }
 
@@ -334,12 +353,12 @@ class BattleTargetManager {
     return allies[bestIndex];
   }
 
-  selectFrontSelectableEnemy(magick = this.currentMagick()) {
+  selectFrontSelectableEnemy(definition = this.currentActionDefinition()) {
     const enemies = this.scene.enemies;
     const ally = this.getSelectedAlly();
 
     if (!ally) {
-      return this.selectFirstSelectableEnemy(magick);
+      return this.selectFirstSelectableEnemy(definition);
     }
 
     const allyPosition = this.scene.getAllyPosition(ally);
@@ -350,7 +369,7 @@ class BattleTargetManager {
     for (let i = 0; i < enemies.length; i++) {
       const enemy = enemies[i];
 
-      if (!this.isSelectableTarget(enemy, magick)) {
+      if (!this.isSelectableTarget(enemy, definition)) {
         continue;
       }
 

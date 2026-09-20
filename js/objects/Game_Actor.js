@@ -30,6 +30,9 @@ class Game_Actor extends Game_Battler {
     this.magickIds = Array.isArray(actorData.initialMagickIds)
       ? [...actorData.initialMagickIds]
       : [];
+    this.skillIds = Array.isArray(actorData.initialSkillIds)
+      ? [...actorData.initialSkillIds]
+      : [];
 
     // Essence progression belongs to the actor, while equipment slots only
     // reference those persistent runtime instances. This keeps Resonance intact
@@ -486,6 +489,51 @@ class Game_Actor extends Game_Battler {
     return this.magickIds
       .map((magickId) => DatabaseManager.magick(magickId))
       .filter((magick) => magick !== null);
+  }
+
+
+  // =====================================
+  // Skill Management
+  // =====================================
+
+  learnSkill(skillId) {
+    const id = Number(skillId);
+
+    if (!Number.isInteger(id) || id <= 0 || !DatabaseManager.skill(id)) {
+      console.warn(`Cannot learn skill ${skillId}: skill does not exist.`);
+      return false;
+    }
+
+    if (this.knowsSkill(id)) {
+      return false;
+    }
+
+    this.skillIds.push(id);
+    DebugManager.log(`${this.name} learned ${DatabaseManager.skillName(id)}.`);
+    return true;
+  }
+
+  forgetSkill(skillId) {
+    const id = Number(skillId);
+    const index = this.skillIds.indexOf(id);
+
+    if (index === -1) {
+      return false;
+    }
+
+    this.skillIds.splice(index, 1);
+    DebugManager.log(`${this.name} forgot ${DatabaseManager.skillName(id)}.`);
+    return true;
+  }
+
+  knowsSkill(skillId) {
+    return this.skillIds.includes(Number(skillId));
+  }
+
+  knownSkills() {
+    return this.skillIds
+      .map((skillId) => DatabaseManager.skill(skillId))
+      .filter((skill) => skill !== null);
   }
 
   // =====================================

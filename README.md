@@ -38,6 +38,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Character Menu Navigation Consistency v1
 -   ✅ Enemy Actions & AI v1
 -   ✅ Valor Runtime v1
+-   ✅ Skills Runtime v1
 
 ------------------------------------------------------------------------
 
@@ -53,7 +54,7 @@ Completed foundations include:
 -   ✅ Party foundation
 -   ✅ Multi-character turn system
 -   ✅ Turn queue
--   ✅ Save / Load (version-aware Save Runtime v7)
+-   ✅ Save / Load (version-aware Save Runtime v8)
 -   ✅ Equipment system (Weapon / Armor / Accessory)
 -   ✅ Inventory system
 
@@ -74,6 +75,7 @@ Current battle features include:
 -   ✅ Battle effects
 -   ✅ Animation controller
 -   ✅ Magick foundation
+-   ✅ Skills Runtime v1 foundation
 -   ✅ Idempotent battle resolution and structured rewards
 -   ✅ Gil, enemy item drops, and Essence Resonance rewards
 
@@ -102,17 +104,21 @@ Magick is data-driven through `data/Magick.json`, allowing battle
 behavior to be expanded without hard-coding individual spells throughout
 the engine.
 
-Summon Magick is a future Magick category. The separate **Skills** namespace is reserved for future non-Magick techniques, including future **Valor Arts** and other non-Magick techniques once their designs are approved.
+Summon Magick is a future Magick category. The separate **Skills** namespace now provides the runtime foundation for non-Magick techniques, including future **Valor Arts**, without reusing Magick ownership, MP costs, or spell terminology.
 
 Combat-stat terminology remains **Magic**, **Magic Attack**, and **Magic Defense**. Those names describe character statistics rather than the Magick ability namespace.
 
 ------------------------------------------------------------------------
 
-# 🥋 Skills (Future Non-Magick Techniques)
+# 🥋 Skills
 
-**Skills** is intentionally reserved for future physical, technical, tactical, or otherwise non-Magick abilities. It does not currently have a canonical database or runtime.
+**Skills Runtime v1** establishes Sektor 1's separate non-Magick technique system. Canonical definitions live in `data/Skills.json`, actors own learned Skill IDs independently from `magickIds`, and battle Skills use the same shared action-restriction and target-selection infrastructure without becoming Magick casts.
 
-This separation keeps Essence-linked supernatural abilities under **Magick** while leaving a clean namespace for future techniques that should not behave like spells. Future **Valor Arts** belong to this non-Magick side of the combat vocabulary.
+The v1 execution vocabulary is deliberately narrow: a Skill can currently define a physical-damage technique through `powerMultiplier`, legal `target` groups (`self`, `ally`, `enemy`), and `scope` (`single`, `all`). Damage reuses the established physical hit, Defense, defending, status-removal, incoming-damage, defeat, and Valor pathways instead of creating a second physical-combat formula.
+
+`data/Skills.json` intentionally begins content-neutral as `[null]`, and current actors begin with empty `initialSkillIds`. Pass 36 defines the architecture before inventing canonical techniques. Skill costs/resources, progression/unlock rules, richer effects, enemy Skill actions, and the first **Valor Arts** remain future design work.
+
+The field Skills window is currently a read-only learned-Skill viewer with the same shared actor navigation used by other character menus. Battle use is available whenever an actor actually knows a usable Skill.
 
 ------------------------------------------------------------------------
 
@@ -120,7 +126,7 @@ This separation keeps Essence-linked supernatural abilities under **Magick** whi
 
 **Valor** is Sektor 1's pressure-response battle resource. Actors build Valor from actual direct HP loss, with the base gain proportional to the percentage of Max HP lost. Fury, Sadness, and Near-Death modify that gain through the shared data-driven `valorGainMultiplier` status contract.
 
-Current actors have a data-driven Max Valor of 100. Valor persists between battles and through Save Runtime v7, caps at the actor's configured maximum, and is shown in both the battle HUD and Status menu. A full gauge becomes **VALOR: READY**.
+Current actors have a data-driven Max Valor of 100. Valor persists between battles and through Save Runtime v8, caps at the actor's configured maximum, and is shown in both the battle HUD and Status menu. A full gauge becomes **VALOR: READY**.
 
 Valor Runtime v1 establishes the gauge, gain rules, persistence, ready state, and consumption API. It does **not** yet define character-specific Valor Arts; those remain future Skills content so their costs, targeting, and progression can be designed deliberately.
 
@@ -153,7 +159,7 @@ Accessories Equipment v1 adds a third conventional equipment slot beside Weapon 
 
 The initial accessory contract supports additive Attack, Defense, Magic Attack, Magic Defense, and Critical bonuses. This keeps the first runtime small while leaving status, elemental, and more specialized accessory effects for later data/runtime extensions.
 
-Save Runtime v7 persists both equipped accessory IDs and party accessory inventory. The existing test chest can award a Power Wrist through the validated accessory event-command path.
+The current Save Runtime v8 persists both equipped accessory IDs and party accessory inventory. The existing test chest can award a Power Wrist through the validated accessory event-command path.
 
 ------------------------------------------------------------------------
 
@@ -179,7 +185,7 @@ The current Test Slime demonstrates the contract with weighted Attack and Ember 
 
 # 👥 Character Menu Navigation
 
-Magick, Status, Equipment, and Essence now share the same party-member navigation contract. Each window receives `Game_Party` context, displays a shared `◀ Actor ▶` header, and uses A/D or left/right to move through the party roster.
+Skills, Magick, Status, Equipment, and Essence now share the same party-member navigation contract. Each window receives `Game_Party` context, displays a shared `◀ Actor ▶` header, and uses A/D or left/right to move through the party roster.
 
 `Window_ActorNavigator` owns the common actor index, wraparound behavior, input interpretation, and header presentation. Individual windows only reset their own local selection state when the active actor changes.
 
@@ -224,6 +230,7 @@ Canonical game data currently includes:
 
 ``` text
 data/Magick.json
+data/Skills.json
 data/Essences.json
 data/Statuses.json
 ```
@@ -320,6 +327,7 @@ continues to grow.
 ### Completed Design Milestones
 
 -   ✅ Magick System v1
+-   ✅ Skills Runtime v1
 -   ✅ Essence System v1
 -   ✅ Status System v1
 

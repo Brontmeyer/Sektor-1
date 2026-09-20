@@ -559,7 +559,11 @@ class BattleManager {
     return Math.max(0, Math.min(100, accuracy * accuracyMultiplier));
   }
 
-  calculatePhysicalDamage(attacker, target, { critical = false } = {}) {
+  calculatePhysicalDamage(
+    attacker,
+    target,
+    { critical = false, powerMultiplier = 1 } = {},
+  ) {
     if (!attacker || !target) {
       return 0;
     }
@@ -570,6 +574,11 @@ class BattleManager {
       typeof target.totalDefense === "function" ? target.totalDefense() : 0;
 
     let damage = Math.max(1, attack - defense);
+    const power = Number(powerMultiplier);
+    damage = Math.max(
+      1,
+      Math.floor(damage * (Number.isFinite(power) && power > 0 ? power : 1)),
+    );
 
     if (critical) {
       damage = Math.max(1, Math.floor(damage * 2));
@@ -1348,6 +1357,23 @@ class BattleManager {
       // MAGIC SEQUENCE
       // =====================================
 
+      case "skillUse":
+        battle.performSkillEffect();
+        battle.setActionPhase("skillEffect", 0.2);
+        break;
+
+      case "skillEffect":
+        battle.setActionPhase("skillRecover", 0.2);
+        break;
+
+      case "skillRecover":
+        battle.setActionPhase("skillWait", 0.2);
+        break;
+
+      case "skillWait":
+        this.finishPartyActionSequence();
+        break;
+
       case "magickCast":
         battle.performMagickEffect();
         battle.setActionPhase("magickEffect", 0.25);
@@ -1488,6 +1514,10 @@ class BattleManager {
         break;
       }
 
+      case "Skills":
+        battle.skillsWindow.show();
+        break;
+
       case "Magick":
         battle.magickWindow.show();
         break;
@@ -1500,6 +1530,107 @@ class BattleManager {
         this.performDefend();
         break;
     }
+  }
+
+  executeSkill() {
+    const battle = this.scene;
+    const battler = this.party().currentBattler();
+    const skill = battle.skillsWindow.currentSkill();
+
+    if (!skill || !battler?.canUseSkill?.(skill.id)) {
+      return;
+    }
+
+    const targetGroups = battle.targetManager.allowedTargetGroups(skill);
+    const scopes = battle.targetManager.allowedScopes(skill);
+
+    if (targetGroups.length === 0) {
+      console.warn(`Skill ${skill.name} has no valid target groups.`);
+      return;
+    }
+
+    battle.pendingSkill = skill;
+    battle.targetScope = scopes.includes("single")
+      ? "single"
+      : scopes[0] || "single";
+
+    // Start on the first allowed group that actually contains a legal target.
+    // Enemy-first matches Attack and Magick while still allowing ally/self
+    // techniques through the same data-driven target contract.
+    const preferredGroups = ["enemy", "ally"].filter((group) =>
+      targetGroups.includes(group),
+    );
+    let selectedTarget = null;
+
+    for (const group of preferredGroups) {
+      battle.targetGroup = group;
+      selectedTarget =
+        group === "enemy"
+          ? battle.targetManager.selectFirstSelectableEnemy(skill)
+          : battle.targetManager.selectFirstSelectableAlly(skill);
+
+      if (selectedTarget) {
+        break;
+      }
+    }
+
+    if (!selectedTarget) {
+      battle.addBattleMessage(`${skill.name} has no valid targets.`);
+      battle.pendingSkill = null;
+      return;
+    }
+
+    // Confuse preserves the selected Skill but takes target selection away
+    // from the player, matching the existing Attack and Magick contract.
+    if (this.battlerForcesRandomTarget(battler)) {
+      if (battle.targetScope === "single") {
+        const candidates = targetGroups.flatMap((group) =>
+          battle.targetManager.selectableBattlers(group, skill),
+        );
+        const target = this.randomBattleTarget(candidates);
+
+        if (!target || !this.selectForcedTarget(target)) {
+          battle.addBattleMessage(`${skill.name} has no valid targets.`);
+          battle.pendingSkill = null;
+          return;
+        }
+
+        battle.pendingSkillTarget = target;
+        battle.addBattleMessage(
+          `${battler.name} is confused and targets ${target.name} with ${skill.name}!`,
+        );
+      } else {
+        const legalGroups = targetGroups.filter(
+          (group) =>
+            battle.targetManager.selectableBattlers(group, skill).length > 0,
+        );
+        const targetGroup = this.randomBattleTarget(legalGroups);
+
+        if (!targetGroup) {
+          battle.addBattleMessage(`${skill.name} has no valid targets.`);
+          battle.pendingSkill = null;
+          return;
+        }
+
+        battle.targetGroup = targetGroup;
+        battle.pendingSkillTarget = null;
+        battle.addBattleMessage(
+          `${battler.name} is confused and targets all ${targetGroup} battlers with ${skill.name}!`,
+        );
+      }
+
+      battle.selectingEnemyTarget = false;
+      battle.enemyTargetAction = null;
+      battle.battleInputLocked = true;
+      battle.setActorState("attack", 0.7);
+      battle.setActionPhase("skillUse", 0.25);
+      battle.skillsWindow.hide();
+      return;
+    }
+
+    battle.enemyTargetAction = "skill";
+    battle.selectingEnemyTarget = true;
+    battle.skillsWindow.hide();
   }
 
   executeMagick() {
@@ -1815,6 +1946,73 @@ class BattleManager {
     }
 
     battle.addBattleMessage(`${battler.name} attacks! ${damageMessage}`);
+  }
+
+  performSkillEffect() {
+    const battle = this.scene;
+    const caster = this.party().currentBattler();
+    const skill = battle.pendingSkill;
+
+    if (!caster || !skill || !caster.canUseSkill?.(skill.id)) {
+      battle.pendingSkill = null;
+      battle.pendingSkillTarget = null;
+      return false;
+    }
+
+    const targets = battle.targetScope === "all"
+      ? battle.targetManager.getCurrentTargets()
+      : [battle.pendingSkillTarget].filter(Boolean);
+    let affected = false;
+
+    for (const target of targets) {
+      if (!caster.isValidSkillTarget?.(skill, target)) continue;
+      const hitChance = this.physicalHitChance(caster);
+      if (Math.random() * 100 >= hitChance) {
+        battle.addBattlePopup(target, "MISS", "miss");
+        battle.addBattleMessage(
+          `${caster.name} uses ${skill.name}! ${caster.name} misses ${target.name}!`,
+        );
+        continue;
+      }
+
+      const result = this.applyPhysicalDamage(caster, target, {
+        powerMultiplier: caster.skillPowerMultiplier?.(skill) ?? 1,
+      });
+      const damage = result.damage;
+
+      battle.addBattlePopup(
+        target,
+        damage > 0 ? `-${damage}` : "BLOCK",
+        damage > 0 ? "damage" : "immune",
+      );
+      battle.addBattleMessage(
+        `${caster.name} uses ${skill.name}! ${target.name} ${
+          damage > 0 ? `takes ${damage} damage!` : "blocks the technique!"
+        }`,
+      );
+
+      if (this.battlerIsDefeated(target)) {
+        if ($gameParty.battleMembers().includes(target)) {
+          battle.setActorState("defeat", 0, target);
+        } else {
+          battle.setEnemyState("defeat", 0, target);
+        }
+      } else if (damage > 0) {
+        if ($gameParty.battleMembers().includes(target)) {
+          battle.setActorState("hurt", 0.3, target);
+        } else {
+          battle.setEnemyState("hurt", 0.3, target);
+        }
+      }
+
+      affected = true;
+    }
+
+    battle.pendingSkill = null;
+    battle.pendingSkillTarget = null;
+    const outcome = this.detectBattleOutcome();
+    if (outcome) this.declareBattleOutcome(outcome);
+    return affected;
   }
 
   performMagickEffect() {

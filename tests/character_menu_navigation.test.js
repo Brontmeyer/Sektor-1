@@ -15,6 +15,7 @@ function createHarness() {
   const armors = readData("Armors.json");
   const accessories = readData("Accessories.json");
   const magick = readData("Magick.json");
+  const skills = readData("Skills.json");
   const essences = readData("Essences.json");
   const statuses = readData("Statuses.json");
 
@@ -24,6 +25,7 @@ function createHarness() {
     armors,
     accessories,
     magick,
+    skills,
     essences,
     statuses,
     actor(id) {
@@ -43,6 +45,12 @@ function createHarness() {
     },
     magickName(id) {
       return magick[id]?.name || `Unknown Magick ${id}`;
+    },
+    skill(id) {
+      return skills[id] || null;
+    },
+    skillName(id) {
+      return skills[id]?.name || `Unknown Skill ${id}`;
     },
     essence(id) {
       return essences[id] || null;
@@ -100,6 +108,7 @@ function createHarness() {
     "js/windows/Window_Equipment.js",
     "js/windows/Window_Essence.js",
     "js/windows/Window_Magick.js",
+    "js/windows/Window_Skills.js",
     "js/windows/Window_Status.js",
   ]
     .map((relativePath) =>
@@ -108,7 +117,7 @@ function createHarness() {
     .join("\n");
 
   vm.runInContext(
-    `${source}\nglobalThis.__classes = { Game_Actor, Game_Party, Window_ActorNavigator, Window_Equipment, Window_Essence, Window_Magick, Window_Status };`,
+    `${source}\nglobalThis.__classes = { Game_Actor, Game_Party, Window_ActorNavigator, Window_Equipment, Window_Essence, Window_Magick, Window_Skills, Window_Status };`,
     context,
   );
 
@@ -119,6 +128,7 @@ function createHarness() {
     Window_Equipment,
     Window_Essence,
     Window_Magick,
+    Window_Skills,
     Window_Status,
   } = context.__classes;
   const partyActors = [1, 2, 3, 4].map((actorId) => new Game_Actor(actorId));
@@ -135,6 +145,7 @@ function createHarness() {
     Window_Equipment,
     Window_Essence,
     Window_Magick,
+    Window_Skills,
     Window_Status,
   };
 }
@@ -179,6 +190,7 @@ function testCharacterMenusShareLeftRightActorNavigation() {
     Window_Equipment,
     Window_Essence,
     Window_Magick,
+    Window_Skills,
     Window_Status,
   } = createHarness();
 
@@ -186,6 +198,17 @@ function testCharacterMenusShareLeftRightActorNavigation() {
     {
       name: "Magick",
       window: new Window_Magick(party),
+      actor: (window) => window.actor,
+      beforeSwitch(window) {
+        window.index = 1;
+      },
+      afterSwitch(window) {
+        assert.equal(window.index, 0);
+      },
+    },
+    {
+      name: "Skills",
+      window: new Window_Skills(party),
       actor: (window) => window.actor,
       beforeSwitch(window) {
         window.index = 1;
@@ -256,6 +279,7 @@ function testSceneMenuPassesPartyContextToAllCharacterMenus() {
 
   for (const constructorName of [
     "Window_Magick",
+    "Window_Skills",
     "Window_Status",
     "Window_Equipment",
     "Window_Essence",
@@ -274,6 +298,7 @@ function testSceneMenuPassesPartyContextToAllCharacterMenus() {
     "Window_Equipment.js",
     "Window_Essence.js",
     "Window_Magick.js",
+    "Window_Skills.js",
     "Window_Status.js",
   ]) {
     assert.equal(

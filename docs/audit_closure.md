@@ -98,6 +98,10 @@ headings.
 | 41 | Battle item drops are not implemented | Fixed | Pass 27 adds validated enemy drop tables, exactly-once victory resolution, aggregation, inventory awards, and structured drop results. |
 | 42 | Battle victories do not award Essence Resonance | Fixed | Pass 27 awards encounter Resonance exactly once to equipped Essences on surviving active battle participants, caps progression at Mastery Ready, reports transitions, and persists equipped Essence state in Save Runtime v3; Pass 29 subsequently migrates that state through Save Runtime v4. |
 
+## Post-Audit Feature Note: Skills Runtime v1
+
+Pass 36 intentionally activates the **Skills** namespace that Pass 29 reserved for future non-Magick techniques. This does not reopen the historical terminology finding: current supernatural abilities remain Magick, current non-Magick techniques use `Skills.json` / `skillIds`, and the old unqualified save field `skills` remains migration-only input for pre-Pass-29 Magick saves. The historical audit stays closed.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

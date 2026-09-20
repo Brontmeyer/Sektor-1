@@ -99,7 +99,15 @@ questRequired
 
 Prefer established project terminology. If the canonical concept is `paralyze`, do not introduce `paralyzed` or `paralysis` as alternate internal names for the same status.
 
-The current Essence-linked supernatural ability system is **Magick**. Use `magick`, `magickId`, `magickIds`, and Magick-named APIs for that system. **Skills** is reserved for future non-Magick techniques and must not be used as an alias for Magick. Combat-stat names such as `magic`, `magicAttack`, and `magicDefense` remain unchanged because they describe statistics rather than the ability namespace.
+The current Essence-linked supernatural ability system is **Magick**. Use `magick`, `magickId`, `magickIds`, and Magick-named APIs for that system. **Skills** is the separate non-Magick technique namespace; use `skill`, `skillId`, `skillIds`, and Skill-named APIs for current Skill state. Never use either namespace as an alias for the other. The bare legacy save key `skills` is retained only inside SaveManager migration code because pre-Pass-29 saves used that name for what is now Magick. New runtime code and new save data must use `skillIds`. Combat-stat names such as `magic`, `magicAttack`, and `magicDefense` remain unchanged because they describe statistics rather than the ability namespace.
+
+---
+
+# 🥋 Skill Data Conventions
+
+Non-Magick Skill content belongs in `data/Skills.json`. Skills Runtime v1 accepts only the physical-damage vocabulary the runtime actually consumes: `type`, `category`, `effect`, `powerMultiplier`, `target`, and `scope` plus identity/description fields. Do not add speculative cost, cooldown, status, or Valor fields until a runtime contract exists for them.
+
+Skill behavior should be expressed through reusable metadata and shared combat helpers. Do not branch on a Skill's display name to decide damage, targeting, or future special behavior when a general data contract can represent the rule.
 
 ---
 
@@ -465,7 +473,7 @@ Use **Valor** as the canonical name for Sektor 1's pressure-response gauge. Do n
 
 Actor capacity belongs in `Actors.json` as the positive-integer `maxValor` field. Runtime gauge state belongs to `Game_Actor`; shared status data may modify gain through `effects.valorGainMultiplier`. The shared damage layer may notify actor-specific systems after resolved damage, but `Game_Battler` must not become the owner of actor Valor state.
 
-Future character-specific Valor actions are referred to as **Valor Arts** and belong to the future non-Magick Skills namespace.
+Future character-specific Valor actions are referred to as **Valor Arts** and belong to the non-Magick Skills namespace.
 
 ---
 

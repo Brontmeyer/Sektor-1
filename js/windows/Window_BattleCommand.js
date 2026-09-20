@@ -3,7 +3,7 @@
 class Window_BattleCommand {
   constructor(scene = null) {
     this.scene = scene;
-    this.commands = ["Attack", "Magick", "Item", "Defend"];
+    this.commands = ["Attack", "Skills", "Magick", "Item", "Defend"];
 
     this.index = 0;
     this.visible = true;
@@ -25,6 +25,7 @@ class Window_BattleCommand {
   commandActionKey(command) {
     const actionKeys = {
       Attack: "attack",
+      Skills: "skill",
       Magick: "magick",
       Item: "item",
       Defend: "defend",
@@ -52,7 +53,17 @@ class Window_BattleCommand {
       return true;
     }
 
-    return actor.canUseBattleAction(actionKey);
+    if (!actor.canUseBattleAction(actionKey)) {
+      return false;
+    }
+
+    if (command === "Skills") {
+      const skills =
+        typeof actor.knownSkills === "function" ? actor.knownSkills() : [];
+      return skills.some((skill) => actor.canUseSkill?.(skill.id));
+    }
+
+    return true;
   }
 
   currentCommand() {

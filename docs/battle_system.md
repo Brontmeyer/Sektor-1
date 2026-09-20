@@ -72,6 +72,9 @@ Examples include:
 Physical Attack
 lunge → hit → return → wait
 
+Skill
+skillUse → skillEffect → skillRecover → skillWait
+
 Magick
 magickCast → magickEffect → magickRecover → magickWait
 
@@ -96,7 +99,8 @@ A battler can own runtime values such as:
 - Battle state
 - Defending state
 - Magick usability
-- Future active status effects and status durations
+- Skill usability and relative target legality
+- Active status effects and status durations
 
 Actor-specific behavior belongs in `Game_Actor`.
 
@@ -112,6 +116,7 @@ The current battle command foundation supports:
 
 ```text
 Attack
+Skills
 Magick
 Item
 Defend
@@ -134,12 +139,13 @@ The battle system currently supports concepts including:
 - Single targets
 - All targets
 - Selection of living targets
-- Magick that permit more than one target group
-- Magick that permit more than one target scope
+- Magick and Skills that permit more than one target group
+- Magick and Skills that permit more than one target scope
+- Self-only Skill targeting through the ally-side selector while only the caster remains legal
 
-Magick data should determine which target groups and scopes are legal.
+Action data should determine which target groups and scopes are legal.
 
-The battle scene and target manager handle the player's current selection. Effect resolution should not redefine the Magick's targeting rules.
+The battle scene and target manager handle the player's current selection. Effect resolution should not redefine an action's targeting rules.
 
 When a Magick permits both allies and enemies, the current Magick command flow prefers the enemy group as the initial selection while still allowing the legal target groups defined by the Magick.
 
@@ -162,6 +168,26 @@ Critical hits currently use a 2× damage multiplier. Critical chance is influenc
 Defending currently reduces incoming basic physical attack damage by 50% while still allowing a minimum of 1 damage in this attack path.
 
 These are current engine rules, not permanent balance promises. If formulas are deliberately rebalanced later, this document should be updated with the engine.
+
+---
+
+# 🥋 Skills
+
+Canonical non-Magick Skill definitions live in:
+
+```text
+data/Skills.json
+```
+
+Skills Runtime v1 establishes a deliberately narrow physical-technique contract. A v1 Skill has `type: "skill"`, `category: "physical"`, `effect: "damage"`, a positive `powerMultiplier`, one or more legal `target` values (`self`, `ally`, `enemy`), and one or more legal scopes (`single`, `all`). The canonical catalog intentionally begins as `[null]`; current actors begin with no learned Skills so the runtime does not invent character content before those designs are approved.
+
+Actor Skill ownership is separate from Magick ownership. `initialSkillIds` seed actor knowledge and runtime `skillIds` are persisted through Save Runtime v8. The old pre-Pass-29 save field named `skills` is not current Skill ownership; it remains migration-only input for historical Magick saves.
+
+Battle Skills reuse existing combat contracts rather than defining a second physical engine. Accuracy comes from the normal physical hit chance, damage starts from the same Attack-versus-Defense formula and applies the Skill's `powerMultiplier`, and resolved damage passes through defending, physical status modifiers, damage-triggered status removal, defeated-state handling, and target-side Valor generation. Skills are not Magick, do not pay MP in v1, and are not reflected by Reflect. Silence therefore does not block a Skill unless a status explicitly restricts the `skill` action type; broader restrictions such as Frog's Attack-only allow list still apply through the shared action contract.
+
+Skills may target self, allies, or enemies according to their data. `self` uses the ally-side selector internally but `Game_Battler.isValidSkillTarget()` restricts the legal target to the acting battler. Confuse removes player target authority for Skills just as it does for Attack and Magick: single-target Skills choose a random legal battler, while all-target Skills choose a random legal target group.
+
+Skills Runtime v1 intentionally does **not** establish canonical Skill content, Skill-specific costs/resources, non-damage effects, enemy Skill actions, progression/unlock rules, or Valor Arts. Those should extend this foundation only when their designs are canonical.
 
 ---
 
@@ -435,7 +461,7 @@ base Valor gain = (actual HP lost / Max HP) × Max Valor
 final Valor gain = base gain × combined valorGainMultiplier
 ```
 
-Current actors define `maxValor: 100` in `Actors.json`. Valor may be fractional internally so many small hits accumulate accurately; the HUD displays whole-number progress. Gauge state is clamped between `0` and `maxValor`, persists outside battle, and is serialized by Save Runtime v7. At full gauge the actor is **Valor Ready**. The runtime exposes a single full-gauge consumption boundary for future Valor Arts, but no Valor Art execution is canonical in v1.
+Current actors define `maxValor: 100` in `Actors.json`. Valor may be fractional internally so many small hits accumulate accurately; the HUD displays whole-number progress. Gauge state is clamped between `0` and `maxValor`, persists outside battle, and is serialized by Save Runtime v8. At full gauge the actor is **Valor Ready**. The runtime exposes a single full-gauge consumption boundary for future Valor Arts, but no Valor Art execution is canonical in v1.
 
 Only actual direct damage routed through `receiveDamage()` generates Valor in v1. Fully nullified damage, absorbed elemental Magick, and damage that defeats the actor generate none. Damage-over-time and other HP changes that bypass the shared direct-damage path also do not generate Valor unless a future design explicitly extends that contract.
 

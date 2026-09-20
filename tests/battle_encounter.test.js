@@ -135,6 +135,7 @@ function testProjectDatabaseValidation() {
     armors: readData("Armors.json"),
     accessories: readData("Accessories.json"),
     magickData: readData("Magick.json"),
+    skills: readData("Skills.json"),
     essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),
   };
@@ -240,6 +241,7 @@ function testBattleSceneConstructionAndExit() {
       Image: class {},
       Window_BattleCommand: EmptySystem,
       Window_BattleMagick: EmptySystem,
+      Window_BattleSkills: EmptySystem,
       Window_BattleItem: EmptySystem,
       Window_BattleResults: EmptySystem,
       BattleTargetManager: EmptySystem,
