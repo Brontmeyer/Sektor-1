@@ -187,14 +187,13 @@ function loadSceneBattlePrototype() {
   return context.__Class.prototype;
 }
 
-function testSideCommandConfirmationUsesExistingEscapeAndDefendPaths() {
+function testSideCommandConfirmationDelegatesEscapeAndDefendPaths() {
   const prototype = loadSceneBattlePrototype();
   let closed = 0;
   let executed = null;
   let finished = null;
-  const messages = [];
+  let escapeAttempt = { allowed: false, success: false };
   const fake = {
-    encounter: { canEscape: false },
     commandWindow: {
       currentCommand: () => "Escape",
       hasSideCommandOpen: () => true,
@@ -202,8 +201,10 @@ function testSideCommandConfirmationUsesExistingEscapeAndDefendPaths() {
         closed++;
       },
     },
-    addBattleMessage(message) {
-      messages.push(message);
+    battleManager: {
+      attemptEscape() {
+        return escapeAttempt;
+      },
     },
     finishBattle(outcome) {
       finished = outcome;
@@ -217,11 +218,10 @@ function testSideCommandConfirmationUsesExistingEscapeAndDefendPaths() {
 
   assert.equal(prototype.confirmCommandSelection.call(fake), false);
   assert.equal(closed, 1);
-  assert.equal(messages.at(-1), "You cannot escape!");
   assert.equal(finished, null);
   assert.equal(executed, null);
 
-  fake.encounter.canEscape = true;
+  escapeAttempt = { allowed: true, success: true };
   assert.equal(prototype.confirmCommandSelection.call(fake), "escape");
   assert.equal(finished, "escape");
 
@@ -371,7 +371,7 @@ function run() {
   testSideCommandsStayHiddenUntilHorizontalInputRequestsThem();
   testSideWindowsAreFlushWithMainCommandTopAndEdges();
   testBossEscapeSideActionRemainsFocusableButDisabled();
-  testSideCommandConfirmationUsesExistingEscapeAndDefendPaths();
+  testSideCommandConfirmationDelegatesEscapeAndDefendPaths();
   testTargetCancelReturnsToOriginatingSelectorWithCursorPreserved();
   testSelectorShowCanPreserveCursorForTargetCancel();
   testMagickAndItemSelectorsAlsoSupportPreservedReopen();

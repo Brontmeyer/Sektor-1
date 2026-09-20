@@ -1398,6 +1398,7 @@ class Game_Battler {
           ? target.receiveDamage(damage, {
               category: "magical",
               element: magick.element,
+              ...(options?.damageContext || {}),
             })
           : null;
 
@@ -1654,6 +1655,16 @@ class Game_Battler {
       return false;
     }
 
+    if (skill.effect === "valor") {
+      if (typeof target.gainValor !== "function") {
+        return false;
+      }
+
+      if (typeof target.isValorReady === "function" && target.isValorReady()) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -1776,7 +1787,15 @@ class Game_Battler {
   // HP Management
   // =====================================
 
-  receiveDamage(amount, { category = "physical", element = null } = {}) {
+  receiveDamage(
+    amount,
+    {
+      category = "physical",
+      element = null,
+      source = null,
+      valorEligible = false,
+    } = {},
+  ) {
     const requestedDamage = this._validAmount(amount);
     const damageMultiplier = this.incomingDamageMultiplier(category);
     const resolvedDamage = Math.max(
@@ -1808,6 +1827,8 @@ class Game_Battler {
         resolvedDamage,
         damageMultiplier,
         removedStatuses: [],
+        source,
+        valorEligible: valorEligible === true,
       };
     }
 
@@ -1831,6 +1852,8 @@ class Game_Battler {
       resolvedDamage,
       damageMultiplier,
       removedStatuses,
+      source,
+      valorEligible: valorEligible === true,
     };
 
     if (damage > 0) {

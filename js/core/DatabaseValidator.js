@@ -1651,7 +1651,7 @@ class DatabaseValidator {
     const validTargets = new Set(["self", "ally", "enemy"]);
     const validScopes = new Set(["single", "all"]);
     const validCategories = new Set(["physical", "support", "control"]);
-    const validEffects = new Set(["damage", "heal", "inflictStatus"]);
+    const validEffects = new Set(["damage", "heal", "inflictStatus", "valor"]);
     const statusKeys = new Set(
       Array.isArray(statuses)
         ? statuses.filter(Boolean).map((status) => status.key)
@@ -1680,6 +1680,7 @@ class DatabaseValidator {
           "effect",
           "powerMultiplier",
           "healPercent",
+          "valorGain",
           "status",
           "valorArt",
           "target",
@@ -1720,6 +1721,17 @@ class DatabaseValidator {
         );
       } else if (skill.healPercent !== undefined) {
         errors.push(`${label} healPercent is only supported by heal Skills.`);
+      }
+
+      if (skill.effect === "valor") {
+        this.validateFiniteNumber(
+          `${label} valorGain`,
+          skill.valorGain,
+          errors,
+          { min: Number.MIN_VALUE },
+        );
+      } else if (skill.valorGain !== undefined) {
+        errors.push(`${label} valorGain is only supported by valor Skills.`);
       }
 
       if (skill.status !== undefined) {

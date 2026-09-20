@@ -107,19 +107,22 @@ function testValorUsesResolvedDamageAndStatusMultipliers() {
   assert.equal(actor.valor, 0);
   assert.equal(actor.valorGainMultiplier(), 1);
 
-  actor.receiveDamage(100, { category: "physical" });
+  actor.receiveDamage(100, { category: "physical", valorEligible: true });
   assert.equal(actor.valor, 20);
 
   actor.recoverAllHp();
   actor.setValor(0);
   actor.addStatus("fury");
-  actor.receiveDamage(100, { category: "physical" });
+  actor.receiveDamage(100, { category: "physical", valorEligible: true });
   assert.equal(actor.valor, 40);
 
   actor.recoverAllHp();
   actor.setValor(0);
   actor.addStatus("sadness");
-  const sadnessDamage = actor.receiveDamage(100, { category: "physical" });
+  const sadnessDamage = actor.receiveDamage(100, {
+    category: "physical",
+    valorEligible: true,
+  });
   assert.equal(sadnessDamage.damage, 70);
   assert.equal(actor.valor, 7);
 }
@@ -132,7 +135,7 @@ function testNearDeathAppliesToTheHitThatTriggersIt() {
   actor.setValor(0);
   assert.equal(actor.hasStatus("nearDeath"), false);
 
-  actor.receiveDamage(20, { category: "physical" });
+  actor.receiveDamage(20, { category: "physical", valorEligible: true });
 
   assert.equal(actor.hp, 110);
   assert.equal(actor.hasStatus("nearDeath"), true);
@@ -145,7 +148,7 @@ function testDefeatAndAbsorptionDoNotGenerateValor() {
 
   actor.setHp(10);
   actor.setValor(0);
-  actor.receiveDamage(100, { category: "physical" });
+  actor.receiveDamage(100, { category: "physical", valorEligible: true });
   assert.equal(actor.isDefeated(), true);
   assert.equal(actor.valor, 0);
 
@@ -155,6 +158,7 @@ function testDefeatAndAbsorptionDoNotGenerateValor() {
   const absorbed = shielded.receiveDamage(100, {
     category: "magical",
     element: "fire",
+    valorEligible: true,
   });
 
   assert.equal(absorbed.absorbed, true);

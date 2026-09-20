@@ -374,12 +374,12 @@ class Scene_Battle extends Scene_Base {
     }
 
     if (command === "Escape") {
-      if (this.encounter.canEscape) {
+      const attempt = this.battleManager.attemptEscape();
+
+      if (attempt?.success) {
         return this.finishBattle(BattleManager.OUTCOME_ESCAPE);
       }
 
-      this.addBattleMessage("You cannot escape!");
-      this.showBattleBanner?.("CANNOT ESCAPE", 0.9);
       return false;
     }
 

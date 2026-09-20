@@ -107,6 +107,10 @@ class Game_Actor extends Game_Battler {
   }
 
   onDamageReceived(result) {
+    if (result?.valorEligible !== true) {
+      return 0;
+    }
+
     return this.gainValorFromDamage(result?.damage ?? 0);
   }
 

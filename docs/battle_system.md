@@ -121,9 +121,9 @@ Item
 
 Battle Command Navigation & Side Actions v1 exposes **Escape** and **Defend** as temporary horizontal side actions rather than permanent rows. Left input from the main command list reveals only the smaller Escape panel; right input reveals only the smaller Defend panel. The opposite side remains invisible. `E` / Enter confirms the focused side action, while `Q` / Escape or movement back toward the center closes it without acting.
 
-Escape remains governed by the encounter's existing `canEscape` contract. A non-escapable encounter can still reveal the Escape side panel, but it is dimmed/disabled and confirming it reports `You cannot escape!`. Defend still resolves through `BattleManager.performDefend()` and the shared action-restriction contract.
+Escape remains governed by the encounter's existing `canEscape` contract, but escapable encounters now use a real roll. `BattleManager.escapeChance()` starts at 45%, adjusts by 2.5 percentage points for each point of living-party average Agility above/below living-enemy average Agility, adds 15 percentage points per previous failed legal attempt, and clamps the final chance to 10-95%. A failed legal attempt consumes the active party battler's turn through the normal turn controller; the retry bonus is battle-local. A non-escapable encounter can still reveal the Escape side panel, but confirming it never rolls or consumes a turn and reports `You cannot escape!`. Retreat Magick remains guaranteed in escapable encounters but respects the same absolute no-escape gate; an impossible Retreat is rejected before casting, so it spends neither MP nor the actor's turn. Defend still resolves through `BattleManager.performDefend()` and the shared action-restriction contract.
 
-`BattleManager` interprets Attack / Skills / Magick / Item / Defend after command confirmation; `Scene_Battle` preserves its existing ownership of battle Escape finalization. Future commands and special character mechanics should extend these boundaries without forcing unrelated command logic into rendering classes.
+`BattleManager` interprets Attack / Skills / Magick / Item / Defend after command confirmation and now owns normal Escape probability/retry rules. `Scene_Battle` owns navigation and the final scene handoff after a successful Escape outcome. Future commands and special character mechanics should extend these boundaries without forcing unrelated command logic into rendering classes.
 
 ---
 
@@ -182,11 +182,11 @@ Canonical non-Magick Skill definitions live in:
 data/Skills.json
 ```
 
-Skills Runtime v1 established the separate non-Magick technique contract, and later passes expanded that same schema without replacing it. Current Skills use `type: "skill"`, a validated `physical` / `support` / `control` category, a `damage` / `heal` / `inflictStatus` effect, one or more legal `target` values (`self`, `ally`, `enemy`), and one or more legal scopes (`single`, `all`). Effect-specific metadata remains narrow: physical damage uses positive `powerMultiplier`, percentage healing uses bounded `healPercent`, and reusable status application uses validated `status` chance maps. The canonical catalog now contains the four starter Valor Arts plus the first enemy technique, Goo Rush.
+Skills Runtime v1 established the separate non-Magick technique contract, and later passes expanded that same schema without replacing it. Current Skills use `type: "skill"`, a validated `physical` / `support` / `control` category, a `damage` / `heal` / `inflictStatus` / `valor` effect, one or more legal `target` values (`self`, `ally`, `enemy`), and one or more legal scopes (`single`, `all`). Effect-specific metadata remains narrow: physical damage uses positive `powerMultiplier`, percentage healing uses bounded `healPercent`, reusable status application uses validated `status` chance maps, and deliberate gauge support uses positive `valorGain`. The canonical catalog now contains the four starter Valor Arts plus the first enemy technique, Goo Rush.
 
 Actor Skill ownership is separate from Magick ownership. `initialSkillIds` seed actor knowledge and runtime `skillIds` are persisted through Save Runtime v9. The old pre-Pass-29 save field named `skills` is not current Skill ownership; it remains migration-only input for historical Magick saves.
 
-Battle Skills reuse existing combat contracts rather than defining a second combat engine. Physical-damage Skills use the normal physical hit chance and Attack-versus-Defense formula with `powerMultiplier`; resolved damage still passes through defending, physical status modifiers, damage-triggered status removal, defeated-state handling, and target-side Valor generation. Percentage-heal Skills use target Max HP through `healPercent`, while status Skills and optional damage-Skill status riders call the shared battler status application/resistance API. Skills are not Magick, do not pay MP by default, and are not reflected by Reflect. Silence therefore does not block a Skill unless a status explicitly restricts the `skill` action type; broader restrictions such as Frog's Attack-only allow list still apply through the shared action contract.
+Battle Skills reuse existing combat contracts rather than defining a second combat engine. Physical-damage Skills use the normal physical hit chance and Attack-versus-Defense formula with `powerMultiplier`; resolved damage still passes through defending, physical status modifiers, damage-triggered status removal, defeated-state handling, and hostile-source Valor eligibility. Percentage-heal Skills use target Max HP through `healPercent`, while status Skills and optional damage-Skill status riders call the shared battler status application/resistance API. Skills are not Magick, do not pay MP by default, and are not reflected by Reflect. Silence therefore does not block a Skill unless a status explicitly restricts the `skill` action type; broader restrictions such as Frog's Attack-only allow list still apply through the shared action contract.
 
 Skills may target self, allies, or enemies according to their data. `self` uses the ally-side selector internally but `Game_Battler.isValidSkillTarget()` restricts the legal target to the acting battler. Healing Skills exclude already-full targets so a full-gauge Art cannot be committed when no healing target exists. Confuse removes player target authority for Skills just as it does for Attack and Magick: single-target Skills choose a random legal battler, while all-target Skills choose a random legal target group.
 
@@ -364,7 +364,7 @@ Death-Sentence applies Death when its countdown expires. Slow-Numb applies Petri
 
 Fury and Sadness are intended to be mutually exclusive. That relationship is an engine interaction rule rather than duplicated inside each status definition.
 
-Fury, Sadness, and Near-Death expose their data-driven Valor modifiers through `Game_Battler.valorGainMultiplier()`. Status Runtime owns only the multiplier contract; actor-owned Valor Runtime consumes it when direct incoming damage generates gauge.
+Fury, Sadness, and Near-Death expose their data-driven Valor modifiers through `Game_Battler.valorGainMultiplier()`. Status Runtime owns only the multiplier contract; actor-owned Valor Runtime consumes it when hostile opposing-side battle-action damage is explicitly marked as Valor-eligible.
 
 Death is a battle defeat state that can be revived. Post-battle processing restores defeated party members to 1 HP after battle rather than encoding that behavior inside the Death status object.
 
@@ -459,7 +459,7 @@ Item effects should ultimately follow the same architectural principle as Magick
 
 # 🔥 Valor
 
-Valor is an actor-owned battle resource generated by surviving direct incoming damage. The base gain is proportional to actual HP lost rather than requested damage:
+Valor is an actor-owned battle resource. Passive generation occurs only when surviving direct damage is explicitly marked as coming from a hostile opposing-side battle action. Self-damage, friendly-fire, and unprovenanced/direct test damage do not generate Valor. The base gain remains proportional to actual HP lost rather than requested damage:
 
 ```text
 base Valor gain = (actual HP lost / Max HP) × Max Valor
@@ -468,7 +468,7 @@ final Valor gain = base gain × combined valorGainMultiplier
 
 Current actors define `maxValor: 100` in `Actors.json`. Valor may be fractional internally so many small hits accumulate accurately; the HUD displays whole-number progress. Gauge state is clamped between `0` and `maxValor`, persists outside battle, and is serialized by Save Runtime v9. At full gauge the actor is **Valor Ready**. Valor Arts Runtime v1 now consumes the existing full-gauge boundary through Skills while leaving gauge state and consumption ownership in `Game_Actor`.
 
-Only actual direct damage routed through `receiveDamage()` generates Valor in v1. Fully nullified damage, absorbed elemental Magick, and damage that defeats the actor generate none. Damage-over-time and other HP changes that bypass the shared direct-damage path also do not generate Valor unless a future design explicitly extends that contract.
+Only actual hostile battle-action damage routed through `receiveDamage()` with `valorEligible: true` generates passive Valor. `BattleManager` derives that flag from the source and target battle sides for physical Attacks/Skills and Magick after reflection resolves. Fully nullified damage, absorbed elemental Magick, self-damage, friendly-fire, and damage that defeats the actor generate none. Damage-over-time and other HP changes that bypass the shared hostile direct-damage path also do not generate Valor. Skills may deliberately raise Valor through the explicit `effect: "valor"` + positive `valorGain` contract; this is not treated as damage.
 
 Derived statuses are updated before Valor is awarded. Therefore a hit that leaves an actor in Near-Death receives the Near-Death multiplier on that same hit. Fury and Near-Death stack multiplicatively, while Sadness remains mutually exclusive with Fury. Because Sadness also reduces incoming damage, it lowers Valor both by reducing actual HP loss and by applying its own `0.5` Valor multiplier.
 

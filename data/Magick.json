@@ -806,10 +806,10 @@
     "scope": ["single"]
   },
   {
-    "_comment": "ID 43: 🏳️ Retreat - Instantly end battle without reward",
+    "_comment": "ID 43: 🏳️ Retreat - Instantly escape from an escapable battle",
     "id": 43,
     "name": "Retreat",
-    "description": "Instantly end battle without reward. Cannot be reflected.",
+    "description": "Instantly escape from an escapable battle without reward. Cannot be reflected.",
     "type": "magick",
     "category": "indirect",
     "element": "none",

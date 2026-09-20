@@ -10,6 +10,12 @@ class BattleManager {
   static OUTCOME_DEFEAT = "defeat";
   static OUTCOME_ESCAPE = "escape";
 
+  static ESCAPE_BASE_CHANCE = 0.45;
+  static ESCAPE_AGILITY_WEIGHT = 0.025;
+  static ESCAPE_RETRY_BONUS = 0.15;
+  static ESCAPE_MIN_CHANCE = 0.1;
+  static ESCAPE_MAX_CHANCE = 0.95;
+
   constructor(scene) {
     this.scene = scene;
 
@@ -40,6 +46,11 @@ class BattleManager {
 
     // Pass 11 - Battle Resolution v1
     this.finalResult = null;
+
+    // Pass 48 - Valor & Escape Rules v1
+    // Escape pressure is battle-local. Every failed legal attempt makes the
+    // next attempt easier, but nothing here belongs in persistent save data.
+    this.escapeFailures = 0;
   }
 
   // =================================
@@ -94,6 +105,100 @@ class BattleManager {
     }
 
     return null;
+  }
+
+  averageAgility(battlers) {
+    const values = (Array.isArray(battlers) ? battlers : [])
+      .filter((battler) => battler && !this.battlerIsDefeated(battler))
+      .map((battler) => Number(battler.agility))
+      .filter((value) => Number.isFinite(value) && value >= 0);
+
+    if (values.length === 0) {
+      return 0;
+    }
+
+    return values.reduce((total, value) => total + value, 0) / values.length;
+  }
+
+  escapeChance() {
+    if (this.scene?.encounter?.canEscape !== true) {
+      return 0;
+    }
+
+    const partyAgility = this.averageAgility($gameParty.livingBattleMembers());
+    const enemyAgility = this.averageAgility(this.scene.enemies);
+    const agilityAdjustment =
+      (partyAgility - enemyAgility) * BattleManager.ESCAPE_AGILITY_WEIGHT;
+    const retryBonus =
+      this.escapeFailures * BattleManager.ESCAPE_RETRY_BONUS;
+
+    const chance = Math.max(
+      BattleManager.ESCAPE_MIN_CHANCE,
+      Math.min(
+        BattleManager.ESCAPE_MAX_CHANCE,
+        BattleManager.ESCAPE_BASE_CHANCE + agilityAdjustment + retryBonus,
+      ),
+    );
+
+    return Math.round(chance * 1000) / 1000;
+  }
+
+  attemptEscape(random = Math.random) {
+    const battle = this.scene;
+
+    if (battle?.encounter?.canEscape !== true) {
+      battle.addBattleMessage("You cannot escape!");
+      battle.showBattleBanner?.("CANNOT ESCAPE", 0.9, "state");
+      return {
+        allowed: false,
+        success: false,
+        chance: 0,
+        failures: this.escapeFailures,
+      };
+    }
+
+    const chance = this.escapeChance();
+    const rawRoll =
+      typeof random === "function" ? Number(random()) : Math.random();
+    const roll = Number.isFinite(rawRoll)
+      ? Math.max(0, Math.min(0.999999999, rawRoll))
+      : 0;
+    const success = roll < chance;
+
+    if (success) {
+      battle.addBattleMessage("The party escapes!");
+      battle.showBattleBanner?.("ESCAPED", 0.9, "state");
+      this.declareBattleOutcome(BattleManager.OUTCOME_ESCAPE);
+
+      return {
+        allowed: true,
+        success: true,
+        chance,
+        roll,
+        failures: this.escapeFailures,
+      };
+    }
+
+    this.escapeFailures++;
+    battle.addBattleMessage("Escape failed!");
+    battle.showBattleBanner?.("ESCAPE FAILED", 0.9, "state");
+
+    // A legal failed attempt spends the active party battler's turn exactly as
+    // Defend does. The normal party controller decides whether another actor
+    // acts next or the enemy round begins.
+    this.endPartyTurn();
+
+    if (!battle.outcome) {
+      this.finishPartyAction();
+    }
+
+    return {
+      allowed: true,
+      success: false,
+      chance,
+      roll,
+      failures: this.escapeFailures,
+    };
   }
 
   finishPartyActionSequence() {
@@ -598,6 +703,17 @@ class BattleManager {
     return damage;
   }
 
+  damageContext(source, target) {
+    const sourceSide = this.battlerSide(source);
+    const targetSide = this.battlerSide(target);
+
+    return {
+      source,
+      valorEligible:
+        sourceSide !== null && targetSide !== null && sourceSide !== targetSide,
+    };
+  }
+
   applyPhysicalDamage(attacker, target, options = {}) {
     const baseDamage = this.calculatePhysicalDamage(attacker, target, options);
     const rearMultiplier =
@@ -613,7 +729,10 @@ class BattleManager {
     let result;
 
     if (typeof target?.receiveDamage === "function") {
-      result = target.receiveDamage(requestedDamage, { category: "physical" });
+      result = target.receiveDamage(requestedDamage, {
+        category: "physical",
+        ...this.damageContext(attacker, target),
+      });
     } else {
       const hpBefore = target?.hp ?? 0;
 
@@ -652,7 +771,10 @@ class BattleManager {
       return "ally";
     }
 
-    if (this.scene.enemies.includes(battler)) {
+    if (
+      Array.isArray(this.scene?.enemies) &&
+      this.scene.enemies.includes(battler)
+    ) {
       return "enemy";
     }
 
@@ -952,6 +1074,12 @@ class BattleManager {
       return false;
     }
 
+    if (battle.encounter?.canEscape !== true) {
+      battle.addBattleMessage("You cannot escape!");
+      battle.showBattleBanner?.("CANNOT ESCAPE", 0.9, "state");
+      return false;
+    }
+
     const success = caster.useMagick(
       magick.id,
       caster,
@@ -1013,7 +1141,10 @@ class BattleManager {
       payCost,
       scope,
       random,
-      { reflected: reflection.reflected },
+      {
+        reflected: reflection.reflected,
+        damageContext: this.damageContext(caster, target),
+      },
     );
 
     if (!success) {
@@ -1666,6 +1797,12 @@ class BattleManager {
       return;
     }
 
+    if (magick.effect === "escape" && battle.encounter?.canEscape !== true) {
+      battle.addBattleMessage("You cannot escape!");
+      battle.showBattleBanner?.("CANNOT ESCAPE", 0.9, "state");
+      return;
+    }
+
     const targetGroups = battle.targetManager.allowedTargetGroups(magick);
     const scopes = battle.targetManager.allowedScopes(magick);
 
@@ -2055,6 +2192,33 @@ class BattleManager {
     return false;
   }
 
+  performSkillValorTarget(caster, skill, target) {
+    const battle = this.scene;
+    const requestedGain = Number(skill?.valorGain);
+
+    if (
+      !target ||
+      typeof target.gainValor !== "function" ||
+      !Number.isFinite(requestedGain) ||
+      requestedGain <= 0
+    ) {
+      return false;
+    }
+
+    const gained = target.gainValor(requestedGain);
+
+    if (gained <= 0) {
+      return false;
+    }
+
+    const displayGain = Math.round(gained * 1000) / 1000;
+    battle.addBattlePopup(target, `+${displayGain} VALOR`, "status");
+    battle.addBattleMessage(
+      `${caster.name} uses ${skill.name}! ${target.name} gains ${displayGain} Valor!`,
+    );
+    return true;
+  }
+
   performSkillStatusTarget(caster, skill, target, random = Math.random) {
     const battle = this.scene;
     const statusResults =
@@ -2097,6 +2261,10 @@ class BattleManager {
 
     if (skill.effect === "inflictStatus") {
       return this.performSkillStatusTarget(caster, skill, target, random);
+    }
+
+    if (skill.effect === "valor") {
+      return this.performSkillValorTarget(caster, skill, target);
     }
 
     console.warn(`Skill ${skill.name} effect "${skill.effect}" is not implemented.`);

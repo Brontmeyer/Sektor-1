@@ -105,7 +105,7 @@ The current Essence-linked supernatural ability system is **Magick**. Use `magic
 
 # 🥋 Skill Data Conventions
 
-Non-Magick Skill content belongs in `data/Skills.json`. The current consumed vocabulary includes `type`, `category`, `effect`, targeting/scope, `powerMultiplier` for physical damage, `healPercent` for percentage healing, `status` chance maps for reusable status application, and `valorArt` for the established Valor cost specialization. Current categories are `physical`, `support`, and `control`; current effects are `damage`, `heal`, and `inflictStatus`. Do not add speculative costs, cooldowns, effect fields, or categories until a runtime contract exists for them.
+Non-Magick Skill content belongs in `data/Skills.json`. The current consumed vocabulary includes `type`, `category`, `effect`, targeting/scope, `powerMultiplier` for physical damage, `healPercent` for percentage healing, `status` chance maps for reusable status application, and `valorArt` for the established Valor cost specialization. Current categories are `physical`, `support`, and `control`; current effects are `damage`, `heal`, `inflictStatus`, and `valor`. The `valor` effect uses positive `valorGain` and must call the actor-owned Valor API rather than simulating damage. Do not add speculative costs, cooldowns, effect fields, or categories until a runtime contract exists for them.
 
 Skill behavior should be expressed through reusable metadata and shared combat helpers. Do not branch on a Skill's display name or owning actor name to decide damage, healing, statuses, targeting, or future special behavior when a general data contract can represent the rule.
 
@@ -264,7 +264,7 @@ Battlefield positions belong to `BattleFormationManager`. Do not hard-code actor
 
 Target navigation belongs to `BattleTargetManager`. Scene input should pass directional intent into the target manager rather than encoding left/right formation assumptions itself. Effective Single/All availability must come from the current legal target bucket, and Pincer All targeting must resolve one flank bucket at a time. Rendering may display the resolved bucket/cursors but must not independently reconstruct which battlers an All action will affect.
 
-Keep command-navigation state separate from action authority. `Window_BattleCommand` may own which core/side command currently has focus and draw temporary side panels, but it must not decide battle outcomes or apply Defend. `Scene_Battle` owns navigation between command/list/target layers and the existing Escape finalization path; `BattleManager` continues to own Defend and other battle-action execution. When canceling a nested target-selection layer, restore the originating selector rather than reconstructing a parallel cursor state in the scene.
+Keep command-navigation state separate from action authority. `Window_BattleCommand` may own which core/side command currently has focus and draw temporary side panels, but it must not decide battle outcomes or apply Defend. `Scene_Battle` owns navigation between command/list/target layers and the final scene handoff after successful Escape; `BattleManager` owns Escape probability/retry rules, Defend, and other battle-action execution. When canceling a nested target-selection layer, restore the originating selector rather than reconstructing a parallel cursor state in the scene.
 
 ---
 
@@ -485,7 +485,7 @@ When adding a new field, define one mechanic clearly rather than creating an amb
 
 Use **Valor** as the canonical name for Sektor 1's pressure-response gauge. Do not introduce `Limit`, `Limit Break`, or parallel gauge terminology in active code or data.
 
-Actor capacity belongs in `Actors.json` as the positive-integer `maxValor` field. Runtime gauge state belongs to `Game_Actor`; shared status data may modify gain through `effects.valorGainMultiplier`. The shared damage layer may notify actor-specific systems after resolved damage, but `Game_Battler` must not become the owner of actor Valor state.
+Actor capacity belongs in `Actors.json` as the positive-integer `maxValor` field. Runtime gauge state belongs to `Game_Actor`; shared status data may modify gain through `effects.valorGainMultiplier`. The shared damage layer may notify actor-specific systems after resolved damage, but `Game_Battler` must not become the owner of actor Valor state. Passive gain requires explicit battle-supplied hostile provenance (`valorEligible`); never infer Valor eligibility from HP loss alone. Deliberate Valor-changing Skills use the explicit Valor effect/API instead.
 
 Character-specific Valor actions are referred to as **Valor Arts** and belong to the non-Magick Skills namespace. Mark the Skill definition with `valorArt: true`; do not add a separate Valor action engine or move Valor state out of `Game_Actor`. Shared Skill execution should use the generic cost hook rather than checking Valor directly.
 

@@ -78,6 +78,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Bound recent battle messages and keep the command window suppressed during target selection
 - [x] Implement Battle Command Navigation & Side Actions v1
 - [x] Keep the visible command list to Attack / Skills / Magick / Item with temporary Escape-left and Defend-right panels
+- [x] Make normal Escape a stat-driven roll; failed legal attempts consume a turn and improve retry chance
+- [x] Keep non-escapable encounters as an absolute no-roll gate, including Retreat Magick
 - [x] Return target-cancel input to the originating Skills/Magick selector with cursor position preserved
 - [x] Implement Battle Formation & Party Layout v1 (normal / back attack / pincer)
 - [x] Implement Battle HUD & Message Layout v1 with four stable actor rows and reusable HUD geometry

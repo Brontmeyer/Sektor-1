@@ -12,6 +12,13 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Valor & Escape Rules v1 so passive Valor reacts only to hostile opposing-side battle-action damage rather than any HP loss
+- Added explicit damage provenance (`source` / `valorEligible`) through the shared damage path so self-damage and friendly-fire cannot accidentally generate Valor
+- Added a reusable Skill `valor` effect with validated positive `valorGain` metadata for future techniques that deliberately manipulate the gauge
+- Added stat-driven Escape attempts: 45% base chance, ±2.5 percentage points per average Agility difference, +15 percentage points after each failed legal attempt, clamped to 10-95%
+- Added turn-cost failure handling for normal Escape attempts while preserving encounter `canEscape` as an absolute no-roll gate
+- Added dedicated Valor/Escape regression coverage for hostile Attack/Magick/Skill gain, self/friendly exclusion, explicit Valor Skills, Escape probability/retries, boss escape blocking, and Retreat no-escape enforcement
+
 - Added Battle Targeting & Scope Navigation v2 with shared four-direction spatial targeting across allies/enemies and formation-aware target buckets
 - Collapsed optional All scope to Single when the current target bucket contains only one legal battler, while preserving intrinsically all-target actions
 - Added pincer flank-aware All targeting so multi-target actions affect only the selected enemy flank and can switch between left/right flanks through normal directional input

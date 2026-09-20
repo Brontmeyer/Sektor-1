@@ -146,6 +146,10 @@ Pass 46 is post-audit battle presentation/formations work and does not reopen a 
 
 Pass 47 is post-audit targeting/navigation work and does not reopen a historical finding. `BattleTargetManager` now owns four-direction spatial movement, effective Single/All scope availability, and formation-aware target buckets. Pincer enemy All targeting resolves against one selected flank at a time, while normal/back-attack targeting retains whole-side All behavior. `BattleRenderer` consumes the resolved target bucket for cursors/hints and battle effect resolution continues to consume `BattleTargetManager.getCurrentTargets()`. No persistent player state changes, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Valor & Escape Rules v1
+
+Pass 48 is post-audit combat-rule refinement and does not reopen a historical finding. Passive Valor now requires hostile opposing-side damage provenance supplied by the battle layer; self/friendly damage no longer fills the gauge, and deliberate Valor Skills use an explicit validated effect. Normal Escape is battle-owned probability with Agility comparison, retry pressure, and turn cost on failure, while `canEscape: false` remains an absolute gate for commands and Retreat Magick. Retry state is battle-local, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:
