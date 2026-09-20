@@ -139,7 +139,8 @@ function testContextualHintsMatchBattleState() {
   assert.doesNotMatch(renderer.battleHint(), /Test Battle/);
 
   scene.encounter.canEscape = false;
-  assert.doesNotMatch(renderer.battleHint(), /Escape/);
+  assert.match(renderer.battleHint(), /Escape/);
+  assert.match(renderer.battleHint(), /Defend/);
 
   scene.selectingEnemyTarget = true;
   scene.enemyTargetAction = "skill";

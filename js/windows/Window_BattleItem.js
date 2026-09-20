@@ -59,10 +59,22 @@ class Window_BattleItem {
     return items[this.index] || null;
   }
 
-  show() {
+  show({ preserveIndex = false } = {}) {
+    const entries = this.items();
+
     this.visible = true;
-    this.index = 0;
-    this.listViewport.reset(this.index, this.items().length);
+
+    if (!preserveIndex) {
+      this.index = 0;
+      this.listViewport.reset(this.index, entries.length);
+      return;
+    }
+
+    this.index = Math.max(
+      0,
+      Math.min(this.index, Math.max(0, entries.length - 1)),
+    );
+    this.listViewport.ensureVisible(this.index, entries.length);
   }
 
   hide() {

@@ -47,6 +47,7 @@ Completed engine foundations include:
 - Character Menu Navigation Consistency v1 with shared party-member switching across Skills, Magick, Status, Equipment, and Essence
 - Skills UI Integration Cleanup v1 with first-class battle Skills rendering and bounded shared ability-description layout
 - Battle Presentation & Feedback v1 with encounter/active-turn context, state-sensitive controls, bounded recent battle messages, and target-selection command suppression
+- Battle Command Navigation & Side Actions v1 with a four-command core list, hidden-on-demand Escape/Defend side panels, and one-level target-cancel restoration
 - Battle Results Screen v1 for visible EXP, Gil, drop, level-up, and Essence progression feedback
 
 Completed canonical battle-data foundations include:
@@ -497,6 +498,13 @@ Sektor 1 now has mature battle foundations for statuses, Magick, enemy decision-
 The strongest open directions are character/party expansion, long-term Skill and Valor Art progression, richer enemy/boss behavior, and world/event systems that can support the content around those mechanics. The exact next pass should come from the current `TODO.md` plus the design priority we deliberately choose at that time.
 
 The road will change as the game teaches us what it needs. That is expected. The important part is that new work now has dependable systems to stand on.
+
+Future battle-presentation directions approved for exploration, not yet locked as final implementations:
+
+- Four-actor battlefield layout refinement with reusable formation slots
+- Normal / back-attack / pincer encounter formation contracts
+- Further Battle HUD and top-message layout refinement
+- A separate Options/configuration system for battle speed, message speed, and optional battle cursor memory
 
 ---
 

@@ -63,10 +63,22 @@ class Window_BattleMagick {
     return magickList[this.index] || null;
   }
 
-  show() {
+  show({ preserveIndex = false } = {}) {
+    const entries = this.magickList();
+
     this.visible = true;
-    this.index = 0;
-    this.listViewport.reset(this.index, this.magickList().length);
+
+    if (!preserveIndex) {
+      this.index = 0;
+      this.listViewport.reset(this.index, entries.length);
+      return;
+    }
+
+    this.index = Math.max(
+      0,
+      Math.min(this.index, Math.max(0, entries.length - 1)),
+    );
+    this.listViewport.ensureVisible(this.index, entries.length);
   }
 
   hide() {

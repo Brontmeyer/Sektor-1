@@ -246,11 +246,17 @@ class BattleRenderer {
       return "Resolving battle...";
     }
 
-    const escapeHint = this.scene.encounter?.canEscape
-      ? "   Q / Esc: Escape"
-      : "";
+    const commandWindow = this.scene.commandWindow;
 
-    return `W / S or ↑ / ↓: Command   E / Enter: Select${escapeHint}`;
+    if (commandWindow?.hasSideCommandOpen?.()) {
+      const command = commandWindow.currentCommand();
+      const enabled = commandWindow.isCommandEnabled?.(command) !== false;
+      const availability = enabled ? "" : " (Unavailable)";
+
+      return `${command}${availability}   E / Enter: Confirm   Q / Esc: Back`;
+    }
+
+    return "W / S or ↑ / ↓: Command   ←: Escape   →: Defend   E / Enter: Select";
   }
 
   drawBattleHint(context) {

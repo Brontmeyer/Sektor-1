@@ -43,6 +43,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Valor Arts Runtime v1
 -   ✅ Skills UI Integration Cleanup v1
 -   ✅ Battle Presentation & Feedback v1
+-   ✅ Battle Command Navigation & Side Actions v1
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
 
@@ -133,6 +134,8 @@ Skills now support the reusable effect vocabulary required by the first canonica
 **Valor Arts Runtime v1** still specializes the same Skills namespace through `valorArt: true`. A Valor Art is usable only while its actor is Valor Ready and spends the existing full gauge exactly once when the action is committed against at least one legal target. Battle and field Skills windows mark Valor Arts with `[VALOR]`; no separate Valor-only command or combat engine exists.
 
 The field Skills window remains a read-only learned-Skill viewer with the same shared actor navigation used by other character menus. Skills UI Integration Cleanup v1 makes the battle selector a first-class rendered battle window, suppresses the command window while that selector is open, and uses shared bounded text layout for long Skills/Magick descriptions in field menus. Enemy Skills & AI Integration v1 now lets enemy action data reference the same canonical Skill records through `skillId`; enemy use still follows the shared Skill legality, targeting, physical damage, healing, and status-effect contracts. Long-term Skill/Valor Art unlock progression, additional effect types, and additional resource models remain future design work.
+
+Battle Command Navigation & Side Actions v1 keeps the visible command list to **Attack / Skills / Magick / Item**. Left input reveals a temporary Escape side panel and right input reveals a temporary Defend side panel; neither exists visually until requested, and confirmation still uses the established Escape/Defend execution paths. Non-escapable encounters leave Escape selectable-but-disabled so confirming it produces explicit cannot-escape feedback. Backing out of Skill or Magick target selection returns one navigation level to the originating selector with that selector's current cursor preserved.
 
 ------------------------------------------------------------------------
 

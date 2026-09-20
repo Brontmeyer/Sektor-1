@@ -112,25 +112,28 @@ Rules that apply equally to both should normally live at the shared battler leve
 
 # 🎮 Player Commands
 
-The current battle command foundation supports:
+The visible battle command foundation contains four persistent commands:
 
 ```text
 Attack
 Skills
 Magick
 Item
-Defend
 ```
 
-`BattleManager` interprets the selected command and begins the appropriate targeting or action sequence.
+Battle Command Navigation & Side Actions v1 exposes **Escape** and **Defend** as temporary horizontal side actions rather than permanent rows. Left input from the main command list reveals only the smaller Escape panel; right input reveals only the smaller Defend panel. The opposite side remains invisible. `E` / Enter confirms the focused side action, while `Q` / Escape or movement back toward the center closes it without acting.
 
-Future commands and special character mechanics should extend this system without forcing unrelated command logic into rendering or UI classes.
+Escape remains governed by the encounter's existing `canEscape` contract. A non-escapable encounter can still reveal the Escape side panel, but it is dimmed/disabled and confirming it reports `You cannot escape!`. Defend still resolves through `BattleManager.performDefend()` and the shared action-restriction contract.
+
+`BattleManager` interprets Attack / Skills / Magick / Item / Defend after command confirmation; `Scene_Battle` preserves its existing ownership of battle Escape finalization. Future commands and special character mechanics should extend these boundaries without forcing unrelated command logic into rendering classes.
 
 ---
 
 # 🎯 Targeting
 
 Targeting is coordinated through `BattleTargetManager`.
+
+Target cancel is hierarchical. Backing out of Attack targeting returns to the main command list. Backing out of Skill or Magick targeting reopens the selector that launched targeting and preserves that selector's current cursor/viewport position. The selector is not globally memorized across separate command entries yet; configurable battle cursor memory remains future Options work.
 
 The battle system currently supports concepts including:
 
@@ -473,7 +476,7 @@ Derived statuses are updated before Valor is awarded. Therefore a hit that leave
 
 # 🛡️ Defend
 
-Defend is a battle command rather than a Magick.
+Defend is a battle action rather than Magick. It is reached through the temporary right-side command panel instead of occupying a permanent row in the four-command list.
 
 The current physical attack path checks whether the target is defending and reduces incoming basic physical attack damage by 50%.
 
@@ -491,7 +494,7 @@ Battle resolution and battle presentation are separate responsibilities.
 
 `BattleRenderer` draws the battle state. Skills, Magick, and Item selectors are treated as one rendered selection-window group so opening any selector suppresses the command window and cannot leave an input-active menu invisible.
 
-Battle Presentation & Feedback v1 extends that same read-only presentation boundary. The battle header names the current encounter and identifies the active party battler while the player owns command flow. Control hints change with battle state: command selection, list selection, target selection, action/enemy resolution, and battle outcome each advertise only their relevant controls. Escape appears only when the encounter's existing `canEscape` contract permits it; presentation does not grant escape authority. The command window also stays hidden while target selection owns input, preventing the underlying command list from reappearing beneath the cursor.
+Battle Presentation & Feedback v1 extends that same read-only presentation boundary. The battle header names the current encounter and identifies the active party battler while the player owns command flow. Control hints change with battle state: command selection, side-action focus, list selection, target selection, action/enemy resolution, and battle outcome each advertise only their relevant controls. The main hint advertises left Escape and right Defend navigation; the Escape side panel itself reflects the encounter's existing `canEscape` contract without granting escape authority. The command window also stays hidden while target selection owns input, preventing the underlying command list from reappearing beneath the cursor.
 
 Recent battle messages are displayed in a bounded feedback panel above the party HUD. The scene still owns the recent-message queue and battle systems still author the message content; `BattleRenderer` only wraps/truncates that content with shared `Window_TextLayout` rules so long feedback cannot spill across the battlefield.
 

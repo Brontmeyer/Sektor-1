@@ -297,13 +297,7 @@ class Scene_Battle extends Scene_Base {
       }
 
       if (Input.isTriggered("KeyQ") || Input.isTriggered("Escape")) {
-        this.selectingEnemyTarget = false;
-        this.enemyTargetAction = null;
-        this.pendingSkill = null;
-        this.pendingSkillTarget = null;
-        this.pendingMagick = null;
-        this.targetGroup = "enemy";
-        this.targetScope = "single";
+        this.cancelTargetSelection();
         return;
       }
 
@@ -377,16 +371,60 @@ class Scene_Battle extends Scene_Base {
     this.commandWindow.update();
 
     if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
-      this.executeCommand();
+      this.confirmCommandSelection();
+      return;
     }
 
     if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
-      if (this.encounter.canEscape) {
-        this.finishBattle("escape");
-      } else {
-        this.addBattleMessage("You cannot escape!");
-      }
+      this.cancelCommandSelection();
     }
+  }
+
+  cancelTargetSelection() {
+    const action = this.enemyTargetAction;
+
+    this.selectingEnemyTarget = false;
+    this.enemyTargetAction = null;
+    this.pendingSkill = null;
+    this.pendingSkillTarget = null;
+    this.pendingMagick = null;
+    this.pendingMagickTarget = null;
+    this.targetGroup = "enemy";
+    this.targetScope = "single";
+
+    if (action === "skill") {
+      this.skillsWindow.show({ preserveIndex: true });
+    } else if (action === "magick") {
+      this.magickWindow.show({ preserveIndex: true });
+    } else if (action === "item") {
+      this.itemWindow.show({ preserveIndex: true });
+    }
+
+    return action;
+  }
+
+  confirmCommandSelection() {
+    const command = this.commandWindow.currentCommand();
+    const wasSideCommand = this.commandWindow.hasSideCommandOpen?.() === true;
+
+    if (wasSideCommand) {
+      this.commandWindow.closeSide();
+    }
+
+    if (command === "Escape") {
+      if (this.encounter.canEscape) {
+        return this.finishBattle(BattleManager.OUTCOME_ESCAPE);
+      }
+
+      this.addBattleMessage("You cannot escape!");
+      return false;
+    }
+
+    return this.executeCommand(command);
+  }
+
+  cancelCommandSelection() {
+    return this.commandWindow.closeSide?.() || false;
   }
 
   prepareBattleResults() {
@@ -730,8 +768,8 @@ class Scene_Battle extends Scene_Base {
     return this.battleManager.performEnemyTurn(enemy);
   }
 
-  executeCommand() {
-    return this.battleManager.executeCommand();
+  executeCommand(command = null) {
+    return this.battleManager.executeCommand(command);
   }
 
   executeSkill() {

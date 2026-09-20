@@ -1460,10 +1460,10 @@ class BattleManager {
   // Execution Methods
   // =================================
 
-  executeCommand() {
+  executeCommand(commandOverride = null) {
     const battle = this.scene;
     const battler = this.party().currentBattler();
-    const command = battle.commandWindow.currentCommand();
+    const command = commandOverride || battle.commandWindow.currentCommand();
 
     DebugManager.log(`${battler.name} selected "${command}".`);
 

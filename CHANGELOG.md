@@ -12,6 +12,13 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Battle Command Navigation & Side Actions v1 with a permanent four-command core list: Attack, Skills, Magick, and Item
+- Added temporary Escape-left and Defend-right side command panels that remain invisible until horizontal input requests them, then require normal confirm input before execution
+- Kept boss/non-escapable Escape discoverable but disabled, preserving explicit "You cannot escape!" feedback instead of silently removing the option
+- Added one-level target-cancel navigation so backing out of Skill or Magick targeting reopens the originating selector with its cursor position preserved
+- Added optional selector cursor preservation hooks for battle Skills, Magick, and Items without introducing global cursor-memory settings ahead of the planned Options system
+- Added dedicated Battle Command Navigation regression coverage for four-command layout, hidden side actions, boss Escape behavior, existing Escape/Defend execution paths, target back-navigation, and selector cursor restoration
+
 - Added Boss / Phase AI v1 with validated, data-driven enemy phase definitions, strictly descending HP thresholds, per-phase action pools, and optional one-time entry messages
 - Added battle-local monotonic phase state to `Game_Enemy`; healing does not roll a boss backward into an earlier phase, while large HP drops may advance directly to the deepest eligible phase
 - Kept `BattleEnemyAI` focused on choosing from the active action pool while `BattleManager` refreshes phase state at enemy-turn start and presents phase-entry feedback

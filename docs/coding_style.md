@@ -258,6 +258,8 @@ Long descriptive text inside fixed UI panels should use shared `Window_TextLayou
 
 Battle control hints and active-turn labels should be derived from existing scene/manager state. Do not create a second UI-only source of truth for whether escape is legal, whose turn it is, or which input mode currently owns control. Target selection should suppress the underlying command window just as an open selection window does.
 
+Keep command-navigation state separate from action authority. `Window_BattleCommand` may own which core/side command currently has focus and draw temporary side panels, but it must not decide battle outcomes or apply Defend. `Scene_Battle` owns navigation between command/list/target layers and the existing Escape finalization path; `BattleManager` continues to own Defend and other battle-action execution. When canceling a nested target-selection layer, restore the originating selector rather than reconstructing a parallel cursor state in the scene.
+
 ---
 
 # 🗃️ Data-Driven Gameplay

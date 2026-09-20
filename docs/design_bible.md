@@ -507,6 +507,8 @@ Visual and audio identity should reinforce readability first. Players need to un
 
 Battle feedback should also make the current interaction state legible without turning presentation into gameplay authority. Encounter context, the active party battler, current control hints, target-selection state, and recent combat messages should reflect the battle state that already exists rather than inventing parallel UI-only rules. Contextual instructions are preferred over permanent test/development wording in normal battle presentation.
 
+The core battle command presentation should stay compact. The persistent list is Attack, Skills, Magick, and Item; Escape and Defend are contextual horizontal side actions that remain hidden until the player deliberately requests them. Back navigation should move one interaction level at a time so choosing a Skill or Magick, entering target selection, and backing out returns to the originating selector instead of discarding navigation context.
+
 Style can become expressive without sacrificing information.
 
 Detailed final art direction, UI language, animation standards, music direction, and audio identity remain open design areas until deliberately established.

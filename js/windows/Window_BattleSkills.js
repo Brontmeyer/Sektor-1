@@ -63,10 +63,22 @@ class Window_BattleSkills {
     this.listViewport.ensureVisible(this.index, skills.length);
   }
 
-  show() {
+  show({ preserveIndex = false } = {}) {
+    const entries = this.skillList();
+
     this.visible = true;
-    this.index = 0;
-    this.listViewport.reset(this.index, this.skillList().length);
+
+    if (!preserveIndex) {
+      this.index = 0;
+      this.listViewport.reset(this.index, entries.length);
+      return;
+    }
+
+    this.index = Math.max(
+      0,
+      Math.min(this.index, Math.max(0, entries.length - 1)),
+    );
+    this.listViewport.ensureVisible(this.index, entries.length);
   }
 
   hide() {

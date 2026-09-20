@@ -126,6 +126,10 @@ Pass 41 adds no reopened audit item. Enemy Skills & AI Integration v1 is post-au
 
 Pass 42 is post-audit feature development and does not reopen a historical finding. Optional validated enemy phases reuse the existing Attack/Magick/Skill action vocabulary and `BattleEnemyAI` selection boundary. `Game_Enemy` owns only battle-local monotonic phase state, while `BattleManager` presents one-time phase-entry feedback. No persistent state changes, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Battle Command Navigation & Side Actions v1
+
+Pass 43 is post-audit battle-UI/navigation work and does not reopen a historical finding. The persistent command list is reduced to Attack / Skills / Magick / Item, while Escape and Defend are temporary side-command focus states owned by `Window_BattleCommand`. `Scene_Battle` keeps Escape finalization and hierarchical back-navigation authority, and `BattleManager` keeps Defend/action execution authority. Skill/Magick target cancel reopens the originating selector with its existing cursor position. No persistent player state changes, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:
