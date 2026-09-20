@@ -8,11 +8,11 @@
     "members": [
       {
         "enemyId": 1,
-        "slot": 0
+        "row": "front"
       },
       {
         "enemyId": 1,
-        "slot": 1
+        "row": "front"
       }
     ],
     "formation": "normal"
@@ -25,7 +25,7 @@
     "members": [
       {
         "enemyId": 2,
-        "slot": 0
+        "row": "front"
       }
     ],
     "formation": "normal"
@@ -39,11 +39,11 @@
     "members": [
       {
         "enemyId": 1,
-        "slot": 0
+        "row": "front"
       },
       {
         "enemyId": 1,
-        "slot": 1
+        "row": "front"
       }
     ]
   },
@@ -56,23 +56,121 @@
     "members": [
       {
         "enemyId": 1,
-        "slot": 0,
-        "side": "left"
+        "side": "left",
+        "row": "front"
       },
       {
         "enemyId": 1,
-        "slot": 1,
-        "side": "left"
+        "side": "left",
+        "row": "front"
       },
       {
         "enemyId": 1,
-        "slot": 0,
-        "side": "right"
+        "side": "right",
+        "row": "front"
       },
       {
         "enemyId": 1,
-        "slot": 1,
-        "side": "right"
+        "side": "right",
+        "row": "front"
+      }
+    ]
+  },
+  {
+    "_comment": "ID 5: Eight Slime Rows - Auto Centered",
+    "id": 5,
+    "name": "Eight Slime Rows",
+    "canEscape": true,
+    "formation": "normal",
+    "members": [
+      {
+        "enemyId": 1,
+        "row": "front"
+      },
+      {
+        "enemyId": 1,
+        "row": "front"
+      },
+      {
+        "enemyId": 1,
+        "row": "front"
+      },
+      {
+        "enemyId": 1,
+        "row": "front"
+      },
+      {
+        "enemyId": 1,
+        "row": "back"
+      },
+      {
+        "enemyId": 1,
+        "row": "back"
+      },
+      {
+        "enemyId": 1,
+        "row": "back"
+      },
+      {
+        "enemyId": 1,
+        "row": "back"
+      }
+    ]
+  },
+  {
+    "_comment": "ID 6: Eight Slime Pincer Rows - Custom Slots",
+    "id": 6,
+    "name": "Eight Slime Pincer Rows",
+    "canEscape": true,
+    "formation": "pincer",
+    "members": [
+      {
+        "enemyId": 1,
+        "side": "left",
+        "row": "front",
+        "slot": 1
+      },
+      {
+        "enemyId": 1,
+        "side": "left",
+        "row": "front",
+        "slot": 2
+      },
+      {
+        "enemyId": 1,
+        "side": "left",
+        "row": "back",
+        "slot": 1
+      },
+      {
+        "enemyId": 1,
+        "side": "left",
+        "row": "back",
+        "slot": 2
+      },
+      {
+        "enemyId": 1,
+        "side": "right",
+        "row": "front",
+        "slot": 1
+      },
+      {
+        "enemyId": 1,
+        "side": "right",
+        "row": "front",
+        "slot": 2
+      },
+      {
+        "enemyId": 1,
+        "side": "right",
+        "row": "back",
+        "slot": 1
+      },
+      {
+        "enemyId": 1,
+        "side": "right",
+        "row": "back",
+        "slot": 2
       }
     ]
   }

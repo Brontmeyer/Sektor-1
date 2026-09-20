@@ -4,8 +4,11 @@ class BattleFormationManager {
   static NORMAL = "normal";
   static BACK_ATTACK = "backAttack";
   static PINCER = "pincer";
+  static FRONT_ROW = "front";
+  static BACK_ROW = "back";
   static REAR_PHYSICAL_DAMAGE_MULTIPLIER = 1.5;
-  static MAX_ENEMIES = 5;
+  static MAX_ENEMIES = 8;
+  static ROW_SLOT_COUNT = 4;
 
   constructor(scene) {
     this.scene = scene;
@@ -79,41 +82,97 @@ class BattleFormationManager {
     return this.partyPosition(index < 0 ? 0 : index);
   }
 
+  encounterMember(index) {
+    return this.scene.encounter?.members?.[index] || {};
+  }
+
   memberSide(index) {
-    const member = this.scene.encounter?.members?.[index];
+    const member = this.encounterMember(index);
 
     if (this.is(BattleFormationManager.PINCER)) {
-      return member?.side === "left" ? "left" : "right";
+      return member.side === "left" ? "left" : "right";
     }
 
     return "right";
   }
 
-  enemyX(index) {
-    return this.memberSide(index) === "left"
-      ? Graphics.width * 0.14
-      : Graphics.width * 0.84;
+  memberRow(index) {
+    return this.encounterMember(index).row === BattleFormationManager.BACK_ROW
+      ? BattleFormationManager.BACK_ROW
+      : BattleFormationManager.FRONT_ROW;
   }
 
-  enemySlotY(slot) {
+  rowMemberIndexes(index) {
+    const side = this.memberSide(index);
+    const row = this.memberRow(index);
+    const members = this.scene.encounter?.members || [];
+
+    return members
+      .map((_member, candidateIndex) => candidateIndex)
+      .filter(
+        (candidateIndex) =>
+          this.memberSide(candidateIndex) === side &&
+          this.memberRow(candidateIndex) === row,
+      );
+  }
+
+  rowX(side, row) {
+    const frontX = side === "left" ? 0.2 : 0.8;
+    const backX = side === "left" ? 0.1 : 0.9;
+
+    return (
+      Graphics.width *
+      (row === BattleFormationManager.BACK_ROW ? backX : frontX)
+    );
+  }
+
+  fixedSlotFractions() {
+    return [0.18, 0.39, 0.61, 0.82];
+  }
+
+  automaticRowFractions(count) {
+    const layouts = {
+      1: [0.5],
+      2: [0.38, 0.62],
+      3: [0.26, 0.5, 0.74],
+      4: this.fixedSlotFractions(),
+    };
+
+    return layouts[
+      Math.max(1, Math.min(BattleFormationManager.ROW_SLOT_COUNT, count))
+    ];
+  }
+
+  enemyY(index) {
+    const member = this.encounterMember(index);
+    const groupIndexes = this.rowMemberIndexes(index);
     const top = this.battlefieldTop();
     const bottom = this.battlefieldBottom();
     const span = bottom - top;
-    const fractions = [0.18, 0.34, 0.5, 0.66, 0.82];
-    const safeSlot = Math.max(
-      0,
-      Math.min(Number(slot) || 0, fractions.length - 1),
-    );
 
-    return top + span * fractions[safeSlot];
+    if (Number.isInteger(member.slot)) {
+      const fractions = this.fixedSlotFractions();
+      const slot = Math.max(0, Math.min(member.slot, fractions.length - 1));
+      return top + span * fractions[slot];
+    }
+
+    const automaticIndexes = groupIndexes.filter(
+      (candidateIndex) =>
+        !Number.isInteger(this.encounterMember(candidateIndex).slot),
+    );
+    const autoIndex = Math.max(0, automaticIndexes.indexOf(index));
+    const fractions = this.automaticRowFractions(automaticIndexes.length);
+
+    return top + span * fractions[Math.min(autoIndex, fractions.length - 1)];
   }
 
   enemyPosition(index) {
-    const member = this.scene.encounter?.members?.[index] || {};
+    const side = this.memberSide(index);
+    const row = this.memberRow(index);
 
     return {
-      x: this.enemyX(index),
-      y: this.enemySlotY(member.slot),
+      x: this.rowX(side, row),
+      y: this.enemyY(index),
     };
   }
 
@@ -141,18 +200,15 @@ class BattleFormationManager {
       return 1;
     }
 
-    const sameSideCount = this.scene.enemies.filter(
-      (_candidate, candidateIndex) =>
-        this.memberSide(candidateIndex) === this.memberSide(index),
-    ).length;
+    const rowCount = this.rowMemberIndexes(index).length;
     const availableHeight = this.battlefieldBottom() - this.battlefieldTop();
     const laneHeight =
       availableHeight /
-      Math.max(1, Math.min(BattleFormationManager.MAX_ENEMIES, sameSideCount));
+      Math.max(1, Math.min(BattleFormationManager.ROW_SLOT_COUNT, rowCount));
     const height = Math.max(1, Number(enemy.battleSpriteHeight) || 1);
     const width = Math.max(1, Number(enemy.battleSpriteWidth) || 1);
     const heightScale = (laneHeight * 0.92) / height;
-    const widthScale = (Graphics.width * 0.18) / width;
+    const widthScale = (Graphics.width * 0.14) / width;
 
     return Math.max(0.45, Math.min(1, heightScale, widthScale));
   }

@@ -5,34 +5,34 @@
   "height": 1600,
 
   "playerStart": {
-    "x": 600,
+    "x": 610,
     "y": 300
   },
 
   "obstacles": [
     {
-      "x": 200,
-      "y": 550,
-      "width": 800,
+      "x": 300,
+      "y": 700,
+      "width": 600,
       "height": 50
     },
     {
-      "x": 200,
+      "x": 300,
       "y": 0,
-      "width": 800,
+      "width": 600,
       "height": 50
     },
     {
-      "x": 1000,
+      "x": 900,
       "y": 0,
       "width": 50,
-      "height": 600
+      "height": 750
     },
     {
-      "x": 150,
+      "x": 250,
       "y": 0,
       "width": 50,
-      "height": 600
+      "height": 750
     }
   ],
 
@@ -44,7 +44,7 @@
       "height": 150,
 
       "targetMapId": 2,
-      "targetX": 600,
+      "targetX": 610,
       "targetY": 300
     }
   ],
@@ -368,6 +368,68 @@
               "code": "text",
               "speaker": "System",
               "text": "The pincer test encounter has ended."
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": 8,
+      "name": "Eight Enemy Rows Tester",
+
+      "x": 800,
+      "y": 500,
+
+      "width": 32,
+      "height": 32,
+
+      "solid": true,
+
+      "pages": [
+        {
+          "conditions": {},
+
+          "commands": [
+            {
+              "code": "battle",
+              "encounterId": 5
+            },
+            {
+              "code": "text",
+              "speaker": "System",
+              "text": "The eight-enemy row test encounter has ended."
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": 9,
+      "name": "Pincer Rows Tester",
+
+      "x": 800,
+      "y": 600,
+
+      "width": 32,
+      "height": 32,
+
+      "solid": true,
+
+      "pages": [
+        {
+          "conditions": {},
+
+          "commands": [
+            {
+              "code": "battle",
+              "encounterId": 6
+            },
+            {
+              "code": "text",
+              "speaker": "System",
+              "text": "The pincer-row test encounter has ended."
             }
           ]
         }

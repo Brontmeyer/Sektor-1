@@ -150,6 +150,10 @@ Pass 47 is post-audit targeting/navigation work and does not reopen a historical
 
 Pass 48 is post-audit combat-rule refinement and does not reopen a historical finding. Passive Valor now requires hostile opposing-side damage provenance supplied by the battle layer; self/friendly damage no longer fills the gauge, and deliberate Valor Skills use an explicit validated effect. Normal Escape is battle-owned probability with Agility comparison, retry pressure, and turn cost on failure, while `canEscape: false` remains an absolute gate for commands and Retreat Magick. Retry state is battle-local, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Enemy Formation Rows v1
+
+Pass 49 is post-audit battle-geometry work and does not reopen a historical finding. `Encounters.json` now supports up to eight enemy members across front/back rows with automatic centering or explicit slots, and pincer flanks reuse the same row contract. `BattleFormationManager` remains the sole coordinate owner, while targeting/rendering continue to consume its positions. Row metadata is geometry-only and adds no persistent state or row combat penalties, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

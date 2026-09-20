@@ -73,9 +73,11 @@ function testCanonicalEncounterFormationData() {
   assert.equal(encounters[3].formation, "backAttack");
   assert.equal(encounters[4].formation, "pincer");
   assert.deepEqual(
-    encounters[4].members.map((member) => `${member.side}:${member.slot}`),
-    ["left:0", "left:1", "right:0", "right:1"],
+    encounters[4].members.map((member) => `${member.side}:${member.row}`),
+    ["left:front", "left:front", "right:front", "right:front"],
   );
+  assert.equal(encounters[5].members.length, 8);
+  assert.equal(encounters[6].members.length, 8);
 }
 
 function testNormalFormationUsesFourVerticalPartyLanesAndSafeScale() {
@@ -153,14 +155,21 @@ function testPincerPlacesEnemiesOnBothSidesOfCenteredParty() {
   assert.equal(manager.isPartyRearExposed(enemies[0], actors[0]), false);
 }
 
-function testFiveEnemySlotsAreFixedAndDistinct() {
-  const members = Array.from({ length: 5 }, (_, slot) => ({ enemyId: 1, slot }));
+function testEnemyRowsExposeDistinctFrontAndBackGeometry() {
+  const members = [
+    { enemyId: 1, row: "front" },
+    { enemyId: 1, row: "front" },
+    { enemyId: 1, row: "back" },
+    { enemyId: 1, row: "back" },
+  ];
   const { manager } = createFormationFixture("normal", members);
   const positions = members.map((_member, index) => manager.enemyPosition(index));
 
-  assert.equal(new Set(positions.map((position) => position.x)).size, 1);
-  assert.equal(new Set(positions.map((position) => position.y)).size, 5);
-  assert.equal(positions.every((position, index) => index === 0 || position.y > positions[index - 1].y), true);
+  assert.equal(positions[0].x, positions[1].x);
+  assert.equal(positions[2].x, positions[3].x);
+  assert.equal(positions[0].x < positions[2].x, true);
+  assert.equal(positions[0].y < positions[1].y, true);
+  assert.equal(positions[2].y < positions[3].y, true);
 }
 
 function testFormationSchemaValidation() {
@@ -202,18 +211,18 @@ function testFormationSchemaValidation() {
       name: "Too Many",
       canEscape: true,
       formation: "normal",
-      members: Array.from({ length: 6 }, (_, slot) => ({ enemyId: 1, slot })),
+      members: Array.from({ length: 9 }, () => ({ enemyId: 1, row: "front" })),
     },
   ];
 
   DatabaseValidator.validateEncounters(encounters, enemies, errors);
 
   assert.equal(errors.some((error) => error.includes("formation must be normal")), true);
-  assert.equal(errors.some((error) => error.includes("left slot 0 more than once")), true);
+  assert.equal(errors.some((error) => error.includes("left front row slot 0 more than once")), true);
   assert.equal(errors.some((error) => error.includes("side must be left or right")), true);
   assert.equal(errors.some((error) => error.includes("side is only valid for a pincer")), true);
-  assert.equal(errors.some((error) => error.includes("at most 5 enemy members")), true);
-  assert.equal(errors.some((error) => error.includes("slot must be an integer from 0 to 4")), true);
+  assert.equal(errors.some((error) => error.includes("at most 8 enemy members")), true);
+  assert.equal(errors.some((error) => error.includes("front row may contain at most 4 enemies")), true);
 }
 
 function testFormationManagerLoadsBeforeFormationConsumers() {
@@ -308,7 +317,7 @@ function run() {
   testNormalFormationUsesFourVerticalPartyLanesAndSafeScale();
   testBackAttackKeepsPartyLeftAndUsesFacingExposure();
   testPincerPlacesEnemiesOnBothSidesOfCenteredParty();
-  testFiveEnemySlotsAreFixedAndDistinct();
+  testEnemyRowsExposeDistinctFrontAndBackGeometry();
   testFormationSchemaValidation();
   testFormationManagerLoadsBeforeFormationConsumers();
   testFormationAwareAnimationDirectionsRemainRuntimeSafe();

@@ -37,7 +37,7 @@ Canonical encounter definitions live in:
 data/Encounters.json
 ```
 
-Each encounter defines its enemy members, formation slots, optional formation type, and whether the party may escape. Enemy IDs reference `Enemies.json`; formation metadata is validated before the game begins. `normal` and `backAttack` use globally unique enemy slots. `pincer` encounters additionally require every member to declare a `left` or `right` side, with slot uniqueness enforced independently per side.
+Each encounter defines its enemy members, optional formation placement, optional formation type, and whether the party may escape. Enemy IDs reference `Enemies.json`; formation metadata is validated before the game begins. Enemy Formation Rows v1 allows up to eight members. Every member defaults to the `front` row but may declare `row: "front"` or `row: "back"`. A side/row group that omits `slot` is automatically centered; a handcrafted group may give every member an explicit `slot` from 0 through 3. Mixing automatic and explicit placement inside the same side/row group is rejected so placement is deterministic. `pincer` encounters additionally require every member to declare a `left` or `right` side, and each flank receives its own front/back geometry while the total encounter cap remains eight.
 
 Map events start an encounter through the `battle` event command and an
 `encounterId`. `Game_Interpreter` delegates that request to
@@ -489,14 +489,14 @@ As battle mechanics expand, any broader Defend interactions should be documented
 Battle Formation & Party Layout v1 supports three side-view encounter layouts:
 
 - `normal` - party on the left, enemies on the right
-- `backAttack` - party/enemy sides and facing are mirrored
+- `backAttack` - party remains on the left but begins facing away from enemies
 - `pincer` - the four-actor party is centered while enemies occupy explicit left/right flanks
 
 `BattleFormationManager` owns this geometry. It places all active party members into a stable four-lane vertical stack, scales the party uniformly only when required by available battlefield height, scales oversized enemies conservatively, and provides the facing/advance direction used by battle animation. Target cursors, effects, and popups resolve their anchors from these same formation positions and scale helpers.
 
-Formation currently changes battlefield geometry, facing, and attack/recoil direction only. It does **not** imply surprise turns, initiative penalties, damage modifiers, accuracy changes, or escape restrictions. Those mechanical rules remain deliberately uncommitted so later encounter design can decide them explicitly instead of hiding them inside rendering code.
+Formation owns battlefield geometry, facing, and attack/recoil direction. The only current formation-sensitive combat rule is rear exposure: enemy physical attacks deal the shared 1.5x multiplier when the party target is genuinely facing away from that attacker. Magick remains facing-neutral. Front/back enemy rows added by Enemy Formation Rows v1 are still geometry-only and do not imply row damage, protection, targeting, or ranged/melee rules.
 
-Canonical test coverage includes Encounter 3 (`backAttack`) and Encounter 4 (`pincer`), both reachable from Map001 test events for hands-on verification.
+Canonical test coverage includes Encounter 3 (`backAttack`) and Encounter 4 (`pincer`), plus Encounter 5 with eight automatically centered front/back enemies and Encounter 6 with eight handcrafted pincer-row positions. All are reachable from Map001 tester events for hands-on verification. Rows are presentation/geometry only: no front/back damage, targeting, or ranged/melee rules are implied yet.
 
 ---
 
@@ -530,7 +530,7 @@ The battle scene can present:
 
 Presentation should report the result of battle logic rather than becoming the authority that decides the result.
 
-Back Attack now keeps the party on the left rather than mirroring battle sides. Party members begin facing away from enemies; targeting/action presentation can turn the acting character temporarily, rear physical hits turn the struck actor permanently, and the remaining party turns after the opening enemy round. A physical hit from an enemy positioned behind a party target receives a shared 1.5x rear-exposure multiplier. The same geometric rule works in Pincer when a party member is facing the opposite flank. Magick damage is unchanged by front/back exposure. Enemy formation slots are fixed from 0 through 4 and encounter validation caps a battle at five enemies.
+Back Attack now keeps the party on the left rather than mirroring battle sides. Party members begin facing away from enemies; targeting/action presentation can turn the acting character temporarily, rear physical hits turn the struck actor permanently, and the remaining party turns after the opening enemy round. A physical hit from an enemy positioned behind a party target receives a shared 1.5x rear-exposure multiplier. The same geometric rule works in Pincer when a party member is facing the opposite flank. Magick damage is unchanged by front/back exposure. Enemy Formation Rows v1 supports up to eight enemies through four front and four back positions, with automatic centering or explicit per-row slots. Enemy positions remain fixed for the battle after defeats; survivors do not slide into newly empty slots.
 
 ---
 

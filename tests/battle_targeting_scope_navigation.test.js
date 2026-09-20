@@ -173,8 +173,8 @@ function testPincerSingleTargetMovesAcrossBothFlanksSpatially() {
   assert.equal(manager.getSelectedEnemy(), enemies[3]);
 }
 
-function testFiveEnemyNavigationDoesNotWrapOffscreen() {
-  const enemies = Array.from({ length: 5 }, (_, index) =>
+function testEightEnemyNavigationDoesNotWrapOffscreen() {
+  const enemies = Array.from({ length: 8 }, (_, index) =>
     battler(`Enemy ${index + 1}`, "enemy", 900, 100 + index * 100),
   );
   const { manager } = createFixture({
@@ -240,6 +240,32 @@ function testPincerDualScopeDoesNotOfferAllForSingleEnemyFlank() {
   assert.equal(manager.toggleScope(), "single");
 }
 
+
+function testPincerAllTargetsIncludeFrontAndBackRowsOnSelectedFlank() {
+  const enemies = [
+    battler("LF1", "enemy", 220, 180, "left"),
+    battler("LF2", "enemy", 220, 340, "left"),
+    battler("LB1", "enemy", 100, 180, "left"),
+    battler("LB2", "enemy", 100, 340, "left"),
+    battler("RF1", "enemy", 780, 180, "right"),
+    battler("RF2", "enemy", 780, 340, "right"),
+    battler("RB1", "enemy", 900, 180, "right"),
+    battler("RB2", "enemy", 900, 340, "right"),
+  ];
+  const { manager } = createFixture({
+    formation: "pincer",
+    enemies,
+    definition: dualEnemyMagick(),
+    selectedEnemyIndex: 4,
+  });
+
+  assert.equal(manager.toggleScope(), "all");
+  assert.deepEqual(Array.from(manager.getCurrentTargets()), enemies.slice(4));
+
+  assert.equal(manager.moveTargetBucket(-1, 0), true);
+  assert.deepEqual(Array.from(manager.getCurrentTargets()), enemies.slice(0, 4));
+}
+
 function testAlliedSingleAllScopeUsesWholePartyBucket() {
   const allies = [
     battler("A1", "ally", 480, 140),
@@ -286,9 +312,10 @@ function run() {
   testDualScopeAllowsAllWithMultipleEnemies();
   testAllOnlyAbilityRemainsAllWithOneTarget();
   testPincerSingleTargetMovesAcrossBothFlanksSpatially();
-  testFiveEnemyNavigationDoesNotWrapOffscreen();
+  testEightEnemyNavigationDoesNotWrapOffscreen();
   testPincerAllTargetsOnlySelectedFlankAndCanSwitchFlanks();
   testPincerDualScopeDoesNotOfferAllForSingleEnemyFlank();
+  testPincerAllTargetsIncludeFrontAndBackRowsOnSelectedFlank();
   testAlliedSingleAllScopeUsesWholePartyBucket();
   testSceneAndRendererUseSharedTargetingContract();
 

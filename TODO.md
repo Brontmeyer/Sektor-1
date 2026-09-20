@@ -88,7 +88,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Keep damage / Weak / Resist / Immune / Critical feedback on the battlefield; add brief Critical screen flash
 - [x] Integrate actor names, command reserve, and HP/MP/Valor columns in one stable bottom HUD
 - [x] Keep Back Attack party positions on the left and apply rear-exposure bonus only to physical damage
-- [x] Support fixed enemy formation slots 0-4 with a five-enemy encounter cap
+- [x] Implement Enemy Formation Rows v1 with an eight-enemy cap, four front/four back slots, auto-centering, explicit placement, and pincer-aware flank rows
 - [x] Implement Battle Targeting & Scope Navigation v2
 - [x] Collapse optional All scope when only one legal target exists in the current target bucket
 - [x] Support four-direction spatial targeting across normal/back-attack/pincer layouts without wraparound

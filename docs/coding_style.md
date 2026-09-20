@@ -229,6 +229,8 @@ Enemy AI follows the same ownership rule: enemy action definitions belong in `En
 
 Boss phases follow the same boundary. Optional `Enemies.json` phase records own threshold/action-pool data, `Game_Enemy` owns only its battle-local monotonic phase index, `BattleEnemyAI` continues to select from `actionDefinitions()`, and `BattleManager` owns transition presentation. Do not add boss-name checks to AI or combat execution when a reusable phase/action contract can express the behavior.
 
+Enemy formation rows follow the encounter-data boundary. `Encounters.json` owns `side`, `row`, and optional `slot` placement; `BattleFormationManager` turns that data into coordinates. Omitted slots mean automatic centering, while handcrafted rows must use explicit slots consistently across that side/row group. Do not encode row penalties or weapon-range assumptions into placement geometry before those combat contracts exist.
+
 Before adding logic to an existing large method, ask whether the behavior belongs in a smaller reusable helper or another system entirely.
 
 ---

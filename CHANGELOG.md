@@ -12,6 +12,13 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Enemy Formation Rows v1 with a validated eight-enemy encounter cap, four front-row slots, four back-row slots, and row-aware battlefield geometry
+- Added automatic row centering when `slot` is omitted and handcrafted `slot: 0..3` placement when an encounter needs an exact formation
+- Added pincer-aware front/back rows on independent left/right flanks while keeping the eight-enemy cap global to the encounter
+- Kept enemy positions stable after defeat by resolving row geometry from canonical encounter membership rather than the living-enemy subset
+- Added Eight Enemy Rows and Eight Slime Pincer Rows playtest encounters plus Map001 tester events
+- Added dedicated Enemy Formation Row regression coverage for automatic centering, explicit slots, stable survivor geometry, pincer-relative rows, schema validation, and playtest exposure
+
 - Added Valor & Escape Rules v1 so passive Valor reacts only to hostile opposing-side battle-action damage rather than any HP loss
 - Added explicit damage provenance (`source` / `valorEligible`) through the shared damage path so self-damage and friendly-fire cannot accidentally generate Valor
 - Added a reusable Skill `valor` effect with validated positive `valorGain` metadata for future techniques that deliberately manipulate the gauge

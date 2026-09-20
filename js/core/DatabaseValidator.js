@@ -2379,6 +2379,10 @@ class DatabaseValidator {
       return;
     }
 
+    const maxEnemies = 8;
+    const rowSlotCount = 4;
+    const validRows = new Set(["front", "back"]);
+
     for (let index = 1; index < encounters.length; index++) {
       const encounter = encounters[index];
 
@@ -2404,13 +2408,19 @@ class DatabaseValidator {
         continue;
       }
 
-      if (encounter.members.length > 5) {
-        errors.push(`Encounter ${index} may define at most 5 enemy members.`);
+      if (encounter.members.length > maxEnemies) {
+        errors.push(
+          `Encounter ${index} may define at most ${maxEnemies} enemy members.`,
+        );
       }
 
-      const slots = new Set();
+      const placementGroups = new Map();
 
-      for (let memberIndex = 0; memberIndex < encounter.members.length; memberIndex++) {
+      for (
+        let memberIndex = 0;
+        memberIndex < encounter.members.length;
+        memberIndex++
+      ) {
         const member = encounter.members[memberIndex];
         const label = `Encounter ${index} member ${memberIndex + 1}`;
 
@@ -2419,54 +2429,98 @@ class DatabaseValidator {
           continue;
         }
 
+        this.validateKnownKeys(
+          label,
+          member,
+          ["enemyId", "side", "row", "slot"],
+          errors,
+        );
+
         if (!Number.isInteger(member.enemyId) || !enemies[member.enemyId]) {
           errors.push(`${label} references unknown enemy ID ${member.enemyId}.`);
         }
 
-        if (
-          !Number.isInteger(member.slot) ||
-          member.slot < 0 ||
-          member.slot > 4
-        ) {
-          errors.push(`${label} slot must be an integer from 0 to 4.`);
+        const row = member.row === undefined ? "front" : member.row;
+
+        if (!validRows.has(row)) {
+          errors.push(`${label} row must be front or back when provided.`);
         }
+
+        if (
+          member.slot !== undefined &&
+          (!Number.isInteger(member.slot) ||
+            member.slot < 0 ||
+            member.slot >= rowSlotCount)
+        ) {
+          errors.push(
+            `${label} slot must be an integer from 0 to ${rowSlotCount - 1} when provided.`,
+          );
+        }
+
+        let side = "right";
 
         if (formation === "pincer") {
           if (!["left", "right"].includes(member.side)) {
             errors.push(
               `${label} side must be left or right for a pincer formation.`,
             );
-          } else if (
-            Number.isInteger(member.slot) &&
-            member.slot >= 0 &&
-            member.slot <= 4
-          ) {
-            const slotKey = `${member.side}:${member.slot}`;
+          } else {
+            side = member.side;
+          }
+        } else if (member.side !== undefined) {
+          errors.push(`${label} side is only valid for a pincer formation.`);
+        }
 
-            if (slots.has(slotKey)) {
-              errors.push(
-                `Encounter ${index} uses ${member.side} slot ${member.slot} more than once.`,
-              );
-            } else {
-              slots.add(slotKey);
-            }
-          }
-        } else {
-          if (member.side !== undefined) {
-            errors.push(`${label} side is only valid for a pincer formation.`);
-          }
+        if (!validRows.has(row)) {
+          continue;
+        }
 
-          if (
-            Number.isInteger(member.slot) &&
-            member.slot >= 0 &&
-            member.slot <= 4
-          ) {
-            if (slots.has(member.slot)) {
-              errors.push(`Encounter ${index} uses slot ${member.slot} more than once.`);
-            } else {
-              slots.add(member.slot);
-            }
+        const groupKey = `${side}:${row}`;
+        const group = placementGroups.get(groupKey) || {
+          side,
+          row,
+          count: 0,
+          explicitCount: 0,
+          automaticCount: 0,
+          slots: new Set(),
+        };
+        group.count++;
+
+        if (member.slot === undefined) {
+          group.automaticCount++;
+        } else if (
+          Number.isInteger(member.slot) &&
+          member.slot >= 0 &&
+          member.slot < rowSlotCount
+        ) {
+          group.explicitCount++;
+
+          if (group.slots.has(member.slot)) {
+            const sideText = formation === "pincer" ? `${side} ` : "";
+            errors.push(
+              `Encounter ${index} uses ${sideText}${row} row slot ${member.slot} more than once.`,
+            );
+          } else {
+            group.slots.add(member.slot);
           }
+        }
+
+        placementGroups.set(groupKey, group);
+      }
+
+      for (const group of placementGroups.values()) {
+        const sideText = formation === "pincer" ? `${group.side} ` : "";
+
+        if (group.count > rowSlotCount) {
+          errors.push(
+            `Encounter ${index} ${sideText}${group.row} row may contain at most ${rowSlotCount} enemies.`,
+          );
+        }
+
+        if (group.explicitCount > 0 && group.automaticCount > 0) {
+          errors.push(
+            `Encounter ${index} ${sideText}${group.row} row must use either all explicit slots or all automatic centering.`,
+          );
         }
       }
     }

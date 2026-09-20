@@ -505,10 +505,10 @@ Battle-presentation directions and current status:
 - ✅ Four-actor battlefield layout with reusable formation slots and safe sprite scaling
 - ✅ Normal / back-attack / pincer encounter formation contracts
 - ✅ Battle HUD & Message Layout v1 with reusable four-row HUD geometry
-- ✅ Battle Presentation & Feedback v2 with transient action/state banners, integrated command/HUD columns, battlefield Critical/Weak/Resist/Immune feedback, five fixed enemy slots, and physical rear-exposure rules
+- ✅ Battle Presentation & Feedback v2 with transient action/state banners, integrated command/HUD columns, battlefield Critical/Weak/Resist/Immune feedback, fixed enemy-slot groundwork, and physical rear-exposure rules
 - ✅ Battle Targeting & Scope Navigation v2 with four-direction spatial selection, one-target scope collapse, and pincer flank-limited All targeting
 - ✅ Valor & Escape Rules v1 with hostile-source Valor gain, explicit Valor-support Skills, and Agility/retry-based Escape attempts
-- Enemy Formation Rows v1 for up to eight centered/customizable front/back-row enemy slots with pincer-aware flank geometry
+- ✅ Enemy Formation Rows v1 for up to eight centered/customizable front/back-row enemies with pincer-aware flank geometry
 - Scan & Tactical Help v1 for unknown/known enemy HP/MP and weakness/resistance/immunity details while targeting
 - A separate Options/configuration system for battle speed, battle/field message speed, optional battle cursor memory, Magick ordering, and control-rebinding architecture
 
@@ -516,6 +516,8 @@ Battle-presentation directions and current status:
 
 Built with ❤️ by **Sarah & Tyler**
 
-## Next Battle Geometry Focus
+## Next Battle Information Focus
 
-Enemy Formation Rows v1 is the next focused battle-geometry pass: up to eight enemies, four front/four back row slots, optional explicit encounter placement, automatic centering for unspecified slots, stable survivor positions, and pincer-aware left/right flank rows. Rows are geometry-only until weapon/ranged contracts justify mechanical row penalties.
+Enemy Formation Rows v1 is complete: encounters can use up to eight enemies, four front/four back positions, automatic centering or explicit `slot: 0..3` placement, stable positions after defeats, and pincer-aware left/right flank rows. Rows remain geometry-only until weapon/ranged contracts justify mechanical row rules.
+
+The next focused battle-information pass is Scan & Tactical Help v1: unknown/known enemy HP/MP plus weakness/resistance/immunity detail while targeting, built on the now-stable formation and targeting contracts.
