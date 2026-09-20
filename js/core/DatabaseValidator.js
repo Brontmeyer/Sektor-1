@@ -1100,6 +1100,182 @@ class DatabaseValidator {
     }
   }
 
+  static validateEnemyActions(
+    actions,
+    label,
+    errors,
+    magickDatabase = null,
+    skillsDatabase = null,
+  ) {
+    const validActionTypes = new Set(["attack", "magick", "skill"]);
+    const validTargetStrategies = new Set([
+      "first",
+      "random",
+      "lowestHp",
+      "lowestHpRate",
+    ]);
+    const validTargetGroups = new Set(["ally", "enemy", "self"]);
+    const validConditions = new Set([
+      "always",
+      "selfHpBelow",
+      "selfHpAbove",
+      "allyHpBelow",
+      "allyDefeated",
+    ]);
+
+    actions.forEach((action, actionIndex) => {
+      const actionLabel = `${label}[${actionIndex}]`;
+
+      if (!this.isPlainObject(action)) {
+        errors.push(`${actionLabel} must be an object.`);
+        return;
+      }
+
+      this.validateKnownKeys(
+        actionLabel,
+        action,
+        [
+          "type",
+          "magickId",
+          "skillId",
+          "weight",
+          "targetGroup",
+          "targetStrategy",
+          "scope",
+          "condition",
+        ],
+        errors,
+      );
+
+      if (!validActionTypes.has(action.type)) {
+        errors.push(`${actionLabel} has unsupported type "${action.type}".`);
+      }
+
+      this.validateFiniteNumber(`${actionLabel}.weight`, action.weight, errors, {
+        min: Number.MIN_VALUE,
+      });
+
+      if (
+        action.targetStrategy !== undefined &&
+        !validTargetStrategies.has(action.targetStrategy)
+      ) {
+        errors.push(
+          `${actionLabel}.targetStrategy has unsupported value "${action.targetStrategy}".`,
+        );
+      }
+
+      if (["magick", "skill"].includes(action.type)) {
+        const isMagick = action.type === "magick";
+        const idKey = isMagick ? "magickId" : "skillId";
+        const database = isMagick ? magickDatabase : skillsDatabase;
+        const id = action[idKey];
+        const idValid = Number.isInteger(id) && id > 0;
+        const ability = idValid && Array.isArray(database) ? database[id] : null;
+        const labelName = isMagick ? "Magick" : "Skill";
+
+        if (!idValid) {
+          errors.push(`${actionLabel}.${idKey} must be a positive integer.`);
+        } else if (Array.isArray(database) && !ability) {
+          errors.push(`${actionLabel}.${idKey} must reference valid ${labelName}.`);
+        }
+
+        if (!isMagick && ability?.valorArt === true) {
+          errors.push(
+            `${actionLabel}.skillId cannot reference a Valor Art for an enemy action.`,
+          );
+        }
+
+        if (action.targetGroup !== undefined) {
+          if (!validTargetGroups.has(action.targetGroup)) {
+            errors.push(
+              `${actionLabel}.targetGroup has unsupported value "${action.targetGroup}".`,
+            );
+          } else if (
+            ability &&
+            (!Array.isArray(ability.target) ||
+              !ability.target.includes(action.targetGroup))
+          ) {
+            errors.push(
+              `${actionLabel}.targetGroup must be allowed by ${ability.name}.`,
+            );
+          }
+        }
+
+        if (
+          action.scope !== undefined &&
+          ability &&
+          (!Array.isArray(ability.scope) || !ability.scope.includes(action.scope))
+        ) {
+          errors.push(`${actionLabel}.scope must be allowed by ${ability.name}.`);
+        }
+
+        const unrelatedIdKey = isMagick ? "skillId" : "magickId";
+        if (action[unrelatedIdKey] !== undefined) {
+          const unrelatedLabel = isMagick ? "Skill" : "Magick";
+          errors.push(
+            `${actionLabel}.${unrelatedIdKey} is only valid for ${unrelatedLabel} actions.`,
+          );
+        }
+      } else {
+        if (action.magickId !== undefined) {
+          errors.push(`${actionLabel}.magickId is only valid for Magick actions.`);
+        }
+
+        if (action.skillId !== undefined) {
+          errors.push(`${actionLabel}.skillId is only valid for Skill actions.`);
+        }
+
+        if (action.targetGroup !== undefined) {
+          errors.push(
+            `${actionLabel}.targetGroup is only valid for Magick or Skill actions.`,
+          );
+        }
+
+        if (action.scope !== undefined) {
+          errors.push(
+            `${actionLabel}.scope is only valid for Magick or Skill actions.`,
+          );
+        }
+      }
+
+      if (action.condition !== undefined && action.condition !== null) {
+        if (!this.isPlainObject(action.condition)) {
+          errors.push(`${actionLabel}.condition must be an object.`);
+        } else {
+          this.validateKnownKeys(
+            `${actionLabel}.condition`,
+            action.condition,
+            ["type", "value"],
+            errors,
+          );
+
+          if (!validConditions.has(action.condition.type)) {
+            errors.push(
+              `${actionLabel}.condition has unsupported type "${action.condition.type}".`,
+            );
+          }
+
+          if (
+            ["selfHpBelow", "selfHpAbove", "allyHpBelow"].includes(
+              action.condition.type,
+            )
+          ) {
+            this.validateFiniteNumber(
+              `${actionLabel}.condition.value`,
+              action.condition.value,
+              errors,
+              { min: 0, max: 1 },
+            );
+          } else if (action.condition.value !== undefined) {
+            errors.push(
+              `${actionLabel}.condition.value is not used by ${action.condition.type}.`,
+            );
+          }
+        }
+      }
+    });
+  }
+
   static validateEnemies(
     enemies,
     items,
@@ -1182,181 +1358,100 @@ class DatabaseValidator {
         });
       }
 
+      if (enemy.actions !== undefined && enemy.phases !== undefined) {
+        errors.push(`${label} must define either actions or phases, not both.`);
+      }
+
       if (enemy.actions !== undefined) {
         if (!Array.isArray(enemy.actions)) {
           errors.push(`${label} actions must be an array when provided.`);
         } else {
-          const validActionTypes = new Set(["attack", "magick", "skill"]);
-          const validTargetStrategies = new Set([
-            "first",
-            "random",
-            "lowestHp",
-            "lowestHpRate",
-          ]);
-          const validTargetGroups = new Set(["ally", "enemy", "self"]);
-          const validConditions = new Set([
-            "always",
-            "selfHpBelow",
-            "selfHpAbove",
-            "allyHpBelow",
-            "allyDefeated",
-          ]);
+          this.validateEnemyActions(
+            enemy.actions,
+            `${label} actions`,
+            errors,
+            magickDatabase,
+            skillsDatabase,
+          );
+        }
+      }
 
-          enemy.actions.forEach((action, actionIndex) => {
-            const actionLabel = `${label} actions[${actionIndex}]`;
+      if (enemy.phases !== undefined) {
+        if (!Array.isArray(enemy.phases) || enemy.phases.length === 0) {
+          errors.push(`${label} phases must be a non-empty array when provided.`);
+        } else {
+          const seenPhaseIds = new Set();
+          let previousThreshold = null;
 
-            if (!this.isPlainObject(action)) {
-              errors.push(`${actionLabel} must be an object.`);
+          enemy.phases.forEach((phase, phaseIndex) => {
+            const phaseLabel = `${label} phases[${phaseIndex}]`;
+
+            if (!this.isPlainObject(phase)) {
+              errors.push(`${phaseLabel} must be an object.`);
               return;
             }
 
             this.validateKnownKeys(
-              actionLabel,
-              action,
-              [
-                "type",
-                "magickId",
-                "skillId",
-                "weight",
-                "targetGroup",
-                "targetStrategy",
-                "scope",
-                "condition",
-              ],
+              phaseLabel,
+              phase,
+              ["id", "name", "hpRateAtOrBelow", "enterMessage", "actions"],
               errors,
             );
 
-            if (!validActionTypes.has(action.type)) {
-              errors.push(`${actionLabel} has unsupported type "${action.type}".`);
+            if (typeof phase.id !== "string" || phase.id.trim() === "") {
+              errors.push(`${phaseLabel}.id must be a non-empty string.`);
+            } else if (seenPhaseIds.has(phase.id)) {
+              errors.push(`${phaseLabel}.id must be unique within the enemy.`);
+            } else {
+              seenPhaseIds.add(phase.id);
             }
 
-            this.validateFiniteNumber(`${actionLabel}.weight`, action.weight, errors, {
-              min: Number.MIN_VALUE,
-            });
-
-            if (
-              action.targetStrategy !== undefined &&
-              !validTargetStrategies.has(action.targetStrategy)
-            ) {
-              errors.push(
-                `${actionLabel}.targetStrategy has unsupported value "${action.targetStrategy}".`,
-              );
+            if (typeof phase.name !== "string" || phase.name.trim() === "") {
+              errors.push(`${phaseLabel}.name must be a non-empty string.`);
             }
 
-            if (["magick", "skill"].includes(action.type)) {
-              const isMagick = action.type === "magick";
-              const idKey = isMagick ? "magickId" : "skillId";
-              const database = isMagick ? magickDatabase : skillsDatabase;
-              const id = action[idKey];
-              const idValid = Number.isInteger(id) && id > 0;
-              const ability =
-                idValid && Array.isArray(database) ? database[id] : null;
-              const labelName = isMagick ? "Magick" : "Skill";
+            const thresholdValid = this.validateFiniteNumber(
+              `${phaseLabel}.hpRateAtOrBelow`,
+              phase.hpRateAtOrBelow,
+              errors,
+              { min: Number.MIN_VALUE, max: 1 },
+            );
 
-              if (!idValid) {
-                errors.push(`${actionLabel}.${idKey} must be a positive integer.`);
-              } else if (Array.isArray(database) && !ability) {
-                errors.push(
-                  `${actionLabel}.${idKey} must reference valid ${labelName}.`,
-                );
-              }
-
-              if (!isMagick && ability?.valorArt === true) {
-                errors.push(
-                  `${actionLabel}.skillId cannot reference a Valor Art for an enemy action.`,
-                );
-              }
-
-              if (action.targetGroup !== undefined) {
-                if (!validTargetGroups.has(action.targetGroup)) {
-                  errors.push(
-                    `${actionLabel}.targetGroup has unsupported value "${action.targetGroup}".`,
-                  );
-                } else if (
-                  ability &&
-                  (!Array.isArray(ability.target) ||
-                    !ability.target.includes(action.targetGroup))
-                ) {
-                  errors.push(
-                    `${actionLabel}.targetGroup must be allowed by ${ability.name}.`,
-                  );
-                }
+            if (thresholdValid) {
+              if (phaseIndex === 0 && phase.hpRateAtOrBelow !== 1) {
+                errors.push(`${phaseLabel}.hpRateAtOrBelow must be 1 for the opening phase.`);
               }
 
               if (
-                action.scope !== undefined &&
-                ability &&
-                (!Array.isArray(ability.scope) ||
-                  !ability.scope.includes(action.scope))
+                previousThreshold !== null &&
+                phase.hpRateAtOrBelow >= previousThreshold
               ) {
                 errors.push(
-                  `${actionLabel}.scope must be allowed by ${ability.name}.`,
+                  `${phaseLabel}.hpRateAtOrBelow must be lower than the previous phase threshold.`,
                 );
               }
 
-              const unrelatedIdKey = isMagick ? "skillId" : "magickId";
-              if (action[unrelatedIdKey] !== undefined) {
-                const unrelatedLabel = isMagick ? "Skill" : "Magick";
-                errors.push(
-                  `${actionLabel}.${unrelatedIdKey} is only valid for ${unrelatedLabel} actions.`,
-                );
-              }
-            } else {
-              if (action.magickId !== undefined) {
-                errors.push(`${actionLabel}.magickId is only valid for Magick actions.`);
-              }
-
-              if (action.skillId !== undefined) {
-                errors.push(`${actionLabel}.skillId is only valid for Skill actions.`);
-              }
-
-              if (action.targetGroup !== undefined) {
-                errors.push(
-                  `${actionLabel}.targetGroup is only valid for Magick or Skill actions.`,
-                );
-              }
-
-              if (action.scope !== undefined) {
-                errors.push(
-                  `${actionLabel}.scope is only valid for Magick or Skill actions.`,
-                );
-              }
+              previousThreshold = phase.hpRateAtOrBelow;
             }
 
-            if (action.condition !== undefined && action.condition !== null) {
-              if (!this.isPlainObject(action.condition)) {
-                errors.push(`${actionLabel}.condition must be an object.`);
-              } else {
-                this.validateKnownKeys(
-                  `${actionLabel}.condition`,
-                  action.condition,
-                  ["type", "value"],
-                  errors,
-                );
+            if (
+              phase.enterMessage !== undefined &&
+              (typeof phase.enterMessage !== "string" ||
+                phase.enterMessage.trim() === "")
+            ) {
+              errors.push(`${phaseLabel}.enterMessage must be a non-empty string when provided.`);
+            }
 
-                if (!validConditions.has(action.condition.type)) {
-                  errors.push(
-                    `${actionLabel}.condition has unsupported type "${action.condition.type}".`,
-                  );
-                }
-
-                if (
-                  ["selfHpBelow", "selfHpAbove", "allyHpBelow"].includes(
-                    action.condition.type,
-                  )
-                ) {
-                  this.validateFiniteNumber(
-                    `${actionLabel}.condition.value`,
-                    action.condition.value,
-                    errors,
-                    { min: 0, max: 1 },
-                  );
-                } else if (action.condition.value !== undefined) {
-                  errors.push(
-                    `${actionLabel}.condition.value is not used by ${action.condition.type}.`,
-                  );
-                }
-              }
+            if (!Array.isArray(phase.actions) || phase.actions.length === 0) {
+              errors.push(`${phaseLabel}.actions must be a non-empty array.`);
+            } else {
+              this.validateEnemyActions(
+                phase.actions,
+                `${phaseLabel}.actions`,
+                errors,
+                magickDatabase,
+                skillsDatabase,
+              );
             }
           });
         }

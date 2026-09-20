@@ -184,7 +184,7 @@ Mastery Trial quest content and Essence Evolution can remain later systems while
 
 Once the player's core battle vocabulary is reliable, enemies need systems capable of using and responding to that vocabulary.
 
-Enemy Actions & AI v1 plus Enemy Skills & AI Integration v1 now provide:
+Enemy Actions & AI v1, Enemy Skills & AI Integration v1, and Boss / Phase AI v1 now provide:
 
 - Data-driven enemy action lists
 - Weighted action selection
@@ -192,19 +192,22 @@ Enemy Actions & AI v1 plus Enemy Skills & AI Integration v1 now provide:
 - Legal target selection and reusable target strategies
 - Physical Attack plus shared-runtime Magick and non-Magick Skill execution
 - Basic Attack fallback when configured actions become unusable
+- Optional validated boss phases with strictly descending HP thresholds
+- Battle-local monotonic phase progression and phase-specific action pools
+- One-time phase-entry feedback without boss-name branches in AI or combat execution
 
-Remaining work includes:
+Remaining advanced work includes:
 
 - Add status resistance / immunity data
 - Expand condition/target vocabulary only as encounter design requires it
-- Establish boss scripting / phase state on top of the same AI boundary
-- Support boss-specific mechanics through reusable battle systems
+- Add scripted phase-transition effects only when approved encounters require them
+- Support richer boss-specific mechanics through reusable battle systems
 
-Enemy AI decides what an enemy attempts to do. Shared battle systems remain responsible for legality and effect resolution.
+Enemy AI decides what an enemy attempts to do. Shared battle systems remain responsible for legality and effect resolution. Boss phase state changes which ordinary action pool is available; it does not replace the shared combat engine.
 
 ## Milestone Exit Condition
 
-This milestone is complete when ordinary enemies can make meaningful legal battle decisions and the engine has a reusable foundation for scripted or conditional boss behavior.
+The core exit condition is met: ordinary enemies can make meaningful legal battle decisions and the engine now has a reusable data-driven phase foundation for scripted or conditional boss behavior. Advanced encounter mechanics can continue to extend this boundary without blocking later milestones.
 
 ---
 

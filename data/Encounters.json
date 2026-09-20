@@ -15,5 +15,17 @@
         "slot": 1
       }
     ]
+  },
+  {
+    "_comment": "ID 2: Test Slime Alpha - Phase Boss",
+    "id": 2,
+    "name": "Test Slime Alpha",
+    "canEscape": false,
+    "members": [
+      {
+        "enemyId": 2,
+        "slot": 0
+      }
+    ]
   }
 ]

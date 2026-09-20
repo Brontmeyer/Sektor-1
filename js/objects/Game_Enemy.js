@@ -17,12 +17,14 @@ class Game_Enemy extends Game_Battler {
     this.dropTable = Array.isArray(enemyData.dropTable)
       ? enemyData.dropTable.map((drop) => ({ ...drop }))
       : [];
-    this.actions = Array.isArray(enemyData.actions)
-      ? enemyData.actions.map((action) => ({
-          ...action,
-          condition: action.condition ? { ...action.condition } : null,
+    this.actions = this.cloneActions(enemyData.actions);
+    this.phases = Array.isArray(enemyData.phases)
+      ? enemyData.phases.map((phase) => ({
+          ...phase,
+          actions: this.cloneActions(phase.actions),
         }))
       : [];
+    this.phaseIndex = 0;
     this.banished = false;
     this.battleSprite = enemyData.battleSprite || null;
     this.battleSpriteWidth = enemyData.battleSpriteWidth || 128;
@@ -31,23 +33,90 @@ class Game_Enemy extends Game_Battler {
     this.battleSpriteRows = enemyData.battleSpriteRows || 1;
   }
 
-  actionDefinitions() {
-    return this.actions.map((action) => ({
-      ...action,
-      condition: action.condition ? { ...action.condition } : null,
+  cloneActions(actions) {
+    return Array.isArray(actions)
+      ? actions.map((action) => ({
+          ...action,
+          condition: action.condition ? { ...action.condition } : null,
+        }))
+      : [];
+  }
+
+  phaseDefinitions() {
+    return this.phases.map((phase) => ({
+      ...phase,
+      actions: this.cloneActions(phase.actions),
     }));
+  }
+
+  currentPhase() {
+    return this.phases[this.phaseIndex] || null;
+  }
+
+  refreshPhase() {
+    const previousPhase = this.currentPhase();
+
+    if (!previousPhase || this.isDefeated()) {
+      return {
+        changed: false,
+        from: previousPhase,
+        to: previousPhase,
+      };
+    }
+
+    let nextIndex = this.phaseIndex;
+    const hpRate = this.hpRate();
+
+    for (let index = this.phaseIndex + 1; index < this.phases.length; index++) {
+      const threshold = Number(this.phases[index]?.hpRateAtOrBelow);
+
+      if (!Number.isFinite(threshold) || hpRate > threshold) {
+        break;
+      }
+
+      nextIndex = index;
+    }
+
+    if (nextIndex === this.phaseIndex) {
+      return {
+        changed: false,
+        from: previousPhase,
+        to: previousPhase,
+      };
+    }
+
+    this.phaseIndex = nextIndex;
+
+    return {
+      changed: true,
+      from: previousPhase,
+      to: this.currentPhase(),
+    };
+  }
+
+  actionDefinitions() {
+    const phase = this.currentPhase();
+    return this.cloneActions(phase ? phase.actions : this.actions);
+  }
+
+  allActionDefinitions() {
+    if (this.phases.length > 0) {
+      return this.phases.flatMap((phase) => this.cloneActions(phase.actions));
+    }
+
+    return this.cloneActions(this.actions);
   }
 
   knowsMagick(magickId) {
     const id = Number(magickId);
-    return this.actions.some(
+    return this.allActionDefinitions().some(
       (action) => action.type === "magick" && Number(action.magickId) === id,
     );
   }
 
   knowsSkill(skillId) {
     const id = Number(skillId);
-    return this.actions.some(
+    return this.allActionDefinitions().some(
       (action) => action.type === "skill" && Number(action.skillId) === id,
     );
   }

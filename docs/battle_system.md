@@ -609,18 +609,13 @@ AI chooses what an enemy attempts to do. Shared battle systems remain responsibl
 
 # 👹 Boss Battles
 
-Boss scripting is planned but not yet a completed runtime system.
+Boss / Phase AI v1 is active. Bosses can define a validated `phases` array in `Enemies.json`; phased enemies use that array instead of a top-level `actions` list. Each phase declares a stable `id`, display `name`, an `hpRateAtOrBelow` threshold, an ordinary Attack/Magick/Skill action pool, and an optional `enterMessage`. The opening phase must begin at `1.0`, later thresholds must strictly decrease, and every phase action is validated through the same enemy-action contract as ordinary enemies.
 
-The battle architecture should eventually support mechanics such as:
+Phase progression is battle-local and monotonic. `Game_Enemy.refreshPhase()` advances only forward when current HP reaches a later threshold, never rolls backward after healing, and may skip directly to a deeper phase after a large hit. `BattleManager` refreshes phase state at the start of that enemy's turn and emits the one-time entry message. `BattleEnemyAI` itself does not contain boss branches: it continues to request `enemy.actionDefinitions()`, which now returns the active phase action pool.
 
-- Phase changes
-- Conditional actions
-- Threshold reactions
-- Unique status interactions
-- Scripted battle events
-- Specialized targeting behavior
+**Test Slime Alpha** is the first canonical phase boss. Its opening pool mixes Attack, Goo Rush, and Ember; the Pressure phase raises Goo Rush/Ember pressure and introduces Mend; the Frenzy phase drops healing and strongly favors offense. Encounter 2 is non-escapable and is reachable through the Map001 Boss Battle Tester for hands-on verification.
 
-Boss-specific logic should use reusable battle systems rather than duplicating the core combat engine.
+Advanced boss work may later add scripted transition effects, summons, environment changes, unique status interactions, specialized targeting, or encounter-level state machines. Those mechanics should extend reusable battle systems rather than duplicating the core combat engine.
 
 ---
 
@@ -631,7 +626,7 @@ Major battle features still planned include:
 - Complete Status Runtime
 - Complete Essence Runtime
 - Advanced enemy / boss behavior
-- Boss mechanics
+- Advanced boss transition effects and encounter-specific mechanics
 - Summon Magick
 - Party switching
 - Dual Techniques

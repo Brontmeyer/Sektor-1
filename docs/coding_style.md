@@ -227,6 +227,8 @@ If a method begins handling unrelated targeting, persistence, rendering, databas
 
 Enemy AI follows the same ownership rule: enemy action definitions belong in `Enemies.json`, `BattleEnemyAI` decides among legal configured Attack/Magick/Skill choices, and shared battler/battle systems resolve the chosen action. Enemy Skill actions reference canonical `Skills.json` records through `skillId`; do not duplicate Skill formulas or branch on named enemies in `BattleManager` when a reusable action, condition, target-strategy, or Skill-effect contract can express the behavior.
 
+Boss phases follow the same boundary. Optional `Enemies.json` phase records own threshold/action-pool data, `Game_Enemy` owns only its battle-local monotonic phase index, `BattleEnemyAI` continues to select from `actionDefinitions()`, and `BattleManager` owns transition presentation. Do not add boss-name checks to AI or combat execution when a reusable phase/action contract can express the behavior.
+
 Before adding logic to an existing large method, ask whether the behavior belongs in a smaller reusable helper or another system entirely.
 
 ---

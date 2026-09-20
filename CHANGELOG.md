@@ -12,6 +12,13 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Boss / Phase AI v1 with validated, data-driven enemy phase definitions, strictly descending HP thresholds, per-phase action pools, and optional one-time entry messages
+- Added battle-local monotonic phase state to `Game_Enemy`; healing does not roll a boss backward into an earlier phase, while large HP drops may advance directly to the deepest eligible phase
+- Kept `BattleEnemyAI` focused on choosing from the active action pool while `BattleManager` refreshes phase state at enemy-turn start and presents phase-entry feedback
+- Added the non-escapable **Test Slime Alpha** boss encounter plus a Map001 boss tester so phase behavior can be exercised in normal playtest flow
+- Added dedicated Boss Phase AI regression coverage for active action pools, irreversible threshold progression, multi-threshold jumps, one-time transition feedback, and phase-schema validation
+- Normalized decorative Unicode em-dash escapes in `Skills.json` comments to regular hyphens for raw-data consistency
+
 - Added Enemy Skills & AI Integration v1 so enemy action definitions can reference canonical non-Magick Skills through validated `skillId`, target-group, scope, weight, and condition metadata
 - Added Test Slime's first canonical enemy technique, **Goo Rush**, as a regular physical Skill with a Slow status rider rather than an enemy-only combat special case
 - Reused the shared Skill target/effect runtime for enemy damage, healing, and control techniques while keeping `BattleEnemyAI` responsible only for decision-making and target strategy

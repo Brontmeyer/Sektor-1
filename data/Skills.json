@@ -1,7 +1,7 @@
 [
   null,
   {
-    "_comment": "Tyler \u2014 Unbroken",
+    "_comment": "Tyler - Unbroken",
     "id": 1,
     "name": "Unbroken",
     "description": "A decisive single-target strike that converts a full Valor gauge into overwhelming physical force.",
@@ -18,7 +18,7 @@
     ]
   },
   {
-    "_comment": "Sarah \u2014 Rallyheart",
+    "_comment": "Sarah - Rallyheart",
     "id": 2,
     "name": "Rallyheart",
     "description": "A party-wide surge of resolve that restores 35% of each injured ally's maximum HP.",
@@ -35,7 +35,7 @@
     ]
   },
   {
-    "_comment": "Aboo \u2014 Wild Arc",
+    "_comment": "Aboo - Wild Arc",
     "id": 3,
     "name": "Wild Arc",
     "description": "A sweeping physical assault against all enemies with a 60% base chance to inflict Darkness.",
@@ -55,7 +55,7 @@
     ]
   },
   {
-    "_comment": "G Prime \u2014 Zero Lock",
+    "_comment": "G Prime - Zero Lock",
     "id": 4,
     "name": "Zero Lock",
     "description": "A battlefield-control Art that attempts to inflict Slow on every enemy.",
@@ -74,7 +74,7 @@
     ]
   },
   {
-    "_comment": "Test Slime \u2014 Goo Rush",
+    "_comment": "Test Slime - Goo Rush",
     "id": 5,
     "name": "Goo Rush",
     "description": "A lurching body-check that deals physical damage and may leave the target Slowed.",

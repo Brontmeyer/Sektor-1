@@ -164,7 +164,8 @@ Completed systems and design rules should be documented rather than duplicated h
 
 - [x] Enemy Actions & AI v1
 - [x] Enemy Skills & AI Integration v1
-- [ ] Boss scripting system
+- [x] Boss / Phase AI v1 with data-driven HP thresholds and phase action pools
+- [ ] Advanced boss scripting effects and encounter-specific phase mechanics
 - [ ] Status resistance / immunity data
 - [x] Enemy action-selection rules
 - [ ] Boss-specific mechanics
@@ -204,7 +205,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Complete Essence runtime
 - [x] Enemy Actions & AI v1
 - [x] Enemy Skills & AI Integration v1
-- [ ] Boss scripting
+- [x] Boss / Phase AI v1
+- [ ] Advanced boss scripting and phase effects
 - [ ] Event scripting
 - [ ] Cutscene system
 

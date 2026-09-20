@@ -2629,6 +2629,27 @@ class BattleManager {
     return resolutions.length > 0;
   }
 
+  refreshEnemyPhase(enemy) {
+    if (!enemy || typeof enemy.refreshPhase !== "function") {
+      return null;
+    }
+
+    const transition = enemy.refreshPhase();
+
+    if (!transition?.changed) {
+      return transition;
+    }
+
+    const phase = transition.to;
+    const message =
+      typeof phase?.enterMessage === "string" && phase.enterMessage.trim() !== ""
+        ? phase.enterMessage
+        : `${enemy.name} enters ${phase?.name || "a new phase"}!`;
+
+    this.scene.addBattleMessage(message);
+    return transition;
+  }
+
   performEnemyTurn(
     enemy = this.currentEnemyTurnBattler(),
     random = Math.random,
@@ -2656,6 +2677,8 @@ class BattleManager {
       this.advanceEnemyTurn(true);
       return;
     }
+
+    this.refreshEnemyPhase(enemy);
 
     if (!this.battlerCanAct(enemy)) {
       battle.addBattleMessage(`${enemy.name} cannot act!`);

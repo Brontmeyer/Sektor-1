@@ -277,6 +277,37 @@
           ]
         }
       ]
+    },
+
+    {
+      "id": 5,
+      "name": "Boss Battle Tester",
+
+      "x": 850,
+      "y": 300,
+
+      "width": 32,
+      "height": 32,
+
+      "solid": true,
+
+      "pages": [
+        {
+          "conditions": {},
+
+          "commands": [
+            {
+              "code": "battle",
+              "encounterId": 2
+            },
+            {
+              "code": "text",
+              "speaker": "System",
+              "text": "The boss test encounter has ended."
+            }
+          ]
+        }
+      ]
     }
   ]
 }

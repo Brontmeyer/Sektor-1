@@ -74,5 +74,141 @@
         }
       }
     ]
+  },
+  {
+    "_comment": "ID 2: Test Slime Alpha - Phase Boss",
+    "id": 2,
+    "name": "Test Slime Alpha",
+    "elementRates": {
+      "fire": 1.0
+    },
+    "battleSprite": "TestSlime.png",
+    "battleSpriteWidth": 128,
+    "battleSpriteHeight": 96,
+    "battleSpriteFrames": 1,
+    "battleSpriteRows": 1,
+    "level": 4,
+    "expReward": 250,
+    "maxHp": 900,
+    "maxMp": 36,
+    "strength": 24,
+    "vitality": 14,
+    "dexterity": 8,
+    "agility": 6,
+    "magic": 8,
+    "spirit": 10,
+    "luck": 5,
+    "attack": 12,
+    "attackPercent": 92,
+    "defense": 10,
+    "defensePercent": 5,
+    "magicAttack": 9,
+    "magicDefense": 9,
+    "magicDefensePercent": 2,
+    "gilReward": 80,
+    "resonanceReward": 20,
+    "dropTable": [
+      {
+        "itemId": 1,
+        "quantity": 2,
+        "chance": 0.5
+      }
+    ],
+    "phases": [
+      {
+        "id": "opening",
+        "name": "Opening",
+        "hpRateAtOrBelow": 1.0,
+        "actions": [
+          {
+            "type": "attack",
+            "weight": 4,
+            "targetStrategy": "random"
+          },
+          {
+            "type": "skill",
+            "skillId": 5,
+            "weight": 2,
+            "targetGroup": "enemy",
+            "targetStrategy": "random",
+            "scope": "single"
+          },
+          {
+            "type": "magick",
+            "magickId": 10,
+            "weight": 2,
+            "targetGroup": "enemy",
+            "targetStrategy": "random",
+            "scope": "single"
+          }
+        ]
+      },
+      {
+        "id": "pressure",
+        "name": "Pressure",
+        "hpRateAtOrBelow": 0.65,
+        "enterMessage": "Test Slime Alpha tightens its rhythm!",
+        "actions": [
+          {
+            "type": "attack",
+            "weight": 2,
+            "targetStrategy": "random"
+          },
+          {
+            "type": "skill",
+            "skillId": 5,
+            "weight": 4,
+            "targetGroup": "enemy",
+            "targetStrategy": "random",
+            "scope": "single"
+          },
+          {
+            "type": "magick",
+            "magickId": 10,
+            "weight": 3,
+            "targetGroup": "enemy",
+            "targetStrategy": "random",
+            "scope": "single"
+          },
+          {
+            "type": "magick",
+            "magickId": 1,
+            "weight": 2,
+            "targetGroup": "ally",
+            "targetStrategy": "lowestHpRate",
+            "scope": "single"
+          }
+        ]
+      },
+      {
+        "id": "frenzy",
+        "name": "Frenzy",
+        "hpRateAtOrBelow": 0.3,
+        "enterMessage": "Test Slime Alpha erupts into a frenzy!",
+        "actions": [
+          {
+            "type": "attack",
+            "weight": 1,
+            "targetStrategy": "random"
+          },
+          {
+            "type": "skill",
+            "skillId": 5,
+            "weight": 5,
+            "targetGroup": "enemy",
+            "targetStrategy": "random",
+            "scope": "single"
+          },
+          {
+            "type": "magick",
+            "magickId": 10,
+            "weight": 4,
+            "targetGroup": "enemy",
+            "targetStrategy": "random",
+            "scope": "single"
+          }
+        ]
+      }
+    ]
   }
 ]

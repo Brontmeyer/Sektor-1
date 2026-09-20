@@ -122,6 +122,10 @@ Pass 40 is post-audit presentation work and does not reopen a historical finding
 
 Pass 41 adds no reopened audit item. Enemy Skills & AI Integration v1 is post-audit feature work that extends the already-closed enemy-action and Skills boundaries: `BattleEnemyAI` now selects canonical Skill actions, `Game_Enemy` derives Skill knowledge from action data, and `BattleManager` reuses the same Skill effect-dispatch helpers for both battle sides. Valor Arts remain actor-owned and are rejected for enemy actions. Save Runtime remains v9 because enemy Skill choices are canonical database content rather than persisted battle state.
 
+## Post-Audit Feature Note: Boss / Phase AI v1
+
+Pass 42 is post-audit feature development and does not reopen a historical finding. Optional validated enemy phases reuse the existing Attack/Magick/Skill action vocabulary and `BattleEnemyAI` selection boundary. `Game_Enemy` owns only battle-local monotonic phase state, while `BattleManager` presents one-time phase-entry feedback. No persistent state changes, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

@@ -44,6 +44,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Skills UI Integration Cleanup v1
 -   ✅ Battle Presentation & Feedback v1
 -   ✅ Enemy Skills & AI Integration v1
+-   ✅ Boss / Phase AI v1
 
 ------------------------------------------------------------------------
 
@@ -91,7 +92,8 @@ Systems currently being expanded include:
 -   🚧 Essence ability grants and passive runtime
 -   ✅ Enemy Actions & AI v1
 -   ✅ Enemy Skills & AI Integration v1
--   🚧 Boss mechanics
+-   ✅ Boss / Phase AI v1
+-   🚧 Advanced boss mechanics and scripted phase effects
 -   ✅ Valor Runtime v1
 -   ✅ Valor Arts Runtime v1
 -   ✅ Character-specific Valor Art content v1
@@ -191,7 +193,7 @@ Enemy Actions & AI v1 gives enemy definitions validated action lists in `data/En
 
 `BattleEnemyAI` decides **what** an enemy attempts and **who** it targets. `BattleManager` and shared `Game_Battler` runtimes still own mechanical legality and effect resolution. Enemy Magick therefore keeps using MP, Reflect, elemental, healing, and status rules from the Magick runtime, while enemy Skills use the same physical-damage, healing, status, targeting, and action-restriction contracts as actor Skills. Valor Arts remain actor-owned and are rejected as enemy actions.
 
-The current Test Slime demonstrates the combined contract with weighted Attack, **Goo Rush**, and Ember choices plus a conditional Mend option below half HP. Goo Rush is defined in `Skills.json`, deals physical Skill damage, and carries a Slow status rider without any Test-Slime-specific execution branch. Boss phases, scripted threshold reactions, and richer enemy condition types remain future extensions of this same foundation.
+The current Test Slime demonstrates the combined contract with weighted Attack, **Goo Rush**, and Ember choices plus a conditional Mend option below half HP. Goo Rush is defined in `Skills.json`, deals physical Skill damage, and carries a Slow status rider without any Test-Slime-specific execution branch. Boss / Phase AI v1 extends that same foundation with validated HP-threshold phase records. `Game_Enemy` owns battle-local monotonic phase state, `BattleEnemyAI` sees only the current phase action pool, and `BattleManager` announces one-time phase entry at enemy-turn start. **Test Slime Alpha** is the first canonical phase boss and is available through the Map001 Boss Battle Tester. Advanced scripted phase effects and richer boss mechanics remain future work.
 
 ------------------------------------------------------------------------
 
