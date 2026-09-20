@@ -12,20 +12,35 @@ class Window_BattleCommand {
     this.visible = true;
     this.sideCommand = null;
 
+    this.padding = 14;
+    this.lineHeight = 36;
+
+    this.sideWidth = 96;
+    this.sideHeight = 44;
+    this.sideGap = 0;
+
     this.width = 220;
-    this.padding = 20;
-    this.lineHeight = 40;
-
-    this.sideWidth = 132;
-    this.sideHeight = 62;
-    this.sideGap = 12;
-
     this.height = this.padding * 2 + this.commands.length * this.lineHeight;
-
-    // Leave enough room for the temporary Escape side window without moving
-    // the main command list when the side action is revealed.
-    this.x = Math.max(40, this.sideWidth + this.sideGap + 36);
+    this.x = 160;
     this.y = Graphics.height - this.height - 20;
+
+    this.refreshLayout();
+  }
+
+  refreshLayout() {
+    const bounds = this.scene?.hudLayout?.commandBounds?.();
+
+    if (!bounds) {
+      return false;
+    }
+
+    this.x = bounds.x;
+    this.y = bounds.y;
+    this.width = bounds.width;
+    this.height = bounds.height;
+    this.lineHeight = bounds.height / this.commands.length;
+    this.padding = 0;
+    return true;
   }
 
   actor() {
@@ -200,7 +215,7 @@ class Window_BattleCommand {
     const x = isEscape
       ? this.x - this.sideWidth - this.sideGap
       : this.x + this.width + this.sideGap;
-    const y = this.y + (this.height - this.sideHeight) / 2;
+    const y = this.y;
 
     context.fillStyle = "rgba(0, 0, 0, 0.9)";
     context.fillRect(x, y, this.sideWidth, this.sideHeight);
@@ -222,6 +237,7 @@ class Window_BattleCommand {
       return;
     }
 
+    this.refreshLayout();
     this.ensureEnabledSelection();
 
     const context = Graphics.context;

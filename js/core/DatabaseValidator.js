@@ -2392,6 +2392,10 @@ class DatabaseValidator {
         continue;
       }
 
+      if (encounter.members.length > 5) {
+        errors.push(`Encounter ${index} may define at most 5 enemy members.`);
+      }
+
       const slots = new Set();
 
       for (let memberIndex = 0; memberIndex < encounter.members.length; memberIndex++) {
@@ -2410,9 +2414,9 @@ class DatabaseValidator {
         if (
           !Number.isInteger(member.slot) ||
           member.slot < 0 ||
-          member.slot > 2
+          member.slot > 4
         ) {
-          errors.push(`${label} slot must be an integer from 0 to 2.`);
+          errors.push(`${label} slot must be an integer from 0 to 4.`);
         }
 
         if (formation === "pincer") {
@@ -2423,7 +2427,7 @@ class DatabaseValidator {
           } else if (
             Number.isInteger(member.slot) &&
             member.slot >= 0 &&
-            member.slot <= 2
+            member.slot <= 4
           ) {
             const slotKey = `${member.side}:${member.slot}`;
 
@@ -2443,7 +2447,7 @@ class DatabaseValidator {
           if (
             Number.isInteger(member.slot) &&
             member.slot >= 0 &&
-            member.slot <= 2
+            member.slot <= 4
           ) {
             if (slots.has(member.slot)) {
               errors.push(`Encounter ${index} uses slot ${member.slot} more than once.`);

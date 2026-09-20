@@ -217,6 +217,38 @@ function testPhysicalOutgoingDamageAndAccuracyModifiers() {
   assert.equal(target.hp, 995);
 }
 
+function testRearExposureBoostsOnlyPhysicalDamagePath() {
+  const { Game_Battler, BattleManager } = loadCombatClasses();
+  const attacker = new Game_Battler({
+    name: "Rear Attacker",
+    maxHp: 100,
+    attack: 100,
+  });
+  const rearTarget = new Game_Battler({ name: "Rear Target", maxHp: 1000 });
+  const frontTarget = new Game_Battler({ name: "Front Target", maxHp: 1000 });
+  let turned = null;
+  const rearManager = new BattleManager({
+    partyController: null,
+    formationManager: { physicalRearDamageMultiplier: () => 1.5 },
+    turnActorTowardEnemies(target) {
+      turned = target;
+    },
+  });
+  const frontManager = new BattleManager({
+    partyController: null,
+    formationManager: { physicalRearDamageMultiplier: () => 1 },
+  });
+
+  const rear = rearManager.applyPhysicalDamage(attacker, rearTarget);
+  const front = frontManager.applyPhysicalDamage(attacker, frontTarget);
+
+  assert.equal(rear.damage, Math.floor(front.damage * 1.5));
+  assert.equal(rear.rearExposed, true);
+  assert.equal(rear.rearMultiplier, 1.5);
+  assert.equal(front.rearExposed, false);
+  assert.equal(turned, rearTarget);
+}
+
 function testMagickUsesSharedDamageResolution() {
   const { Game_Actor, Game_Enemy } = loadCombatClasses();
   const actor = new Game_Actor(1);
@@ -254,6 +286,7 @@ testIncomingDamageStatusModifiers();
 testShieldPhysicalImmunityAndElementalAbsorption();
 testPhysicalDamageWakeRules();
 testPhysicalOutgoingDamageAndAccuracyModifiers();
+testRearExposureBoostsOnlyPhysicalDamagePath();
 testMagickUsesSharedDamageResolution();
 
 console.log("Combat modifier regression tests passed.");

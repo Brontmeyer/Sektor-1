@@ -46,6 +46,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Battle Command Navigation & Side Actions v1
 -   ✅ Battle Formation & Party Layout v1
 -   ✅ Battle HUD & Message Layout v1
+-   ✅ Battle Presentation & Feedback v2
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
 
@@ -87,7 +88,7 @@ Current battle features include:
 -   ✅ Animation controller
 -   ✅ Magick foundation
 -   ✅ Skills Runtime v1 foundation
--   ✅ Encounter/active-turn context, contextual controls, top battle messaging, and target feedback
+-   ✅ Contextual controls, transient action/state banners, floating combat feedback, and four-actor HUD geometry
 -   ✅ Idempotent battle resolution and structured rewards
 -   ✅ Gil, enemy item drops, and Essence Resonance rewards
 
@@ -108,7 +109,7 @@ Systems currently being expanded include:
 -   ✅ Battle Formation & Party Layout v1
 -   ✅ Battle HUD & Message Layout v1
 
-Battle HUD & Message Layout v1 adds stable four-row party information, top battle messaging, target-name feedback, compact HP/MP/Valor gauges, and active-actor emphasis while leaving battle rules in their existing owners.
+Battle HUD & Message Layout v1 established reusable four-row geometry. Battle Presentation & Feedback v2 refines that experiment from hands-on playtesting: persistent top headers/messages are removed, action/state information uses compact transient banners, actor names stay in a fixed left roster, the main command window overlays a dedicated middle reserve, and HP/MP/Valor remain in stable right-side columns. Damage, Weak/Resist/Immune, and Critical feedback stay on the battlefield as popups; Critical also triggers a brief presentation-only flash.
 
 ------------------------------------------------------------------------
 
@@ -144,7 +145,7 @@ Skills now support the reusable effect vocabulary required by the first canonica
 
 The field Skills window remains a read-only learned-Skill viewer with the same shared actor navigation used by other character menus. Skills UI Integration Cleanup v1 makes the battle selector a first-class rendered battle window, suppresses the command window while that selector is open, and uses shared bounded text layout for long Skills/Magick descriptions in field menus. Enemy Skills & AI Integration v1 now lets enemy action data reference the same canonical Skill records through `skillId`; enemy use still follows the shared Skill legality, targeting, physical damage, healing, and status-effect contracts. Long-term Skill/Valor Art unlock progression, additional effect types, and additional resource models remain future design work.
 
-Battle Command Navigation & Side Actions v1 keeps the visible command list to **Attack / Skills / Magick / Item**. Left input reveals a temporary Escape side panel and right input reveals a temporary Defend side panel; neither exists visually until requested, and confirmation still uses the established Escape/Defend execution paths. Non-escapable encounters leave Escape selectable-but-disabled so confirming it produces explicit cannot-escape feedback. Backing out of Skill or Magick target selection returns one navigation level to the originating selector with that selector's current cursor preserved.
+Battle Command Navigation & Side Actions v1 keeps the visible command list to **Attack / Skills / Magick / Item**. Left input reveals a temporary Escape side panel and right input reveals a temporary Defend side panel; neither exists visually until requested, and confirmation still uses the established Escape/Defend execution paths. Non-escapable encounters leave Escape selectable-but-disabled so confirming it produces explicit cannot-escape feedback. Backing out of Skill or Magick target selection returns one navigation level to the originating selector with that selector's current cursor preserved. Pass 46 makes the Escape/Defend tabs flush with the command panel's top and side edges and moves the command panel into the HUD's reserved middle column, leaving the name roster visible while commands are open.
 
 ------------------------------------------------------------------------
 

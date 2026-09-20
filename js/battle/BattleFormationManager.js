@@ -4,6 +4,8 @@ class BattleFormationManager {
   static NORMAL = "normal";
   static BACK_ATTACK = "backAttack";
   static PINCER = "pincer";
+  static REAR_PHYSICAL_DAMAGE_MULTIPLIER = 1.5;
+  static MAX_ENEMIES = 5;
 
   constructor(scene) {
     this.scene = scene;
@@ -18,11 +20,17 @@ class BattleFormationManager {
   }
 
   battlefieldTop() {
-    return Math.max(72, Graphics.height * 0.1);
+    return Math.max(52, Graphics.height * 0.075);
   }
 
   battlefieldBottom() {
-    return Math.max(this.battlefieldTop() + 220, Graphics.height - 215);
+    const hudTop = this.scene.hudLayout?.hudBounds?.().y;
+
+    if (Number.isFinite(hudTop)) {
+      return Math.max(this.battlefieldTop() + 220, hudTop - 18);
+    }
+
+    return Math.max(this.battlefieldTop() + 220, Graphics.height - 205);
   }
 
   partyMembers() {
@@ -38,20 +46,18 @@ class BattleFormationManager {
 
     return Array.from({ length: safeCount }, (_, index) => ({
       x: 0,
-      y: top + step * (index + 0.88),
+      y: top + step * (index + 0.9),
     }));
   }
 
   partyX() {
-    if (this.is(BattleFormationManager.BACK_ATTACK)) {
-      return Graphics.width * 0.78;
-    }
-
     if (this.is(BattleFormationManager.PINCER)) {
       return Graphics.width * 0.5;
     }
 
-    return Graphics.width * 0.22;
+    // Normal and Back Attack both keep the party on the left. Back Attack is
+    // expressed through facing/exposure rather than teleporting sides.
+    return Graphics.width * 0.17;
   }
 
   partyPosition(index) {
@@ -80,12 +86,12 @@ class BattleFormationManager {
       return member?.side === "left" ? "left" : "right";
     }
 
-    return this.is(BattleFormationManager.BACK_ATTACK) ? "left" : "right";
+    return "right";
   }
 
   enemyX(index) {
     return this.memberSide(index) === "left"
-      ? Graphics.width * 0.16
+      ? Graphics.width * 0.14
       : Graphics.width * 0.84;
   }
 
@@ -93,7 +99,7 @@ class BattleFormationManager {
     const top = this.battlefieldTop();
     const bottom = this.battlefieldBottom();
     const span = bottom - top;
-    const fractions = [0.58, 0.4, 0.24];
+    const fractions = [0.18, 0.34, 0.5, 0.66, 0.82];
     const safeSlot = Math.max(
       0,
       Math.min(Number(slot) || 0, fractions.length - 1),
@@ -125,9 +131,9 @@ class BattleFormationManager {
     );
     const availableHeight = this.battlefieldBottom() - this.battlefieldTop();
     const laneHeight = availableHeight / members.length;
-    const maxSpriteHeight = laneHeight * 0.84;
+    const maxSpriteHeight = laneHeight * 0.96;
 
-    return Math.max(0.35, Math.min(1, maxSpriteHeight / tallest));
+    return Math.max(0.4, Math.min(1.08, maxSpriteHeight / tallest));
   }
 
   enemyScale(enemy, index = this.scene.enemies.indexOf(enemy)) {
@@ -140,18 +146,28 @@ class BattleFormationManager {
         this.memberSide(candidateIndex) === this.memberSide(index),
     ).length;
     const availableHeight = this.battlefieldBottom() - this.battlefieldTop();
-    const laneHeight = availableHeight / Math.max(1, Math.min(3, sameSideCount));
+    const laneHeight =
+      availableHeight /
+      Math.max(1, Math.min(BattleFormationManager.MAX_ENEMIES, sameSideCount));
     const height = Math.max(1, Number(enemy.battleSpriteHeight) || 1);
     const width = Math.max(1, Number(enemy.battleSpriteWidth) || 1);
-    const heightScale = (laneHeight * 0.82) / height;
-    const widthScale = (Graphics.width * 0.2) / width;
+    const heightScale = (laneHeight * 0.92) / height;
+    const widthScale = (Graphics.width * 0.18) / width;
 
-    return Math.max(0.5, Math.min(1, heightScale, widthScale));
+    return Math.max(0.45, Math.min(1, heightScale, widthScale));
   }
 
   actorFacing(actor) {
     if (this.is(BattleFormationManager.BACK_ATTACK)) {
-      return -1;
+      const isActive = this.scene.partyController?.currentBattler?.() === actor;
+      const temporarilyFacingEnemy =
+        isActive &&
+        (this.scene.selectingEnemyTarget ||
+          (this.scene.actionPhase && this.scene.actionPhase !== "none"));
+
+      return this.scene.hasActorTurnedInBackAttack?.(actor) || temporarilyFacingEnemy
+        ? 1
+        : -1;
     }
 
     if (this.is(BattleFormationManager.PINCER)) {
@@ -181,8 +197,8 @@ class BattleFormationManager {
   enemyFacing(enemy) {
     const index = this.scene.enemies.indexOf(enemy);
 
-    // Enemy source sprites retain their existing normal-battle orientation on
-    // the right side. Only enemies placed on the left flank are mirrored.
+    // Enemy source sprites retain their existing right-side orientation. Only
+    // enemies explicitly placed on a pincer left flank are mirrored.
     return this.memberSide(index) === "left" ? -1 : 1;
   }
 
@@ -193,5 +209,32 @@ class BattleFormationManager {
   enemyAdvanceDirection(enemy) {
     const index = this.scene.enemies.indexOf(enemy);
     return this.memberSide(index) === "left" ? 1 : -1;
+  }
+
+  isPartyRearExposed(attacker, target) {
+    if (
+      !attacker ||
+      !target ||
+      !this.scene.enemies.includes(attacker) ||
+      !$gameParty.battleMembers().includes(target)
+    ) {
+      return false;
+    }
+
+    const attackerPosition = this.enemyPosition(this.scene.enemies.indexOf(attacker));
+    const targetPosition = this.positionForActor(target);
+    const directionToAttacker = Math.sign(attackerPosition.x - targetPosition.x);
+
+    if (directionToAttacker === 0) {
+      return false;
+    }
+
+    return this.actorFacing(target) !== directionToAttacker;
+  }
+
+  physicalRearDamageMultiplier(attacker, target) {
+    return this.isPartyRearExposed(attacker, target)
+      ? BattleFormationManager.REAR_PHYSICAL_DAMAGE_MULTIPLIER
+      : 1;
   }
 }

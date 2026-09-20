@@ -12,6 +12,14 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Battle Presentation & Feedback v2, replacing the persistent top encounter/active header and recent-message strip with compact transient action/state banners
+- Added scene-owned banner queuing so formation/boss state announcements cannot be immediately overwritten by a following Magick/Skill/Item name
+- Added brief Critical screen flash while preserving existing floating damage plus Weak / Resist / Immune / Critical battlefield popups
+- Refined the bottom HUD into stable actor-name, command-reserve, and HP/MP/Valor regions; the command panel now overlays the middle reserve and Escape/Defend tabs sit flush against its top side edges
+- Expanded fixed enemy formation slots to 0-4 with a validated maximum of five enemies per encounter
+- Corrected Back Attack presentation so the party remains on the left facing away initially, with temporary action-facing and permanent turn-around after rear physical hits / the opening enemy round
+- Added explicit 1.5x rear-exposure damage for enemy physical damage against party members in Back Attack/Pincer geometry while leaving Magick damage facing-neutral
+- Expanded regression coverage for compact banner presentation, banner queuing, Critical flash, flush side-command geometry, five enemy slots, back-attack facing/exposure, and rear physical damage
 - Added Battle HUD & Message Layout v1 with a stable four-row party HUD, compact HP/MP/Valor gauges, active-actor emphasis, top-of-screen battle messaging, and target-name feedback during target selection
 - Added `BattleHudLayout` as the presentation-only geometry owner for the top battle strip, four fixed party HUD slots, command-window reserve, and battle hint placement
 - Added dedicated Battle HUD regression coverage for stable four-actor rows, active-row emphasis, target feedback, message/HUD geometry, and script-load order

@@ -81,33 +81,40 @@ function actor(name, hp = 100, mp = 30, valor = 0) {
   };
 }
 
-function testLayoutProvidesStableFourActorRowsAndTopMessageStrip() {
+function testLayoutSeparatesNamesCommandReserveAndStableStats() {
   const Graphics = { width: 1600, height: 900 };
   const { BattleHudLayout } = loadPresentation({ Graphics });
-  const scene = {
-    commandWindow: {
-      x: 180,
-      width: 220,
-      sideGap: 12,
-      sideWidth: 132,
-    },
-  };
-  const layout = new BattleHudLayout(scene);
-  const party = layout.partyBounds();
+  const layout = new BattleHudLayout({});
+  const hud = layout.hudBounds();
+  const names = layout.nameColumnBounds();
+  const command = layout.commandBounds();
+  const stats = layout.statsBounds();
   const rows = Array.from({ length: 4 }, (_, index) =>
     layout.partyRowBounds(index),
   );
 
-  assert.equal(rows.every((row) => row.x === party.x), true);
-  assert.equal(rows.every((row) => row.width === party.width), true);
+  assert.equal(names.x, hud.x);
+  assert.equal(command.x, names.x + names.width);
+  assert.equal(stats.x, command.x + command.width);
+  assert.equal(stats.x + stats.width, hud.x + hud.width);
   assert.equal(rows.every((row) => row.height === rows[0].height), true);
   assert.equal(rows[1].y > rows[0].y, true);
-  assert.equal(layout.messageBounds().y < layout.hudBounds().y, true);
-  assert.equal(layout.hintY() < layout.hudBounds().y, true);
-  assert.equal(party.x > scene.commandWindow.x + scene.commandWindow.width, true);
+  assert.equal(layout.hintY() < hud.y, true);
 }
 
-function testHudRendersFourActorsAndHighlightsActiveRow() {
+function testBannerIsCompactAndDoesNotSpanTheScreen() {
+  const Graphics = { width: 1600, height: 900 };
+  const { BattleHudLayout } = loadPresentation({ Graphics });
+  const layout = new BattleHudLayout({});
+  const short = layout.bannerBounds(80);
+  const long = layout.bannerBounds(2000);
+
+  assert.equal(short.width < Graphics.width * 0.5, true);
+  assert.equal(long.width <= Graphics.width * 0.46, true);
+  assert.equal(short.x > 0, true);
+}
+
+function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
   const context = createContext();
   const Graphics = { width: 1600, height: 900, context };
   const party = [
@@ -122,12 +129,6 @@ function testHudRendersFourActorsAndHighlightsActiveRow() {
   };
   const { BattleHudLayout, BattleRenderer } = loadPresentation(globals);
   const scene = {
-    commandWindow: {
-      x: 180,
-      width: 220,
-      sideGap: 12,
-      sideWidth: 132,
-    },
     outcome: null,
     pendingEnemyTurn: false,
     battleManager: { currentTurnState: () => "command" },
@@ -138,9 +139,9 @@ function testHudRendersFourActorsAndHighlightsActiveRow() {
 
   renderer.drawBattleHud(context);
 
-  const text = context.calls
-    .filter((call) => call[0] === "fillText")
-    .map((call) => call[2]);
+  const textCalls = context.calls.filter((call) => call[0] === "fillText");
+  const text = textCalls.map((call) => call[2]);
+  const statsX = scene.hudLayout.statsBounds().x;
 
   for (const battler of party) {
     assert.equal(text.includes(battler.name), true);
@@ -149,32 +150,15 @@ function testHudRendersFourActorsAndHighlightsActiveRow() {
   assert.equal(text.includes("VALOR READY"), true);
   assert.equal(text.includes("DEFEATED"), true);
   assert.equal(
-    context.calls.some(
-      (call) => call[0] === "fillText" && call[1] === "#ffd75a" && call[2] === "Sarah",
+    textCalls.some(
+      (call) => call[1] === "#ffd75a" && call[2] === "Sarah",
     ),
     true,
   );
-}
 
-function testTargetFeedbackNamesCurrentTargetAndAllTargetScope() {
-  const Graphics = { width: 1600, height: 900 };
-  const { BattleRenderer } = loadPresentation({ Graphics });
-  const enemy = { name: "Test Slime Alpha" };
-  const scene = {
-    selectingEnemyTarget: true,
-    targetScope: "single",
-    targetGroup: "enemy",
-    targetManager: { getSelectedTarget: () => enemy },
-  };
-  const renderer = new BattleRenderer(scene);
-
-  assert.equal(renderer.targetFeedback(), "TARGET // Test Slime Alpha");
-
-  scene.targetScope = "all";
-  assert.equal(renderer.targetFeedback(), "TARGET // ALL ENEMIES");
-
-  scene.targetGroup = "ally";
-  assert.equal(renderer.targetFeedback(), "TARGET // ALL ALLIES");
+  for (const call of textCalls.filter((call) => /^(HP|MP|VALOR)/.test(call[2]))) {
+    assert.equal(call[3] >= statsX, true);
+  }
 }
 
 function testHudLayoutLoadsBeforeRendererAndBattleScene() {
@@ -189,9 +173,9 @@ function testHudLayoutLoadsBeforeRendererAndBattleScene() {
 }
 
 function run() {
-  testLayoutProvidesStableFourActorRowsAndTopMessageStrip();
-  testHudRendersFourActorsAndHighlightsActiveRow();
-  testTargetFeedbackNamesCurrentTargetAndAllTargetScope();
+  testLayoutSeparatesNamesCommandReserveAndStableStats();
+  testBannerIsCompactAndDoesNotSpanTheScreen();
+  testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve();
   testHudLayoutLoadsBeforeRendererAndBattleScene();
 
   console.log("Battle HUD and message layout regression tests passed.");

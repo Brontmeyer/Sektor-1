@@ -45,6 +45,7 @@ function createFormationFixture(formation, members) {
     "BattleFormationManager",
     { Graphics, $gameParty: party },
   );
+  const turnedActors = new Set();
   const scene = {
     encounter: { formation, members },
     enemies,
@@ -52,6 +53,12 @@ function createFormationFixture(formation, members) {
     selectingEnemyTarget: false,
     partyController: { currentBattler: () => actors[0] },
     targetManager: { getSelectedTarget: () => null },
+    hasActorTurnedInBackAttack(actor) {
+      return turnedActors.has(actor);
+    },
+    markActorTurned(actor) {
+      turnedActors.add(actor);
+    },
   };
   const manager = new BattleFormationManager(scene);
 
@@ -87,17 +94,30 @@ function testNormalFormationUsesFourVerticalPartyLanesAndSafeScale() {
   assert.equal(manager.enemyFacing(manager.scene.enemies[0]), 1);
 }
 
-function testBackAttackMirrorsSidesAndFacing() {
-  const { manager, actors, enemies } = createFormationFixture("backAttack", [
+function testBackAttackKeepsPartyLeftAndUsesFacingExposure() {
+  const { manager, scene, actors, enemies } = createFormationFixture("backAttack", [
     { enemyId: 1, slot: 0 },
     { enemyId: 1, slot: 1 },
   ]);
 
-  assert.equal(manager.partyPosition(0).x > manager.enemyPosition(0).x, true);
+  assert.equal(manager.partyPosition(0).x < manager.enemyPosition(0).x, true);
   assert.equal(manager.actorFacing(actors[0]), -1);
-  assert.equal(manager.enemyFacing(enemies[0]), -1);
+  assert.equal(manager.enemyFacing(enemies[0]), 1);
   assert.equal(manager.actorAdvanceDirection(actors[0]), -1);
-  assert.equal(manager.enemyAdvanceDirection(enemies[0]), 1);
+  assert.equal(manager.enemyAdvanceDirection(enemies[0]), -1);
+  assert.equal(manager.isPartyRearExposed(enemies[0], actors[0]), true);
+  assert.equal(manager.physicalRearDamageMultiplier(enemies[0], actors[0]), 1.5);
+
+  scene.selectingEnemyTarget = true;
+  assert.equal(manager.actorFacing(actors[0]), 1);
+  scene.selectingEnemyTarget = false;
+  assert.equal(manager.actorFacing(actors[0]), -1);
+
+  scene.markActorTurned(actors[0]);
+  assert.equal(manager.actorFacing(actors[0]), 1);
+  assert.equal(manager.actorAdvanceDirection(actors[0]), 1);
+  assert.equal(manager.isPartyRearExposed(enemies[0], actors[0]), false);
+  assert.equal(manager.physicalRearDamageMultiplier(enemies[0], actors[0]), 1);
 }
 
 function testPincerPlacesEnemiesOnBothSidesOfCenteredParty() {
@@ -127,6 +147,20 @@ function testPincerPlacesEnemiesOnBothSidesOfCenteredParty() {
   assert.equal(manager.actorFacing(actors[0]), 1);
   scene.targetManager.getSelectedTarget = () => enemies[0];
   assert.equal(manager.actorFacing(actors[0]), -1);
+
+  scene.selectingEnemyTarget = false;
+  assert.equal(manager.isPartyRearExposed(enemies[2], actors[0]), true);
+  assert.equal(manager.isPartyRearExposed(enemies[0], actors[0]), false);
+}
+
+function testFiveEnemySlotsAreFixedAndDistinct() {
+  const members = Array.from({ length: 5 }, (_, slot) => ({ enemyId: 1, slot }));
+  const { manager } = createFormationFixture("normal", members);
+  const positions = members.map((_member, index) => manager.enemyPosition(index));
+
+  assert.equal(new Set(positions.map((position) => position.x)).size, 1);
+  assert.equal(new Set(positions.map((position) => position.y)).size, 5);
+  assert.equal(positions.every((position, index) => index === 0 || position.y > positions[index - 1].y), true);
 }
 
 function testFormationSchemaValidation() {
@@ -163,6 +197,13 @@ function testFormationSchemaValidation() {
       formation: "normal",
       members: [{ enemyId: 1, slot: 0, side: "right" }],
     },
+    {
+      id: 4,
+      name: "Too Many",
+      canEscape: true,
+      formation: "normal",
+      members: Array.from({ length: 6 }, (_, slot) => ({ enemyId: 1, slot })),
+    },
   ];
 
   DatabaseValidator.validateEncounters(encounters, enemies, errors);
@@ -171,6 +212,8 @@ function testFormationSchemaValidation() {
   assert.equal(errors.some((error) => error.includes("left slot 0 more than once")), true);
   assert.equal(errors.some((error) => error.includes("side must be left or right")), true);
   assert.equal(errors.some((error) => error.includes("side is only valid for a pincer")), true);
+  assert.equal(errors.some((error) => error.includes("at most 5 enemy members")), true);
+  assert.equal(errors.some((error) => error.includes("slot must be an integer from 0 to 4")), true);
 }
 
 function testFormationManagerLoadsBeforeFormationConsumers() {
@@ -263,8 +306,9 @@ function testRendererAndEffectsUseFormationAwareSpriteGeometry() {
 function run() {
   testCanonicalEncounterFormationData();
   testNormalFormationUsesFourVerticalPartyLanesAndSafeScale();
-  testBackAttackMirrorsSidesAndFacing();
+  testBackAttackKeepsPartyLeftAndUsesFacingExposure();
   testPincerPlacesEnemiesOnBothSidesOfCenteredParty();
+  testFiveEnemySlotsAreFixedAndDistinct();
   testFormationSchemaValidation();
   testFormationManagerLoadsBeforeFormationConsumers();
   testFormationAwareAnimationDirectionsRemainRuntimeSafe();

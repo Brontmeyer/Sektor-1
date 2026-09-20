@@ -7,79 +7,109 @@ class BattleHudLayout {
     this.scene = scene;
   }
 
-  topHeaderBounds() {
-    return {
-      x: 20,
-      y: 18,
-      width: Math.max(220, Graphics.width - 40),
-      height: 44,
-    };
-  }
-
-  messageBounds() {
-    return {
-      x: 20,
-      y: 66,
-      width: Math.max(220, Graphics.width - 40),
-      height: 66,
-    };
-  }
-
   hudBounds() {
-    const height = 190;
+    const height = 172;
 
     return {
-      x: 20,
-      y: Graphics.height - height - 10,
-      width: Math.max(320, Graphics.width - 40),
+      x: 18,
+      y: Graphics.height - height - 12,
+      width: Math.max(640, Graphics.width - 36),
       height,
     };
   }
 
-  commandReserveRight() {
-    const window = this.scene.commandWindow;
-
-    if (
-      window &&
-      [window.x, window.width, window.sideGap, window.sideWidth].every(
-        Number.isFinite,
-      )
-    ) {
-      return window.x + window.width + window.sideGap + window.sideWidth + 16;
-    }
-
-    return Math.max(420, Graphics.width * 0.35);
-  }
-
-  partyBounds() {
+  nameColumnBounds() {
     const hud = this.hudBounds();
-    const right = hud.x + hud.width - 12;
-    const left = Math.min(
-      right - 320,
-      Math.max(this.commandReserveRight(), hud.x + hud.width * 0.34),
-    );
+    const width = Math.max(132, Math.min(176, hud.width * 0.14));
 
     return {
-      x: left,
-      y: hud.y + 9,
-      width: Math.max(320, right - left),
-      height: hud.height - 18,
+      x: hud.x,
+      y: hud.y,
+      width,
+      height: hud.height,
+    };
+  }
+
+  commandBounds() {
+    const hud = this.hudBounds();
+    const names = this.nameColumnBounds();
+    const width = Math.max(200, Math.min(232, hud.width * 0.19));
+
+    return {
+      x: names.x + names.width,
+      y: hud.y,
+      width,
+      height: hud.height,
+    };
+  }
+
+  statsBounds() {
+    const hud = this.hudBounds();
+    const command = this.commandBounds();
+    const right = hud.x + hud.width;
+    const x = command.x + command.width;
+
+    return {
+      x,
+      y: hud.y,
+      width: Math.max(260, right - x),
+      height: hud.height,
     };
   }
 
   partyRowBounds(index) {
-    const party = this.partyBounds();
+    const hud = this.hudBounds();
     const safeIndex = Math.max(
       0,
       Math.min(Number(index) || 0, BattleHudLayout.PARTY_SLOTS - 1),
     );
-    const height = party.height / BattleHudLayout.PARTY_SLOTS;
+    const height = hud.height / BattleHudLayout.PARTY_SLOTS;
 
     return {
-      x: party.x,
-      y: party.y + safeIndex * height,
-      width: party.width,
+      x: hud.x,
+      y: hud.y + safeIndex * height,
+      width: hud.width,
       height,
+    };
+  }
+
+  nameRowBounds(index) {
+    const names = this.nameColumnBounds();
+    const row = this.partyRowBounds(index);
+
+    return {
+      x: names.x,
+      y: row.y,
+      width: names.width,
+      height: row.height,
+    };
+  }
+
+  statRowBounds(index) {
+    const stats = this.statsBounds();
+    const row = this.partyRowBounds(index);
+
+    return {
+      x: stats.x,
+      y: row.y,
+      width: stats.width,
+      height: row.height,
+    };
+  }
+
+  bannerBounds(textWidth = 0) {
+    const paddingX = 22;
+    const width = Math.max(
+      150,
+      Math.min(Graphics.width * 0.46, Number(textWidth) + paddingX * 2 || 150),
+    );
+
+    return {
+      x: (Graphics.width - width) / 2,
+      y: 18,
+      width,
+      height: 42,
+      paddingX,
     };
   }
 

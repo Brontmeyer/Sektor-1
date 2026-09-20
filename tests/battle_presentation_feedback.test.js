@@ -12,6 +12,7 @@ function loadPresentation(globals = {}) {
     "js/windows/Window_TextLayout.js",
     "js/battle/BattleHudLayout.js",
     "js/battle/BattleRenderer.js",
+    "js/battle/BattleEffects.js",
   ]
     .map((relativePath) =>
       fs.readFileSync(path.join(projectRoot, relativePath), "utf8"),
@@ -20,7 +21,7 @@ function loadPresentation(globals = {}) {
   const context = vm.createContext({ console, ...globals });
 
   vm.runInContext(
-    `${source}\nglobalThis.__classes = { Window_TextLayout, BattleHudLayout, BattleRenderer };`,
+    `${source}\nglobalThis.__classes = { Window_TextLayout, BattleHudLayout, BattleRenderer, BattleEffects };`,
     context,
   );
 
@@ -42,16 +43,16 @@ function createContext() {
     save() {},
     restore() {},
     fillRect(...args) {
-      calls.push(["fillRect", ...args]);
+      calls.push(["fillRect", this.fillStyle, ...args]);
     },
     strokeRect(...args) {
-      calls.push(["strokeRect", ...args]);
+      calls.push(["strokeRect", this.strokeStyle, ...args]);
     },
     fillText(...args) {
-      calls.push(["fillText", ...args]);
+      calls.push(["fillText", this.fillStyle, ...args]);
     },
     strokeText(...args) {
-      calls.push(["strokeText", ...args]);
+      calls.push(["strokeText", this.strokeStyle, ...args]);
     },
     measureText(text) {
       return { width: String(text).length * 8 };
@@ -77,7 +78,7 @@ function baseScene() {
     enemyTargetAction: null,
     pendingSkill: null,
     pendingMagick: null,
-    battleMessages: [],
+    battleBanner: null,
     battleManager: { currentTurnState: () => "command" },
     partyController: { currentBattler: () => ({ name: "Tyler" }) },
     targetManager: { allowedScopes: () => ["single"] },
@@ -87,7 +88,19 @@ function baseScene() {
   };
 }
 
-function testHeaderShowsEncounterAndActiveBattler() {
+function testNoPersistentTopHeaderOrMessagePanel() {
+  const source = fs.readFileSync(
+    path.join(projectRoot, "js/battle/BattleRenderer.js"),
+    "utf8",
+  );
+
+  assert.equal(source.includes("drawBattleHeader"), false);
+  assert.equal(source.includes("drawBattleMessages"), false);
+  assert.equal(source.includes("BATTLE //"), false);
+  assert.equal(source.includes("ACTIVE //"), false);
+}
+
+function testBannerAppearsOnlyWhenTransientPresentationStateExists() {
   const context = createContext();
   const Graphics = { width: 1600, height: 900, context };
   const { BattleHudLayout, BattleRenderer } = loadPresentation({ Graphics });
@@ -95,25 +108,47 @@ function testHeaderShowsEncounterAndActiveBattler() {
   scene.hudLayout = new BattleHudLayout(scene);
   const renderer = new BattleRenderer(scene);
 
-  renderer.drawBattleHeader(context);
+  renderer.drawBattleBanner(context);
+  assert.equal(context.calls.length, 0);
 
-  const drawnText = context.calls
-    .filter((call) => call[0] === "fillText")
-    .map((call) => call[1]);
+  scene.battleBanner = { text: "BACK ATTACK", type: "state", timer: 1 };
+  renderer.drawBattleBanner(context);
 
-  assert.equal(drawnText.includes("BATTLE // Test Slime Pair"), true);
-  assert.equal(drawnText.includes("ACTIVE // Tyler"), true);
+  const panel = context.calls.find((call) => call[0] === "fillRect");
+  const text = context.calls.find((call) => call[0] === "fillText");
 
-  context.calls.length = 0;
-  scene.battleManager.currentTurnState = () => "action";
-  renderer.drawBattleHeader(context);
+  assert.notEqual(panel, undefined);
+  assert.equal(panel[4] < Graphics.width * 0.5, true);
+  assert.equal(text[2], "BACK ATTACK");
+}
 
-  assert.equal(
-    context.calls.some(
-      (call) => call[0] === "fillText" && call[1] === "ACTIVE // Tyler",
-    ),
-    false,
+function testTransientBannerQueuePreservesStateAnnouncementsBeforeActions() {
+  const source = fs.readFileSync(
+    path.join(projectRoot, "js/scenes/Scene_Battle.js"),
+    "utf8",
   );
+  const context = vm.createContext({
+    console,
+    Scene_Base: class {},
+    BattleManager: {},
+  });
+
+  vm.runInContext(
+    `${source}\nglobalThis.__SceneBattle = Scene_Battle;`,
+    context,
+  );
+
+  const prototype = context.__SceneBattle.prototype;
+  const fake = { battleBanner: null, battleBannerQueue: [] };
+
+  assert.equal(prototype.showBattleBanner.call(fake, "BOSS TRANSFORMS", 1, "state"), true);
+  assert.equal(prototype.showBattleBanner.call(fake, "Ember", 1, "magick"), true);
+  assert.equal(fake.battleBanner.text, "BOSS TRANSFORMS");
+  assert.equal(fake.battleBannerQueue.length, 1);
+
+  prototype.updateBattleBanner.call(fake, 1.1);
+  assert.equal(fake.battleBanner.text, "Ember");
+  assert.equal(fake.battleBannerQueue.length, 0);
 }
 
 function testCommandWindowIsSuppressedDuringTargetSelection() {
@@ -144,10 +179,6 @@ function testContextualHintsMatchBattleState() {
   const renderer = new BattleRenderer(scene);
 
   assert.match(renderer.battleHint(), /Escape/);
-  assert.doesNotMatch(renderer.battleHint(), /Test Battle/);
-
-  scene.encounter.canEscape = false;
-  assert.match(renderer.battleHint(), /Escape/);
   assert.match(renderer.battleHint(), /Defend/);
 
   scene.selectingEnemyTarget = true;
@@ -173,54 +204,35 @@ function testContextualHintsMatchBattleState() {
   assert.equal(renderer.battleHint(), "E / Enter / Esc: Continue");
 }
 
-function testBattleMessagesWrapInsideBoundedPanel() {
+function testCriticalFlashIsBriefGlobalPresentationEffect() {
   const context = createContext();
-  const Graphics = { width: 1000, height: 720, context };
-  const { BattleHudLayout, BattleRenderer } = loadPresentation({ Graphics });
-  const scene = baseScene();
-  scene.hudLayout = new BattleHudLayout(scene);
-  scene.battleMessages = [
-    "Tyler uses an intentionally long battle action message that should remain inside the feedback panel instead of spilling across the battlefield.",
-    "Test Slime takes an equally long amount of descriptive feedback so the second recent message is bounded too.",
-  ];
-  const renderer = new BattleRenderer(scene);
+  const Graphics = { width: 1280, height: 720, context };
+  const { BattleEffects } = loadPresentation({ Graphics });
+  const effects = new BattleEffects({});
 
-  renderer.drawBattleMessages(context);
+  effects.start("criticalFlash", null, 0.16);
+  effects.draw(context);
 
-  const panel = context.calls.find((call) => call[0] === "fillRect");
-  const textCalls = context.calls.filter((call) => call[0] === "fillText");
-
-  assert.notEqual(panel, undefined);
-  assert.equal(textCalls.length > 0, true);
-  assert.equal(textCalls.length <= 3, true);
-
-  const [, panelX, , panelWidth] = panel;
-  const innerWidth = panelWidth - 32;
-
-  for (const call of textCalls) {
-    const [, text, x] = call;
-    assert.equal(x >= panelX + 16, true);
-    assert.equal(context.measureText(text).width <= innerWidth, true);
-  }
-}
-
-function testRendererNoLongerHardCodesTestBattleExitCopy() {
-  const source = fs.readFileSync(
-    path.join(projectRoot, "js/battle/BattleRenderer.js"),
-    "utf8",
+  assert.equal(
+    context.calls.some(
+      (call) =>
+        call[0] === "fillRect" &&
+        call[2] === 0 &&
+        call[3] === 0 &&
+        call[4] === Graphics.width &&
+        call[5] === Graphics.height,
+    ),
+    true,
   );
-
-  assert.equal(source.includes("Leave Test Battle"), false);
-  assert.equal(source.includes("drawBattleHint"), true);
-  assert.equal(source.includes("Window_TextLayout.wrapLines"), true);
 }
 
 function run() {
-  testHeaderShowsEncounterAndActiveBattler();
+  testNoPersistentTopHeaderOrMessagePanel();
+  testBannerAppearsOnlyWhenTransientPresentationStateExists();
+  testTransientBannerQueuePreservesStateAnnouncementsBeforeActions();
   testCommandWindowIsSuppressedDuringTargetSelection();
   testContextualHintsMatchBattleState();
-  testBattleMessagesWrapInsideBoundedPanel();
-  testRendererNoLongerHardCodesTestBattleExitCopy();
+  testCriticalFlashIsBriefGlobalPresentationEffect();
 
   console.log("Battle presentation feedback regression tests passed.");
 }

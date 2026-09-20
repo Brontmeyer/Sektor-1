@@ -47,7 +47,7 @@ Completed engine foundations include:
 - Character Menu Navigation Consistency v1 with shared party-member switching across Skills, Magick, Status, Equipment, and Essence
 - Skills UI Integration Cleanup v1 with first-class battle Skills rendering and bounded shared ability-description layout
 - Battle Presentation & Feedback v1 with encounter/active-turn context, state-sensitive controls, bounded recent battle messages, and target-selection command suppression
-- Battle Formation & Party Layout v1 with four-actor vertical lanes, mirrored back attacks, and left/right pincer flanks
+- Battle Formation & Party Layout v1 with four-actor vertical lanes, back-attack facing geometry, and left/right pincer flanks
 - Battle Command Navigation & Side Actions v1 with a four-command core list, hidden-on-demand Escape/Defend side panels, and one-level target-cancel restoration
 - Battle Results Screen v1 for visible EXP, Gil, drop, level-up, and Essence progression feedback
 
@@ -504,8 +504,10 @@ Battle-presentation directions and current status:
 
 - ✅ Four-actor battlefield layout with reusable formation slots and safe sprite scaling
 - ✅ Normal / back-attack / pincer encounter formation contracts
-- ✅ Battle HUD & Message Layout v1 with four stable party rows, top battle messaging, active-actor emphasis, and target-name feedback
-- A separate Options/configuration system for battle speed, message speed, and optional battle cursor memory
+- ✅ Battle HUD & Message Layout v1 with reusable four-row HUD geometry
+- ✅ Battle Presentation & Feedback v2 with transient action/state banners, integrated command/HUD columns, battlefield Critical/Weak/Resist/Immune feedback, five fixed enemy slots, and physical rear-exposure rules
+- Scan & Tactical Help v1 for unknown/known enemy HP/MP and weakness/resistance/immunity details while targeting
+- A separate Options/configuration system for battle speed, battle/field message speed, optional battle cursor memory, Magick ordering, and control-rebinding architecture
 
 ---
 

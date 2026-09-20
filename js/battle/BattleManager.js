@@ -599,30 +599,47 @@ class BattleManager {
   }
 
   applyPhysicalDamage(attacker, target, options = {}) {
-    const requestedDamage = this.calculatePhysicalDamage(
-      attacker,
-      target,
-      options,
+    const baseDamage = this.calculatePhysicalDamage(attacker, target, options);
+    const rearMultiplier =
+      this.scene.formationManager?.physicalRearDamageMultiplier?.(
+        attacker,
+        target,
+      ) ?? 1;
+    const requestedDamage = Math.max(
+      1,
+      Math.floor(baseDamage * Math.max(1, Number(rearMultiplier) || 1)),
     );
+    const rearExposed = rearMultiplier > 1;
+    let result;
 
     if (typeof target?.receiveDamage === "function") {
-      return target.receiveDamage(requestedDamage, { category: "physical" });
+      result = target.receiveDamage(requestedDamage, { category: "physical" });
+    } else {
+      const hpBefore = target?.hp ?? 0;
+
+      target?.loseHp?.(requestedDamage);
+
+      result = {
+        damage: Math.max(0, hpBefore - (target?.hp ?? hpBefore)),
+        healing: 0,
+        absorbed: false,
+        category: "physical",
+        element: null,
+        requestedDamage,
+        resolvedDamage: requestedDamage,
+        damageMultiplier: 1,
+        removedStatuses: [],
+      };
     }
 
-    const hpBefore = target?.hp ?? 0;
-
-    target?.loseHp?.(requestedDamage);
+    if (rearExposed && result?.damage > 0) {
+      this.scene.turnActorTowardEnemies?.(target);
+    }
 
     return {
-      damage: Math.max(0, hpBefore - (target?.hp ?? hpBefore)),
-      healing: 0,
-      absorbed: false,
-      category: "physical",
-      element: null,
-      requestedDamage,
-      resolvedDamage: requestedDamage,
-      damageMultiplier: 1,
-      removedStatuses: [],
+      ...result,
+      rearExposed,
+      rearMultiplier,
     };
   }
 
@@ -1889,6 +1906,7 @@ class BattleManager {
 
       if (isCritical) {
         battle.addBattlePopup(target, "CRITICAL", "critical");
+        battle.startBattleEffect("criticalFlash", null, 0.16);
       }
     } else {
       battle.addBattlePopup(target, "BLOCK", "immune");
@@ -2114,6 +2132,7 @@ class BattleManager {
       return false;
     }
 
+    battle.showBattleBanner?.(skill.name, 0.9, "skill");
     let affected = false;
 
     for (const target of validTargets) {
@@ -2136,6 +2155,8 @@ class BattleManager {
     if (!caster || !magick) {
       return;
     }
+
+    battle.showBattleBanner?.(magick.name, 0.95, "magick");
 
     // =====================================
     // CAST-LEVEL ESCAPE EFFECT
@@ -2285,6 +2306,7 @@ class BattleManager {
       return;
     }
 
+    battle.showBattleBanner?.(item.name, 0.9, "item");
     const hpBefore = battler.hp;
 
     const success = $gameParty.useItem(item.id, battler);
@@ -2331,6 +2353,7 @@ class BattleManager {
   startNextPartyRound(unlockInputAtRoundStart = false) {
     const battle = this.scene;
 
+    battle.turnAllActorsTowardEnemies?.();
     battle.enemyTurnIndex = 0;
     battle.pendingEnemyTurn = false;
     battle.enemyTurnDelay = 0;
@@ -2493,6 +2516,7 @@ class BattleManager {
       return false;
     }
 
+    battle.showBattleBanner?.(skill.name, 0.9, "skill");
     battle.setEnemyState("attack", 0.4, enemy);
 
     for (const target of validTargets) {
@@ -2519,6 +2543,7 @@ class BattleManager {
       return false;
     }
 
+    battle.showBattleBanner?.(magick.name, 0.95, "magick");
     const scope = action.scope || "single";
     battle.setEnemyState("attack", 0.4, enemy);
 
@@ -2647,6 +2672,7 @@ class BattleManager {
         : `${enemy.name} enters ${phase?.name || "a new phase"}!`;
 
     this.scene.addBattleMessage(message);
+    this.scene.showBattleBanner?.(message, 1.25, "state");
     return transition;
   }
 

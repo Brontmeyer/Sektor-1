@@ -52,6 +52,8 @@ class Scene_Battle extends Scene_Base {
 
     this.battleMessages = [];
     this.battlePopups = [];
+    this.battleBanner = null;
+    this.battleBannerQueue = [];
 
     this.victory = false;
     this.defeat = false;
@@ -118,6 +120,13 @@ class Scene_Battle extends Scene_Base {
     this.partyController.initializePartyTurnQueue();
     this.initializePartyBattleData();
 
+    const formation = this.getFormationType();
+    if (formation === BattleFormationManager.BACK_ATTACK) {
+      this.showBattleBanner("BACK ATTACK", 1.2);
+    } else if (formation === BattleFormationManager.PINCER) {
+      this.showBattleBanner("PINCER ATTACK", 1.2);
+    }
+
     const canAct = this.battleManager.beginPartyTurn();
 
     if (!canAct) {
@@ -139,6 +148,7 @@ class Scene_Battle extends Scene_Base {
     this.updateBattleAnimations(deltaTime);
     this.updateBattleEffect(deltaTime);
     this.updateBattlePopups(deltaTime);
+    this.updateBattleBanner?.(deltaTime);
     this.updatePendingEnemyTurn(deltaTime);
 
     // -----------------------------
@@ -419,6 +429,7 @@ class Scene_Battle extends Scene_Base {
       }
 
       this.addBattleMessage("You cannot escape!");
+      this.showBattleBanner?.("CANNOT ESCAPE", 0.9);
       return false;
     }
 
@@ -524,6 +535,45 @@ class Scene_Battle extends Scene_Base {
     );
   }
 
+  updateBattleBanner(deltaTime) {
+    if (!this.battleBanner) {
+      this.battleBanner = this.battleBannerQueue.shift() || null;
+      return;
+    }
+
+    this.battleBanner.timer -= deltaTime;
+
+    if (this.battleBanner.timer <= 0) {
+      this.battleBanner = this.battleBannerQueue.shift() || null;
+    }
+  }
+
+  showBattleBanner(text, duration = 0.9, type = "action") {
+    const value = String(text || "").trim();
+
+    if (!value) {
+      return false;
+    }
+
+    const entry = {
+      text: value,
+      type,
+      timer: Math.max(0.1, Number(duration) || 0.9),
+    };
+
+    if (this.battleBanner) {
+      this.battleBannerQueue.push(entry);
+
+      if (this.battleBannerQueue.length > 4) {
+        this.battleBannerQueue.shift();
+      }
+    } else {
+      this.battleBanner = entry;
+    }
+
+    return true;
+  }
+
   startBattleEffect(type, target, duration = 0.4) {
     this.battleEffects.start(type, target, duration);
   }
@@ -594,6 +644,7 @@ class Scene_Battle extends Scene_Base {
 
         visualX: 0,
         visualY: 0,
+        backAttackTurned: false,
       });
     }
   }
@@ -769,6 +820,39 @@ class Scene_Battle extends Scene_Base {
 
   getPartyBattleData(actor) {
     return this.partyBattleData.get(actor) || null;
+  }
+
+  hasActorTurnedInBackAttack(actor) {
+    return this.getPartyBattleData(actor)?.backAttackTurned === true;
+  }
+
+  turnActorTowardEnemies(actor) {
+    if (!actor || this.getFormationType() !== BattleFormationManager.BACK_ATTACK) {
+      return false;
+    }
+
+    const battleData = this.getPartyBattleData(actor);
+
+    if (!battleData || battleData.backAttackTurned) {
+      return false;
+    }
+
+    battleData.backAttackTurned = true;
+    return true;
+  }
+
+  turnAllActorsTowardEnemies() {
+    if (this.getFormationType() !== BattleFormationManager.BACK_ATTACK) {
+      return false;
+    }
+
+    let changed = false;
+
+    for (const actor of $gameParty.battleMembers()) {
+      changed = this.turnActorTowardEnemies(actor) || changed;
+    }
+
+    return changed;
   }
 
   getPartyBattleImage(actor) {

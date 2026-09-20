@@ -41,6 +41,11 @@ class BattleEffects {
 
     if (effect.type === "cure") {
       this.drawCureEffect(context, effect);
+      return;
+    }
+
+    if (effect.type === "criticalFlash") {
+      this.drawCriticalFlash(context, effect);
     }
   }
 
@@ -337,4 +342,15 @@ class BattleEffects {
     context.stroke();
     context.restore();
   }
+  drawCriticalFlash(context, effect) {
+    const progress = Math.max(0, Math.min(1, 1 - effect.timer / effect.duration));
+    const pulse = Math.sin(progress * Math.PI);
+
+    context.save();
+    context.globalAlpha = 0.2 + pulse * 0.32;
+    context.fillStyle = "#fff3a8";
+    context.fillRect(0, 0, Graphics.width, Graphics.height);
+    context.restore();
+  }
+
 }

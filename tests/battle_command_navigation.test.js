@@ -127,6 +127,40 @@ function testSideCommandsStayHiddenUntilHorizontalInputRequestsThem() {
   assert.equal(text.includes("Defend"), true);
 }
 
+function testSideWindowsAreFlushWithMainCommandTopAndEdges() {
+  const { window, context } = loadBattleCommand();
+  const drawContext = context.Graphics.context;
+
+  window.openSide("Escape");
+  window.draw();
+
+  const rects = drawContext.calls.filter((call) => call[0] === "strokeRect");
+  const main = rects.find(
+    (call) => call[1] === window.x && call[2] === window.y && call[3] === window.width,
+  );
+  const escape = rects.find(
+    (call) => call[1] === window.x - window.sideWidth && call[2] === window.y,
+  );
+
+  assert.notEqual(main, undefined);
+  assert.notEqual(escape, undefined);
+  assert.equal(window.sideGap, 0);
+
+  window.closeSide();
+  drawContext.calls.length = 0;
+  window.openSide("Defend");
+  window.draw();
+
+  const defend = drawContext.calls.find(
+    (call) =>
+      call[0] === "strokeRect" &&
+      call[1] === window.x + window.width &&
+      call[2] === window.y,
+  );
+
+  assert.notEqual(defend, undefined);
+}
+
 function testBossEscapeSideActionRemainsFocusableButDisabled() {
   const { window, trigger, clear } = loadBattleCommand({ canEscape: false });
 
@@ -335,6 +369,7 @@ function testMagickAndItemSelectorsAlsoSupportPreservedReopen() {
 function run() {
   testMainCommandListContainsOnlyFourCoreCommands();
   testSideCommandsStayHiddenUntilHorizontalInputRequestsThem();
+  testSideWindowsAreFlushWithMainCommandTopAndEdges();
   testBossEscapeSideActionRemainsFocusableButDisabled();
   testSideCommandConfirmationUsesExistingEscapeAndDefendPaths();
   testTargetCancelReturnsToOriginatingSelectorWithCursorPreserved();

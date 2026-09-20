@@ -80,8 +80,15 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Keep the visible command list to Attack / Skills / Magick / Item with temporary Escape-left and Defend-right panels
 - [x] Return target-cancel input to the originating Skills/Magick selector with cursor position preserved
 - [x] Implement Battle Formation & Party Layout v1 (normal / back attack / pincer)
-- [x] Implement Battle HUD & Message Layout v1 with four stable actor rows, top battle messages, active-actor emphasis, and target feedback
-- [ ] Explore Game Options v1 for battle speed, message speed, and configurable battle cursor memory
+- [x] Implement Battle HUD & Message Layout v1 with four stable actor rows and reusable HUD geometry
+- [x] Implement Battle Presentation & Feedback v2 from hands-on playtest feedback
+- [x] Replace persistent top header/message panels with compact transient action/state banners
+- [x] Keep damage / Weak / Resist / Immune / Critical feedback on the battlefield; add brief Critical screen flash
+- [x] Integrate actor names, command reserve, and HP/MP/Valor columns in one stable bottom HUD
+- [x] Keep Back Attack party positions on the left and apply rear-exposure bonus only to physical damage
+- [x] Support fixed enemy formation slots 0-4 with a five-enemy encounter cap
+- [ ] Implement Scan & Tactical Help v1 with unknown/known enemy detail presentation
+- [ ] Explore Game Options v1 for battle speed, battle/field message speed, configurable battle cursor memory, Magick ordering, and control rebinding architecture
 
 ---
 

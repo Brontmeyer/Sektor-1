@@ -508,11 +508,11 @@ Battle resolution and battle presentation are separate responsibilities.
 
 `BattleRenderer` draws the battle state. Skills, Magick, and Item selectors are treated as one rendered selection-window group so opening any selector suppresses the command window and cannot leave an input-active menu invisible.
 
-Battle Presentation & Feedback v1 extends that same read-only presentation boundary. The battle header names the current encounter and identifies the active party battler while the player owns command flow. Control hints change with battle state: command selection, side-action focus, list selection, target selection, action/enemy resolution, and battle outcome each advertise only their relevant controls. The main hint advertises left Escape and right Defend navigation; the Escape side panel itself reflects the encounter's existing `canEscape` contract without granting escape authority. The command window also stays hidden while target selection owns input, preventing the underlying command list from reappearing beneath the cursor.
+Battle Presentation & Feedback v1 established contextual control hints and the read-only presentation boundary. Battle Presentation & Feedback v2 simplifies the top of the battlefield after hands-on playtesting: there is no permanent encounter/active header and no persistent battle-message panel. Meaningful actions and state events instead use a compact transient banner: Magick names, Skill names, Item names, Back Attack, Pincer Attack, boss-phase transitions, and similar state announcements. Basic Attack is intentionally excluded because animation plus floating damage already communicates it. A short queue preserves a boss/formation announcement before an immediately following action banner can replace it.
 
-Battle HUD & Message Layout v1 moves recent battle messages into a fixed bounded strip at the top of the battle screen. The scene still owns the recent-message queue and battle systems still author the content; `BattleRenderer` only wraps/truncates that content with shared `Window_TextLayout` rules. The top header also reports the current target during selection, or the active party battler during command flow.
+Floating battlefield feedback remains the primary result language. Damage/healing numbers, Miss, Weak, Resist, Immune, status feedback, and Critical stay above the affected battler. Critical also triggers a brief presentation-only screen flash through `BattleEffects`; it does not alter critical-damage math.
 
-The bottom HUD now reserves four stable party rows rather than expanding actor blocks horizontally. Each row presents actor name, a compact status summary, HP, MP, and Valor with simple gauges. The active party battler receives visual emphasis only; turn ownership continues to live in `BattlePartyController` / `BattleManager`. `BattleHudLayout` owns only the geometry used to keep these regions stable alongside the command window and its temporary Escape/Defend side panels.
+The bottom HUD still reserves four stable party rows, but its information hierarchy is now split into a left name roster, a dedicated middle command/status reserve, and stable right-side HP/MP/Valor columns. `Window_BattleCommand` overlays only that middle reserve while an actor owns command input. Escape and Defend appear only when horizontally requested and are flush with the main command panel's upper-left / upper-right edges. The middle reserve remains blank outside command input until real Barrier/MBarrier-style mechanics earn presentation there. `BattleHudLayout` owns only geometry; turn ownership remains in `BattlePartyController` / `BattleManager`.
 
 The battle scene can present:
 
@@ -527,6 +527,8 @@ The battle scene can present:
 - Actor and enemy hurt/defeat states
 
 Presentation should report the result of battle logic rather than becoming the authority that decides the result.
+
+Back Attack now keeps the party on the left rather than mirroring battle sides. Party members begin facing away from enemies; targeting/action presentation can turn the acting character temporarily, rear physical hits turn the struck actor permanently, and the remaining party turns after the opening enemy round. A physical hit from an enemy positioned behind a party target receives a shared 1.5x rear-exposure multiplier. The same geometric rule works in Pincer when a party member is facing the opposite flank. Magick damage is unchanged by front/back exposure. Enemy formation slots are fixed from 0 through 4 and encounter validation caps a battle at five enemies.
 
 ---
 
