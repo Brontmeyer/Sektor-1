@@ -1597,6 +1597,8 @@ class BattleManager {
       return;
     }
 
+    battle.targetManager.normalizeScope(skill);
+
     // Confuse preserves the selected Skill but takes target selection away
     // from the player, matching the existing Attack and Magick contract.
     if (this.battlerForcesRandomTarget(battler)) {
@@ -1617,22 +1619,18 @@ class BattleManager {
           `${battler.name} is confused and targets ${target.name} with ${skill.name}!`,
         );
       } else {
-        const legalGroups = targetGroups.filter(
-          (group) =>
-            battle.targetManager.selectableBattlers(group, skill).length > 0,
-        );
-        const targetGroup = this.randomBattleTarget(legalGroups);
+        const buckets = battle.targetManager.targetBuckets(skill);
+        const bucket = this.randomBattleTarget(buckets);
 
-        if (!targetGroup) {
+        if (!bucket || !battle.targetManager.selectTargetBucket(bucket, skill)) {
           battle.addBattleMessage(`${skill.name} has no valid targets.`);
           battle.pendingSkill = null;
           return;
         }
 
-        battle.targetGroup = targetGroup;
         battle.pendingSkillTarget = null;
         battle.addBattleMessage(
-          `${battler.name} is confused and targets all ${targetGroup} battlers with ${skill.name}!`,
+          `${battler.name} is confused and targets ${battle.targetManager.bucketLabel(bucket)} with ${skill.name}!`,
         );
       }
 
@@ -1734,10 +1732,12 @@ class BattleManager {
       return;
     }
 
+    battle.targetManager.normalizeScope(magick);
+
     // Confuse preserves the chosen action/magick but takes target selection away
-    // from the player. Single-target magick choose randomly from every target
-    // that is legal for the selected magick. All-target-only magick choose a
-    // random legal target group and then resolve against that whole side.
+    // from the player. Single-target Magick chooses randomly from every target
+    // that is legal for the selected Magick. All-target Magick chooses a random
+    // legal target bucket so Pincer flanks keep the same scope contract.
     if (this.battlerForcesRandomTarget(battler)) {
       if (battle.targetScope === "single") {
         const target = this.randomBattleTarget(
@@ -1755,22 +1755,18 @@ class BattleManager {
           `${battler.name} is confused and targets ${target.name} with ${magick.name}!`,
         );
       } else {
-        const legalGroups = targetGroups.filter(
-          (group) =>
-            battle.targetManager.selectableBattlers(group, magick).length > 0,
-        );
-        const targetGroup = this.randomBattleTarget(legalGroups);
+        const buckets = battle.targetManager.targetBuckets(magick);
+        const bucket = this.randomBattleTarget(buckets);
 
-        if (!targetGroup) {
+        if (!bucket || !battle.targetManager.selectTargetBucket(bucket, magick)) {
           battle.addBattleMessage(`${magick.name} has no valid targets.`);
           battle.pendingMagick = null;
           return;
         }
 
-        battle.targetGroup = targetGroup;
         battle.pendingMagickTarget = null;
         battle.addBattleMessage(
-          `${battler.name} is confused and targets all ${targetGroup} battlers with ${magick.name}!`,
+          `${battler.name} is confused and targets ${battle.targetManager.bucketLabel(bucket)} with ${magick.name}!`,
         );
       }
 

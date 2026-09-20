@@ -81,7 +81,10 @@ function baseScene() {
     battleBanner: null,
     battleManager: { currentTurnState: () => "command" },
     partyController: { currentBattler: () => ({ name: "Tyler" }) },
-    targetManager: { allowedScopes: () => ["single"] },
+    targetManager: {
+      allowedScopes: () => ["single"],
+      effectiveAllowedScopes: () => ["single"],
+    },
     skillsWindow: { isOpen: () => false },
     magickWindow: { isOpen: () => false },
     itemWindow: { isOpen: () => false },
@@ -185,6 +188,7 @@ function testContextualHintsMatchBattleState() {
   scene.enemyTargetAction = "skill";
   scene.pendingSkill = { id: 1, scope: ["single", "all"] };
   scene.targetManager.allowedScopes = () => ["single", "all"];
+  scene.targetManager.effectiveAllowedScopes = () => ["single", "all"];
 
   assert.match(renderer.battleHint(), /Single Enemies/);
   assert.match(renderer.battleHint(), /R: Scope/);

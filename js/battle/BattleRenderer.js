@@ -175,11 +175,15 @@ class BattleRenderer {
     const definition = this.scene.pendingSkill || this.scene.pendingMagick;
     const manager = this.scene.targetManager;
 
-    if (!definition || !manager || typeof manager.allowedScopes !== "function") {
+    if (
+      !definition ||
+      !manager ||
+      typeof manager.effectiveAllowedScopes !== "function"
+    ) {
       return false;
     }
 
-    return manager.allowedScopes(definition).length > 1;
+    return manager.effectiveAllowedScopes(definition).length > 1;
   }
 
   battleHint() {
@@ -189,11 +193,27 @@ class BattleRenderer {
 
     if (this.scene.selectingEnemyTarget) {
       const group = this.scene.targetGroup === "ally" ? "Allies" : "Enemies";
-      const scope =
+      let scope =
         this.scene.targetScope === "all" ? `All ${group}` : `Single ${group}`;
-      const scopeHint = this.canToggleTargetScope() ? "   R: Scope" : "";
 
-      return `${scope}   WASD / Arrows: Target   E / Enter: Confirm   Q / Esc: Back${scopeHint}`;
+      if (
+        this.scene.targetScope === "all" &&
+        this.scene.targetGroup === "enemy" &&
+        this.scene.getFormationType?.() === "pincer"
+      ) {
+        const flank = this.scene.targetManager.selectedEnemyFlank?.();
+        if (flank) {
+          scope += ` (${flank[0].toUpperCase()}${flank.slice(1)})`;
+        }
+      }
+
+      const scopeHint = this.canToggleTargetScope() ? "   R: Scope" : "";
+      const moveHint =
+        this.scene.targetScope === "all"
+          ? "Arrows: Group"
+          : "WASD / Arrows: Target";
+
+      return `${scope}   ${moveHint}   E / Enter: Confirm   Q / Esc: Back${scopeHint}`;
     }
 
     if (this.hasOpenSelectionWindow()) {
@@ -695,31 +715,25 @@ class BattleRenderer {
     // -----------------------------
 
     if (this.scene.targetScope === "all") {
-      if (this.scene.targetGroup === "ally") {
-        const allies = this.scene.targetManager.selectableBattlers("ally");
+      const targets = this.scene.targetManager.getCurrentTargets();
 
-        for (const ally of allies) {
-          const position = this.scene.getAllyPosition(ally);
-          const height = this.scene.getActorSpriteHeight(ally);
+      for (const target of targets) {
+        if ($gameParty.battleMembers().includes(target)) {
+          const position = this.scene.getAllyPosition(target);
+          const height = this.scene.getActorSpriteHeight(target);
           context.fillText("▼", position.x, position.y - height - 18);
+          continue;
         }
-      } else {
-        const selectableEnemies = new Set(
-          this.scene.targetManager.selectableBattlers("enemy"),
-        );
 
-        for (let i = 0; i < this.scene.enemies.length; i++) {
-          const enemy = this.scene.enemies[i];
+        const enemyIndex = this.scene.enemies.indexOf(target);
 
-          if (!selectableEnemies.has(enemy)) {
-            continue;
-          }
-
-          const position = this.scene.getEnemyBattlePosition(i);
-          const height = this.scene.getEnemySpriteHeight(enemy);
-
-          context.fillText("▼", position.x, position.y - height - 18);
+        if (enemyIndex < 0) {
+          continue;
         }
+
+        const position = this.scene.getEnemyBattlePosition(enemyIndex);
+        const height = this.scene.getEnemySpriteHeight(target);
+        context.fillText("▼", position.x, position.y - height - 18);
       }
 
       context.restore();

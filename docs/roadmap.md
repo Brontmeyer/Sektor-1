@@ -506,6 +506,7 @@ Battle-presentation directions and current status:
 - ✅ Normal / back-attack / pincer encounter formation contracts
 - ✅ Battle HUD & Message Layout v1 with reusable four-row HUD geometry
 - ✅ Battle Presentation & Feedback v2 with transient action/state banners, integrated command/HUD columns, battlefield Critical/Weak/Resist/Immune feedback, five fixed enemy slots, and physical rear-exposure rules
+- ✅ Battle Targeting & Scope Navigation v2 with four-direction spatial selection, one-target scope collapse, and pincer flank-limited All targeting
 - Scan & Tactical Help v1 for unknown/known enemy HP/MP and weakness/resistance/immunity details while targeting
 - A separate Options/configuration system for battle speed, battle/field message speed, optional battle cursor memory, Magick ordering, and control-rebinding architecture
 

@@ -262,6 +262,8 @@ Battle HUD geometry should remain presentation-only. Use `BattleHudLayout` for s
 
 Battlefield positions belong to `BattleFormationManager`. Do not hard-code actor names, actor IDs, enemy names, or formation-specific coordinates into `BattleRenderer`, `BattlePartyController`, effects, targeting, or animation code. Those consumers should ask the formation owner for positions, scales, and facing/advance direction. Rear-exposure detection also belongs to this geometry owner, but the resulting physical-damage multiplier is applied by `BattleManager`; Magick must not consult facing state.
 
+Target navigation belongs to `BattleTargetManager`. Scene input should pass directional intent into the target manager rather than encoding left/right formation assumptions itself. Effective Single/All availability must come from the current legal target bucket, and Pincer All targeting must resolve one flank bucket at a time. Rendering may display the resolved bucket/cursors but must not independently reconstruct which battlers an All action will affect.
+
 Keep command-navigation state separate from action authority. `Window_BattleCommand` may own which core/side command currently has focus and draw temporary side panels, but it must not decide battle outcomes or apply Defend. `Scene_Battle` owns navigation between command/list/target layers and the existing Escape finalization path; `BattleManager` continues to own Defend and other battle-action execution. When canceling a nested target-selection layer, restore the originating selector rather than reconstructing a parallel cursor state in the scene.
 
 ---

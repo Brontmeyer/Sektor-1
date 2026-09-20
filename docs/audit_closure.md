@@ -142,6 +142,10 @@ Pass 45 is post-audit presentation work and does not reopen a historical finding
 
 Pass 46 is post-audit battle presentation/formations work and does not reopen a historical finding. The persistent top header/message strip is replaced by a scene-owned transient banner queue, bottom HUD geometry is split into name / command-reserve / resource regions, Escape/Defend tabs are flush with the command panel, Critical adds a presentation-only flash, and enemy slots expand to a validated five-member cap. Back Attack now keeps the party on the left and introduces an explicit battle-local physical rear-exposure multiplier through `BattleFormationManager` + `BattleManager`; Magick remains facing-neutral. No persistent player state changes, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Battle Targeting & Scope Navigation v2
+
+Pass 47 is post-audit targeting/navigation work and does not reopen a historical finding. `BattleTargetManager` now owns four-direction spatial movement, effective Single/All scope availability, and formation-aware target buckets. Pincer enemy All targeting resolves against one selected flank at a time, while normal/back-attack targeting retains whole-side All behavior. `BattleRenderer` consumes the resolved target bucket for cursors/hints and battle effect resolution continues to consume `BattleTargetManager.getCurrentTargets()`. No persistent player state changes, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

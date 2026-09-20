@@ -47,6 +47,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Battle Formation & Party Layout v1
 -   ✅ Battle HUD & Message Layout v1
 -   ✅ Battle Presentation & Feedback v2
+-   ✅ Battle Targeting & Scope Navigation v2
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
 
@@ -82,6 +83,7 @@ Current battle features include:
 -   ✅ All-target actions
 -   ✅ Ally targeting
 -   ✅ Enemy targeting
+-   ✅ Four-direction spatial target navigation and pincer flank-aware All targeting
 -   ✅ Four-actor vertical battlefield layout with safe sprite scaling
 -   ✅ Normal / Back Attack / Pincer encounter formations
 -   ✅ Battle effects
@@ -109,7 +111,7 @@ Systems currently being expanded include:
 -   ✅ Battle Formation & Party Layout v1
 -   ✅ Battle HUD & Message Layout v1
 
-Battle HUD & Message Layout v1 established reusable four-row geometry. Battle Presentation & Feedback v2 refines that experiment from hands-on playtesting: persistent top headers/messages are removed, action/state information uses compact transient banners, actor names stay in a fixed left roster, the main command window overlays a dedicated middle reserve, and HP/MP/Valor remain in stable right-side columns. Damage, Weak/Resist/Immune, and Critical feedback stay on the battlefield as popups; Critical also triggers a brief presentation-only flash.
+Battle HUD & Message Layout v1 established reusable four-row geometry. Battle Presentation & Feedback v2 refines that experiment from hands-on playtesting: persistent top headers/messages are removed, action/state information uses compact transient banners, actor names stay in a fixed left roster, the main command window overlays a dedicated middle reserve, and HP/MP/Valor remain in stable right-side columns. Damage, Weak/Resist/Immune, and Critical feedback stay on the battlefield as popups; Critical also triggers a brief presentation-only flash. Battle Targeting & Scope Navigation v2 keeps targeting inside the same formation geometry: single-target selection now responds spatially in all four directions, optional All scope is hidden when the selected target bucket contains only one legal battler, and Pincer All targeting resolves against one selected enemy flank at a time rather than both flanks simultaneously.
 
 ------------------------------------------------------------------------
 

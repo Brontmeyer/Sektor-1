@@ -177,95 +177,45 @@ class Scene_Battle extends Scene_Base {
     // -----------------------------
 
     if (this.selectingEnemyTarget) {
+      const definition = this.pendingSkill || this.pendingMagick;
+
       if (
         ["magick", "skill"].includes(this.enemyTargetAction) &&
         Input.isTriggered("KeyR")
       ) {
-        const definition = this.pendingSkill || this.pendingMagick;
-
         if (definition) {
           this.targetManager.toggleScope(definition);
         }
+
+        return;
       }
 
-      if (this.targetGroup === "enemy" && this.targetScope === "single") {
-        if (Input.isTriggered("KeyA") || Input.isTriggered("ArrowLeft")) {
-          const definition = this.pendingSkill || this.pendingMagick;
-
-          const canSwitchToAlly =
-            this.enemyTargetAction === "attack" ||
-            (definition &&
-              this.targetManager.canTargetGroup(definition, "ally"));
-
-          if (canSwitchToAlly) {
-            this.targetGroup = "ally";
-
-            if (definition) {
-              this.targetManager.selectFrontSelectableAlly(definition);
-            } else {
-              this.targetManager.selectFrontLivingAlly();
-            }
-          }
-
-          return;
+      const moveTarget = (dx, dy) => {
+        if (this.targetScope === "all") {
+          return this.targetManager.moveTargetBucket(dx, dy, definition);
         }
 
-        if (Input.isTriggered("KeyW") || Input.isTriggered("ArrowUp")) {
-          this.targetManager.moveSpatialSelection("enemy", 0, -1);
-          return;
-        }
+        return this.targetManager.moveDirectionalSelection(dx, dy, definition);
+      };
 
-        if (Input.isTriggered("KeyS") || Input.isTriggered("ArrowDown")) {
-          this.targetManager.moveSpatialSelection("enemy", 0, 1);
-          return;
-        }
-
-        if (Input.isTriggered("KeyD") || Input.isTriggered("ArrowRight")) {
-          this.targetManager.moveSpatialSelection("enemy", 1, 0);
-          return;
-        }
+      if (Input.isTriggered("KeyA") || Input.isTriggered("ArrowLeft")) {
+        moveTarget(-1, 0);
+        return;
       }
 
-      if (this.targetGroup === "ally" && this.targetScope === "single") {
-        if (Input.isTriggered("KeyW") || Input.isTriggered("ArrowUp")) {
-          this.targetManager.moveSpatialSelection("ally", 0, -1);
-          return;
-        }
+      if (Input.isTriggered("KeyD") || Input.isTriggered("ArrowRight")) {
+        moveTarget(1, 0);
+        return;
+      }
 
-        if (Input.isTriggered("KeyS") || Input.isTriggered("ArrowDown")) {
-          this.targetManager.moveSpatialSelection("ally", 0, 1);
-          return;
-        }
+      if (Input.isTriggered("KeyW") || Input.isTriggered("ArrowUp")) {
+        moveTarget(0, -1);
+        return;
+      }
 
-        if (Input.isTriggered("KeyA") || Input.isTriggered("ArrowLeft")) {
-          this.targetManager.moveSpatialSelection("ally", -1, 0);
-          return;
-        }
-
-        if (Input.isTriggered("KeyD") || Input.isTriggered("ArrowRight")) {
-          const moved = this.targetManager.moveSpatialSelection("ally", 1, 0);
-
-          if (!moved) {
-            const definition = this.pendingSkill || this.pendingMagick;
-
-            const canSwitchToEnemy =
-              this.enemyTargetAction === "attack" ||
-              (definition &&
-                this.targetManager.canTargetGroup(definition, "enemy"));
-
-            if (canSwitchToEnemy) {
-              this.targetGroup = "enemy";
-
-              if (definition) {
-                this.targetManager.selectFrontSelectableEnemy(definition);
-              } else {
-                this.targetManager.selectFrontLivingEnemy();
-              }
-            }
-          }
-
-          return;
-        }
+      if (Input.isTriggered("KeyS") || Input.isTriggered("ArrowDown")) {
+        moveTarget(0, 1);
+        return;
       }
 
       if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {

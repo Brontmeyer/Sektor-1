@@ -290,9 +290,9 @@ It should orchestrate battle systems rather than permanently absorbing every spe
 
 ## BattleTargetManager
 
-`BattleTargetManager` owns targeting responsibilities such as selecting and resolving valid battle targets. It can also bind an already-resolved battler back into the current ally/enemy selection state, allowing forced targeting to reuse the same downstream attack and Magick execution paths as manual selection.
+`BattleTargetManager` owns targeting responsibilities such as selecting and resolving valid battle targets. Battle Targeting & Scope Navigation v2 extends that boundary with four-direction spatial movement, formation-aware target buckets, effective scope calculation, and pincer flank selection. Single-target navigation compares legal battler positions across the target groups allowed by the current action; it does not wrap when no legal target exists farther in the requested direction. All-target resolution works through the currently selected bucket: normal enemy battles use the whole enemy side, allies use the whole legal ally side, and pincer enemy targeting splits left/right flanks into separate buckets. Optional `single`/`all` actions collapse to `single` when the current bucket contains only one legal battler, while intrinsically `all`-only actions remain all-target.
 
-Targeting rules should remain centralized enough that Magick, items, and future battle systems can use consistent target behavior.
+It can also bind an already-resolved battler back into the current ally/enemy selection state, allowing forced targeting to reuse the same downstream attack and Magick execution paths as manual selection. Targeting rules should remain centralized enough that Magick, items, Scan/Tactical Help, and future battle systems can use consistent target behavior.
 
 ## BattleEffects
 

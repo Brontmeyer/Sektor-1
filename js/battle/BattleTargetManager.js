@@ -32,12 +32,45 @@ class BattleTargetManager {
     return ["single"];
   }
 
+  effectiveAllowedScopes(
+    definition = this.currentActionDefinition(),
+    group = this.scene.targetGroup,
+  ) {
+    const scopes = this.allowedScopes(definition);
+
+    // An intrinsically all-target action remains all-target even when only one
+    // legal battler is present. Dual-scope actions collapse to single when the
+    // currently selected target bucket contains fewer than two battlers.
+    if (!scopes.includes("single") || !scopes.includes("all")) {
+      return [...scopes];
+    }
+
+    const bucket = this.currentTargetBucket(definition, group);
+    const targetCount = bucket?.battlers?.length || 0;
+
+    return targetCount > 1 ? [...scopes] : scopes.filter((scope) => scope !== "all");
+  }
+
+  normalizeScope(definition = this.currentActionDefinition()) {
+    const scopes = this.effectiveAllowedScopes(definition);
+
+    if (scopes.includes(this.scene.targetScope)) {
+      return this.scene.targetScope;
+    }
+
+    this.scene.targetScope = scopes.includes("single")
+      ? "single"
+      : scopes[0] || "single";
+
+    return this.scene.targetScope;
+  }
+
   canUseScope(definition, scope) {
-    return this.allowedScopes(definition).includes(scope);
+    return this.effectiveAllowedScopes(definition).includes(scope);
   }
 
   toggleScope(definition) {
-    const scopes = this.allowedScopes(definition);
+    const scopes = this.effectiveAllowedScopes(definition);
 
     if (scopes.length <= 1) {
       this.scene.targetScope = scopes[0] || "single";
@@ -76,6 +109,20 @@ class BattleTargetManager {
     }
 
     return groups.length > 0 ? groups : ["enemy"];
+  }
+
+  navigableTargetGroups(definition = this.currentActionDefinition()) {
+    if (definition) {
+      return this.allowedTargetGroups(definition);
+    }
+
+    // Manual Attack historically permits selecting either battle side. Forced
+    // random targeting still bypasses this selector through BattleManager.
+    if (this.scene.enemyTargetAction === "attack") {
+      return ["ally", "enemy"];
+    }
+
+    return [this.scene.targetGroup || "enemy"];
   }
 
   canTargetGroup(definition, group) {
@@ -125,6 +172,154 @@ class BattleTargetManager {
     return battlers.filter((battler) =>
       this.isSelectableTarget(battler, definition),
     );
+  }
+
+  targetPosition(group, battler) {
+    return group === "ally"
+      ? this.scene.getAllyPosition(battler)
+      : this.scene.getEnemyPosition(battler);
+  }
+
+  isPincerFormation() {
+    return (
+      this.scene.getFormationType?.() === "pincer" ||
+      this.scene.formationManager?.formation?.() === "pincer" ||
+      this.scene.formationManager?.is?.("pincer") === true
+    );
+  }
+
+  enemyFlankForIndex(index) {
+    return this.scene.formationManager?.memberSide?.(index) || "right";
+  }
+
+  selectedEnemyFlank() {
+    return this.enemyFlankForIndex(this.scene.selectedEnemyIndex);
+  }
+
+  targetBuckets(definition = this.currentActionDefinition()) {
+    const buckets = [];
+    const groups = this.navigableTargetGroups(definition);
+
+    for (const group of groups) {
+      if (group === "ally") {
+        const allies = this.selectableBattlers("ally", definition);
+
+        if (allies.length > 0) {
+          buckets.push({
+            key: "ally",
+            group: "ally",
+            flank: null,
+            battlers: allies,
+          });
+        }
+
+        continue;
+      }
+
+      if (group !== "enemy") {
+        continue;
+      }
+
+      const enemies = this.selectableBattlers("enemy", definition);
+
+      if (this.isPincerFormation()) {
+        for (const flank of ["left", "right"]) {
+          const flankEnemies = enemies.filter((enemy) => {
+            const index = this.scene.enemies.indexOf(enemy);
+            return index >= 0 && this.enemyFlankForIndex(index) === flank;
+          });
+
+          if (flankEnemies.length > 0) {
+            buckets.push({
+              key: `enemy:${flank}`,
+              group: "enemy",
+              flank,
+              battlers: flankEnemies,
+            });
+          }
+        }
+      } else if (enemies.length > 0) {
+        buckets.push({
+          key: "enemy",
+          group: "enemy",
+          flank: null,
+          battlers: enemies,
+        });
+      }
+    }
+
+    return buckets;
+  }
+
+  currentTargetBucket(
+    definition = this.currentActionDefinition(),
+    group = this.scene.targetGroup,
+  ) {
+    const buckets = this.targetBuckets(definition);
+
+    if (group === "enemy" && this.isPincerFormation()) {
+      const flank = this.selectedEnemyFlank();
+      return (
+        buckets.find(
+          (bucket) => bucket.group === "enemy" && bucket.flank === flank,
+        ) || buckets.find((bucket) => bucket.group === "enemy") || null
+      );
+    }
+
+    return buckets.find((bucket) => bucket.group === group) || null;
+  }
+
+  bucketLabel(bucket) {
+    if (!bucket) {
+      return "targets";
+    }
+
+    if (bucket.group === "enemy" && bucket.flank) {
+      return `all enemies on the ${bucket.flank} flank`;
+    }
+
+    return bucket.group === "ally" ? "all allies" : "all enemies";
+  }
+
+  bucketCenter(bucket) {
+    if (!bucket || bucket.battlers.length === 0) {
+      return null;
+    }
+
+    const points = bucket.battlers.map((battler) =>
+      this.targetPosition(bucket.group, battler),
+    );
+    const total = points.reduce(
+      (sum, point) => ({ x: sum.x + point.x, y: sum.y + point.y }),
+      { x: 0, y: 0 },
+    );
+
+    return {
+      x: total.x / points.length,
+      y: total.y / points.length,
+    };
+  }
+
+  selectTargetBucket(bucket, definition = this.currentActionDefinition()) {
+    if (!bucket || bucket.battlers.length === 0) {
+      return null;
+    }
+
+    this.selectBattler(bucket.battlers[0]);
+    this.normalizeScope(definition);
+    return bucket;
+  }
+
+  scopedSelectableBattlers(
+    group = this.scene.targetGroup,
+    definition = this.currentActionDefinition(),
+  ) {
+    if (group !== this.scene.targetGroup) {
+      return this.selectableBattlers(group, definition);
+    }
+
+    const bucket = this.currentTargetBucket(definition, group);
+    return bucket ? [...bucket.battlers] : [];
   }
 
   selectBattler(target) {
@@ -206,71 +401,100 @@ class BattleTargetManager {
     }
   }
 
-  moveSpatialSelection(group, dx, dy) {
-    const isAlly = group === "ally";
-    const battlers = isAlly ? $gameParty.battleMembers() : this.scene.enemies;
-    const selectedIndex = isAlly
-      ? this.scene.selectedAllyIndex
-      : this.scene.selectedEnemyIndex;
-    const current = battlers[selectedIndex];
+  directionalScore(currentPosition, candidatePosition, dx, dy) {
+    const offsetX = candidatePosition.x - currentPosition.x;
+    const offsetY = candidatePosition.y - currentPosition.y;
+    const forward = offsetX * dx + offsetY * dy;
 
-    if (!this.isSelectableTarget(current)) {
-      if (isAlly) {
-        this.selectFirstSelectableAlly();
-      } else {
-        this.selectFirstSelectableEnemy();
+    if (forward <= 0) {
+      return Infinity;
+    }
+
+    const sideways = Math.abs(offsetX * dy - offsetY * dx);
+    const distance = Math.hypot(offsetX, offsetY);
+    return distance + sideways * 0.75;
+  }
+
+  moveDirectionalSelection(
+    dx,
+    dy,
+    definition = this.currentActionDefinition(),
+  ) {
+    const current = this.getSelectedTarget();
+
+    if (!this.isSelectableTarget(current, definition)) {
+      const firstBucket = this.targetBuckets(definition)[0] || null;
+      return this.selectTargetBucket(firstBucket, definition) !== null;
+    }
+
+    const currentPosition = this.targetPosition(this.scene.targetGroup, current);
+    let bestTarget = null;
+    let bestScore = Infinity;
+
+    for (const group of this.navigableTargetGroups(definition)) {
+      for (const battler of this.selectableBattlers(group, definition)) {
+        if (battler === current) {
+          continue;
+        }
+
+        const position = this.targetPosition(group, battler);
+        const score = this.directionalScore(currentPosition, position, dx, dy);
+
+        if (score < bestScore) {
+          bestScore = score;
+          bestTarget = battler;
+        }
       }
+    }
 
+    if (!bestTarget) {
       return false;
     }
 
-    const currentPosition = isAlly
-      ? this.scene.getAllyPosition(current)
-      : this.scene.getEnemyPosition(current);
+    this.selectBattler(bestTarget);
+    this.normalizeScope(definition);
+    return true;
+  }
 
-    let bestIndex = -1;
+  moveTargetBucket(dx, dy, definition = this.currentActionDefinition()) {
+    const buckets = this.targetBuckets(definition);
+    const current = this.currentTargetBucket(definition);
+
+    if (!current) {
+      return this.selectTargetBucket(buckets[0] || null, definition) !== null;
+    }
+
+    const currentPosition = this.bucketCenter(current);
+    let bestBucket = null;
     let bestScore = Infinity;
 
-    for (let i = 0; i < battlers.length; i++) {
-      const battler = battlers[i];
-
-      if (!this.isSelectableTarget(battler) || i === selectedIndex) {
+    for (const bucket of buckets) {
+      if (bucket.key === current.key) {
         continue;
       }
 
-      const position = isAlly
-        ? this.scene.getAllyPosition(battler)
-        : this.scene.getEnemyPosition(battler);
-
-      const offsetX = position.x - currentPosition.x;
-      const offsetY = position.y - currentPosition.y;
-      const forward = offsetX * dx + offsetY * dy;
-
-      if (forward <= 0) {
-        continue;
-      }
-
-      const sideways = Math.abs(offsetX * dy - offsetY * dx);
-      const distance = Math.hypot(offsetX, offsetY);
-      const score = distance + sideways * 0.75;
+      const position = this.bucketCenter(bucket);
+      const score = this.directionalScore(currentPosition, position, dx, dy);
 
       if (score < bestScore) {
         bestScore = score;
-        bestIndex = i;
+        bestBucket = bucket;
       }
     }
 
-    if (bestIndex < 0) {
+    if (!bestBucket) {
       return false;
     }
 
-    if (isAlly) {
-      this.scene.selectedAllyIndex = bestIndex;
-    } else {
-      this.scene.selectedEnemyIndex = bestIndex;
+    return this.selectTargetBucket(bestBucket, definition) !== null;
+  }
+
+  moveSpatialSelection(group, dx, dy) {
+    if (group !== this.scene.targetGroup) {
+      return false;
     }
 
-    return true;
+    return this.moveDirectionalSelection(dx, dy);
   }
 
   // =================================
@@ -407,7 +631,7 @@ class BattleTargetManager {
 
   getCurrentTargets() {
     if (this.scene.targetScope === "all") {
-      return this.selectableBattlers(this.scene.targetGroup);
+      return this.scopedSelectableBattlers(this.scene.targetGroup);
     }
 
     const target = this.getSelectedTarget();

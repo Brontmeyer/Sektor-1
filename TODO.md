@@ -87,6 +87,10 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Integrate actor names, command reserve, and HP/MP/Valor columns in one stable bottom HUD
 - [x] Keep Back Attack party positions on the left and apply rear-exposure bonus only to physical damage
 - [x] Support fixed enemy formation slots 0-4 with a five-enemy encounter cap
+- [x] Implement Battle Targeting & Scope Navigation v2
+- [x] Collapse optional All scope when only one legal target exists in the current target bucket
+- [x] Support four-direction spatial targeting across normal/back-attack/pincer layouts without wraparound
+- [x] Limit Pincer All targeting to one selected enemy flank at a time and allow left/right flank switching
 - [ ] Implement Scan & Tactical Help v1 with unknown/known enemy detail presentation
 - [ ] Explore Game Options v1 for battle speed, battle/field message speed, configurable battle cursor memory, Magick ordering, and control rebinding architecture
 

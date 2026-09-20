@@ -12,6 +12,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Battle Targeting & Scope Navigation v2 with shared four-direction spatial targeting across allies/enemies and formation-aware target buckets
+- Collapsed optional All scope to Single when the current target bucket contains only one legal battler, while preserving intrinsically all-target actions
+- Added pincer flank-aware All targeting so multi-target actions affect only the selected enemy flank and can switch between left/right flanks through normal directional input
+- Updated all-target cursor rendering and battle hints to use the resolved target bucket rather than every selectable enemy in the battle
+- Added dedicated regression coverage for one-target scope collapse, two-target All, five-enemy directional navigation, pincer cross-flank selection, flank-limited All targeting, allied All targeting, and no-wrap screen-edge behavior
+
 - Added Battle Presentation & Feedback v2, replacing the persistent top encounter/active header and recent-message strip with compact transient action/state banners
 - Added scene-owned banner queuing so formation/boss state announcements cannot be immediately overwritten by a following Magick/Skill/Item name
 - Added brief Critical screen flash while preserving existing floating damage plus Weak / Resist / Immune / Critical battlefield popups

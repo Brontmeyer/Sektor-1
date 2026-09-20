@@ -140,15 +140,17 @@ The battle system currently supports concepts including:
 - Single targets
 - All targets
 - Selection of living targets
+- Four-direction spatial target movement without selection wraparound at screen/formation edges
 - Magick and Skills that permit more than one target group
 - Magick and Skills that permit more than one target scope
 - Self-only Skill targeting through the ally-side selector while only the caster remains legal
+- Formation-aware All-target buckets
 
-Action data should determine which target groups and scopes are legal.
+Battle Targeting & Scope Navigation v2 treats targeting geometry and action scope as one shared contract. For actions that support both `single` and `all`, All is offered only when the currently selected target bucket contains at least two legal battlers. This means a one-enemy battle stays Single even when the selected Magick technically supports both scopes. An intrinsically all-target action remains All even if only one legal target currently exists.
 
-The battle scene and target manager handle the player's current selection. Effect resolution should not redefine an action's targeting rules.
+Normal and Back Attack enemy All targeting resolves against the legal enemy side. In a Pincer encounter, the left and right enemy flanks are separate All-target buckets: choosing All marks only the currently selected flank, and left/right input can switch the active flank. Single-target pincer navigation uses the same spatial movement contract, so left-side and right-side enemies can both be reached with ordinary directional input.
 
-When a Magick permits both allies and enemies, the current Magick command flow prefers the enemy group as the initial selection while still allowing the legal target groups defined by the Magick.
+Action data should determine which target groups and scopes are legal. `BattleTargetManager` determines the effective scope and current target bucket; effect resolution consumes those resolved targets rather than redefining targeting rules. When a Magick permits both allies and enemies, the command flow still prefers the enemy group as the initial selection while allowing spatial movement into every legal target group.
 
 ---
 
