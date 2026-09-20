@@ -180,6 +180,7 @@ function testSkillsRuntimeMetadataContracts() {
       category: "physical",
       effect: "damage",
       powerMultiplier: 1.5,
+      valorArt: true,
       target: ["enemy"],
       scope: ["single"],
     },
@@ -192,12 +193,17 @@ function testSkillsRuntimeMetadataContracts() {
   const invalid = clone(skills);
   invalid[1].type = "magick";
   invalid[1].powerMultiplier = 0;
+  invalid[1].valorArt = "yes";
   invalid[1].target = ["somewhere"];
   const invalidErrors = [];
   DatabaseValidator.validateSkills(invalid, invalidErrors);
 
   assert.equal(invalidErrors.some((error) => error.includes('type must be "skill"')), true);
   assert.equal(invalidErrors.some((error) => error.includes("powerMultiplier")), true);
+  assert.equal(
+    invalidErrors.some((error) => error.includes("valorArt must be a boolean")),
+    true,
+  );
   assert.equal(invalidErrors.some((error) => error.includes("unsupported value")), true);
 }
 

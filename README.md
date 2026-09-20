@@ -39,6 +39,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Enemy Actions & AI v1
 -   ✅ Valor Runtime v1
 -   ✅ Skills Runtime v1
+-   ✅ Valor Arts Runtime v1
 
 ------------------------------------------------------------------------
 
@@ -86,7 +87,8 @@ Systems currently being expanded include:
 -   ✅ Enemy Actions & AI v1
 -   🚧 Boss mechanics
 -   ✅ Valor Runtime v1
--   🚧 Valor Arts
+-   ✅ Valor Arts Runtime v1
+-   🚧 Character-specific Valor Art content
 
 ------------------------------------------------------------------------
 
@@ -116,9 +118,11 @@ Combat-stat terminology remains **Magic**, **Magic Attack**, and **Magic Defense
 
 The v1 execution vocabulary is deliberately narrow: a Skill can currently define a physical-damage technique through `powerMultiplier`, legal `target` groups (`self`, `ally`, `enemy`), and `scope` (`single`, `all`). Damage reuses the established physical hit, Defense, defending, status-removal, incoming-damage, defeat, and Valor pathways instead of creating a second physical-combat formula.
 
-`data/Skills.json` intentionally begins content-neutral as `[null]`, and current actors begin with empty `initialSkillIds`. Pass 36 defines the architecture before inventing canonical techniques. Skill costs/resources, progression/unlock rules, richer effects, enemy Skill actions, and the first **Valor Arts** remain future design work.
+`data/Skills.json` intentionally begins content-neutral as `[null]`, and current actors begin with empty `initialSkillIds`. Pass 36 defines the architecture before inventing canonical techniques. Progression/unlock rules, richer effects, enemy Skill actions, and canonical character Skill content remain future design work.
 
-The field Skills window is currently a read-only learned-Skill viewer with the same shared actor navigation used by other character menus. Battle use is available whenever an actor actually knows a usable Skill.
+**Valor Arts Runtime v1** specializes this same Skills namespace through optional `valorArt: true` metadata. A Valor Art is usable only while its actor is Valor Ready, pays the existing full-gauge Valor cost exactly once when the action is committed against at least one legal target, and otherwise uses the normal Skill targeting and physical-resolution pipeline. Regular Skills remain cost-neutral. Battle and field Skills windows mark Valor Arts with `[VALOR]`; no separate Valor-only command or combat engine exists.
+
+The field Skills window is currently a read-only learned-Skill viewer with the same shared actor navigation used by other character menus. Battle use is available whenever an actor actually knows a usable Skill. Canonical character-specific Valor Arts are intentionally still deferred until their identities, names, targeting, and unlock rules are approved.
 
 ------------------------------------------------------------------------
 
@@ -128,7 +132,7 @@ The field Skills window is currently a read-only learned-Skill viewer with the s
 
 Current actors have a data-driven Max Valor of 100. Valor persists between battles and through Save Runtime v8, caps at the actor's configured maximum, and is shown in both the battle HUD and Status menu. A full gauge becomes **VALOR: READY**.
 
-Valor Runtime v1 establishes the gauge, gain rules, persistence, ready state, and consumption API. It does **not** yet define character-specific Valor Arts; those remain future Skills content so their costs, targeting, and progression can be designed deliberately.
+Valor Runtime v1 establishes the gauge, gain rules, persistence, ready state, and consumption API. Valor Arts Runtime v1 now consumes that API through the Skills cost hook without moving gauge ownership out of `Game_Actor`. The runtime contract exists, while character-specific Valor Art content, targeting choices, and progression/unlock rules remain future design work.
 
 ------------------------------------------------------------------------
 
@@ -247,7 +251,7 @@ Major systems still planned include:
 -   Advanced enemy / boss scripting
 -   Boss scripting
 -   Party switching
--   Valor Arts
+-   Canonical character-specific Valor Arts
 -   Summon Magick
 -   World exploration
 -   Towns and dungeons

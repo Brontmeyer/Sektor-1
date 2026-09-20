@@ -473,7 +473,7 @@ Use **Valor** as the canonical name for Sektor 1's pressure-response gauge. Do n
 
 Actor capacity belongs in `Actors.json` as the positive-integer `maxValor` field. Runtime gauge state belongs to `Game_Actor`; shared status data may modify gain through `effects.valorGainMultiplier`. The shared damage layer may notify actor-specific systems after resolved damage, but `Game_Battler` must not become the owner of actor Valor state.
 
-Future character-specific Valor actions are referred to as **Valor Arts** and belong to the non-Magick Skills namespace.
+Character-specific Valor actions are referred to as **Valor Arts** and belong to the non-Magick Skills namespace. Mark the Skill definition with `valorArt: true`; do not add a separate Valor action engine or move Valor state out of `Game_Actor`. Shared Skill execution should use the generic cost hook rather than checking Valor directly.
 
 ---
 

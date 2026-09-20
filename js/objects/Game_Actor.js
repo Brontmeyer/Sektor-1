@@ -536,6 +536,26 @@ class Game_Actor extends Game_Battler {
       .filter((skill) => skill !== null);
   }
 
+  isValorArt(skill) {
+    return skill?.valorArt === true;
+  }
+
+  canPaySkillCost(skill) {
+    if (this.isValorArt(skill)) {
+      return this.isValorReady();
+    }
+
+    return super.canPaySkillCost(skill);
+  }
+
+  paySkillCost(skill) {
+    if (this.isValorArt(skill)) {
+      return this.consumeValor();
+    }
+
+    return super.paySkillCost(skill);
+  }
+
   // =====================================
   // Experience and Level Management
   // =====================================

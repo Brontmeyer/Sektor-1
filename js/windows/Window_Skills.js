@@ -32,6 +32,16 @@ class Window_Skills {
     return this.skillList()[this.index] || null;
   }
 
+  skillLabel(skill) {
+    return skill?.valorArt === true
+      ? `[VALOR] ${skill.name}`
+      : skill?.name || "";
+  }
+
+  skillCategoryLabel(skill) {
+    return skill?.valorArt === true ? "Valor Art" : skill?.category || "other";
+  }
+
   onActorChanged() {
     this.index = 0;
     this.listViewport.reset(this.index, this.skillList().length);
@@ -141,7 +151,7 @@ class Window_Skills {
     for (let i = range.start; i < range.end; i++) {
       const skill = skills[i];
       const prefix = i === this.index ? "▶ " : "   ";
-      context.fillText(`${prefix}${skill.name}`, this.x + this.padding, drawY);
+      context.fillText(`${prefix}${this.skillLabel(skill)}`, this.x + this.padding, drawY);
       drawY += this.itemHeight;
     }
 
@@ -157,7 +167,7 @@ class Window_Skills {
         this.y + this.height - 60,
       );
       context.fillText(
-        `Category: ${skill.category || "other"}`,
+        `Category: ${this.skillCategoryLabel(skill)}`,
         this.x + this.padding,
         this.y + this.height - 30,
       );

@@ -12,6 +12,11 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Valor Arts Runtime v1 as a thin specialization of the existing Skills runtime through optional validated `valorArt: true` metadata
+- Added generic Skill-cost hooks to shared Skill legality/execution while keeping full-gauge Valor ownership and payment in `Game_Actor`
+- Added Valor-ready gating, one-time full-gauge consumption on committed legal use, no-cost behavior for regular Skills, and protection against spending Valor when no legal target remains
+- Added `[VALOR]` presentation in battle/field Skills windows plus dedicated regression coverage for readiness, restrictions, misses, invalid targets, all-target use, command availability, and actor-only resource ownership
+- Kept `data/Skills.json` content-neutral and Save Runtime at v8 because Valor Arts introduce no new persistent state; canonical character-specific Arts remain deferred
 - Added Skills Runtime v1 as Sektor 1's canonical non-Magick technique foundation, with a separate `data/Skills.json` database and actor-owned `initialSkillIds` / `skillIds` state
 - Added validated physical-damage Skill metadata (`powerMultiplier`, target groups, and single/all scope) while intentionally leaving the canonical Skills catalog content-neutral until actual techniques are designed
 - Added shared Skill legality and target validation on `Game_Battler`, reusing existing action restrictions and the established physical hit/damage/status/defeat/Valor pipeline instead of creating parallel combat rules

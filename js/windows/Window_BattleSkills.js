@@ -35,6 +35,12 @@ class Window_BattleSkills {
     return this.skillList()[this.index] || null;
   }
 
+  skillLabel(skill) {
+    return skill?.valorArt === true
+      ? `[VALOR] ${skill.name}`
+      : skill?.name || "";
+  }
+
   update() {
     if (!this.visible) {
       return;
@@ -124,7 +130,7 @@ class Window_BattleSkills {
       const usable = this.actor().canUseSkill(skill.id);
 
       context.globalAlpha = usable ? 1 : 0.4;
-      context.fillText(`${prefix}${skill.name}`, this.x + this.padding, drawY);
+      context.fillText(`${prefix}${this.skillLabel(skill)}`, this.x + this.padding, drawY);
       context.globalAlpha = 1;
     }
 

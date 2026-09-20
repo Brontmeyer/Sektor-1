@@ -1962,10 +1962,19 @@ class BattleManager {
     const targets = battle.targetScope === "all"
       ? battle.targetManager.getCurrentTargets()
       : [battle.pendingSkillTarget].filter(Boolean);
+    const validTargets = targets.filter((target) =>
+      caster.isValidSkillTarget?.(skill, target),
+    );
+
+    if (validTargets.length === 0 || !caster.paySkillCost?.(skill)) {
+      battle.pendingSkill = null;
+      battle.pendingSkillTarget = null;
+      return false;
+    }
+
     let affected = false;
 
-    for (const target of targets) {
-      if (!caster.isValidSkillTarget?.(skill, target)) continue;
+    for (const target of validTargets) {
       const hitChance = this.physicalHitChance(caster);
       if (Math.random() * 100 >= hitChance) {
         battle.addBattlePopup(target, "MISS", "miss");

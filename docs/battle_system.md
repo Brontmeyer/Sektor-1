@@ -187,7 +187,9 @@ Battle Skills reuse existing combat contracts rather than defining a second phys
 
 Skills may target self, allies, or enemies according to their data. `self` uses the ally-side selector internally but `Game_Battler.isValidSkillTarget()` restricts the legal target to the acting battler. Confuse removes player target authority for Skills just as it does for Attack and Magick: single-target Skills choose a random legal battler, while all-target Skills choose a random legal target group.
 
-Skills Runtime v1 intentionally does **not** establish canonical Skill content, Skill-specific costs/resources, non-damage effects, enemy Skill actions, progression/unlock rules, or Valor Arts. Those should extend this foundation only when their designs are canonical.
+Skills Runtime v1 intentionally does **not** establish canonical Skill content, non-damage effects, enemy Skill actions, or progression/unlock rules. Valor Arts Runtime v1 is the first approved Skill-resource specialization: optional `valorArt: true` metadata requires an actor to be Valor Ready and consumes the full gauge through the generic Skill-cost hook. Regular Skills remain cost-neutral.
+
+Valor is paid only after the action still has at least one legal target, and it is paid once per committed Skill action rather than once per target. A later physical miss still spends the committed gauge, matching the action-cost boundary rather than treating hit success as resource payment. The battle and field Skills windows mark these entries with `[VALOR]`. Canonical character-specific Valor Art content remains intentionally undefined.
 
 ---
 
@@ -461,7 +463,7 @@ base Valor gain = (actual HP lost / Max HP) × Max Valor
 final Valor gain = base gain × combined valorGainMultiplier
 ```
 
-Current actors define `maxValor: 100` in `Actors.json`. Valor may be fractional internally so many small hits accumulate accurately; the HUD displays whole-number progress. Gauge state is clamped between `0` and `maxValor`, persists outside battle, and is serialized by Save Runtime v8. At full gauge the actor is **Valor Ready**. The runtime exposes a single full-gauge consumption boundary for future Valor Arts, but no Valor Art execution is canonical in v1.
+Current actors define `maxValor: 100` in `Actors.json`. Valor may be fractional internally so many small hits accumulate accurately; the HUD displays whole-number progress. Gauge state is clamped between `0` and `maxValor`, persists outside battle, and is serialized by Save Runtime v8. At full gauge the actor is **Valor Ready**. Valor Arts Runtime v1 now consumes the existing full-gauge boundary through Skills while leaving gauge state and consumption ownership in `Game_Actor`.
 
 Only actual direct damage routed through `receiveDamage()` generates Valor in v1. Fully nullified damage, absorbed elemental Magick, and damage that defeats the actor generate none. Damage-over-time and other HP changes that bypass the shared direct-damage path also do not generate Valor unless a future design explicitly extends that contract.
 
@@ -626,7 +628,7 @@ Major battle features still planned include:
 - Advanced enemy / boss behavior
 - Boss mechanics
 - Summon Magick
-- Valor Arts
+- Canonical character-specific Valor Arts
 - Party switching
 - Dual Techniques
 - Additional enemy and encounter systems

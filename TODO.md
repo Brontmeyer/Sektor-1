@@ -129,10 +129,12 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement actor-owned Skill learning/forgetting and independent `skillIds` persistence
 - [x] Implement battle Skill targeting/execution through shared action restrictions and the physical-damage pipeline
 - [x] Add battle and field Skills windows with shared character-menu navigation
-- [ ] Define Skills costs/resources beyond the current cost-neutral v1 foundation
+- [x] Add the first Skill resource specialization through Valor Arts Runtime v1
+- [ ] Define additional Skill costs/resources beyond Valor when approved designs require them
 - [ ] Expand Skills beyond physical-damage techniques when approved designs require new reusable effects
 - [ ] Add enemy Skill actions when canonical enemy techniques are designed
-- [ ] Design Valor Arts within the Skills namespace
+- [x] Define Valor Arts Runtime v1 within the Skills namespace
+- [ ] Design canonical character-specific Valor Arts and unlock/progression rules
 
 ---
 
@@ -147,7 +149,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Character 8
 - [ ] Party Switching
 - [ ] Dual Techs
-- [ ] Valor Arts
+- [ ] Canonical character-specific Valor Arts
 
 ---
 

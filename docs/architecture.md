@@ -431,9 +431,11 @@ Windows present available commands and Magick to the player. `Window_BattleComma
 
 `Skills.json` defines non-Magick techniques. Skills Runtime v1 intentionally begins with an empty canonical catalog (`[null]`) so architecture can be established without inventing character content. The validated v1 metadata supports physical-damage techniques with a positive `powerMultiplier`, relative `self` / `ally` / `enemy` targeting, and `single` / `all` scope.
 
-`Game_Actor` owns learned Skill IDs independently from learned Magick. `Game_Battler` owns shared Skill legality, action-restriction checks, physical-power lookup, and relative target validity. `BattleTargetManager` treats `self` as the ally-side selection group while `isValidSkillTarget()` still restricts self-only techniques to the acting battler. `BattleManager` executes Skills through the established physical accuracy and damage pipeline, so Defense, defending, physical status modifiers, damage-triggered status removal, defeat handling, and target-side Valor gain remain one source of truth.
+`Game_Actor` owns learned Skill IDs independently from learned Magick. `Game_Battler` owns shared Skill legality, action-restriction checks, physical-power lookup, relative target validity, and generic `canPaySkillCost()` / `paySkillCost()` hooks. `BattleTargetManager` treats `self` as the ally-side selection group while `isValidSkillTarget()` still restricts self-only techniques to the acting battler. `BattleManager` executes Skills through the established physical accuracy and damage pipeline, so Defense, defending, physical status modifiers, damage-triggered status removal, defeat handling, and target-side Valor gain remain one source of truth.
 
-`Window_BattleSkills` presents known usable Skills during battle. `Window_Skills` is the field/menu read-only learned-Skill viewer and uses the same `Window_ActorNavigator` contract as the other character windows. Skills Runtime v1 deliberately defines no canonical Skill content, Skill-specific resource/cost system, non-damage Skill effects, enemy Skill actions, or Valor Arts yet. Those should extend this namespace only when their designs are approved.
+Valor Arts Runtime v1 uses optional `valorArt: true` Skill metadata. `Game_Actor` specializes the generic Skill-cost hooks so Valor Arts require `isValorReady()` and consume the full gauge through `consumeValor()`. The shared battler layer does not own Valor state, and `BattleManager` only asks the generic cost hook after confirming at least one legal target. This prevents failed/invalid target resolution from spending Valor while still charging once for a committed action even if its physical hit later misses.
+
+`Window_BattleSkills` presents known usable Skills during battle and marks Valor Arts with `[VALOR]`; `Window_Skills` is the field/menu read-only learned-Skill viewer, labels the same classification, and uses the shared `Window_ActorNavigator` contract. The canonical Skills catalog remains content-neutral, so character-specific Valor Arts, progression/unlock rules, non-damage Skill effects, and enemy Skill actions remain future design work.
 
 ## Essences
 
@@ -542,7 +544,7 @@ The existing map, event, interpreter, switch, variable, and scene foundations ca
 Future battle architecture is expected to support systems such as:
 
 - Summon Magick
-- Valor Arts
+- Canonical character-specific Valor Arts
 - Party switching
 - Dual Techniques
 - More advanced enemy and boss behavior

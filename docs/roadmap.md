@@ -52,6 +52,7 @@ Completed canonical battle-data foundations include:
 - `Magick.json` v1
 - 54 initial Magick abilities
 - Skills Runtime v1 with separate `Skills.json`, actor ownership, battle execution, menu presentation, and v8 persistence
+- Valor Arts Runtime v1 with actor-owned ready-state cost payment layered onto the shared Skills action pipeline
 - Restore Magick
 - Attack Magick
 - Indirect Magick
@@ -139,7 +140,7 @@ Primary remaining work includes:
 
 The initial Magick System is runtime-complete when all 54 current Magick abilities can execute their intended mechanics without requiring name-specific patches for behavior that should be reusable.
 
-Summon Magick remains later Magick design work and is not required to complete the initial 54-ability Magick runtime. The separate **Skills** namespace is active as a runtime foundation; canonical Skill content, broader effects, resource rules, and future Valor Arts remain later design work.
+Summon Magick remains later Magick design work and is not required to complete the initial 54-ability Magick runtime. The separate **Skills** namespace is active as a runtime foundation, and Valor Arts Runtime v1 now provides the first actor-owned resource specialization. Canonical Skill content, broader effects/resources, and character-specific Valor Art designs remain later work.
 
 ---
 
@@ -219,7 +220,7 @@ Primary work includes:
 - Party Switching
 - Character-specific battle differentiation
 - Design and implementation planning for Dual Techs
-- Design and implementation planning for Valor Arts
+- Design and implementation planning for canonical character-specific Valor Arts
 
 Character expansion should create meaningful differences in party composition rather than merely increasing the number of available actors.
 
@@ -305,12 +306,12 @@ Essence Evolution is complete when established recipes and rules can be discover
 
 Several major battle systems are deliberately being left until the core runtime is mature enough to support them cleanly.
 
-The base Skills runtime now exists, so advanced work can build on it rather than creating another action engine. Primary candidates include:
+The base Skills runtime and Valor Arts resource specialization now exist, so advanced work can build on them rather than creating another action engine. Primary candidates include:
 
 - Canonical Skill content and progression rules
 - Expanded reusable Skill effects/resources
 - Summon Magick
-- Valor Arts
+- Canonical character-specific Valor Arts
 - Dual Techs
 - Expanded party switching behavior
 - Additional advanced Magick interactions
@@ -473,7 +474,7 @@ This document does not currently define:
 - Essence Evolution recipes
 - Mastery Trial quest details
 - Summon Magick design
-- Valor Arts design
+- Final character-specific Valor Art content and unlock/progression design
 - Dual Tech design
 
 Those decisions should become canonical when they are actually made.

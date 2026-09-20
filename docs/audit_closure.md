@@ -102,6 +102,10 @@ headings.
 
 Pass 36 intentionally activates the **Skills** namespace that Pass 29 reserved for future non-Magick techniques. This does not reopen the historical terminology finding: current supernatural abilities remain Magick, current non-Magick techniques use `Skills.json` / `skillIds`, and the old unqualified save field `skills` remains migration-only input for pre-Pass-29 Magick saves. The historical audit stays closed.
 
+## Post-Audit Feature Note: Valor Arts Runtime v1
+
+Pass 37 extends the post-audit Skills foundation rather than reopening an audit item. Valor Arts are represented by validated `valorArt: true` Skill metadata, use generic Skill-cost hooks, and delegate full-gauge readiness/payment to actor-owned Valor APIs. No new persistent state is introduced, so Save Runtime remains v8. Canonical character-specific Art content remains future design work.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

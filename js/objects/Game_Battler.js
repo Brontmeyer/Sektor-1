@@ -959,7 +959,15 @@ class Game_Battler {
       return false;
     }
 
-    return this.canUseSkillDefinition(skill);
+    return this.canUseSkillDefinition(skill) && this.canPaySkillCost(skill);
+  }
+
+  canPaySkillCost(_skill) {
+    return true;
+  }
+
+  paySkillCost(skill) {
+    return this.canPaySkillCost(skill);
   }
 
   skillPowerMultiplier(skill) {

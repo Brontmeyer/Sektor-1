@@ -105,7 +105,7 @@ Valor represents a character's ability to turn battle pressure into decisive pot
 
 Valor should reward surviving danger rather than merely waiting. Actual direct HP loss builds the gauge in proportion to the percentage of Max HP lost. Fury accelerates that response, Sadness suppresses it, and Near-Death intensifies it. These interactions make emotional and critical states part of the same pressure-response language without hard-coding individual status names into the gauge.
 
-A full Valor gauge means the actor is **Valor Ready**. Future character-specific **Valor Arts** will consume that readiness through the established Skills side of the combat vocabulary, but their exact techniques, unlock rules, costs, and targeting are intentionally not canonical yet.
+A full Valor gauge means the actor is **Valor Ready**. **Valor Arts Runtime v1** consumes that readiness through the established Skills side of the combat vocabulary: a Skill marked `valorArt: true` requires a full gauge and spends it once when the action is committed against at least one legal target. The exact character-specific Arts, unlock rules, and targeting choices are intentionally not canonical yet.
 
 ---
 
@@ -115,7 +115,7 @@ Skills represent deliberate non-Magick techniques: physical, technical, tactical
 
 Skills Runtime v1 establishes that identity before populating the catalog. `data/Skills.json` therefore begins content-neutral, and current actors begin with no starter Skills. The first runtime vocabulary supports data-driven physical-damage techniques with reusable targeting and power multipliers, but it does not imply that every future Skill must deal damage or remain cost-free. New effects and resource models should be added only when actual Skill designs require them.
 
-**Valor Arts** belong here. They should become special character-specific Skills that consume Valor readiness through the existing Valor API rather than spawning a third unrelated ability engine.
+**Valor Arts** belong here. Valor Arts Runtime v1 now treats them as special Skills that consume Valor readiness through the existing Valor API rather than spawning a third unrelated ability engine. `Game_Actor` owns the Valor-specific cost behavior while the shared Skill runtime remains resource-agnostic. Canonical character-specific Art content remains deliberately undecided.
 
 ---
 

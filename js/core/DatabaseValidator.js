@@ -1540,6 +1540,7 @@ class DatabaseValidator {
           "category",
           "effect",
           "powerMultiplier",
+          "valorArt",
           "target",
           "scope",
         ],
@@ -1564,6 +1565,10 @@ class DatabaseValidator {
         errors,
         { min: Number.MIN_VALUE },
       );
+
+      if (skill.valorArt !== undefined && typeof skill.valorArt !== "boolean") {
+        errors.push(`${label} valorArt must be a boolean when provided.`);
+      }
 
       if (!Array.isArray(skill.target) || skill.target.length === 0) {
         errors.push(`${label} target must be a non-empty array.`);
