@@ -149,7 +149,7 @@ class Scene_Menu extends Scene_Base {
     // CLOSE MAIN MENU
     // =====================================
 
-    if (Input.isTriggered("Escape")) {
+    if (Input.isActionTriggered("menu")) {
       SceneManager.pop();
 
       return;
@@ -165,7 +165,7 @@ class Scene_Menu extends Scene_Base {
     // SELECT MENU COMMAND
     // =====================================
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+    if (Input.isActionTriggered("confirm")) {
       const command = this.commandWindow.currentCommand();
 
       switch (command) {

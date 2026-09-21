@@ -59,7 +59,7 @@ class Window_Shop {
 
     const entries = this.entries();
 
-    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+    if (Input.isActionTriggered("cancel")) {
       this.result = { action: "cancel" };
       return;
     }
@@ -68,19 +68,19 @@ class Window_Shop {
       return;
     }
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.index = (this.index - 1 + entries.length) % entries.length;
       this.message = "";
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.index = (this.index + 1) % entries.length;
       this.message = "";
     }
 
     this.listViewport.ensureVisible(this.index, entries.length);
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+    if (Input.isActionTriggered("confirm")) {
       const entry = this.currentEntry();
 
       if (entry) {
@@ -207,7 +207,7 @@ class Window_Shop {
 
     context.font = "16px sans-serif";
     context.fillText(
-      "Enter: Buy 1    Q/Esc: Leave",
+      `${Input.actionLabel("confirm")}: Buy 1    ${Input.actionLabel("cancel")}: Leave`,
       this.x + this.padding,
       this.y + this.height - 28,
     );

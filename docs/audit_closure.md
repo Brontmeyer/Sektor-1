@@ -162,6 +162,10 @@ Pass 50 is post-audit battle-information work and does not reopen a historical f
 
 Pass 51 is post-audit configuration work and does not reopen a historical finding. `ConfigManager` owns versioned player preferences independently from save slots, `Scene_Options` / `Window_Options` edit those preferences, and runtime consumers read only the settings they need. Battle/message pacing, field text reveal, selector cursor memory, and Magick ordering gain no game-progress persistence fields, so Save Runtime remains v9. Custom control rebinding is deliberately deferred until raw physical key checks are migrated to named input actions.
 
+## Post-Audit Feature Note: Custom Controls / Input Mapping v1
+
+Pass 52 is post-audit input/configuration work and does not reopen a historical finding. Runtime scenes, windows, battle presentation, and player movement now consume named `Input` actions instead of physical key codes. Config Runtime v2 owns two persistent bindings per action and migrates Config Runtime v1 preferences forward; `Scene_Controls` / `Window_Controls` provide capture/reset UI without becoming binding authority. Control preferences remain outside game saves, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

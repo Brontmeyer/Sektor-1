@@ -1,20 +1,15 @@
 "use strict";
 
-class Scene_Options extends Scene_Base {
+class Scene_Controls extends Scene_Base {
   constructor() {
     super();
-    this.optionsWindow = new Window_Options({
-      onControls: () => SceneManager.push(Scene_Controls),
+    this.controlsWindow = new Window_Controls({
+      onBack: () => SceneManager.pop(),
     });
   }
 
   update() {
-    if (Input.isActionTriggered("cancel")) {
-      SceneManager.pop();
-      return;
-    }
-
-    this.optionsWindow.update();
+    this.controlsWindow.update();
   }
 
   draw() {
@@ -35,19 +30,19 @@ class Scene_Options extends Scene_Base {
     context.font = "34px Arial";
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.fillText("OPTIONS", 70, 62);
+    context.fillText("CONTROLS", 70, 62);
 
     context.font = "15px Arial";
     context.fillStyle = "#9fb0c1";
     context.fillText(
-      `${Input.actionLabel("left")} / ${Input.actionLabel("right")}: Change    ` +
-        `${Input.actionLabel("confirm")}: Next / Open    ` +
-        `${Input.actionLabel("cancel")}: Back`,
+      `${Input.actionLabel("up")} / ${Input.actionLabel("down")}: Choose    ` +
+        `${Input.actionLabel("left")} / ${Input.actionLabel("right")}: Slot    ` +
+        `${Input.actionLabel("confirm")}: Rebind    ${Input.actionLabel("cancel")}: Back`,
       70,
       104,
     );
     context.restore();
 
-    this.optionsWindow.draw();
+    this.controlsWindow.draw();
   }
 }

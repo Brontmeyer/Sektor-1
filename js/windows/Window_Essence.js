@@ -159,27 +159,27 @@ class Window_Essence {
     }
 
     if (this.mode === "catalog") {
-      if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+      if (Input.isActionTriggered("cancel")) {
         this.closeCatalog();
         return;
       }
 
-      if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+      if (Input.isActionTriggered("up")) {
         this.moveCatalog(-1);
       }
 
-      if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+      if (Input.isActionTriggered("down")) {
         this.moveCatalog(1);
       }
 
-      if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+      if (Input.isActionTriggered("confirm")) {
         this.applyCatalogSelection();
       }
 
       return;
     }
 
-    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+    if (Input.isActionTriggered("cancel")) {
       this.hide();
       return;
     }
@@ -189,15 +189,15 @@ class Window_Essence {
       return;
     }
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.moveSlot(-1);
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.moveSlot(1);
     }
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+    if (Input.isActionTriggered("confirm")) {
       this.openCatalog();
     }
   }
@@ -426,10 +426,14 @@ class Window_Essence {
     context.fillStyle = "#cccccc";
     context.font = "16px sans-serif";
 
+    const vertical = `${Input.actionLabel("up")} / ${Input.actionLabel("down")}`;
+    const horizontal = `${Input.actionLabel("left")} / ${Input.actionLabel("right")}`;
+    const confirm = Input.actionLabel("confirm");
+    const cancel = Input.actionLabel("cancel");
     const text =
       this.mode === "catalog"
-        ? "W/S or ↑/↓: Choose   E/Enter: Equip   Q/Esc: Back"
-        : "A/D or ←/→: Actor   W/S or ↑/↓: Slot   E/Enter: Change   Q/Esc: Close";
+        ? `${vertical}: Choose   ${confirm}: Equip   ${cancel}: Back`
+        : `${horizontal}: Actor   ${vertical}: Slot   ${confirm}: Change   ${cancel}: Close`;
 
     context.fillText(text, this.x + this.padding, this.y + this.height - 24);
   }

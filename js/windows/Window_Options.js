@@ -1,42 +1,61 @@
 "use strict";
 
 class Window_Options {
-  constructor() {
+  constructor({ onControls = null } = {}) {
     this.index = 0;
-    this.options = ConfigManager.optionDefinitions();
+    this.onControls = onControls;
+    this.options = [
+      ...ConfigManager.optionDefinitions().map((option) => ({
+        type: "option",
+        ...option,
+      })),
+      {
+        type: "controls",
+        key: "controls",
+        label: "Controls",
+        description: "Remap keyboard actions and restore default bindings.",
+      },
+    ];
 
     this.x = 150;
-    this.y = 150;
+    this.y = 130;
     this.width = Graphics.width - 300;
-    this.height = Graphics.height - 260;
+    this.height = Graphics.height - 220;
     this.padding = 28;
-    this.lineHeight = 64;
+    this.lineHeight = 56;
   }
 
   update() {
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.index =
         (this.index - 1 + this.options.length) % this.options.length;
       return true;
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.index = (this.index + 1) % this.options.length;
       return true;
     }
 
-    if (Input.isTriggered("ArrowLeft") || Input.isTriggered("KeyA")) {
+    if (Input.isActionTriggered("left")) {
       this.cycleCurrent(-1);
       return true;
     }
 
-    if (Input.isTriggered("ArrowRight") || Input.isTriggered("KeyD")) {
+    if (Input.isActionTriggered("right")) {
       this.cycleCurrent(1);
       return true;
     }
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
-      this.cycleCurrent(1);
+    if (Input.isActionTriggered("confirm")) {
+      const option = this.currentOption();
+
+      if (option?.type === "controls") {
+        this.onControls?.();
+      } else {
+        this.cycleCurrent(1);
+      }
+
       return true;
     }
 
@@ -49,7 +68,12 @@ class Window_Options {
 
   cycleCurrent(direction) {
     const option = this.currentOption();
-    return option ? ConfigManager.cycle(option.key, direction) : null;
+
+    if (!option || option.type !== "option") {
+      return null;
+    }
+
+    return ConfigManager.cycle(option.key, direction);
   }
 
   draw() {
@@ -96,7 +120,9 @@ class Window_Options {
       context.textAlign = "right";
       context.fillStyle = selected ? "#ffd75a" : "#c8d3df";
       context.fillText(
-        `◀  ${ConfigManager.displayValue(option.key)}  ▶`,
+        option.type === "controls"
+          ? "Configure  ▶"
+          : `◀  ${ConfigManager.displayValue(option.key)}  ▶`,
         valueX,
         rowY,
       );
@@ -113,11 +139,7 @@ class Window_Options {
     context.textAlign = "left";
     context.fillStyle = "#aeb8c5";
     context.font = "16px Arial";
-    context.fillText(
-      option?.description || "",
-      contentX,
-      dividerY + 34,
-    );
+    context.fillText(option?.description || "", contentX, dividerY + 34);
 
     context.restore();
   }

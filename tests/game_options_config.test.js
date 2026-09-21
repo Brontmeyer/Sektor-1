@@ -6,6 +6,19 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const projectRoot = path.resolve(__dirname, "..");
+
+const defaultActionCodes = {
+  up: ["KeyW", "ArrowUp"], down: ["KeyS", "ArrowDown"],
+  left: ["KeyA", "ArrowLeft"], right: ["KeyD", "ArrowRight"],
+  confirm: ["KeyE", "Enter"], cancel: ["KeyQ", "Escape"],
+  menu: ["Escape"], interact: ["KeyE"], help: ["KeyH"], scope: ["KeyR"],
+};
+function actionTriggered(triggered, action) {
+  return (defaultActionCodes[action] || []).some((code) => triggered.has(code));
+}
+function actionLabel(action) {
+  return { up: "W / ↑", down: "S / ↓", left: "A / ←", right: "D / →", confirm: "E / Enter", cancel: "Q / Esc", menu: "Esc" }[action] || action;
+}
 const read = (relativePath) =>
   fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
 
@@ -109,6 +122,8 @@ function testOptionsWindowCyclesAndPersistsSettings() {
       isTriggered(code) {
         return triggered.has(code);
       },
+      isActionTriggered(action) { return actionTriggered(triggered, action); },
+      actionLabel,
     },
   });
 
@@ -146,6 +161,8 @@ function testFieldMessageSpeedControlsRevealAndConfirmBehavior() {
       isTriggered(code) {
         return triggered.has(code);
       },
+      isActionTriggered(action) { return actionTriggered(triggered, action); },
+      actionLabel,
     },
   });
 
@@ -187,7 +204,7 @@ function testBattleSpeedAndMessageSpeedUseSeparateClocks() {
     localStorage,
     Scene_Base: class {},
     BattleManager: { OUTCOME_VICTORY: "victory" },
-    Input: { isTriggered: () => false },
+    Input: { isTriggered: () => false, isActionTriggered: () => false, actionLabel },
   });
 
   vm.runInContext(
@@ -297,6 +314,8 @@ function testFullscreenOptionsSceneDrawsAndReturnsToMenu() {
       isTriggered(code) {
         return triggered.has(code);
       },
+      isActionTriggered(action) { return actionTriggered(triggered, action); },
+      actionLabel,
     },
     SceneManager: { pop() { pops++; } },
   });

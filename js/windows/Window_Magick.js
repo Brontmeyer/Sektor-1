@@ -39,7 +39,7 @@ class Window_Magick {
       return;
     }
 
-    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+    if (Input.isActionTriggered("cancel")) {
       this.hide();
       return;
     }
@@ -55,7 +55,7 @@ class Window_Magick {
       return;
     }
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.index--;
 
       if (this.index < 0) {
@@ -63,7 +63,7 @@ class Window_Magick {
       }
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.index++;
 
       if (this.index >= magickList.length) {
@@ -73,7 +73,7 @@ class Window_Magick {
 
     this.listViewport.ensureVisible(this.index, magickList.length);
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+    if (Input.isActionTriggered("confirm")) {
       const currentMagick = this.currentMagick();
 
       if (!currentMagick) {

@@ -511,14 +511,14 @@ Battle-presentation directions and current status:
 - ✅ Enemy Formation Rows v1 for up to eight centered/customizable front/back-row enemies with pincer-aware flank geometry
 - ✅ Scan & Tactical Help v1 for battle-local per-enemy HP/MP and elemental weakness/resistance/immunity details while targeting
 - ✅ Game Options / Config Foundation v1 with battle/message pacing, battle cursor memory, Magick ordering, and save-slot-independent persistence
-- Custom Controls / Input Mapping v1 to replace raw key-code consumers with named actions before rebinding UI
+- ✅ Custom Controls / Input Mapping v1 with named actions, persistent two-slot keyboard bindings, dynamic hints, and a dedicated Controls screen
 
 ---
 
 Built with ❤️ by **Sarah & Tyler**
 
-## Next Input Configuration Focus
+## Next Presentation Focus
 
-Game Options / Config Foundation v1 is complete. Battle and field pacing, battle selector memory, and Magick ordering now have real runtime consumers and persist outside save slots.
+Custom Controls / Input Mapping v1 is complete. Runtime input now resolves named actions through Config Runtime v2, existing Config Runtime v1 preferences migrate forward, and player-facing hints follow remapped bindings. Save Runtime remains v9 because controls are player preferences rather than game progress.
 
-The next focused configuration direction is Custom Controls / Input Mapping v1. The current `Input` layer still exposes physical key codes directly to scenes/windows, so rebinding should begin by introducing named actions and a single binding owner before any player-facing remap screen is added.
+The next presentation-focused pass can return to accumulated battle UI polish, including the intentionally deferred Tactical Help bar height/transparency work, without mixing that visual refinement into input architecture.

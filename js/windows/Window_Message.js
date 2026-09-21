@@ -23,7 +23,7 @@ class Window_Message {
 
     if (
       allowInput &&
-      (Input.isTriggered("KeyE") || Input.isTriggered("Enter"))
+      (Input.isActionTriggered("confirm"))
     ) {
       if (!this.isFullyRevealed()) {
         this.revealAll();
@@ -154,7 +154,9 @@ class Window_Message {
     context.textAlign = "right";
 
     context.fillText(
-      this.isFullyRevealed() ? "E / Enter ▶" : "E / Enter: Reveal",
+      this.isFullyRevealed()
+        ? `${Input.actionLabel("confirm")} ▶`
+        : `${Input.actionLabel("confirm")}: Reveal`,
       this.x + this.width - 20,
       this.y + this.height - 35,
     );

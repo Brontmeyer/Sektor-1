@@ -52,11 +52,11 @@ class Window_BattleSkills {
       return;
     }
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.index = (this.index - 1 + skills.length) % skills.length;
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.index = (this.index + 1) % skills.length;
     }
 

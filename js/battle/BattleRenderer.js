@@ -166,9 +166,10 @@ class BattleRenderer {
   }
 
   tacticalHelpControlHint() {
+    const help = Input.actionLabel("help");
     return this.scene.scanManager?.isHelpVisible?.()
-      ? "H: Hide Help"
-      : "H: Help";
+      ? `${help}: Hide Help`
+      : `${help}: Help`;
   }
 
   tacticalAffinityText(values, unknown = "??") {
@@ -216,7 +217,7 @@ class BattleRenderer {
     context.fillStyle = "#b9c4d2";
     context.textAlign = "right";
     context.fillText(
-      "H: Hide",
+      `${Input.actionLabel("help")}: Hide`,
       bounds.x + bounds.width - 14,
       lineOneY,
     );
@@ -284,8 +285,17 @@ class BattleRenderer {
   }
 
   battleHint() {
+    const up = Input.actionLabel("up");
+    const down = Input.actionLabel("down");
+    const left = Input.actionLabel("left");
+    const right = Input.actionLabel("right");
+    const confirm = Input.actionLabel("confirm");
+    const cancel = Input.actionLabel("cancel");
+    const menu = Input.actionLabel("menu");
+    const scopeControl = Input.actionLabel("scope");
+
     if (this.scene.outcome) {
-      return "E / Enter / Esc: Continue";
+      return `${confirm} / ${menu}: Continue`;
     }
 
     if (this.scene.selectingEnemyTarget) {
@@ -304,17 +314,19 @@ class BattleRenderer {
         }
       }
 
-      const scopeHint = this.canToggleTargetScope() ? "   R: Scope" : "";
+      const scopeHint = this.canToggleTargetScope()
+        ? `   ${scopeControl}: Scope`
+        : "";
       const moveHint =
         this.scene.targetScope === "all"
-          ? "Arrows: Group"
-          : "WASD / Arrows: Target";
+          ? `${left} / ${right}: Group`
+          : `${up} ${down} ${left} ${right}: Target`;
 
-      return `${scope}   ${moveHint}   E / Enter: Confirm   Q / Esc: Back${scopeHint}   ${this.tacticalHelpControlHint()}`;
+      return `${scope}   ${moveHint}   ${confirm}: Confirm   ${cancel}: Back${scopeHint}   ${this.tacticalHelpControlHint()}`;
     }
 
     if (this.hasOpenSelectionWindow()) {
-      return `W / S or ↑ / ↓: Choose   E / Enter: Select   Q / Esc: Back   ${this.tacticalHelpControlHint()}`;
+      return `${up} / ${down}: Choose   ${confirm}: Select   ${cancel}: Back   ${this.tacticalHelpControlHint()}`;
     }
 
     if (this.scene.battleInputLocked || this.scene.pendingEnemyTurn) {
@@ -334,10 +346,10 @@ class BattleRenderer {
       const enabled = commandWindow.isCommandEnabled?.(command) !== false;
       const availability = enabled ? "" : " (Unavailable)";
 
-      return `${command}${availability}   E / Enter: Confirm   Q / Esc: Back   ${this.tacticalHelpControlHint()}`;
+      return `${command}${availability}   ${confirm}: Confirm   ${cancel}: Back   ${this.tacticalHelpControlHint()}`;
     }
 
-    return `W / S or ↑ / ↓: Command   ←: Escape   →: Defend   E / Enter: Select   ${this.tacticalHelpControlHint()}`;
+    return `${up} / ${down}: Command   ${left}: Escape   ${right}: Defend   ${confirm}: Select   ${this.tacticalHelpControlHint()}`;
   }
 
   drawBattleHint(context) {

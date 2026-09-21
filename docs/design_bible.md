@@ -531,7 +531,7 @@ Sektor 1 should leave room for discovery where discovery is enjoyable.
 
 The player should be able to understand the rules needed to make informed decisions while still having interactions, combinations, secrets, and progression moments worth uncovering.
 
-Mystery should invite experimentation, not require guessing basic controls. Player preferences should follow the player rather than a particular save slot: pacing, message presentation, cursor behavior, and ordering choices belong to configuration state. Functional settings should connect to real runtime behavior before final UI skinning is treated as complete.
+Mystery should invite experimentation, not require guessing basic controls. Player preferences should follow the player rather than a particular save slot: pacing, message presentation, cursor behavior, ordering choices, and control bindings belong to configuration state. Input hints should follow the player’s current bindings instead of teaching stale defaults. Functional settings should connect to real runtime behavior before final UI skinning is treated as complete.
 
 ---
 

@@ -7,6 +7,14 @@ const vm = require("node:vm");
 
 const projectRoot = path.resolve(__dirname, "..");
 
+function actionLabel(action) {
+  const labels = {
+    up: "W / ↑", down: "S / ↓", left: "A / ←", right: "D / →",
+    confirm: "E / Enter", cancel: "Q / Esc", menu: "Esc", help: "H", scope: "R",
+  };
+  return labels[action] || action;
+}
+
 function loadPresentation(globals = {}) {
   const source = [
     "js/windows/Window_TextLayout.js",
@@ -18,7 +26,11 @@ function loadPresentation(globals = {}) {
       fs.readFileSync(path.join(projectRoot, relativePath), "utf8"),
     )
     .join("\n");
-  const context = vm.createContext({ console, ...globals });
+  const context = vm.createContext({
+    console,
+    Input: { actionLabel },
+    ...globals,
+  });
 
   vm.runInContext(
     `${source}\nglobalThis.__classes = { Window_TextLayout, BattleHudLayout, BattleRenderer, BattleEffects };`,

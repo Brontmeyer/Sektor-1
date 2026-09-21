@@ -24,19 +24,19 @@ class Game_Player {
     let inputX = 0;
     let inputY = 0;
 
-    if (Input.isPressed("KeyA") || Input.isPressed("ArrowLeft")) {
+    if (Input.isActionPressed("left")) {
       inputX -= 1;
     }
 
-    if (Input.isPressed("KeyD") || Input.isPressed("ArrowRight")) {
+    if (Input.isActionPressed("right")) {
       inputX += 1;
     }
 
-    if (Input.isPressed("KeyW") || Input.isPressed("ArrowUp")) {
+    if (Input.isActionPressed("up")) {
       inputY -= 1;
     }
 
-    if (Input.isPressed("KeyS") || Input.isPressed("ArrowDown")) {
+    if (Input.isActionPressed("down")) {
       inputY += 1;
     }
 

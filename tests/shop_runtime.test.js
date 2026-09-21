@@ -6,6 +6,32 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const projectRoot = path.resolve(__dirname, "..");
+
+const defaultActionCodes = {
+  up: ["KeyW", "ArrowUp"],
+  down: ["KeyS", "ArrowDown"],
+  left: ["KeyA", "ArrowLeft"],
+  right: ["KeyD", "ArrowRight"],
+  confirm: ["KeyE", "Enter"],
+  cancel: ["KeyQ", "Escape"],
+  menu: ["Escape"],
+  interact: ["KeyE"],
+  help: ["KeyH"],
+  scope: ["KeyR"],
+};
+
+function actionTriggered(triggered, action) {
+  return (defaultActionCodes[action] || []).some((code) => triggered.has(code));
+}
+
+function actionLabel(action) {
+  const labels = {
+    up: "W / ↑", down: "S / ↓", left: "A / ←", right: "D / →",
+    confirm: "E / Enter", cancel: "Q / Esc", menu: "Esc",
+    interact: "E", help: "H", scope: "R",
+  };
+  return labels[action] || action;
+}
 const readData = (filename) =>
   JSON.parse(fs.readFileSync(path.join(projectRoot, "data", filename), "utf8"));
 
@@ -128,6 +154,8 @@ function createShopUiHarness() {
     },
     Input: {
       isTriggered(code) { return triggered.has(code); },
+      isActionTriggered(action) { return actionTriggered(triggered, action); },
+      actionLabel,
     },
     $gameParty: party,
   });
@@ -220,7 +248,7 @@ function testShopSceneOwnsPurchaseRequestsButPartyOwnsMutation() {
       height: 720,
       context: makeDrawContext(calls),
     },
-    Input: { isTriggered() { return false; } },
+    Input: { isTriggered() { return false; }, isActionTriggered() { return false; }, actionLabel },
     $gameParty: party,
     SceneManager: {
       pop() { popCount += 1; },

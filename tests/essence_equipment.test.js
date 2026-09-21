@@ -69,7 +69,7 @@ function createHarness() {
     DatabaseManager,
     DebugManager: { log() {} },
     Graphics: { width: 1280, height: 720, context: graphicsContext },
-    Input: { isTriggered() { return false; } },
+    Input: { isTriggered() { return false; }, isActionTriggered() { return false; }, actionLabel(action) { return action; } },
   });
 
   const source = [

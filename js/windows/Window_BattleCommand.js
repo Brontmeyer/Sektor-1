@@ -175,9 +175,9 @@ class Window_BattleCommand {
     if (this.hasSideCommandOpen()) {
       const returnTowardCenter =
         (this.sideCommand === Window_BattleCommand.SIDE_ESCAPE &&
-          (Input.isTriggered("ArrowRight") || Input.isTriggered("KeyD"))) ||
+          (Input.isActionTriggered("right"))) ||
         (this.sideCommand === Window_BattleCommand.SIDE_DEFEND &&
-          (Input.isTriggered("ArrowLeft") || Input.isTriggered("KeyA")));
+          (Input.isActionTriggered("left")));
 
       if (returnTowardCenter) {
         this.closeSide();
@@ -186,21 +186,21 @@ class Window_BattleCommand {
       return;
     }
 
-    if (Input.isTriggered("ArrowLeft") || Input.isTriggered("KeyA")) {
+    if (Input.isActionTriggered("left")) {
       this.openSide(Window_BattleCommand.SIDE_ESCAPE);
       return;
     }
 
-    if (Input.isTriggered("ArrowRight") || Input.isTriggered("KeyD")) {
+    if (Input.isActionTriggered("right")) {
       this.openSide(Window_BattleCommand.SIDE_DEFEND);
       return;
     }
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.moveSelection(-1);
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.moveSelection(1);
     }
   }

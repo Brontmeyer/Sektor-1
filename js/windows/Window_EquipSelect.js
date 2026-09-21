@@ -94,24 +94,24 @@ class Window_EquipSelect {
       return;
     }
 
-    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+    if (Input.isActionTriggered("cancel")) {
       this.hide();
       return;
     }
 
     const entries = this.entries();
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.index = (this.index - 1 + entries.length) % entries.length;
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.index = (this.index + 1) % entries.length;
     }
 
     this.listViewport.ensureVisible(this.index, entries.length);
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+    if (Input.isActionTriggered("confirm")) {
       this.result = this.currentEntry();
       this.visible = false;
     }

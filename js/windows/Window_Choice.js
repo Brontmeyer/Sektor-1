@@ -21,7 +21,7 @@ class Window_Choice {
       return;
     }
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.index--;
 
       if (this.index < 0) {
@@ -29,7 +29,7 @@ class Window_Choice {
       }
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.index++;
 
       if (this.index >= this.choices.length) {
@@ -37,7 +37,7 @@ class Window_Choice {
       }
     }
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+    if (Input.isActionTriggered("confirm")) {
       this.result = this.index;
 
       this.visible = false;

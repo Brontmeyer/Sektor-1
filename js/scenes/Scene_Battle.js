@@ -172,9 +172,8 @@ class Scene_Battle extends Scene_Base {
       }
 
       if (
-        Input.isTriggered("KeyE") ||
-        Input.isTriggered("Enter") ||
-        Input.isTriggered("Escape")
+        Input.isActionTriggered("confirm") ||
+        Input.isActionTriggered("menu")
       ) {
         this.finishBattle();
       }
@@ -182,7 +181,7 @@ class Scene_Battle extends Scene_Base {
       return;
     }
 
-    if (Input.isTriggered("KeyH")) {
+    if (Input.isActionTriggered("help")) {
       this.scanManager.toggleHelp();
       return;
     }
@@ -196,7 +195,7 @@ class Scene_Battle extends Scene_Base {
 
       if (
         ["magick", "skill"].includes(this.enemyTargetAction) &&
-        Input.isTriggered("KeyR")
+        Input.isActionTriggered("scope")
       ) {
         if (definition) {
           this.targetManager.toggleScope(definition);
@@ -213,27 +212,27 @@ class Scene_Battle extends Scene_Base {
         return this.targetManager.moveDirectionalSelection(dx, dy, definition);
       };
 
-      if (Input.isTriggered("KeyA") || Input.isTriggered("ArrowLeft")) {
+      if (Input.isActionTriggered("left")) {
         moveTarget(-1, 0);
         return;
       }
 
-      if (Input.isTriggered("KeyD") || Input.isTriggered("ArrowRight")) {
+      if (Input.isActionTriggered("right")) {
         moveTarget(1, 0);
         return;
       }
 
-      if (Input.isTriggered("KeyW") || Input.isTriggered("ArrowUp")) {
+      if (Input.isActionTriggered("up")) {
         moveTarget(0, -1);
         return;
       }
 
-      if (Input.isTriggered("KeyS") || Input.isTriggered("ArrowDown")) {
+      if (Input.isActionTriggered("down")) {
         moveTarget(0, 1);
         return;
       }
 
-      if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+      if (Input.isActionTriggered("confirm")) {
         const target = this.targetManager.getSelectedTarget();
 
         if (target && this.targetManager.isSelectableTarget(target)) {
@@ -273,7 +272,7 @@ class Scene_Battle extends Scene_Base {
         return;
       }
 
-      if (Input.isTriggered("KeyQ") || Input.isTriggered("Escape")) {
+      if (Input.isActionTriggered("cancel")) {
         this.cancelTargetSelection();
         return;
       }
@@ -288,12 +287,12 @@ class Scene_Battle extends Scene_Base {
     if (this.itemWindow.isOpen()) {
       this.itemWindow.update();
 
-      if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+      if (Input.isActionTriggered("cancel")) {
         this.itemWindow.hide();
         return;
       }
 
-      if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+      if (Input.isActionTriggered("confirm")) {
         this.executeItem();
       }
 
@@ -306,12 +305,12 @@ class Scene_Battle extends Scene_Base {
 
     if (this.skillsWindow.isOpen()) {
       this.skillsWindow.update();
-      if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+      if (Input.isActionTriggered("cancel")) {
         this.skillsWindow.hide();
         return;
       }
 
-      if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+      if (Input.isActionTriggered("confirm")) {
         this.executeSkill();
       }
       return;
@@ -324,12 +323,12 @@ class Scene_Battle extends Scene_Base {
     if (this.magickWindow.isOpen()) {
       this.magickWindow.update();
 
-      if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+      if (Input.isActionTriggered("cancel")) {
         this.magickWindow.hide();
         return;
       }
 
-      if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+      if (Input.isActionTriggered("confirm")) {
         this.executeMagick();
       }
 
@@ -347,12 +346,12 @@ class Scene_Battle extends Scene_Base {
 
     this.commandWindow.update();
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+    if (Input.isActionTriggered("confirm")) {
       this.confirmCommandSelection();
       return;
     }
 
-    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+    if (Input.isActionTriggered("cancel")) {
       this.cancelCommandSelection();
     }
   }

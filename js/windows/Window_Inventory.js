@@ -25,7 +25,7 @@ class Window_Inventory {
 
     const itemIds = this.itemIds();
 
-    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+    if (Input.isActionTriggered("cancel")) {
       this.hide();
 
       return;
@@ -35,7 +35,7 @@ class Window_Inventory {
       return;
     }
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.index--;
 
       if (this.index < 0) {
@@ -43,7 +43,7 @@ class Window_Inventory {
       }
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.index++;
 
       if (this.index >= itemIds.length) {
@@ -53,7 +53,7 @@ class Window_Inventory {
 
     this.listViewport.ensureVisible(this.index, itemIds.length);
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+    if (Input.isActionTriggered("confirm")) {
       const selectedItemId = itemIds[this.index];
 
       if (selectedItemId !== undefined) {

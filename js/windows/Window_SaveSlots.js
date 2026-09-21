@@ -24,13 +24,13 @@ class Window_SaveSlots {
       return;
     }
 
-    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+    if (Input.isActionTriggered("cancel")) {
       this.hide();
 
       return;
     }
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.index--;
 
       if (this.index < 0) {
@@ -38,7 +38,7 @@ class Window_SaveSlots {
       }
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.index++;
 
       if (this.index >= this.slots.length) {
@@ -46,7 +46,7 @@ class Window_SaveSlots {
       }
     }
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+    if (Input.isActionTriggered("confirm")) {
       this.result = this.currentSlotId();
 
       this.visible = false;

@@ -88,6 +88,11 @@ function loadPresentation(scene) {
   const context = vm.createContext({
     console,
     Graphics,
+    Input: {
+      actionLabel(action) {
+        return { help: "H", up: "W / ↑", down: "S / ↓", left: "A / ←", right: "D / →", confirm: "E / Enter", cancel: "Q / Esc", menu: "Esc", scope: "R" }[action] || action;
+      },
+    },
     $gameParty: { battleMembers: () => [] },
   });
   const source = [
@@ -265,6 +270,9 @@ function testHKeyTogglesHelpWithoutSpendingBattleInput() {
     Input: {
       isTriggered(key) {
         return key === "KeyH";
+      },
+      isActionTriggered(action) {
+        return action === "help";
       },
     },
     BattleManager: { OUTCOME_VICTORY: "victory" },

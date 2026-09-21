@@ -51,7 +51,7 @@ class Scene_Map extends Scene_Base {
     // =====================================
 
     if (
-      Input.isTriggered("Escape") &&
+      Input.isActionTriggered("menu") &&
       !this.messageWindow.isOpen() &&
       !this.choiceWindow.isOpen() &&
       !this.interpreter.isRunning()
@@ -92,7 +92,7 @@ class Scene_Map extends Scene_Base {
     } else if (!isBusy) {
       // Dialogue/event just finished this frame.
       // Allow movement again next frame,
-      // but don't reuse the same E/Enter press.
+      // but don't reuse the same confirm/interact press.
 
       this.player.update(deltaTime);
     }
@@ -100,7 +100,7 @@ class Scene_Map extends Scene_Base {
   }
 
   checkEventInteraction() {
-    if (!Input.isTriggered("KeyE")) {
+    if (!Input.isActionTriggered("interact")) {
       return;
     }
 

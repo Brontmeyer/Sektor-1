@@ -18,6 +18,14 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Custom Controls / Input Mapping v1 with centralized named input actions for movement, confirmation, cancellation, menu access, interaction, Tactical Help, and target-scope switching
+- Added Config Runtime v2 keyboard binding persistence with automatic migration from Config Runtime v1 while preserving existing battle/message/cursor/Magick preferences
+- Added two binding slots per action, required-action lockout protection, context-sensitive shared defaults, key-label formatting, and reset-to-default controls
+- Added fullscreen `Scene_Controls` / `Window_Controls` flow reachable from Options, including live key capture, Backspace capture cancel, Delete slot clearing, and dynamic binding display
+- Migrated runtime gameplay consumers away from raw physical key checks to `Input.isActionPressed()` / `Input.isActionTriggered()` named-action queries
+- Updated battle, dialogue, equipment, Essence, shop, result, and Options hints to display the player’s current bindings instead of hard-coded default keys
+- Added dedicated Input Mapping regression coverage for Config v1 migration, remapped action resolution, required binding safety, context sharing, capture/reset behavior, Options reachability, and raw-key-consumer elimination
+
 - Added Game Options / Config Foundation v1 with versioned save-slot-independent configuration persistence through `ConfigManager`
 - Added a fullscreen `Scene_Options` / `Window_Options` flow reachable from the main menu
 - Added live Battle Speed, Battle Message Speed, Field Message Speed, Battle Cursor Memory, and Magick Order settings

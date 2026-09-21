@@ -40,11 +40,11 @@ class Window_ActorNavigator {
   }
 
   update() {
-    if (Input.isTriggered("ArrowLeft") || Input.isTriggered("KeyA")) {
+    if (Input.isActionTriggered("left")) {
       return this.changeActor(-1);
     }
 
-    if (Input.isTriggered("ArrowRight") || Input.isTriggered("KeyD")) {
+    if (Input.isActionTriggered("right")) {
       return this.changeActor(1);
     }
 

@@ -97,7 +97,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Game Options / Config Foundation v1 with save-slot-independent persistence
 - [x] Add Battle Speed, Battle Message Speed, Field Message Speed, Battle Cursor Memory, and Magick Order runtime settings
 - [x] Add fullscreen Options scene and main-menu entry
-- [ ] Implement Custom Controls / named input-action mapping before exposing rebinding UI
+- [x] Implement Custom Controls / Input Mapping v1 with named actions, persistent two-slot bindings, dynamic hints, and rebinding UI
+- [ ] Polish Tactical Help bar size/transparency during the later battle UI presentation pass
 
 ---
 

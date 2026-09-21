@@ -23,6 +23,11 @@ function testChoicePromptContinuesRevealingWithoutStealingConfirm() {
       isTriggered(code) {
         return triggered.has(code);
       },
+      isActionTriggered(action) {
+        return action === "confirm" &&
+          (["KeyE", "Enter"].some((code) => triggered.has(code)));
+      },
+      actionLabel(action) { return action; },
     },
   });
 
@@ -59,7 +64,7 @@ function testSceneMapAlwaysAdvancesMessageButDisablesMessageInputForChoice() {
     Window_Message: class {},
     Window_Choice: class {},
     Game_Interpreter: class {},
-    Input: { isTriggered: () => false },
+    Input: { isTriggered: () => false, isActionTriggered: () => false, actionLabel: (action) => action },
     SceneManager: { push() {} },
     Scene_Menu: class {},
     DebugManager: { log() {} },

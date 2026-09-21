@@ -41,12 +41,12 @@ class Window_BattleResults {
       return;
     }
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.scrollIndex = Math.max(0, this.scrollIndex - 1);
       this.viewport.ensureVisible(this.scrollIndex, this.lines.length);
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.scrollIndex = Math.min(this.lines.length - 1, this.scrollIndex + 1);
       this.viewport.ensureVisible(this.scrollIndex, this.lines.length);
     }
@@ -252,17 +252,25 @@ class Window_BattleResults {
     context.textAlign = "left";
 
     if (this.viewport.hasPrevious()) {
-      context.fillText("▲ W / ↑", contentX, this.y + this.height - 30);
+      context.fillText(
+        `▲ ${Input.actionLabel("up")}`,
+        contentX,
+        this.y + this.height - 30,
+      );
     }
 
     if (this.viewport.hasNext(this.lines.length)) {
-      context.fillText("▼ S / ↓", contentX + 90, this.y + this.height - 30);
+      context.fillText(
+        `▼ ${Input.actionLabel("down")}`,
+        contentX + 110,
+        this.y + this.height - 30,
+      );
     }
 
     context.textAlign = "right";
     context.fillStyle = "#ffffff";
     context.fillText(
-      "E / Enter: Continue",
+      `${Input.actionLabel("confirm")}: Continue`,
       this.x + this.width - 28,
       this.y + this.height - 30,
     );

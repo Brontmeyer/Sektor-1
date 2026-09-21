@@ -252,6 +252,8 @@ Renderers        draw results
 
 When two field windows are visible at once, keep input ownership explicit. A choice prompt may continue presentation updates such as typewriter reveal, but the active choice window should remain the sole consumer of confirm/navigation input until it resolves.
 
+Gameplay code must query named actions through `Input.isActionPressed()` / `Input.isActionTriggered()` instead of testing physical event codes such as `KeyE`, `ArrowUp`, or `Escape`. Physical codes belong to `Input` keyboard state, Config Runtime binding data, and the dedicated key-capture UI only. Player-facing control hints should use `Input.actionLabel()` so displayed instructions remain correct after rebinding.
+
 Presentation code should not quietly become gameplay authority.
 
 A window may display whether a command is available, but the underlying game system should determine whether it is actually legal.

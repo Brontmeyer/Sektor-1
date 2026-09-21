@@ -27,7 +27,7 @@ class Window_BattleItem {
       return;
     }
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.index--;
 
       if (this.index < 0) {
@@ -35,7 +35,7 @@ class Window_BattleItem {
       }
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.index++;
 
       if (this.index >= items.length) {

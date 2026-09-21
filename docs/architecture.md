@@ -161,7 +161,7 @@ Validation describes the shape and references of canonical data; it does not imp
 
 ## Input
 
-`Input` centralizes player input rather than requiring every scene or window to implement raw keyboard handling independently.
+`Input` centralizes player input through named actions rather than exposing physical keyboard codes to gameplay consumers. `isActionPressed()` and `isActionTriggered()` resolve the current Config Runtime bindings for actions such as `up`, `down`, `left`, `right`, `confirm`, `cancel`, `menu`, `interact`, `help`, and `scope`. Raw code state remains private infrastructure for keyboard event capture and the Controls rebinding screen.
 
 ## Graphics
 
@@ -170,11 +170,11 @@ Validation describes the shape and references of canonical data; it does not imp
 
 ## ConfigManager
 
-`ConfigManager` owns player preferences that should survive independently of game-save slots. Config Runtime v1 uses its own versioned local-storage key and validates every stored value against the supported option definitions before runtime consumers see it. `SaveManager` remains responsible only for game-state persistence; loading another save slot must not replace battle speed, message speed, cursor-memory, or presentation-order preferences.
+`ConfigManager` owns player preferences that should survive independently of game-save slots. Config Runtime v2 uses its own versioned local-storage key, validates both ordinary options and keyboard bindings, and migrates Config Runtime v1 preferences without discarding them. `SaveManager` remains responsible only for game-state persistence; loading another save slot must not replace battle speed, message speed, cursor-memory, presentation-order, or control preferences.
 
-Current consumers remain deliberately narrow: `Scene_Battle` asks Config Runtime for battle and banner delta-time scaling, `Window_Message` asks for field-message reveal speed, `BattleManager` asks whether fresh battle selector entry should preserve cursor position, and field/battle Magick windows ask for presentation ordering. `Scene_Options` and `Window_Options` edit these values but do not become their authority. Field Message Speed now controls a Unicode-safe typewriter reveal rate; confirm reveals unfinished text first and closes only after the message is complete.
+Current consumers remain deliberately narrow: `Scene_Battle` asks Config Runtime for battle and banner delta-time scaling, `Window_Message` asks for field-message reveal speed, `BattleManager` asks whether fresh battle selector entry should preserve cursor position, and field/battle Magick windows ask for presentation ordering. `Scene_Options` / `Window_Options` edit ordinary preferences, while `Scene_Controls` / `Window_Controls` edit keyboard bindings; none of those UI layers become configuration authority. Field Message Speed controls a Unicode-safe typewriter reveal rate; confirm reveals unfinished text first and closes only after the message is complete.
 
-Custom control rebinding is not part of Config Runtime v1. `Input` still exposes raw physical key codes and many consumers reference those codes directly; a later controls pass should introduce named input actions first rather than making Config Runtime translate scattered key checks.
+Custom Controls / Input Mapping v1 gives each named action two persistent binding slots. Required navigation/confirm/cancel/menu/interact actions may not be cleared completely; optional Help/Scope actions may be unbound. Identical physical keys may intentionally appear on different actions because those actions can belong to different contexts, preserving canonical defaults such as E for Confirm + Interact and Escape for Cancel + Menu. Player-facing control hints call `Input.actionLabel()` so remapped keys remain truthful.
 
 ## SaveManager
 

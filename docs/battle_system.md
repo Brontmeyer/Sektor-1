@@ -131,7 +131,7 @@ Escape remains governed by the encounter's existing `canEscape` contract, but es
 
 Targeting is coordinated through `BattleTargetManager`.
 
-Target cancel is hierarchical. Backing out of Attack targeting returns to the main command list. Backing out of Skill or Magick targeting reopens the selector that launched targeting and always preserves that selector's current cursor/viewport position. Game Options / Config Foundation v1 separately controls **fresh** selector entry: `Initial` resets Skills/Magick/Item lists to the first entry, while `Memory` preserves the selector's last valid cursor within the current battle. Hierarchical cancel restoration is not disabled by the global preference.
+Target cancel is hierarchical. Backing out of Attack targeting returns to the main command list. Backing out of Skill or Magick targeting reopens the selector that launched targeting and always preserves that selector's current cursor/viewport position. Game Options / Config Foundation v1 separately controls **fresh** selector entry: `Initial` resets Skills/Magick/Item lists to the first entry, while `Memory` preserves the selector's last valid cursor within the current battle. Hierarchical cancel restoration is not disabled by the global preference. Custom Controls / Input Mapping v1 does not change those navigation rules: battle input now asks for named actions (`confirm`, `cancel`, directions, `help`, `scope`) and the renderer resolves current binding labels for hints, so remapping keys changes input presentation without changing battle semantics.
 
 The battle system currently supports concepts including:
 
@@ -160,7 +160,7 @@ Scan & Tactical Help v1 is battle-local. `Scan` is an ordinary support Skill wit
 
 `BattleScanManager` records concrete enemy instances rather than enemy species IDs. Scanning one slime therefore does not reveal every other slime in the encounter. The information also does not persist after battle in v1, so Save Runtime remains unchanged.
 
-Pressing **H** toggles Tactical Help without spending an action. While an enemy is actively targeted, an unscanned target displays its name but shows `??/??` for HP/MP and `??` for Weak / Resist / Immune. After that target has been scanned, the same bar reads live current/max HP and MP plus elemental affinity categories derived from `elementRates`: rates above `1` are Weak, rates between `0` and `1` are Resist, and rate `0` is Immune. Neutral/unspecified elements are omitted, and an empty known category displays `None`.
+Triggering the configurable **Help** action (H by default) toggles Tactical Help without spending an action. While an enemy is actively targeted, an unscanned target displays its name but shows `??/??` for HP/MP and `??` for Weak / Resist / Immune. After that target has been scanned, the same bar reads live current/max HP and MP plus elemental affinity categories derived from `elementRates`: rates above `1` are Weak, rates between `0` and `1` are Resist, and rate `0` is Immune. Neutral/unspecified elements are omitted, and an empty known category displays `None`.
 
 The Tactical Help bar is presentation-only. It does not change damage, reveal status resistance in v1, alter target legality, or create a second weakness database.
 
@@ -498,7 +498,7 @@ As battle mechanics expand, any broader Defend interactions should be documented
 
 # ⚙️ Battle Configuration Hooks
 
-Config Runtime v1 keeps player pacing preferences outside battle rules. **Battle Speed** scales battle-local elapsed time used by battler state timers, action phases, animation updates, visual movement, battle effects, popups, and enemy-turn delay. It does not change formulas, turn eligibility, Haste/Slow slot scheduling, or player input polling. **Battle Message Speed** uses a separate clock for transient action/state banners so banner readability can be tuned independently from animation pacing.
+Config Runtime v2 keeps player pacing and control preferences outside battle rules. **Battle Speed** scales battle-local elapsed time used by battler state timers, action phases, animation updates, visual movement, battle effects, popups, and enemy-turn delay. It does not change formulas, turn eligibility, Haste/Slow slot scheduling, or player input polling. **Battle Message Speed** uses a separate clock for transient action/state banners so banner readability can be tuned independently from animation pacing.
 
 Battle selector cursor memory is also configuration-driven. Fresh Skills/Magick/Item entry can reset to the first entry or preserve the last valid index, while target-cancel navigation always returns to the originating selector position. Magick ordering is presentation-only and is shared by field and battle Magick windows.
 

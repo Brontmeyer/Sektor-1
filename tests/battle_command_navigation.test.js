@@ -7,6 +7,32 @@ const vm = require("node:vm");
 
 const projectRoot = path.resolve(__dirname, "..");
 
+const defaultActionCodes = {
+  up: ["KeyW", "ArrowUp"],
+  down: ["KeyS", "ArrowDown"],
+  left: ["KeyA", "ArrowLeft"],
+  right: ["KeyD", "ArrowRight"],
+  confirm: ["KeyE", "Enter"],
+  cancel: ["KeyQ", "Escape"],
+  menu: ["Escape"],
+  interact: ["KeyE"],
+  help: ["KeyH"],
+  scope: ["KeyR"],
+};
+
+function actionTriggered(triggered, action) {
+  return (defaultActionCodes[action] || []).some((code) => triggered.has(code));
+}
+
+function actionLabel(action) {
+  const labels = {
+    up: "W / ↑", down: "S / ↓", left: "A / ←", right: "D / →",
+    confirm: "E / Enter", cancel: "Q / Esc", menu: "Esc",
+    interact: "E", help: "H", scope: "R",
+  };
+  return labels[action] || action;
+}
+
 function read(relativePath) {
   return fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
 }
@@ -20,6 +46,10 @@ function loadBattleCommand({ actor = null, canEscape = true } = {}) {
       isTriggered(code) {
         return triggered.has(code);
       },
+      isActionTriggered(action) {
+        return actionTriggered(triggered, action);
+      },
+      actionLabel,
     },
   });
 

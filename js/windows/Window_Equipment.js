@@ -104,7 +104,7 @@ class Window_Equipment {
       return;
     }
 
-    if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
+    if (Input.isActionTriggered("cancel")) {
       this.hide();
       return;
     }
@@ -114,15 +114,15 @@ class Window_Equipment {
       return;
     }
 
-    if (Input.isTriggered("ArrowUp") || Input.isTriggered("KeyW")) {
+    if (Input.isActionTriggered("up")) {
       this.index = (this.index - 1 + this.slots.length) % this.slots.length;
     }
 
-    if (Input.isTriggered("ArrowDown") || Input.isTriggered("KeyS")) {
+    if (Input.isActionTriggered("down")) {
       this.index = (this.index + 1) % this.slots.length;
     }
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+    if (Input.isActionTriggered("confirm")) {
       const slot = this.slots[this.index];
 
       if (slot) {
@@ -229,7 +229,8 @@ class Window_Equipment {
 
     context.font = "16px sans-serif";
     context.fillText(
-      "A/D or ←/→: Actor    Enter: Change    Q/Esc: Back",
+      `${Input.actionLabel("left")} / ${Input.actionLabel("right")}: Actor    ` +
+        `${Input.actionLabel("confirm")}: Change    ${Input.actionLabel("cancel")}: Back`,
       leftX,
       this.y + this.height - 28,
     );
