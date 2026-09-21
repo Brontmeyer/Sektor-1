@@ -18,6 +18,13 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Battle UI / Presentation Polish v1 with a tighter four-row HUD, reduced command-reserve proportions, and softer Sektor 1 battle framing
+- Reworked Tactical Help into a smaller centered translucent panel with compact two-line scanned/unknown enemy information and remapped Help-key labeling
+- Added transient battle-banner fade-in/fade-out presentation while preserving Battle Message Speed ownership and the existing banner queue
+- Polished the battle command window with restrained blue-gray framing, active-row highlighting, gold selection accents, and side tabs sized to the command row
+- Added softer contextual hint backing and gold outlined target cursors while retaining dynamic remapped control labels
+- Added dedicated Battle UI Presentation Polish regression coverage and expanded HUD / Tactical Help / transient-banner tests
+
 - Added Custom Controls / Input Mapping v1 with centralized named input actions for movement, confirmation, cancellation, menu access, interaction, Tactical Help, and target-scope switching
 - Added Config Runtime v2 keyboard binding persistence with automatic migration from Config Runtime v1 while preserving existing battle/message/cursor/Magick preferences
 - Added two binding slots per action, required-action lockout protection, context-sensitive shared defaults, key-label formatting, and reset-to-default controls

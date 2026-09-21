@@ -521,7 +521,9 @@ class Scene_Battle extends Scene_Base {
       return;
     }
 
-    this.battleBanner.timer -= deltaTime;
+    const step = Math.max(0, Number(deltaTime) || 0);
+    this.battleBanner.elapsed += step;
+    this.battleBanner.timer -= step;
 
     if (this.battleBanner.timer <= 0) {
       this.battleBanner = this.battleBannerQueue.shift() || null;
@@ -535,10 +537,13 @@ class Scene_Battle extends Scene_Base {
       return false;
     }
 
+    const resolvedDuration = Math.max(0.1, Number(duration) || 0.9);
     const entry = {
       text: value,
       type,
-      timer: Math.max(0.1, Number(duration) || 0.9),
+      timer: resolvedDuration,
+      duration: resolvedDuration,
+      elapsed: 0,
     };
 
     if (this.battleBanner) {

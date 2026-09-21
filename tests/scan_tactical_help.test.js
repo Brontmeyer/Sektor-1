@@ -204,9 +204,9 @@ function testTacticalHelpRendersUnknownThenScannedDetails() {
   let texts = context2d.calls
     .filter((call) => call[0] === "fillText")
     .map((call) => call[2]);
-  assert.equal(texts.includes("TACTICAL HELP"), true);
+  assert.equal(texts.some((text) => String(text).includes("Test Slime")), true);
   assert.equal(texts.some((text) => String(text).includes("HP ??/??")), true);
-  assert.equal(texts.some((text) => String(text).includes("Weak: ??")), true);
+  assert.equal(texts.some((text) => String(text).includes("Weak ??")), true);
 
   manager.scan(target);
   context2d.calls.length = 0;
@@ -215,12 +215,12 @@ function testTacticalHelpRendersUnknownThenScannedDetails() {
     .filter((call) => call[0] === "fillText")
     .map((call) => call[2]);
   const resourceDetail = texts.find((text) => String(text).includes("Test Slime"));
-  const affinityDetail = texts.find((text) => String(text).includes("Weak: Fire"));
+  const affinityDetail = texts.find((text) => String(text).includes("Weak Fire"));
   assert.match(resourceDetail, /HP 250\/250/);
   assert.match(resourceDetail, /MP 12\/12/);
-  assert.match(affinityDetail, /Weak: Fire/);
-  assert.match(affinityDetail, /Resist: Ice/);
-  assert.match(affinityDetail, /Immune: Lightning/);
+  assert.match(affinityDetail, /Weak Fire/);
+  assert.match(affinityDetail, /Resist Ice/);
+  assert.match(affinityDetail, /Immune Lightning/);
 }
 
 function testSkillRuntimeMarksEnemyScanned() {

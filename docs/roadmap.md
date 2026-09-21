@@ -512,13 +512,14 @@ Battle-presentation directions and current status:
 - ✅ Scan & Tactical Help v1 for battle-local per-enemy HP/MP and elemental weakness/resistance/immunity details while targeting
 - ✅ Game Options / Config Foundation v1 with battle/message pacing, battle cursor memory, Magick ordering, and save-slot-independent persistence
 - ✅ Custom Controls / Input Mapping v1 with named actions, persistent two-slot keyboard bindings, dynamic hints, and a dedicated Controls screen
+- ✅ Battle UI / Presentation Polish v1 with tighter HUD/command proportions, compact translucent Tactical Help, banner fades, softer hints, and battle accent cursors
 
 ---
 
 Built with ❤️ by **Sarah & Tyler**
 
-## Next Presentation Focus
+## Presentation Status
 
-Custom Controls / Input Mapping v1 is complete. Runtime input now resolves named actions through Config Runtime v2, existing Config Runtime v1 preferences migrate forward, and player-facing hints follow remapped bindings. Save Runtime remains v9 because controls are player preferences rather than game progress.
+Custom Controls / Input Mapping v1 and Battle UI / Presentation Polish v1 are complete. Runtime input resolves named actions through Config Runtime v2, player-facing battle hints follow remapped bindings, and the accumulated HUD/Tactical Help/banner/cursor presentation notes have been folded back into the existing battle UI owners without adding gameplay authority. Save Runtime remains v9 because these are configuration and presentation concerns rather than game progress.
 
-The next presentation-focused pass can return to accumulated battle UI polish, including the intentionally deferred Tactical Help bar height/transparency work, without mixing that visual refinement into input architecture.
+Future battle skinning can now focus on final assets, frames, icons, gauges, portraits, and animation language without needing to redesign the current HUD ownership or input-hint contracts first.

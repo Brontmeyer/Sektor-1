@@ -159,11 +159,33 @@ function testTransientBannerQueuePreservesStateAnnouncementsBeforeActions() {
   assert.equal(prototype.showBattleBanner.call(fake, "BOSS TRANSFORMS", 1, "state"), true);
   assert.equal(prototype.showBattleBanner.call(fake, "Ember", 1, "magick"), true);
   assert.equal(fake.battleBanner.text, "BOSS TRANSFORMS");
+  assert.equal(fake.battleBanner.duration, 1);
+  assert.equal(fake.battleBanner.elapsed, 0);
   assert.equal(fake.battleBannerQueue.length, 1);
 
   prototype.updateBattleBanner.call(fake, 1.1);
   assert.equal(fake.battleBanner.text, "Ember");
   assert.equal(fake.battleBannerQueue.length, 0);
+}
+
+function testTransientBannerFadesAtPresentationEdges() {
+  const Graphics = { width: 1600, height: 900, context: createContext() };
+  const { BattleHudLayout, BattleRenderer } = loadPresentation({ Graphics });
+  const scene = baseScene();
+  scene.hudLayout = new BattleHudLayout(scene);
+  const renderer = new BattleRenderer(scene);
+
+  assert.equal(
+    renderer.battleBannerAlpha({ timer: 1, duration: 1, elapsed: 0 }),
+    0,
+  );
+  assert.equal(
+    renderer.battleBannerAlpha({ timer: 0.5, duration: 1, elapsed: 0.5 }),
+    1,
+  );
+  assert.ok(
+    renderer.battleBannerAlpha({ timer: 0.05, duration: 1, elapsed: 0.95 }) < 1,
+  );
 }
 
 function testCommandWindowIsSuppressedDuringTargetSelection() {
@@ -246,6 +268,7 @@ function run() {
   testNoPersistentTopHeaderOrMessagePanel();
   testBannerAppearsOnlyWhenTransientPresentationStateExists();
   testTransientBannerQueuePreservesStateAnnouncementsBeforeActions();
+  testTransientBannerFadesAtPresentationEdges();
   testCommandWindowIsSuppressedDuringTargetSelection();
   testContextualHintsMatchBattleState();
   testCriticalFlashIsBriefGlobalPresentationEffect();

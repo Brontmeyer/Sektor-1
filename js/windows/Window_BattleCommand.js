@@ -39,6 +39,7 @@ class Window_BattleCommand {
     this.width = bounds.width;
     this.height = bounds.height;
     this.lineHeight = bounds.height / this.commands.length;
+    this.sideHeight = this.lineHeight;
     this.padding = 0;
     return true;
   }
@@ -217,17 +218,21 @@ class Window_BattleCommand {
       : this.x + this.width + this.sideGap;
     const y = this.y;
 
-    context.fillStyle = "rgba(0, 0, 0, 0.9)";
+    const enabled = this.isCommandEnabled(command);
+
+    context.fillStyle = "rgba(7, 10, 15, 0.92)";
     context.fillRect(x, y, this.sideWidth, this.sideHeight);
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 2;
+    context.strokeStyle = enabled
+      ? "rgba(255, 215, 90, 0.8)"
+      : "rgba(151, 196, 229, 0.35)";
+    context.lineWidth = 1.5;
     context.strokeRect(x, y, this.sideWidth, this.sideHeight);
 
-    context.font = "20px Arial";
+    context.font = "17px Arial";
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.globalAlpha = this.isCommandEnabled(command) ? 1.0 : 0.4;
-    context.fillStyle = "#ffffff";
+    context.globalAlpha = enabled ? 1.0 : 0.4;
+    context.fillStyle = enabled ? "#ffd75a" : "#d5dbe3";
     context.fillText(command, x + this.sideWidth / 2, y + this.sideHeight / 2);
     context.globalAlpha = 1.0;
   }
@@ -244,27 +249,46 @@ class Window_BattleCommand {
 
     context.save();
 
-    context.fillStyle = "rgba(0, 0, 0, 0.85)";
+    context.fillStyle = "rgba(7, 10, 15, 0.93)";
     context.fillRect(this.x, this.y, this.width, this.height);
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 2;
+    context.strokeStyle = "rgba(151, 196, 229, 0.58)";
+    context.lineWidth = 1.5;
     context.strokeRect(this.x, this.y, this.width, this.height);
 
-    context.font = "22px Arial";
+    context.font = "19px Arial";
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.fillStyle = "#ffffff";
 
     for (let i = 0; i < this.commands.length; i++) {
       const command = this.commands[i];
-      const prefix =
-        !this.hasSideCommandOpen() && i === this.index ? "▶ " : "   ";
+      const selected = !this.hasSideCommandOpen() && i === this.index;
+      const enabled = this.isCommandEnabled(command);
+      const drawY = this.y + this.lineHeight / 2 + i * this.lineHeight;
 
-      const drawY =
-        this.y + this.padding + this.lineHeight / 2 + i * this.lineHeight;
+      if (selected) {
+        context.fillStyle = "rgba(255, 215, 90, 0.09)";
+        context.fillRect(
+          this.x + 1,
+          this.y + i * this.lineHeight + 1,
+          this.width - 2,
+          this.lineHeight - 2,
+        );
+        context.fillStyle = "#ffd75a";
+        context.fillRect(
+          this.x + 3,
+          this.y + i * this.lineHeight + 5,
+          3,
+          Math.max(8, this.lineHeight - 10),
+        );
+      }
 
-      context.globalAlpha = this.isCommandEnabled(command) ? 1.0 : 0.4;
-      context.fillText(`${prefix}${command}`, this.x + this.padding, drawY);
+      context.globalAlpha = enabled ? 1.0 : 0.38;
+      context.fillStyle = selected ? "#ffd75a" : "#f0f3f7";
+      context.fillText(
+        `${selected ? "▶ " : "   "}${command}`,
+        this.x + 14,
+        drawY,
+      );
       context.globalAlpha = 1.0;
     }
 

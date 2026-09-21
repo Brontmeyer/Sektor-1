@@ -98,7 +98,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add Battle Speed, Battle Message Speed, Field Message Speed, Battle Cursor Memory, and Magick Order runtime settings
 - [x] Add fullscreen Options scene and main-menu entry
 - [x] Implement Custom Controls / Input Mapping v1 with named actions, persistent two-slot bindings, dynamic hints, and rebinding UI
-- [ ] Polish Tactical Help bar size/transparency during the later battle UI presentation pass
+- [x] Implement Battle UI / Presentation Polish v1 with tighter HUD/command geometry, translucent Tactical Help, banner fades, contextual hint backing, and target/selection accents
+- [x] Polish Tactical Help bar size/transparency during the battle UI presentation pass
 
 ---
 

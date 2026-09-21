@@ -114,6 +114,22 @@ function testBannerIsCompactAndDoesNotSpanTheScreen() {
   assert.equal(short.x > 0, true);
 }
 
+function testTacticalHelpIsCompactAndCenteredAboveHud() {
+  const Graphics = { width: 1600, height: 900 };
+  const scene = { scanManager: { isHelpVisible: () => true } };
+  const { BattleHudLayout } = loadPresentation({ Graphics });
+  const layout = new BattleHudLayout(scene);
+  const hud = layout.hudBounds();
+  const help = layout.tacticalHelpBounds();
+
+  assert.equal(help.height < 60, true);
+  assert.equal(help.width < hud.width, true);
+  assert.equal(help.x > hud.x, true);
+  assert.equal(help.x + help.width < hud.x + hud.width, true);
+  assert.equal(help.y + help.height < hud.y, true);
+  assert.equal(layout.hintY() < help.y, true);
+}
+
 function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
   const context = createContext();
   const Graphics = { width: 1600, height: 900, context };
@@ -175,6 +191,7 @@ function testHudLayoutLoadsBeforeRendererAndBattleScene() {
 function run() {
   testLayoutSeparatesNamesCommandReserveAndStableStats();
   testBannerIsCompactAndDoesNotSpanTheScreen();
+  testTacticalHelpIsCompactAndCenteredAboveHud();
   testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve();
   testHudLayoutLoadsBeforeRendererAndBattleScene();
 

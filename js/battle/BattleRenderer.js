@@ -128,6 +128,24 @@ class BattleRenderer {
     return turnState === null || turnState === "command";
   }
 
+  battleBannerAlpha(banner = this.scene.battleBanner) {
+    if (!banner) {
+      return 0;
+    }
+
+    if (banner.elapsed === undefined || banner.duration === undefined) {
+      return 1;
+    }
+
+    const duration = Math.max(0.1, Number(banner.duration) || 0.9);
+    const elapsed = Math.max(0, Number(banner.elapsed) || 0);
+    const remaining = Math.max(0, Number(banner.timer) || 0);
+    const fadeIn = Math.min(1, elapsed / Math.min(0.12, duration * 0.25));
+    const fadeOut = Math.min(1, remaining / Math.min(0.2, duration * 0.3));
+
+    return Math.max(0, Math.min(1, fadeIn, fadeOut));
+  }
+
   drawBattleBanner(context) {
     const banner = this.scene.battleBanner;
 
@@ -135,8 +153,15 @@ class BattleRenderer {
       return;
     }
 
+    const alpha = this.battleBannerAlpha(banner);
+
+    if (alpha <= 0) {
+      return;
+    }
+
     context.save();
-    context.font = "bold 18px Arial";
+    context.globalAlpha = alpha;
+    context.font = "bold 17px Arial";
     context.textAlign = "center";
     context.textBaseline = "middle";
 
@@ -148,13 +173,13 @@ class BattleRenderer {
         ? banner.text
         : Window_TextLayout.ellipsize(context, banner.text, maxTextWidth);
 
-    context.fillStyle = "rgba(8, 11, 17, 0.9)";
+    context.fillStyle = "rgba(8, 11, 17, 0.74)";
     context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
     context.strokeStyle =
       banner.type === "state"
-        ? "rgba(255, 215, 90, 0.85)"
-        : "rgba(255, 255, 255, 0.72)";
-    context.lineWidth = 2;
+        ? "rgba(255, 215, 90, 0.8)"
+        : "rgba(151, 196, 229, 0.72)";
+    context.lineWidth = 1.5;
     context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
     context.fillStyle = banner.type === "state" ? "#ffd75a" : "#ffffff";
     context.fillText(
@@ -194,43 +219,40 @@ class BattleRenderer {
     const bounds = this.scene.hudLayout.tacticalHelpBounds();
     const target = manager.currentEnemyTarget();
     const profile = target ? manager.tacticalProfile(target) : null;
+    const paddingX = 14;
+    const left = bounds.x + paddingX;
+    const right = bounds.x + bounds.width - paddingX;
+    const lineOneY = bounds.y + 18;
+    const lineTwoY = bounds.y + 38;
+    const maxWidth = bounds.width - paddingX * 2;
 
     context.save();
-    context.fillStyle = "rgba(7, 10, 15, 0.96)";
+    context.fillStyle = "rgba(7, 10, 15, 0.76)";
     context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    context.strokeStyle = "rgba(255, 255, 255, 0.72)";
-    context.lineWidth = 2;
+    context.strokeStyle = "rgba(151, 196, 229, 0.48)";
+    context.lineWidth = 1;
     context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    context.textAlign = "left";
     context.textBaseline = "middle";
 
-    const left = bounds.x + 14;
-    const lineOneY = bounds.y + 17;
-    const lineTwoY = bounds.y + 40;
-    const lineThreeY = bounds.y + 62;
-
-    context.font = "bold 14px Arial";
-    context.fillStyle = "#ffd75a";
-    context.fillText("TACTICAL HELP", left, lineOneY);
-
-    context.font = "13px Arial";
-    context.fillStyle = "#b9c4d2";
+    context.font = "12px Arial";
     context.textAlign = "right";
-    context.fillText(
-      `${Input.actionLabel("help")}: Hide`,
-      bounds.x + bounds.width - 14,
-      lineOneY,
-    );
+    context.fillStyle = "#9eacbc";
+    context.fillText(`${Input.actionLabel("help")}: Hide`, right, lineOneY);
 
     context.textAlign = "left";
 
     if (!profile) {
-      context.fillStyle = "#ffffff";
-      context.fillText(
-        "Target an enemy to inspect tactical information.",
-        left,
-        lineTwoY,
-      );
+      context.font = "bold 13px Arial";
+      context.fillStyle = "#ffd75a";
+      context.fillText("TACTICAL", left, lineOneY);
+      context.font = "12px Arial";
+      context.fillStyle = "#d6dde6";
+      const message = "Target an enemy to inspect tactical information.";
+      const displayMessage =
+        context.measureText(message).width <= maxWidth
+          ? message
+          : Window_TextLayout.ellipsize(context, message, maxWidth);
+      context.fillText(displayMessage, left, lineTwoY);
       context.restore();
       return;
     }
@@ -245,20 +267,25 @@ class BattleRenderer {
     const resistText = this.tacticalAffinityText(profile.resist);
     const immuneText = this.tacticalAffinityText(profile.immune);
     const resourceDetail = `${profile.name}   HP ${hpText}   MP ${mpText}`;
-    const affinityDetail = `Weak: ${weakText}   Resist: ${resistText}   Immune: ${immuneText}`;
-    const maxWidth = bounds.width - 28;
+    const affinityDetail = `Weak ${weakText}   Resist ${resistText}   Immune ${immuneText}`;
+    const hintWidth = context.measureText(`${Input.actionLabel("help")}: Hide`).width;
+    const lineOneMaxWidth = Math.max(120, maxWidth - hintWidth - 20);
     const displayResource =
-      context.measureText(resourceDetail).width <= maxWidth
+      context.measureText(resourceDetail).width <= lineOneMaxWidth
         ? resourceDetail
-        : Window_TextLayout.ellipsize(context, resourceDetail, maxWidth);
+        : Window_TextLayout.ellipsize(context, resourceDetail, lineOneMaxWidth);
     const displayAffinity =
       context.measureText(affinityDetail).width <= maxWidth
         ? affinityDetail
         : Window_TextLayout.ellipsize(context, affinityDetail, maxWidth);
 
-    context.fillStyle = profile.scanned ? "#ffffff" : "#aeb8c5";
-    context.fillText(displayResource, left, lineTwoY);
-    context.fillText(displayAffinity, left, lineThreeY);
+    context.font = "bold 13px Arial";
+    context.fillStyle = profile.scanned ? "#ffffff" : "#c0c8d3";
+    context.fillText(displayResource, left, lineOneY);
+
+    context.font = "12px Arial";
+    context.fillStyle = profile.scanned ? "#d6dde6" : "#9ea8b5";
+    context.fillText(displayAffinity, left, lineTwoY);
     context.restore();
   }
 
@@ -362,19 +389,20 @@ class BattleRenderer {
     context.save();
     context.textAlign = "right";
     context.textBaseline = "alphabetic";
-    context.font = "15px Arial";
-    context.fillStyle = "#dddddd";
+    context.font = "13px Arial";
     const maxWidth = Math.max(120, Graphics.width - 80);
     const displayHint =
       context.measureText(hint).width <= maxWidth
         ? hint
         : Window_TextLayout.ellipsize(context, hint, maxWidth);
+    const textWidth = context.measureText(displayHint).width;
+    const x = Graphics.width - 28;
+    const y = this.scene.hudLayout.hintY();
 
-    context.fillText(
-      displayHint,
-      Graphics.width - 30,
-      this.scene.hudLayout.hintY(),
-    );
+    context.fillStyle = "rgba(4, 7, 11, 0.48)";
+    context.fillRect(x - textWidth - 10, y - 16, textWidth + 18, 21);
+    context.fillStyle = "#d5dbe3";
+    context.fillText(displayHint, x, y);
     context.restore();
   }
 
@@ -628,12 +656,12 @@ class BattleRenderer {
         ? Math.max(0, Math.min(1, current / max))
         : 0;
 
-    context.fillStyle = "#252b34";
-    context.fillRect(x, y, width, 5);
+    context.fillStyle = "#252c35";
+    context.fillRect(x, y, width, 4);
 
     if (rate > 0) {
       context.fillStyle = fillStyle;
-      context.fillRect(x, y, width * rate, 5);
+      context.fillRect(x, y, width * rate, 4);
     }
   }
 
@@ -644,8 +672,8 @@ class BattleRenderer {
     const centerY = row.y + row.height / 2;
     const isActive = actor === activeActor;
     const isDefeated = actor?.isDefeated?.() === true;
-    const namePadding = 12;
-    const statPadding = 14;
+    const namePadding = 10;
+    const statPadding = 12;
     const statContentWidth = statRow.width - statPadding * 2;
     const hpWidth = statContentWidth * 0.34;
     const mpWidth = statContentWidth * 0.28;
@@ -657,7 +685,7 @@ class BattleRenderer {
     context.save();
 
     if (isActive) {
-      context.fillStyle = "rgba(255, 215, 90, 0.1)";
+      context.fillStyle = "rgba(255, 215, 90, 0.075)";
       context.fillRect(nameRow.x, row.y + 1, nameRow.width, row.height - 2);
       context.fillRect(statRow.x, row.y + 1, statRow.width, row.height - 2);
       context.fillStyle = "#ffd75a";
@@ -665,7 +693,7 @@ class BattleRenderer {
     }
 
     if (index > 0) {
-      context.strokeStyle = "rgba(255, 255, 255, 0.1)";
+      context.strokeStyle = "rgba(151, 196, 229, 0.11)";
       context.lineWidth = 1;
       context.beginPath();
       context.moveTo(nameRow.x + 6, row.y);
@@ -679,7 +707,7 @@ class BattleRenderer {
     context.textAlign = "left";
     context.textBaseline = "middle";
 
-    context.font = "17px Arial";
+    context.font = "16px Arial";
     context.fillStyle = isActive ? "#ffd75a" : "#ffffff";
     context.fillText(actor.name, nameRow.x + namePadding, centerY - 7);
 
@@ -759,16 +787,16 @@ class BattleRenderer {
     const activeActor = this.hudActivePartyBattler();
 
     context.save();
-    context.fillStyle = "rgba(7, 10, 15, 0.94)";
+    context.fillStyle = "rgba(7, 10, 15, 0.91)";
     context.fillRect(hud.x, hud.y, hud.width, hud.height);
-    context.strokeStyle = "rgba(255, 255, 255, 0.72)";
-    context.lineWidth = 2;
+    context.strokeStyle = "rgba(151, 196, 229, 0.56)";
+    context.lineWidth = 1.5;
     context.strokeRect(hud.x, hud.y, hud.width, hud.height);
 
     // The middle command reserve intentionally stays empty while no actor is
     // choosing a command. Future Barrier / MBarrier-style presentation can
     // occupy this space without moving names or resource gauges.
-    context.strokeStyle = "rgba(120, 205, 255, 0.18)";
+    context.strokeStyle = "rgba(151, 196, 229, 0.14)";
     context.lineWidth = 1;
     context.beginPath();
     context.moveTo(names.x + names.width, hud.y);
@@ -816,8 +844,19 @@ class BattleRenderer {
 
     context.save();
 
-    context.font = "32px sans-serif";
+    context.font = "30px sans-serif";
     context.textAlign = "center";
+    context.textBaseline = "alphabetic";
+    context.fillStyle = "#ffd75a";
+    context.strokeStyle = "rgba(7, 10, 15, 0.9)";
+    context.lineWidth = 3;
+
+    const drawCursor = (x, y) => {
+      if (typeof context.strokeText === "function") {
+        context.strokeText("▼", x, y);
+      }
+      context.fillText("▼", x, y);
+    };
 
     // -----------------------------
     // ALL TARGETS
@@ -830,7 +869,7 @@ class BattleRenderer {
         if ($gameParty.battleMembers().includes(target)) {
           const position = this.scene.getAllyPosition(target);
           const height = this.scene.getActorSpriteHeight(target);
-          context.fillText("▼", position.x, position.y - height - 18);
+          drawCursor(position.x, position.y - height - 18);
           continue;
         }
 
@@ -842,7 +881,7 @@ class BattleRenderer {
 
         const position = this.scene.getEnemyBattlePosition(enemyIndex);
         const height = this.scene.getEnemySpriteHeight(target);
-        context.fillText("▼", position.x, position.y - height - 18);
+        drawCursor(position.x, position.y - height - 18);
       }
 
       context.restore();
@@ -875,7 +914,7 @@ class BattleRenderer {
       y = position.y - this.scene.getEnemySpriteHeight(enemy) - 18;
     }
 
-    context.fillText("▼", x, y);
+    drawCursor(x, y);
 
     context.restore();
   }

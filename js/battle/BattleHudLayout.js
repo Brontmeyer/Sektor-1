@@ -8,7 +8,7 @@ class BattleHudLayout {
   }
 
   hudBounds() {
-    const height = 172;
+    const height = 156;
 
     return {
       x: 18,
@@ -20,7 +20,7 @@ class BattleHudLayout {
 
   nameColumnBounds() {
     const hud = this.hudBounds();
-    const width = Math.max(132, Math.min(176, hud.width * 0.14));
+    const width = Math.max(126, Math.min(166, hud.width * 0.132));
 
     return {
       x: hud.x,
@@ -33,7 +33,7 @@ class BattleHudLayout {
   commandBounds() {
     const hud = this.hudBounds();
     const names = this.nameColumnBounds();
-    const width = Math.max(200, Math.min(232, hud.width * 0.19));
+    const width = Math.max(194, Math.min(220, hud.width * 0.178));
 
     return {
       x: names.x + names.width,
@@ -99,37 +99,38 @@ class BattleHudLayout {
 
   tacticalHelpBounds() {
     const hud = this.hudBounds();
-    const height = 78;
+    const width = Math.min(860, Math.max(520, hud.width * 0.62));
+    const height = 54;
 
     return {
-      x: hud.x,
-      y: hud.y - height - 18,
-      width: hud.width,
+      x: hud.x + (hud.width - width) / 2,
+      y: hud.y - height - 14,
+      width,
       height,
     };
   }
 
   bannerBounds(textWidth = 0) {
-    const paddingX = 22;
+    const paddingX = 18;
     const width = Math.max(
-      150,
-      Math.min(Graphics.width * 0.46, Number(textWidth) + paddingX * 2 || 150),
+      136,
+      Math.min(Graphics.width * 0.42, Number(textWidth) + paddingX * 2 || 136),
     );
 
     return {
       x: (Graphics.width - width) / 2,
       y: 18,
       width,
-      height: 42,
+      height: 36,
       paddingX,
     };
   }
 
   hintY() {
     if (this.scene.scanManager?.isHelpVisible?.()) {
-      return this.tacticalHelpBounds().y - 8;
+      return this.tacticalHelpBounds().y - 7;
     }
 
-    return this.hudBounds().y - 10;
+    return this.hudBounds().y - 9;
   }
 }

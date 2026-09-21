@@ -166,6 +166,10 @@ Pass 51 is post-audit configuration work and does not reopen a historical findin
 
 Pass 52 is post-audit input/configuration work and does not reopen a historical finding. Runtime scenes, windows, battle presentation, and player movement now consume named `Input` actions instead of physical key codes. Config Runtime v2 owns two persistent bindings per action and migrates Config Runtime v1 preferences forward; `Scene_Controls` / `Window_Controls` provide capture/reset UI without becoming binding authority. Control preferences remain outside game saves, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Battle UI / Presentation Polish v1
+
+Pass 53 is post-audit presentation refinement and does not reopen a historical finding. `BattleHudLayout` remains the geometry owner while `BattleRenderer` and `Window_BattleCommand` refine spacing, transparency, fades, selection accents, hint backing, and target-cursor presentation. Tactical Help still reads `BattleScanManager` state, banner fades still use the existing Battle Message Speed clock, and displayed controls still come from named Input bindings. No battle rule or persistent game state changes, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:
