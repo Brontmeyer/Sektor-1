@@ -92,7 +92,13 @@ class Window_Magick {
   }
 
   magickList() {
-    return this.actor.knownMagick().filter((magick) => magick.type === "magick");
+    const magick = this.actor
+      .knownMagick()
+      .filter((entry) => entry.type === "magick");
+
+    return typeof ConfigManager === "undefined"
+      ? magick
+      : ConfigManager.sortMagick(magick);
   }
 
   currentMagick() {

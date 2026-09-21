@@ -52,9 +52,13 @@ class Window_BattleMagick {
   }
 
   magickList() {
-    return this.actor()
+    const magick = this.actor()
       .knownMagick()
-      .filter((magick) => magick.type === "magick");
+      .filter((entry) => entry.type === "magick");
+
+    return typeof ConfigManager === "undefined"
+      ? magick
+      : ConfigManager.sortMagick(magick);
   }
 
   currentMagick() {

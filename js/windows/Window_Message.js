@@ -6,6 +6,7 @@ class Window_Message {
 
     this.text = "";
     this.speaker = "";
+    this.revealedCharacters = 0;
 
     this.x = 40;
     this.width = Graphics.width - 80;
@@ -13,14 +14,61 @@ class Window_Message {
     this.y = Graphics.height - this.height - 40;
   }
 
-  update() {
+  update(deltaTime = 0) {
     if (!this.visible) {
       return;
     }
 
+    this.updateTextReveal(deltaTime);
+
     if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+      if (!this.isFullyRevealed()) {
+        this.revealAll();
+        return;
+      }
+
       this.hide();
     }
+  }
+
+  charactersPerSecond() {
+    if (typeof ConfigManager === "undefined") {
+      return 42;
+    }
+
+    return ConfigManager.fieldMessageCharactersPerSecond();
+  }
+
+  updateTextReveal(deltaTime) {
+    const seconds = Math.max(0, Number(deltaTime) || 0);
+    const speed = Math.max(1, Number(this.charactersPerSecond()) || 42);
+
+    this.revealedCharacters = Math.min(
+      this.characterCount(),
+      this.revealedCharacters + speed * seconds,
+    );
+  }
+
+  textCharacters() {
+    return Array.from(this.text);
+  }
+
+  characterCount() {
+    return this.textCharacters().length;
+  }
+
+  visibleText() {
+    return this.textCharacters()
+      .slice(0, Math.floor(this.revealedCharacters))
+      .join("");
+  }
+
+  isFullyRevealed() {
+    return this.revealedCharacters >= this.characterCount();
+  }
+
+  revealAll() {
+    this.revealedCharacters = this.characterCount();
   }
 
   show(text, speaker = "") {
@@ -28,6 +76,7 @@ class Window_Message {
 
     this.text = text || "";
     this.speaker = speaker || "";
+    this.revealedCharacters = 0;
   }
 
   hide() {
@@ -35,6 +84,7 @@ class Window_Message {
 
     this.text = "";
     this.speaker = "";
+    this.revealedCharacters = 0;
   }
 
   isOpen() {
@@ -72,7 +122,7 @@ class Window_Message {
     context.textBaseline = "top";
 
     this.drawWrappedText(
-      this.text,
+      this.visibleText(),
       this.x + 25,
       this.y + 25,
       this.width - 50,
@@ -101,7 +151,7 @@ class Window_Message {
     context.textAlign = "right";
 
     context.fillText(
-      "E / Enter ▶",
+      this.isFullyRevealed() ? "E / Enter ▶" : "E / Enter: Reveal",
       this.x + this.width - 20,
       this.y + this.height - 35,
     );

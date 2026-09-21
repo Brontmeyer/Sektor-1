@@ -209,6 +209,11 @@ class Scene_Menu extends Scene_Base {
 
           break;
 
+        case "Options":
+          SceneManager.push(Scene_Options);
+
+          break;
+
         default:
           DebugManager.log(`${command} is not implemented yet.`);
 

@@ -1663,21 +1663,34 @@ class BattleManager {
       }
 
       case "Skills":
-        battle.skillsWindow.show();
+        battle.skillsWindow.show({
+          preserveIndex: this.battleCursorMemoryEnabled(),
+        });
         break;
 
       case "Magick":
-        battle.magickWindow.show();
+        battle.magickWindow.show({
+          preserveIndex: this.battleCursorMemoryEnabled(),
+        });
         break;
 
       case "Item":
-        battle.itemWindow.show();
+        battle.itemWindow.show({
+          preserveIndex: this.battleCursorMemoryEnabled(),
+        });
         break;
 
       case "Defend":
         this.performDefend();
         break;
     }
+  }
+
+  battleCursorMemoryEnabled() {
+    return (
+      typeof ConfigManager !== "undefined" &&
+      ConfigManager.battleCursorMemoryEnabled()
+    );
   }
 
   executeSkill() {

@@ -12,6 +12,15 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Game Options / Config Foundation v1 with versioned save-slot-independent configuration persistence through `ConfigManager`
+- Added a fullscreen `Scene_Options` / `Window_Options` flow reachable from the main menu
+- Added live Battle Speed, Battle Message Speed, Field Message Speed, Battle Cursor Memory, and Magick Order settings
+- Added battle-speed scaling for battle-local animation/action/enemy-turn clocks while keeping temporary battle-banner pacing independently configurable
+- Added field-message typewriter reveal with configurable speed; confirm reveals unfinished text first and closes only after the message is fully visible
+- Added battle selector cursor-memory behavior for Skills, Magick, and Items while preserving hierarchical target-cancel cursor restoration regardless of the global preference
+- Added shared Magick ordering in both battle and field menus with Default, Alphabetical, and Element presentation modes
+- Added dedicated Game Options regression coverage for persistence, timing separation, field text reveal, cursor memory, Magick ordering, menu reachability, and script load order
+
 - Added Scan & Tactical Help v1 with a canonical `Scan` Skill, battle-local per-enemy knowledge, and an optional H-key tactical information bar
 - Added `BattleScanManager` as the battle-local owner of Scan state, current tactical target lookup, and elemental Weak / Resist / Immune classification
 - Added unknown tactical presentation (`??`) for unscanned enemy HP/MP and affinity data, with live HP/MP values after that specific enemy instance is scanned

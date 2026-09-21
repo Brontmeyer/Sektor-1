@@ -51,6 +51,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Valor & Escape Rules v1
 -   ✅ Enemy Formation Rows v1
 -   ✅ Scan & Tactical Help v1
+-   ✅ Game Options / Config Foundation v1
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
 
@@ -69,6 +70,7 @@ Completed foundations include:
 -   ✅ Multi-character turn system
 -   ✅ Turn queue
 -   ✅ Save / Load (version-aware Save Runtime v9)
+-   ✅ Save-slot-independent Config Runtime v1
 -   ✅ Equipment system (Weapon / Armor / Accessory)
 -   ✅ Inventory system
 
@@ -115,7 +117,13 @@ Systems currently being expanded include:
 -   ✅ Battle Formation & Party Layout v1
 -   ✅ Battle HUD & Message Layout v1
 
-Battle HUD & Message Layout v1 established reusable four-row geometry. Battle Presentation & Feedback v2 refines that experiment from hands-on playtesting: persistent top headers/messages are removed, action/state information uses compact transient banners, actor names stay in a fixed left roster, the main command window overlays a dedicated middle reserve, and HP/MP/Valor remain in stable right-side columns. Damage, Weak/Resist/Immune, and Critical feedback stay on the battlefield as popups; Critical also triggers a brief presentation-only flash. Battle Targeting & Scope Navigation v2 keeps targeting inside the same formation geometry: single-target selection now responds spatially in all four directions, optional All scope is hidden when the selected target bucket contains only one legal battler, and Pincer All targeting resolves against one selected enemy flank at a time rather than both flanks simultaneously. Enemy Formation Rows v1 expands encounter geometry to eight enemies through four front-row and four back-row positions. Rows auto-center when slots are omitted, or an encounter can explicitly choose `slot: 0..3`; pincer encounters apply the same row contract independently on each flank while retaining an eight-enemy total cap. Rows are positioning-only until weapon/ranged contracts intentionally give them combat meaning. Scan & Tactical Help v1 adds battle-local enemy analysis without duplicating combat data: pressing **H** toggles a compact lower-battlefield help bar, unscanned targets show `??`, and scanning a specific enemy instance reveals its live HP/MaxHP, MP/MaxMP, and elemental Weak/Resist/Immune categories derived directly from `elementRates`.
+Battle HUD & Message Layout v1 established reusable four-row geometry. Battle Presentation & Feedback v2 refines that experiment from hands-on playtesting: persistent top headers/messages are removed, action/state information uses compact transient banners, actor names stay in a fixed left roster, the main command window overlays a dedicated middle reserve, and HP/MP/Valor remain in stable right-side columns. Damage, Weak/Resist/Immune, and Critical feedback stay on the battlefield as popups; Critical also triggers a brief presentation-only flash. Battle Targeting & Scope Navigation v2 keeps targeting inside the same formation geometry: single-target selection now responds spatially in all four directions, optional All scope is hidden when the selected target bucket contains only one legal battler, and Pincer All targeting resolves against one selected enemy flank at a time rather than both flanks simultaneously. Enemy Formation Rows v1 expands encounter geometry to eight enemies through four front-row and four back-row positions. Rows auto-center when slots are omitted, or an encounter can explicitly choose `slot: 0..3`; pincer encounters apply the same row contract independently on each flank while retaining an eight-enemy total cap. Rows are positioning-only until weapon/ranged contracts intentionally give them combat meaning. Scan & Tactical Help v1 adds battle-local enemy analysis without duplicating combat data: pressing **H** toggles a compact lower-battlefield help bar, unscanned targets show `??`, and scanning a specific enemy instance reveals its live HP/MaxHP, MP/MaxMP, and elemental Weak/Resist/Immune categories derived directly from `elementRates`. Game Options / Config Foundation v1 gives player preferences their own versioned `ConfigManager`, separate from save slots. The fullscreen Options scene now controls battle pacing, temporary battle-banner speed, field dialogue reveal speed, battle selector cursor memory, and Magick presentation order; each option feeds its actual runtime owner rather than existing as a decorative toggle. Custom control rebinding remains deferred because current input consumers still use raw key codes and deserve a dedicated named-action migration.
+
+------------------------------------------------------------------------
+
+# ⚙️ Options / Config
+
+Game Options / Config Foundation v1 stores player preferences independently from Save Runtime v9, so loading a different game slot does not change how the player prefers battles or messages to behave. Current settings are **Battle Speed**, **Battle Message Speed**, **Field Message Speed**, **Battle Cursor** (Initial / Memory), and **Magick Order** (Default / Alphabetical / Element). The Options scene is intentionally functional-first; final asset-driven styling and custom control rebinding remain later passes.
 
 ------------------------------------------------------------------------
 

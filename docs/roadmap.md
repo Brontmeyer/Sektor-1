@@ -510,14 +510,15 @@ Battle-presentation directions and current status:
 - ✅ Valor & Escape Rules v1 with hostile-source Valor gain, explicit Valor-support Skills, and Agility/retry-based Escape attempts
 - ✅ Enemy Formation Rows v1 for up to eight centered/customizable front/back-row enemies with pincer-aware flank geometry
 - ✅ Scan & Tactical Help v1 for battle-local per-enemy HP/MP and elemental weakness/resistance/immunity details while targeting
-- A separate Options/configuration system for battle speed, battle/field message speed, optional battle cursor memory, Magick ordering, and control-rebinding architecture
+- ✅ Game Options / Config Foundation v1 with battle/message pacing, battle cursor memory, Magick ordering, and save-slot-independent persistence
+- Custom Controls / Input Mapping v1 to replace raw key-code consumers with named actions before rebinding UI
 
 ---
 
 Built with ❤️ by **Sarah & Tyler**
 
-## Next Battle Configuration Focus
+## Next Input Configuration Focus
 
-Enemy Formation Rows v1 and Scan & Tactical Help v1 are complete. Battles now have stable multi-row geometry, spatial targeting, and optional per-target tactical information without introducing row penalties or persistent enemy-knowledge state.
+Game Options / Config Foundation v1 is complete. Battle and field pacing, battle selector memory, and Magick ordering now have real runtime consumers and persist outside save slots.
 
-The next focused configuration direction is Game Options v1: battle speed, battle/field message speed, battle cursor memory, Magick ordering, and control-rebinding architecture should be designed against the existing runtime owners before presentation polish grows further.
+The next focused configuration direction is Custom Controls / Input Mapping v1. The current `Input` layer still exposes physical key codes directly to scenes/windows, so rebinding should begin by introducing named actions and a single binding owner before any player-facing remap screen is added.

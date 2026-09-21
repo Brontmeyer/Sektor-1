@@ -143,14 +143,23 @@ class Scene_Battle extends Scene_Base {
   }
 
   update(deltaTime) {
-    this.updateBattlerStates(deltaTime);
-    this.updateActionPhase(deltaTime);
-    this.updateBattlerVisuals(deltaTime);
-    this.updateBattleAnimations(deltaTime);
-    this.updateBattleEffect(deltaTime);
-    this.updateBattlePopups(deltaTime);
-    this.updateBattleBanner?.(deltaTime);
-    this.updatePendingEnemyTurn(deltaTime);
+    const battleDeltaTime = Scene_Battle.prototype.battleDeltaTime.call(
+      this,
+      deltaTime,
+    );
+    const messageDeltaTime = Scene_Battle.prototype.battleMessageDeltaTime.call(
+      this,
+      deltaTime,
+    );
+
+    this.updateBattlerStates(battleDeltaTime);
+    this.updateActionPhase(battleDeltaTime);
+    this.updateBattlerVisuals(battleDeltaTime);
+    this.updateBattleAnimations(battleDeltaTime);
+    this.updateBattleEffect(battleDeltaTime);
+    this.updateBattlePopups(battleDeltaTime);
+    this.updateBattleBanner?.(messageDeltaTime);
+    this.updatePendingEnemyTurn(battleDeltaTime);
 
     // -----------------------------
     // HANDLE VICTORY OR DEFEAT FIRST
@@ -346,6 +355,22 @@ class Scene_Battle extends Scene_Base {
     if (Input.isTriggered("Escape") || Input.isTriggered("KeyQ")) {
       this.cancelCommandSelection();
     }
+  }
+
+  battleDeltaTime(deltaTime) {
+    if (typeof ConfigManager === "undefined") {
+      return deltaTime;
+    }
+
+    return ConfigManager.battleDeltaTime(deltaTime);
+  }
+
+  battleMessageDeltaTime(deltaTime) {
+    if (typeof ConfigManager === "undefined") {
+      return deltaTime;
+    }
+
+    return ConfigManager.battleMessageDeltaTime(deltaTime);
   }
 
   cancelTargetSelection() {

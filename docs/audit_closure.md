@@ -158,6 +158,10 @@ Pass 49 is post-audit battle-geometry work and does not reopen a historical find
 
 Pass 50 is post-audit battle-information work and does not reopen a historical finding. `BattleScanManager` owns battle-local per-instance Scan knowledge and derives elemental affinity presentation from the same `elementRates` consumed by combat. `Scan` executes through the shared Skill/targeting/action path, while **H** only toggles a presentation panel and spends no action. No scanned knowledge persists beyond battle and no save fields change, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Game Options / Config Foundation v1
+
+Pass 51 is post-audit configuration work and does not reopen a historical finding. `ConfigManager` owns versioned player preferences independently from save slots, `Scene_Options` / `Window_Options` edit those preferences, and runtime consumers read only the settings they need. Battle/message pacing, field text reveal, selector cursor memory, and Magick ordering gain no game-progress persistence fields, so Save Runtime remains v9. Custom control rebinding is deliberately deferred until raw physical key checks are migrated to named input actions.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

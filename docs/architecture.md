@@ -167,6 +167,15 @@ Validation describes the shape and references of canonical data; it does not imp
 
 `Graphics` owns shared graphics and canvas-level concerns used by the engine.
 
+
+## ConfigManager
+
+`ConfigManager` owns player preferences that should survive independently of game-save slots. Config Runtime v1 uses its own versioned local-storage key and validates every stored value against the supported option definitions before runtime consumers see it. `SaveManager` remains responsible only for game-state persistence; loading another save slot must not replace battle speed, message speed, cursor-memory, or presentation-order preferences.
+
+Current consumers remain deliberately narrow: `Scene_Battle` asks Config Runtime for battle and banner delta-time scaling, `Window_Message` asks for field-message reveal speed, `BattleManager` asks whether fresh battle selector entry should preserve cursor position, and field/battle Magick windows ask for presentation ordering. `Scene_Options` and `Window_Options` edit these values but do not become their authority. Field Message Speed now controls a Unicode-safe typewriter reveal rate; confirm reveals unfinished text first and closes only after the message is complete.
+
+Custom control rebinding is not part of Config Runtime v1. `Input` still exposes raw physical key codes and many consumers reference those codes directly; a later controls pass should introduce named input actions first rather than making Config Runtime translate scattered key checks.
+
 ## SaveManager
 
 `SaveManager` owns serialization, migration, validation, and restoration of persistent game progress.

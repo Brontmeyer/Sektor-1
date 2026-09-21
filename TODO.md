@@ -94,7 +94,10 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Support four-direction spatial targeting across normal/back-attack/pincer layouts without wraparound
 - [x] Limit Pincer All targeting to one selected enemy flank at a time and allow left/right flank switching
 - [x] Implement Scan & Tactical Help v1 with battle-local per-enemy knowledge, H-toggle help, live HP/MP, and elemental Weak/Resist/Immune detail
-- [ ] Explore Game Options v1 for battle speed, battle/field message speed, configurable battle cursor memory, Magick ordering, and control rebinding architecture
+- [x] Implement Game Options / Config Foundation v1 with save-slot-independent persistence
+- [x] Add Battle Speed, Battle Message Speed, Field Message Speed, Battle Cursor Memory, and Magick Order runtime settings
+- [x] Add fullscreen Options scene and main-menu entry
+- [ ] Implement Custom Controls / named input-action mapping before exposing rebinding UI
 
 ---
 

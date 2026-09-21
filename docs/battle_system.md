@@ -131,7 +131,7 @@ Escape remains governed by the encounter's existing `canEscape` contract, but es
 
 Targeting is coordinated through `BattleTargetManager`.
 
-Target cancel is hierarchical. Backing out of Attack targeting returns to the main command list. Backing out of Skill or Magick targeting reopens the selector that launched targeting and preserves that selector's current cursor/viewport position. The selector is not globally memorized across separate command entries yet; configurable battle cursor memory remains future Options work.
+Target cancel is hierarchical. Backing out of Attack targeting returns to the main command list. Backing out of Skill or Magick targeting reopens the selector that launched targeting and always preserves that selector's current cursor/viewport position. Game Options / Config Foundation v1 separately controls **fresh** selector entry: `Initial` resets Skills/Magick/Item lists to the first entry, while `Memory` preserves the selector's last valid cursor within the current battle. Hierarchical cancel restoration is not disabled by the global preference.
 
 The battle system currently supports concepts including:
 
@@ -495,6 +495,12 @@ The current physical attack path checks whether the target is defending and redu
 As battle mechanics expand, any broader Defend interactions should be documented here and implemented in the appropriate shared battle layer.
 
 ---
+
+# ⚙️ Battle Configuration Hooks
+
+Config Runtime v1 keeps player pacing preferences outside battle rules. **Battle Speed** scales battle-local elapsed time used by battler state timers, action phases, animation updates, visual movement, battle effects, popups, and enemy-turn delay. It does not change formulas, turn eligibility, Haste/Slow slot scheduling, or player input polling. **Battle Message Speed** uses a separate clock for transient action/state banners so banner readability can be tuned independently from animation pacing.
+
+Battle selector cursor memory is also configuration-driven. Fresh Skills/Magick/Item entry can reset to the first entry or preserve the last valid index, while target-cancel navigation always returns to the originating selector position. Magick ordering is presentation-only and is shared by field and battle Magick windows.
 
 # 🧭 Battle Formations
 

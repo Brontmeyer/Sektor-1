@@ -5,6 +5,7 @@ async function startGame() {
 
   Graphics.initialize();
   Input.initialize();
+  ConfigManager.initialize();
   SceneManager.initialize();
 
   // =====================================
