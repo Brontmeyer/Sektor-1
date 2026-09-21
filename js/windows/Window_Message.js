@@ -14,14 +14,17 @@ class Window_Message {
     this.y = Graphics.height - this.height - 40;
   }
 
-  update(deltaTime = 0) {
+  update(deltaTime = 0, { allowInput = true } = {}) {
     if (!this.visible) {
       return;
     }
 
     this.updateTextReveal(deltaTime);
 
-    if (Input.isTriggered("KeyE") || Input.isTriggered("Enter")) {
+    if (
+      allowInput &&
+      (Input.isTriggered("KeyE") || Input.isTriggered("Enter"))
+    ) {
       if (!this.isFullyRevealed()) {
         this.revealAll();
         return;

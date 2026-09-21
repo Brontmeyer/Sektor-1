@@ -10,6 +10,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ## Unreleased
 
+### Fixed
+
+- Fixed field choice prompts introduced by Config Runtime v1 so typewriter text continues revealing while `Window_Choice` owns confirm input
+- Prevented choice-owned E/Enter presses from also revealing or closing `Window_Message`, preserving one input owner per field-dialogue state
+- Added focused regression coverage for the Guard-style prompt flow and Scene_Map message/choice update ordering
+
 ### Added
 
 - Added Game Options / Config Foundation v1 with versioned save-slot-independent configuration persistence through `ConfigManager`

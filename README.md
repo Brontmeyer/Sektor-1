@@ -52,6 +52,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Enemy Formation Rows v1
 -   ✅ Scan & Tactical Help v1
 -   ✅ Game Options / Config Foundation v1
+-   ✅ Field Choice Prompt Reveal hotfix
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
 

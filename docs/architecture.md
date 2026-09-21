@@ -355,7 +355,7 @@ Scene_Shop.js
 
 ## Scene_Map
 
-`Scene_Map` coordinates world exploration and map-facing gameplay.
+`Scene_Map` coordinates world exploration and map-facing gameplay. During field choices it continues advancing `Window_Message` reveal timing while disabling message-owned confirm handling, leaving `Window_Choice` as the sole owner of E/Enter until the selection resolves.
 
 ## Scene_Menu
 

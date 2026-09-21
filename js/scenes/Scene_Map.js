@@ -66,9 +66,9 @@ class Scene_Map extends Scene_Base {
       this.choiceWindow.isOpen() ||
       this.interpreter.isRunning();
 
-    if (!this.choiceWindow.isOpen()) {
-      this.messageWindow.update(deltaTime);
-    }
+    this.messageWindow.update(deltaTime, {
+      allowInput: !this.choiceWindow.isOpen(),
+    });
 
     this.choiceWindow.update();
 

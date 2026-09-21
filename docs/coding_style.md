@@ -250,6 +250,8 @@ Windows          present choices and UI state
 Renderers        draw results
 ```
 
+When two field windows are visible at once, keep input ownership explicit. A choice prompt may continue presentation updates such as typewriter reveal, but the active choice window should remain the sole consumer of confirm/navigation input until it resolves.
+
 Presentation code should not quietly become gameplay authority.
 
 A window may display whether a command is available, but the underlying game system should determine whether it is actually legal.
