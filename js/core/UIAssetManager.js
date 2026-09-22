@@ -16,7 +16,7 @@ class UIAssetManager {
     // Consumers request semantic roles. Actual source filenames stay here so
     // the visual skin can be swapped later without editing gameplay windows.
     battlePanel: "js/sprites/ui/adventure/panel_grey_blue.png",
-    menuPanel: "js/sprites/ui/adventure/panel_grey_dark.png",
+    menuPanel: "js/sprites/ui/adventure/panel_grey_blue.png",
     accentPanel: "js/sprites/ui/adventure/panel_grey_bolts_blue.png",
     selectionPanel: "js/sprites/ui/adventure/button_grey.png",
     gaugeFrame: "js/sprites/ui/adventure/progress_transparent.png",

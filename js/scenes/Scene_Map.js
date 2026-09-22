@@ -56,7 +56,14 @@ class Scene_Map extends Scene_Base {
       !this.choiceWindow.isOpen() &&
       !this.interpreter.isRunning()
     ) {
-      SceneManager.push(Scene_Menu, this.map?.name || "Unknown Location");
+      SceneManager.push(
+        Scene_Menu,
+        this.map?.name || "Unknown Location",
+        {
+          debugMode: DatabaseManager.system?.debugMode === true,
+          mapAccess: this.map?.menuAccess || {},
+        },
+      );
 
       return;
     }

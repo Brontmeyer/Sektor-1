@@ -186,6 +186,10 @@ Pass 56 is post-audit presentation refinement and does not reopen a historical f
 
 Pass 57 is post-audit menu presentation/ownership work and does not reopen a historical finding. `MainMenuLayout` owns main-menu regions, `Window_MainMenuParty` reads the active four through `Game_Party.battleMembers()`, and `Window_MenuCommand` exposes the approved singular destinations without taking ownership of Order, Valor progression, or ROSTER mutation. Current map location is passed from `Scene_Map`; persistent play time is intentionally not fabricated. No persistent state changes, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Main Menu Refinement & Command Availability Foundation v1
+
+Pass 58 is post-audit menu refinement/foundation work and does not reopen a historical finding. `MenuAccessPolicy` owns menu command visibility/enabled state, validated map `menuAccess.allowSave` / `allowLoad` flags provide future area restrictions, and debug mode deliberately preserves unrestricted Save/Load testing. `Window_MenuCommand` only presents policy state. Load is restored to the menu, RUNES is the player-facing currency label, and party-card/palette changes are presentation-only. No persistent story-unlock state or Config schema change is introduced, so Save Runtime remains v9 and Config Runtime remains v2.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

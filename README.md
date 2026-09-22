@@ -30,7 +30,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ 25 initial status effects
 -   ✅ Reusable status families and duration models
 -   ✅ Countdown and derived status architecture
--   ✅ Battle EXP / Gil / item-drop rewards
+-   ✅ Battle EXP / Runes / item-drop rewards
 -   ✅ Battle Essence Resonance progression
 -   ✅ Repository-audit closure
 -   ✅ Magick Terminology Migration v1
@@ -104,7 +104,7 @@ Current battle features include:
 -   ✅ Skills Runtime v1 foundation
 -   ✅ Contextual controls, transient action/state banners, floating combat feedback, four-actor HUD geometry, and optional tactical enemy help
 -   ✅ Idempotent battle resolution and structured rewards
--   ✅ Gil, enemy item drops, and Essence Resonance rewards
+-   ✅ Runes, enemy item drops, and Essence Resonance rewards
 
 Systems currently being expanded include:
 
@@ -131,7 +131,7 @@ Battle HUD & Message Layout v1 established reusable four-row geometry. Battle Pr
 
 Config Runtime v2 stores player preferences independently from Save Runtime v9, so loading a different game slot does not change pacing, presentation, ordering, or keyboard bindings. Current settings are **Battle Speed**, **Battle Message Speed**, **Field Message Speed**, **Battle Cursor** (Initial / Memory), and **Magick Order** (Default / Alphabetical / Element), plus a dedicated **Controls** screen. Controls use named actions with two binding slots each; required navigation/confirm/back actions cannot be cleared completely, context-sensitive actions may intentionally share a key, and Reset Controls restores the canonical defaults. Existing Config Runtime v1 preferences migrate automatically.
 
-The main menu now presents the active four party members through a dedicated information layout with Level, live HP/MP/Valor, current Status, and Next Level EXP, plus compact Gil and location panels. The command stack follows the approved singular player-facing vocabulary: **Item / Magick / Skill / Essence / Equip / Status / Order / Valor / Option / ROSTER / Save / Exit**. There is no redundant game-title or COMMANDS heading. Order, dedicated multi-level Valor progression, and **ROSTER (Remote Organization & Strategic Team Evaluation Registry)** are intentionally reserved destinations until their focused runtimes are implemented. Persistent play time is not yet canonical, so the TIME field remains a visible placeholder rather than presenting session time as save data.
+The main menu presents the active four party members through a dedicated information layout with Level, live HP/MP/Valor, current Status, and Next Level EXP, plus compact **RUNES**, TIME, and location panels. Pass 58 rebalances portrait/identity/stat spacing and shifts the default menu treatment toward a richer blue-violet tone while keeping the skin swappable. The command stack follows the approved singular player-facing vocabulary: **Item / Magick / Skill / Essence / Equip / Status / Order / Valor / Option / ROSTER / Save / Load / Exit**. There is no redundant game-title or COMMANDS heading. `MenuAccessPolicy` now gives each command independent visible/enabled state for future story unlocks, while maps may optionally define `menuAccess.allowSave` / `menuAccess.allowLoad`; debug mode overrides those area restrictions so development remains permissive. Order, dedicated multi-level Valor progression, and **ROSTER (Remote Organization & Strategic Team Evaluation Registry)** remain reserved destinations until their focused runtimes are implemented. Persistent play time is not yet canonical, so the TIME field remains a visible placeholder rather than presenting session time as save data.
 
 ------------------------------------------------------------------------
 
@@ -214,11 +214,11 @@ The current Save Runtime v9 persists both equipped accessory IDs and party acces
 
 # 💰 Shops & Economy
 
-Shops & Gil Spending v1 turns existing Gil rewards and merchandise price metadata into a playable purchase loop. Map events can open a merchant with a validated list of Items, Weapons, Armor, and Accessories. The merchant list identifies only merchandise type and ID; purchase prices always come from the canonical database record so map content cannot drift away from item/equipment pricing.
+Shops & Runes Spending v1 turns existing currency rewards and merchandise price metadata into a playable purchase loop. Map events can open a merchant with a validated list of Items, Weapons, Armor, and Accessories. The merchant list identifies only merchandise type and ID; purchase prices always come from the canonical database record so map content cannot drift away from item/equipment pricing.
 
-`Game_Party` owns the purchase transaction. A successful purchase spends the exact canonical Gil price and adds the merchandise through the same inventory APIs used by rewards and equipment. Failed purchases, including insufficient funds, leave both Gil and inventory unchanged.
+`Game_Party` owns the purchase transaction. A successful purchase spends the exact canonical price and adds the merchandise through the same inventory APIs used by rewards and equipment. Failed purchases, including insufficient funds, leave both currency and inventory unchanged.
 
-The first shop version buys one unit at a time and intentionally does not define selling or resale values yet. Those rules remain a separate economy-design decision. Map001 includes a test merchant with all current merchandise categories. Save Runtime remains v6 because Shops consume already-persistent Gil and inventory state rather than introducing new save data.
+The first shop version buys one unit at a time and intentionally does not define selling or resale values yet. Those rules remain a separate economy-design decision. Map001 includes a test merchant with all current merchandise categories. Save Runtime remains v6 because Shops consume already-persistent currency and inventory state rather than introducing new save data. The underlying runtime API retains its historical `gil` naming for compatibility, while player-facing UI says **Runes**.
 
 ------------------------------------------------------------------------
 

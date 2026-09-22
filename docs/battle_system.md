@@ -571,7 +571,7 @@ This includes active party members who were defeated when victory was earned. Re
 Defeat and escape award no battle rewards. Victory resolves every reward exactly once through the same idempotent finalization path:
 
 - **EXP:** total `expReward` from every defeated enemy; awarded in full to every active battle-party participant, including defeated participants.
-- **Gil:** total `gilReward` from defeated enemies, except enemies removed by Banish contribute no Gil. The result is added to persistent `Game_Party` currency state.
+- **Runes:** total `gilReward` from defeated enemies, except enemies removed by Banish contribute no currency. The result is added to persistent `Game_Party` currency state; `gilReward` remains the legacy internal data key.
 - **Item drops:** each defeated enemy resolves its validated `dropTable` independently. Successful rolls are aggregated by item ID and awarded through `Game_Party.gainItem()`.
 - **Essence Resonance:** total `resonanceReward` from defeated enemies. Every equipped Essence on each **surviving active battle-party participant** receives the full encounter Resonance amount. Defeated participants and reserve roster members receive none.
 
@@ -583,7 +583,7 @@ On victory, `Scene_Battle` finalizes the authoritative result before leaving the
 
 The initial results screen presents:
 
-- Total EXP, Gil, and encounter Resonance
+- Total EXP, Runes, and encounter Resonance
 - Aggregated item drops
 - Per-participant EXP
 - Character level-up transitions

@@ -43,13 +43,13 @@ Completed engine foundations include:
 - Save / Load with version-aware multi-actor Save Runtime v9, persistent learned Skills / Valor / Gil / accessory equipment / slot-aware Essence state, and v1-v8 migration including starter-Valor-Art content migration
 - Equipment system with Weapon, Armor, and Accessory slots
 - Inventory system
-- Shops & Gil Spending v1 with canonical-price purchases for items and conventional equipment
+- Shops & Runes Spending v1 with canonical-price purchases for items and conventional equipment
 - Character Menu Navigation Consistency v1 with shared party-member switching across Skills, Magick, Status, Equipment, and Essence
 - Skills UI Integration Cleanup v1 with first-class battle Skills rendering and bounded shared ability-description layout
 - Battle Presentation & Feedback v1 with encounter/active-turn context, state-sensitive controls, bounded recent battle messages, and target-selection command suppression
 - Battle Formation & Party Layout v1 with four-actor vertical lanes, back-attack facing geometry, and left/right pincer flanks
 - Battle Command Navigation & Side Actions v1 with a four-command core list, hidden-on-demand Escape/Defend side panels, and one-level target-cancel restoration
-- Battle Results Screen v1 for visible EXP, Gil, drop, level-up, and Essence progression feedback
+- Battle Results Screen v1 for visible EXP, Runes, drop, level-up, and Essence progression feedback
 
 Completed canonical battle-data foundations include:
 
@@ -517,6 +517,7 @@ Battle-presentation directions and current status:
 - ✅ UI Style Integration Prototype v1 with soft-framed semantic battle/menu panels, selection surfaces, and gauge framing
 - ✅ Menu Window Softening & Frame Polish v1 with centralized rounded clipping, depth/shadow, inset highlights, and softened gauges/selections
 - ✅ Main Menu Information & Command Layout v1 with four active-party information cards, singular destination naming, live currency/location presentation, and reserved Order / Valor / ROSTER destinations
+- ✅ Main Menu Refinement & Command Availability Foundation v1 with restored Load, RUNES labeling, tighter party-card proportions, generic command state policy, and validated future Save/Load area gates
 
 ---
 
@@ -526,4 +527,4 @@ Built with ❤️ by **Sarah & Tyler**
 
 Custom Controls / Input Mapping v1, Battle UI / Presentation Polish v1, Asset / UI Skinning Foundation v1, UI Style Integration Prototype v1, and Menu Window Softening & Frame Polish v1 are complete. Runtime input resolves named actions through Config Runtime v2, player-facing battle hints follow remapped bindings, and reusable presentation images resolve through one named asset boundary with safe fallbacks. The Adventure UI prototype now tests a softer framed JRPG direction across battle HUD/commands/selectors plus Options, Controls, and the main menu, while the centralized panel renderer supplies rounded silhouettes and restrained depth without hard-coding frame geometry into consumers. Save Runtime remains v9 because these are configuration and presentation concerns rather than game progress.
 
-Main Menu Information & Command Layout v1 now supplies the richer four-member menu structure on top of the softened prototype. Future passes can replace portrait placeholders with canonical art, add persistent play-time once that runtime exists, and implement the deliberately separate Order, multi-level Valor, and ROSTER mechanics. Battle backgrounds, icons, and battle VFX can continue independently without redesigning menu ownership first.
+Main Menu Information & Command Layout v1 plus Main Menu Refinement & Command Availability Foundation v1 now supply the richer four-member menu structure, restored Save/Load command pair, RUNES presentation, and a generic availability policy for future story/map gating. Future passes can replace portrait placeholders with canonical art, add persistent play-time once that runtime exists, add four-corner Window Color configuration through Config Runtime, and implement the deliberately separate Order, multi-level Valor, and ROSTER mechanics. Battle backgrounds, icons, and battle VFX can continue independently without redesigning menu ownership first.

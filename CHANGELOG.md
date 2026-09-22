@@ -18,6 +18,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Main Menu Refinement & Command Availability Foundation v1 with restored Load, player-facing RUNES currency labeling across menu/shop/results presentation, rebalanced party-card spacing, and a richer blue-violet default menu palette
+- Added `MenuAccessPolicy` so menu destinations can be independently visible/enabled with contextual reasons, supporting future story unlocks such as ROSTER without hard-coding narrative checks into `Window_MenuCommand`
+- Added optional per-map `menuAccess.allowSave` / `menuAccess.allowLoad` contracts with database validation; debug mode deliberately overrides these restrictions so development testing can still Save/Load anywhere
+- Added disabled-command presentation and confirmation feedback while preserving normal navigation and keeping current planned Order / Valor / ROSTER destinations available during development
+- Added dedicated menu-command availability regression coverage plus map-access validation coverage
+
 - Added Main Menu Information & Command Layout v1 with four active-party information cards, singular command naming, utility/location panels, and a dedicated MAIN MENU heading
 - Added exact main-menu destinations for Item / Magick / Skill / Essence / Equip / Status / Order / Valor / Option / ROSTER / Save / Exit, with no extra COMMANDS or game-title banner
 - Added active-party HP/MP/Valor gauges, Level, Status, and Next Level EXP presentation using live actor state; portrait slots remain deliberate placeholders until character portrait art is selected

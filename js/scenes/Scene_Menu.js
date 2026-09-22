@@ -1,13 +1,17 @@
 "use strict";
 
 class Scene_Menu extends Scene_Base {
-  constructor(locationName = "") {
+  constructor(locationName = "", menuContext = {}) {
     super();
 
     this.layout = MainMenuLayout.calculate(Graphics.width, Graphics.height);
     this.locationName = locationName || "Unknown Location";
+    this.menuAccess = new MenuAccessPolicy(menuContext);
 
-    this.commandWindow = new Window_MenuCommand(this.layout.commands);
+    this.commandWindow = new Window_MenuCommand(
+      this.layout.commands,
+      this.menuAccess,
+    );
     this.partyWindow = new Window_MainMenuParty($gameParty, this.layout.party);
 
     const actor = $gameParty.leader();
@@ -122,6 +126,13 @@ class Scene_Menu extends Scene_Base {
     }
 
     const command = this.commandWindow.currentCommand();
+    const commandState = this.commandWindow.currentCommandState();
+
+    if (commandState.enabled === false) {
+      this.saveMessage = commandState.reason || `${command} is unavailable.`;
+      this.saveMessageTimer = 2;
+      return;
+    }
 
     switch (command) {
       case "Item":
@@ -156,6 +167,10 @@ class Scene_Menu extends Scene_Base {
         this.saveSlotsWindow.show("save");
         break;
 
+      case "Load":
+        this.saveSlotsWindow.show("load");
+        break;
+
       case "Exit":
         SceneManager.pop();
         break;
@@ -187,13 +202,13 @@ class Scene_Menu extends Scene_Base {
   }
 
   drawBackground(context) {
-    context.fillStyle = "#171d27";
+    context.fillStyle = "#10162a";
     context.fillRect(0, 0, Graphics.width, Graphics.height);
 
     const gradient = context.createLinearGradient(0, 0, Graphics.width, 0);
-    gradient.addColorStop(0, "rgba(74, 110, 166, 0.2)");
-    gradient.addColorStop(0.5, "rgba(23, 29, 39, 0)");
-    gradient.addColorStop(1, "rgba(43, 76, 130, 0.14)");
+    gradient.addColorStop(0, "rgba(74, 92, 190, 0.24)");
+    gradient.addColorStop(0.5, "rgba(16, 22, 42, 0)");
+    gradient.addColorStop(1, "rgba(82, 55, 156, 0.17)");
     context.fillStyle = gradient;
     context.fillRect(0, 0, Graphics.width, Graphics.height);
   }
@@ -211,9 +226,9 @@ class Scene_Menu extends Scene_Base {
         bounds.width,
         bounds.height,
         {
-          fallbackFill: "rgba(14, 19, 29, 0.94)",
-          fallbackStroke: "rgba(139, 174, 225, 0.72)",
-          innerStroke: "rgba(228, 238, 249, 0.15)",
+          fallbackFill: "rgba(12, 20, 48, 0.94)",
+          fallbackStroke: "rgba(145, 162, 238, 0.74)",
+          innerStroke: "rgba(232, 234, 255, 0.16)",
           assetAlpha: 0.5,
           lineWidth: 1.5,
           sourceMargin: 12,
@@ -223,10 +238,10 @@ class Scene_Menu extends Scene_Base {
       );
     }
 
-    context.fillStyle = options.fallbackFill || "rgba(14, 19, 29, 0.94)";
+    context.fillStyle = options.fallbackFill || "rgba(12, 20, 48, 0.94)";
     context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
     context.strokeStyle =
-      options.fallbackStroke || "rgba(139, 174, 225, 0.72)";
+      options.fallbackStroke || "rgba(145, 162, 238, 0.74)";
     context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
     return false;
   }
@@ -261,7 +276,7 @@ class Scene_Menu extends Scene_Base {
     context.textBaseline = "middle";
     context.textAlign = "left";
     context.fillStyle = "#cbd8e7";
-    context.fillText("GIL", utilityX, this.layout.utility.y + 23);
+    context.fillText("RUNES", utilityX, this.layout.utility.y + 23);
     context.fillText("TIME", utilityX, this.layout.utility.y + 49);
 
     context.textAlign = "right";

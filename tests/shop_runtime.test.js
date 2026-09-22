@@ -204,7 +204,7 @@ function testShopWindowIsScrollablePresentationOnly() {
     true,
   );
   assert.equal(
-    calls.some((call) => call[0] === "fillText" && call[1] === "Gil: 100"),
+    calls.some((call) => call[0] === "fillText" && call[1] === "Runes: 100"),
     true,
   );
   assert.equal(party.gil(), 100, "drawing must not spend Gil");
@@ -282,13 +282,13 @@ function testShopSceneOwnsPurchaseRequestsButPartyOwnsMutation() {
 
   assert.equal(party.gil(), 0);
   assert.equal(party.itemCount(1), 1);
-  assert.equal(scene.shopWindow.message, "Purchased Potion for 50 Gil.");
+  assert.equal(scene.shopWindow.message, "Purchased Potion for 50 Runes.");
 
   scene.shopWindow.result = { action: "purchase", type: "item", id: 1 };
   scene.update();
   assert.equal(party.gil(), 0);
   assert.equal(party.itemCount(1), 1);
-  assert.equal(scene.shopWindow.message, "Not enough Gil. Need 50, have 0.");
+  assert.equal(scene.shopWindow.message, "Not enough Runes. Need 50, have 0.");
 
   scene.shopWindow.result = { action: "cancel" };
   scene.update();

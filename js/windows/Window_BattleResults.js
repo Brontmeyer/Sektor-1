@@ -184,7 +184,7 @@ class Window_BattleResults {
 
     const summaryEntries = [
       ["EXP", Number(rewards.exp) || 0],
-      ["GIL", Number(rewards.currency) || 0],
+      ["RUNES", Number(rewards.currency) || 0],
       ["RESONANCE", Number(rewards.resonance) || 0],
     ];
     const summaryGap = 16;

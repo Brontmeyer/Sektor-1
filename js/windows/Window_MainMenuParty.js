@@ -36,9 +36,9 @@ class Window_MainMenuParty {
         width,
         height,
         {
-          fallbackFill: "rgba(14, 20, 32, 0.92)",
-          fallbackStroke: "rgba(129, 166, 222, 0.72)",
-          innerStroke: "rgba(222, 235, 248, 0.14)",
+          fallbackFill: "rgba(12, 21, 50, 0.92)",
+          fallbackStroke: "rgba(142, 163, 238, 0.74)",
+          innerStroke: "rgba(232, 234, 255, 0.15)",
           lineWidth: 1.5,
           assetAlpha: 0.52,
           sourceMargin: 12,
@@ -48,7 +48,7 @@ class Window_MainMenuParty {
       );
     }
 
-    context.fillStyle = options.fallbackFill || "rgba(14, 20, 32, 0.92)";
+    context.fillStyle = options.fallbackFill || "rgba(12, 21, 50, 0.92)";
     context.fillRect(x, y, width, height);
     context.strokeStyle =
       options.fallbackStroke || "rgba(129, 166, 222, 0.72)";
@@ -111,8 +111,8 @@ class Window_MainMenuParty {
       shadow: false,
     });
 
-    const padding = 14;
-    const portraitSize = Math.max(58, Math.min(86, height - padding * 2));
+    const padding = 12;
+    const portraitSize = Math.max(72, Math.min(104, height - padding * 2));
     const portraitX = x + padding;
     const portraitY = y + (height - portraitSize) / 2;
     this.drawPortraitPlaceholder(
@@ -123,12 +123,21 @@ class Window_MainMenuParty {
       portraitSize,
     );
 
-    const infoX = portraitX + portraitSize + 18;
-    const infoWidth = Math.max(180, width - (infoX - x) - padding);
-    const statX = infoX + Math.max(180, Math.floor(infoWidth * 0.38));
-    const gaugeWidth = Math.max(74, Math.floor((infoWidth - (statX - infoX) - 18) / 3));
+    const infoX = portraitX + portraitSize + 16;
+    const infoWidth = Math.max(220, width - (infoX - x) - padding);
+    const identityWidth = Math.max(
+      150,
+      Math.min(195, Math.floor(infoWidth * 0.25)),
+    );
+    const statX = infoX + identityWidth;
     const gaugeGap = 10;
-    const topY = y + 29;
+    const availableGaugeWidth = Math.max(
+      240,
+      infoWidth - identityWidth - gaugeGap * 2,
+    );
+    const gaugeWidth = Math.max(78, Math.floor(availableGaugeWidth / 3));
+    const identityCenterY = portraitY + portraitSize / 2;
+    const topY = identityCenterY - 29;
 
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
@@ -156,7 +165,7 @@ class Window_MainMenuParty {
     context.fillStyle = "#eef4fb";
     context.fillText(expText, infoX + 82, topY + 52);
 
-    const gaugeY = topY + 20;
+    const gaugeY = identityCenterY - 7;
     const stats = [
       {
         label: "HP",

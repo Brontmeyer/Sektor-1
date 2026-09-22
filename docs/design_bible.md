@@ -298,9 +298,9 @@ Owned accessories live in party inventory, while the equipped accessory ID belon
 
 ---
 
-# 💰 Shops and Gil
+# 💰 Shops and Runes
 
-Gil is the conventional purchase currency. Battle rewards already feed persistent party Gil, and Shops & Gil Spending v1 lets map merchants exchange that Gil for Items, Weapons, Armor, and Accessories.
+**Runes** are the player-facing purchase currency. Battle rewards feed the existing persistent party currency runtime, and Shops & Runes Spending v1 lets map merchants exchange those Runes for Items, Weapons, Armor, and Accessories. The older `gil` method/field naming remains an internal compatibility detail until a deliberate runtime rename is worthwhile.
 
 Merchant event data chooses **what is offered**, not **what it costs**. Price authority stays on the canonical merchandise record in its database, preventing a Potion or Steel Sword from accidentally acquiring conflicting prices in different map events. A purchase is owned by `Game_Party` so spending and inventory gain succeed or fail together.
 
@@ -658,10 +658,13 @@ Built with ❤️ by **Sarah & Tyler**
 
 ## Main Menu Information Language
 
-The main menu uses the screen heading **MAIN MENU** rather than repeating the game title or adding a redundant COMMANDS label. Player-facing menu destination names are intentionally singular: **Item, Magick, Skill, Essence, Equip, Status, Order, Valor, Option, ROSTER, Save, Exit**. Subscreens should follow the same singular heading language (`ITEM`, `MAGICK`, `SKILL`, `ESSENCE`, `EQUIP`, `STATUS`, `OPTION`, and future equivalents).
+The main menu uses the screen heading **MAIN MENU** rather than repeating the game title or adding a redundant COMMANDS label. Player-facing menu destination names are intentionally singular: **Item, Magick, Skill, Essence, Equip, Status, Order, Valor, Option, ROSTER, Save, Load, Exit**. Subscreens should follow the same singular heading language (`ITEM`, `MAGICK`, `SKILL`, `ESSENCE`, `EQUIP`, `STATUS`, `OPTION`, and future equivalents).
 
-The left side represents the currently active four-member party, not the full character roster. Its information hierarchy is portrait, name/Level, HP/MP/Valor, Status, and Next Level EXP. Character portraits may use placeholders until canonical portrait art is deliberately selected. The right side owns commands, followed by compact currency/time and location panels. TIME must not fake persistent play time from wall-clock/session timing; it remains unresolved until a canonical save-aware timer exists.
+The left side represents the currently active four-member party, not the full character roster. Its information hierarchy is portrait, name/Level, HP/MP/Valor, Status, and Next Level EXP. Character portraits may use placeholders until canonical portrait art is deliberately selected. Party-card proportions should use the available width rather than leaving an oversized dead strip between identity information and gauges. The right side owns commands, followed by compact **RUNES**/time and location panels. RUNES is the player-facing currency label even while existing internal economy APIs retain their older generic/Gil naming. TIME must not fake persistent play time from wall-clock/session timing; it remains unresolved until a canonical save-aware timer exists.
 
 **Order** and **ROSTER** are deliberately different concepts. Order will arrange active members (positions 1-4, with front/back rows only after player-row mechanics exist). **ROSTER** means **Remote Organization & Strategic Team Evaluation Registry** and will own active/reserve party switching when the roster grows beyond four.
 
 **Skill** is the player-facing home for ordinary non-Magick techniques such as Scan and future physical/technical/support abilities. **Valor** is intended to become its own multi-level progression/menu concept with multiple Arts. The existing Valor-Art implementation in the Skills runtime is reusable engine groundwork, not a requirement that Valor remain visually nested under Skill forever.
+**Menu availability** is a gameplay/presentation contract, not a reason for every command to exist from the beginning. A destination may be hidden until learned, visible-but-disabled with an explanation, or enabled normally. ROSTER is a clear future example of a learned system. Save and Load are intended to become area-sensitive through map contracts; development/debug mode may deliberately bypass those restrictions for testing.
+
+The current richer blue-violet menu color remains a default prototype rather than final player identity. A future **Window Color** option should allow four-corner color selection in the spirit of classic JRPG window customization, persist through Config Runtime, and flow through shared UI rendering so the player can recolor compatible windows consistently.

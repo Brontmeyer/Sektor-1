@@ -71,7 +71,7 @@ Completed systems and design rules should be documented rather than duplicated h
 ## Battle Presentation
 
 - [x] Implement Battle Results Screen v1
-- [x] Present EXP, Gil, item drops, level-ups, Essence Resonance, awakened Magick abilities, and Mastery Ready transitions
+- [x] Present EXP, Runes, item drops, level-ups, Essence Resonance, awakened Magick abilities, and Mastery Ready transitions
 - [x] Implement Battle Presentation & Feedback v1
 - [x] Present encounter name and active party battler during player-command flow
 - [x] Replace permanent test-battle footer copy with context-sensitive command/selection/target/outcome hints
@@ -103,7 +103,9 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Apply UI Style Integration Prototype v1 selectively to battle/menu windows with semantic asset roles and vector fallbacks
 - [x] Apply Menu Window Softening & Frame Polish v1 through centralized rounded clipping, inset framing, shadows, and softened gauge/selection silhouettes
 - [ ] Continue final UI skin curation after hands-on visual review; keep all art swappable through `UIAssetManager`
+- [ ] Add four-corner Window Color customization under Option/Config, persisted in Config Runtime and applied through shared UI rendering rather than per-window colors
 - [x] Implement Main Menu Information & Command Layout v1 with four active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels
+- [x] Implement Main Menu Refinement & Command Availability Foundation v1 with restored Load, RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and future map-based Save/Load restrictions
 - [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
 - [ ] Add canonical persistent play-time tracking before replacing the main menu TIME placeholder
 - [ ] Implement Order as active-party position management; add front/back row choice only when player-row mechanics are deliberately implemented
@@ -115,9 +117,9 @@ Completed systems and design rules should be documented rather than duplicated h
 
 # 💰 Economy
 
-- [x] Persistent Gil rewards
+- [x] Persistent Runes rewards (legacy internal `gil` runtime naming retained)
 - [x] Price metadata for items, weapons, armor, and accessories
-- [x] Shops / Gil Spending v1
+- [x] Shops / Runes Spending v1
 
 ---
 
@@ -234,7 +236,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Equipment system
 - [x] Accessories Equipment v1
 - [x] Inventory system
-- [x] Shops / Gil Spending v1
+- [x] Shops / Runes Spending v1
 - [x] Standardize left/right party-member navigation in Skills, Magick, Status, Equipment, and Essence menus
 - [x] Complete status runtime
 - [ ] Complete Essence runtime

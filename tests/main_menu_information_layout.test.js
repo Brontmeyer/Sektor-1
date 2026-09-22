@@ -99,6 +99,7 @@ function testCommandNamingContractAndNoCommandHeading() {
     "Option",
     "ROSTER",
     "Save",
+    "Load",
     "Exit",
   ]);
 
@@ -146,6 +147,33 @@ function testPartyWindowDrawsTheActiveFourWithRealStats() {
   assert.equal(text.includes("Next Level:"), true);
 }
 
+function testActorIdentityAndStatsUseTheCardWidthMoreEvenly() {
+  const { Window_MainMenuParty, calls } = loadMenuWindows();
+  const members = [
+    actor("Tyler", 21, 640, 750, 124, 145, 45, 100, 68),
+  ];
+  const party = { battleMembers: () => members };
+  const window = new Window_MainMenuParty(party, {
+    x: 24,
+    y: 82,
+    width: 900,
+    height: 614,
+  });
+
+  window.draw();
+  const textCalls = calls.filter((call) => call[0] === "fillText");
+  const nameCall = textCalls.find((call) => call[1] === "Tyler");
+  const hpCall = textCalls.find((call) => String(call[1]).includes("HP 640/750"));
+  const statusCall = textCalls.find((call) => call[1] === "Status:");
+  const nextLevelCall = textCalls.find((call) => call[1] === "Next Level:");
+
+  assert.notEqual(nameCall, undefined);
+  assert.notEqual(hpCall, undefined);
+  assert.equal(hpCall[2] - nameCall[2] <= 230, true);
+  assert.equal(statusCall[3] > nameCall[3], true);
+  assert.equal(nextLevelCall[3] > statusCall[3], true);
+}
+
 function testLayoutKeepsPartyAndUtilityAreasSeparate() {
   const { MainMenuLayout } = loadMenuWindows();
   const layout = MainMenuLayout.calculate(1280, 720);
@@ -179,9 +207,31 @@ function testSceneUsesMainMenuHeadingAndHonestPlaceholderDestinations() {
   assert.match(scene, /case "Order":/);
   assert.match(scene, /case "Valor":/);
   assert.match(scene, /case "ROSTER":/);
-  assert.equal(scene.includes('case "Load"'), false);
+  assert.match(scene, /case "Load":/);
   assert.match(scene, /return "--:--:--";/);
-  assert.match(map, /SceneManager\.push\(Scene_Menu, this\.map\?\.name/);
+  assert.match(scene, /fillText\("RUNES"/);
+  assert.equal(scene.includes('fillText("GIL"'), false);
+  assert.match(map, /SceneManager\.push\([\s\S]*Scene_Menu/);
+  assert.match(map, /mapAccess: this\.map\?\.menuAccess \|\| \{\}/);
+}
+
+function testPlayerFacingCurrencyUsesRunesAcrossCurrentUi() {
+  const sceneMenu = read("js/scenes/Scene_Menu.js");
+  const battleResults = read("js/windows/Window_BattleResults.js");
+  const shopWindow = read("js/windows/Window_Shop.js");
+  const shopScene = read("js/scenes/Scene_Shop.js");
+
+  assert.match(sceneMenu, /fillText\("RUNES"/);
+  assert.match(battleResults, /\["RUNES"/);
+  assert.match(shopWindow, /Runes:/);
+  assert.match(shopWindow, / Runes   Owned /);
+  assert.match(shopScene, /for \$\{purchase\.totalPrice\} Runes\./);
+  assert.match(shopScene, /Not enough Runes\./);
+
+  for (const source of [sceneMenu, battleResults, shopWindow, shopScene]) {
+    assert.equal(source.includes('"GIL"'), false);
+    assert.equal(source.includes(" Gil."), false);
+  }
 }
 
 function testSingularHeadingContractAndLoadOrder() {
@@ -212,8 +262,10 @@ function testSingularHeadingContractAndLoadOrder() {
 function run() {
   testCommandNamingContractAndNoCommandHeading();
   testPartyWindowDrawsTheActiveFourWithRealStats();
+  testActorIdentityAndStatsUseTheCardWidthMoreEvenly();
   testLayoutKeepsPartyAndUtilityAreasSeparate();
   testSceneUsesMainMenuHeadingAndHonestPlaceholderDestinations();
+  testPlayerFacingCurrencyUsesRunesAcrossCurrentUi();
   testSingularHeadingContractAndLoadOrder();
 
   console.log("Main menu information layout regression tests passed.");

@@ -68,7 +68,7 @@ function testSemanticManifestKeepsSourceFilenamesCentralized() {
   );
   assert.equal(
     manifest.menuPanel,
-    "js/sprites/ui/adventure/panel_grey_dark.png",
+    "js/sprites/ui/adventure/panel_grey_blue.png",
   );
   assert.equal(
     manifest.accentPanel,

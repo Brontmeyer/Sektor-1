@@ -34,14 +34,14 @@ class Scene_Shop extends Scene_Base {
 
     if (purchase.success) {
       this.shopWindow.setMessage(
-        `Purchased ${record?.name || "merchandise"} for ${purchase.totalPrice} Gil.`,
+        `Purchased ${record?.name || "merchandise"} for ${purchase.totalPrice} Runes.`,
       );
       return;
     }
 
     if (purchase.reason === "insufficientGil") {
       this.shopWindow.setMessage(
-        `Not enough Gil. Need ${purchase.requiredGil}, have ${purchase.gil}.`,
+        `Not enough Runes. Need ${purchase.requiredGil}, have ${purchase.gil}.`,
       );
       return;
     }

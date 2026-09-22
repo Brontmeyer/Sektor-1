@@ -429,6 +429,8 @@ These distinctions prevent tiny vocabulary differences from becoming very large 
 
 UI skinning must use semantic `UIAssetManager` roles rather than direct filenames in scenes, windows, or renderers. Asset-backed panels should preserve a vector fallback path, and cosmetic image availability must never become a prerequisite for navigation, battle rules, target resolution, or configuration state. Prefer reusable drawing helpers for nine-slice panels, rounded clipping, soft shadows/inset strokes, selection rows, and gauge frames instead of duplicating crop/stretch or corner math across consumers. Windows should request a semantic surface and let `UIAssetManager` decide the current frame silhouette.
 
+Menu command availability must remain separate from command drawing. Use `MenuAccessPolicy` (or a future owner feeding it state) for visible/enabled/reason decisions rather than embedding map IDs, story flags, or unlock checks inside `Window_MenuCommand`. Area Save/Load restrictions belong to validated map contracts; development overrides belong to the policy boundary, not individual save/load cases.
+
 ---
 
 # 💎 Essence Data Conventions

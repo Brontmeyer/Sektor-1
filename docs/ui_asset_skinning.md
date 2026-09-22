@@ -62,7 +62,7 @@ Semantic mappings currently are:
 
 - `battlePanel` -> `panel_grey_blue.png`
   - Primary battle HUD, battle command, and battle selector frame.
-- `menuPanel` -> `panel_grey_dark.png`
+- `menuPanel` -> `panel_grey_blue.png`
   - Subdued framing for Options, Controls, the main menu, and Tactical Help.
 - `accentPanel` -> `panel_grey_bolts_blue.png`
   - Reserved for small emphasized surfaces such as transient action/state banners and Escape/Defend side tabs.
@@ -94,3 +94,8 @@ The richer portrait-and-party-information main-menu layout discussed for later w
 The richer main menu remains a layout/data-presentation layer on top of the existing semantic skin. `MainMenuLayout` owns responsive regions, `Window_MainMenuParty` owns the active-four information cards, and `Window_MenuCommand` owns only command navigation. These consumers continue to request semantic panel/gauge presentation from `UIAssetManager`; portrait placeholders are intentionally not mapped to arbitrary source art yet.
 
 The main-menu command list is intentionally singular and does not display an extra COMMANDS heading or the game title. Future portrait art, Order, multi-level Valor, and ROSTER implementations must extend their proper data/runtime owners rather than putting progression or party-mutation rules inside the menu renderer.
+## Pass 58: menu palette refinement and future color ownership
+
+The main/menu semantic role now uses the blue Adventure panel rather than the darker grey panel, paired with a deeper blue-violet fallback/background treatment. This is a default prototype, not a final locked palette. Party-card spacing is also rebalanced so larger portrait slots, identity text, and HP/MP/Valor gauges use the horizontal card area more evenly.
+
+Future Window Color customization should not add per-window RGB constants. The intended direction is a four-corner configurable color model owned by Config Runtime and consumed through shared UI rendering. That later pass may tint/recolor semantic panel surfaces, but Pass 58 intentionally does not add an incomplete color editor.

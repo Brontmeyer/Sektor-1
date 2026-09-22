@@ -74,6 +74,31 @@ function testMapIdentityGeometryAndTransferContracts() {
   );
 }
 
+function testOptionalMenuAccessContractIsValidated() {
+  const DatabaseValidator = loadValidator();
+  const database = databaseContext();
+  const allowed = clone(readData("Map001.json"));
+
+  allowed.menuAccess = { allowSave: false, allowLoad: true };
+  assert.equal(DatabaseValidator.validateMapData(allowed, database, 1), true);
+
+  const malformed = clone(readData("Map001.json"));
+  malformed.menuAccess = {
+    allowSave: "sometimes",
+    allowLoad: false,
+    mysteryRule: true,
+  };
+
+  assert.throws(
+    () => DatabaseValidator.validateMapData(malformed, database, 1),
+    (error) => {
+      assert.match(error.message, /unsupported property "mysteryRule"/);
+      assert.match(error.message, /menuAccess\.allowSave must be true or false/);
+      return true;
+    },
+  );
+}
+
 function testNestedEventContractsRejectMalformedCommands() {
   const DatabaseValidator = loadValidator();
   const database = databaseContext();
@@ -302,6 +327,7 @@ function testItemGainNormalizesQuantitiesAndRejectsInvalidInput() {
 async function run() {
   testCurrentMapsPassValidation();
   testMapIdentityGeometryAndTransferContracts();
+  testOptionalMenuAccessContractIsValidated();
   testNestedEventContractsRejectMalformedCommands();
   testEventConditionsAndDuplicateIdsAreValidated();
   testLegacyDirectEventCommandsRemainSupported();

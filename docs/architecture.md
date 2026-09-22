@@ -153,7 +153,7 @@ All indexed database accessors share the same null-safe record helper. Name help
 
 ## DatabaseValidator
 
-`DatabaseValidator` protects the engine from malformed or inconsistent loaded data.
+`DatabaseValidator` protects the engine from malformed or inconsistent loaded data. Map contracts may optionally include `menuAccess` with boolean `allowSave` / `allowLoad` flags; unsupported menu-access keys are rejected before runtime use.
 
 The current validator establishes field-level contracts for runtime-active actor and enemy combat data, actor starter Skill references, enemy EXP/Gil/Resonance/drop rewards, battle-sprite metadata, item/weapon/armor/accessory schemas, Magick targeting/effect/combat metadata, Skills metadata for physical damage, percentage healing, status application, explicit Valor gain, battle-local Scan analysis, targeting/scope, and Valor-Art classification, the canonical nested status schema, encounters, Essence progression/ability/mastery definitions, and on-demand map/event data. Essence progression ordering and database references are validated before `Game_Essence` can consume them. Map validation recursively checks event pages and supported interpreter commands before world runtime objects are constructed.
 
@@ -359,7 +359,7 @@ Scene_Shop.js
 
 ## Scene_Menu
 
-`Scene_Menu` coordinates the main menu experience and its windows. Main Menu Information & Command Layout v1 delegates geometry to `MainMenuLayout`, active-party presentation to `Window_MainMenuParty`, and command selection to `Window_MenuCommand`. The main party panel intentionally reads `Game_Party.battleMembers()` rather than the full roster so future ROSTER changes can alter the active four without rewriting presentation. `Scene_Map` passes its current map name into the menu for location display. Character-specific field menus continue to receive `Game_Party` rather than a fixed leader reference so they can resolve and switch their own current actor through the shared navigation helper. Order, dedicated multi-level Valor progression, and ROSTER switching remain separate future mechanics rather than hidden responsibilities of `Scene_Menu`.
+`Scene_Menu` coordinates the main menu experience and its windows. Main Menu Information & Command Layout v1 delegates geometry to `MainMenuLayout`, active-party presentation to `Window_MainMenuParty`, and command selection to `Window_MenuCommand`. The main party panel intentionally reads `Game_Party.battleMembers()` rather than the full roster so future ROSTER changes can alter the active four without rewriting presentation. Main Menu Refinement & Command Availability Foundation v1 adds `MenuAccessPolicy` as the authority for command visibility/enabled state. `Window_MenuCommand` only presents that state; it does not decide story unlocks or map rules. `Scene_Map` passes its current map name plus optional map `menuAccess` into the menu. Map data may define `allowSave` / `allowLoad`; debug mode overrides those restrictions for development testing. Future story systems can supply command-state overrides (for example hiding ROSTER until learned) without hard-coding narrative conditions into the menu window. Character-specific field menus continue to receive `Game_Party` rather than a fixed leader reference so they can resolve and switch their own current actor through the shared navigation helper. Order, dedicated multi-level Valor progression, and ROSTER switching remain separate future mechanics rather than hidden responsibilities of `Scene_Menu`.
 
 ## Scene_Battle
 

@@ -146,7 +146,7 @@ class Window_Shop {
     context.font = "20px sans-serif";
     context.textAlign = "right";
     context.fillText(
-      `Gil: ${$gameParty?.gil?.() ?? 0}`,
+      `Runes: ${$gameParty?.gil?.() ?? 0}`,
       this.x + this.width - this.padding,
       this.y + 44,
     );
@@ -174,7 +174,7 @@ class Window_Shop {
       const prefix = i === this.index ? "▶ " : "  ";
       const category = this.typeLabel(entry.type);
       const leftText = `${prefix}[${category}] ${entry.name}`;
-      const rightText = `${entry.price} Gil   Owned ${entry.owned}`;
+      const rightText = `${entry.price} Runes   Owned ${entry.owned}`;
 
       context.fillText(leftText, this.x + this.padding, drawY);
       context.textAlign = "right";

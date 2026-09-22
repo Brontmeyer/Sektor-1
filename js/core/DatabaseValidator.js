@@ -239,6 +239,7 @@ class DatabaseValidator {
         "obstacles",
         "transfers",
         "events",
+        "menuAccess",
       ],
       errors,
     );
@@ -295,6 +296,28 @@ class DatabaseValidator {
       widthValid && heightValid,
       errors,
     );
+
+    if (mapData.menuAccess !== undefined) {
+      if (!this.isPlainObject(mapData.menuAccess)) {
+        errors.push("Map menuAccess must be an object when provided.");
+      } else {
+        this.validateKnownKeys(
+          "Map menuAccess",
+          mapData.menuAccess,
+          ["allowSave", "allowLoad"],
+          errors,
+        );
+
+        for (const key of ["allowSave", "allowLoad"]) {
+          if (
+            mapData.menuAccess[key] !== undefined &&
+            typeof mapData.menuAccess[key] !== "boolean"
+          ) {
+            errors.push(`Map menuAccess.${key} must be true or false.`);
+          }
+        }
+      }
+    }
 
     if (mapData.transfers !== undefined && !Array.isArray(mapData.transfers)) {
       errors.push("Map transfers must be an array when provided.");
