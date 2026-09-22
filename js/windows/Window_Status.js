@@ -83,7 +83,7 @@ class Window_Status {
 
     this.actorNavigation.drawHeader(
       context,
-      "Status",
+      "STATUS",
       this.x,
       this.y,
       this.width,

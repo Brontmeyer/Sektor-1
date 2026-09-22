@@ -182,6 +182,10 @@ Pass 55 is post-audit presentation work and does not reopen a historical finding
 
 Pass 56 is post-audit presentation refinement and does not reopen a historical finding. Rounded clipping, soft panel depth, inset highlights, selection silhouettes, and gauge capsules are centralized in `UIAssetManager`; battle/menu consumers continue to request semantic roles and retain safe fallbacks. No gameplay, targeting, input, configuration, or persistent state changes, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Main Menu Information & Command Layout v1
+
+Pass 57 is post-audit menu presentation/ownership work and does not reopen a historical finding. `MainMenuLayout` owns main-menu regions, `Window_MainMenuParty` reads the active four through `Game_Party.battleMembers()`, and `Window_MenuCommand` exposes the approved singular destinations without taking ownership of Order, Valor progression, or ROSTER mutation. Current map location is passed from `Scene_Map`; persistent play time is intentionally not fabricated. No persistent state changes, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

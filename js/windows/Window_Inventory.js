@@ -144,7 +144,7 @@ class Window_Inventory {
 
     context.fillStyle = "#ffffff";
     context.font = "28px sans-serif";
-    context.fillText("Items", this.x + this.padding, this.y + 42);
+    context.fillText("ITEM", this.x + this.padding, this.y + 42);
 
     // Divider line
 

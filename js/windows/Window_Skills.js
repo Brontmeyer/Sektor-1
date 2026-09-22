@@ -127,7 +127,7 @@ class Window_Skills {
 
     this.actorNavigation.drawHeader(
       context,
-      "Skills",
+      "SKILL",
       this.x,
       this.y,
       this.width,

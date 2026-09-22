@@ -164,7 +164,7 @@ class Window_Equipment {
 
     this.actorNavigation.drawHeader(
       context,
-      "Equipment",
+      "EQUIP",
       this.x,
       this.y,
       this.width,

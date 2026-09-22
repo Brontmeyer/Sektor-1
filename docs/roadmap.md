@@ -516,6 +516,7 @@ Battle-presentation directions and current status:
 - ✅ Asset / UI Skinning Foundation v1 with centralized asset loading, curated UI art, safe fallbacks, windowskin/icon primitives, and optional battler shadows
 - ✅ UI Style Integration Prototype v1 with soft-framed semantic battle/menu panels, selection surfaces, and gauge framing
 - ✅ Menu Window Softening & Frame Polish v1 with centralized rounded clipping, depth/shadow, inset highlights, and softened gauges/selections
+- ✅ Main Menu Information & Command Layout v1 with four active-party information cards, singular destination naming, live currency/location presentation, and reserved Order / Valor / ROSTER destinations
 
 ---
 
@@ -525,4 +526,4 @@ Built with ❤️ by **Sarah & Tyler**
 
 Custom Controls / Input Mapping v1, Battle UI / Presentation Polish v1, Asset / UI Skinning Foundation v1, UI Style Integration Prototype v1, and Menu Window Softening & Frame Polish v1 are complete. Runtime input resolves named actions through Config Runtime v2, player-facing battle hints follow remapped bindings, and reusable presentation images resolve through one named asset boundary with safe fallbacks. The Adventure UI prototype now tests a softer framed JRPG direction across battle HUD/commands/selectors plus Options, Controls, and the main menu, while the centralized panel renderer supplies rounded silhouettes and restrained depth without hard-coding frame geometry into consumers. Save Runtime remains v9 because these are configuration and presentation concerns rather than game progress.
 
-Future visual passes can evaluate the softened prototype in motion, swap any semantic role without architectural churn, then expand into a richer main-menu information layout (portraits, party detail, time/currency/location), battle backgrounds, icons, and battle VFX without redesigning HUD ownership or input-hint contracts first.
+Main Menu Information & Command Layout v1 now supplies the richer four-member menu structure on top of the softened prototype. Future passes can replace portrait placeholders with canonical art, add persistent play-time once that runtime exists, and implement the deliberately separate Order, multi-level Valor, and ROSTER mechanics. Battle backgrounds, icons, and battle VFX can continue independently without redesigning menu ownership first.

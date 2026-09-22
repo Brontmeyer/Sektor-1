@@ -228,7 +228,7 @@ class Window_Essence {
   drawHeader(context) {
     this.actorNavigation.drawHeader(
       context,
-      "Essences",
+      "ESSENCE",
       this.x,
       this.y,
       this.width,

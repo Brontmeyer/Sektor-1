@@ -333,7 +333,7 @@ function testFullscreenOptionsSceneDrawsAndReturnsToMenu() {
   const text = drawCalls
     .filter((call) => call[0] === "fillText")
     .map((call) => call[1]);
-  assert.equal(text.includes("OPTIONS"), true);
+  assert.equal(text.includes("OPTION"), true);
   assert.equal(text.some((value) => String(value).includes("Battle Speed")), true);
 
   triggered = new Set(["Escape"]);

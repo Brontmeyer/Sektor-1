@@ -35,7 +35,7 @@ class Scene_Options extends Scene_Base {
     context.font = "34px Arial";
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.fillText("OPTIONS", 70, 62);
+    context.fillText("OPTION", 70, 62);
 
     context.font = "15px Arial";
     context.fillStyle = "#b4bec8";

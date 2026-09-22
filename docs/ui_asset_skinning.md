@@ -88,3 +88,9 @@ The shared treatment now provides:
 These details remain manager-owned. Battle/menu windows do not call `roundRect()` or reproduce shadow/inset math themselves. The current values are prototype presentation choices and may be tuned or replaced after hands-on review without changing semantic roles or gameplay behavior.
 
 The richer portrait-and-party-information main-menu layout discussed for later work is deliberately deferred; Pass 56 changes frame language, not menu information architecture.
+
+## Main Menu Layout Boundary (Pass 57)
+
+The richer main menu remains a layout/data-presentation layer on top of the existing semantic skin. `MainMenuLayout` owns responsive regions, `Window_MainMenuParty` owns the active-four information cards, and `Window_MenuCommand` owns only command navigation. These consumers continue to request semantic panel/gauge presentation from `UIAssetManager`; portrait placeholders are intentionally not mapped to arbitrary source art yet.
+
+The main-menu command list is intentionally singular and does not display an extra COMMANDS heading or the game title. Future portrait art, Order, multi-level Valor, and ROSTER implementations must extend their proper data/runtime owners rather than putting progression or party-mutation rules inside the menu renderer.

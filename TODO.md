@@ -103,7 +103,12 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Apply UI Style Integration Prototype v1 selectively to battle/menu windows with semantic asset roles and vector fallbacks
 - [x] Apply Menu Window Softening & Frame Polish v1 through centralized rounded clipping, inset framing, shadows, and softened gauge/selection silhouettes
 - [ ] Continue final UI skin curation after hands-on visual review; keep all art swappable through `UIAssetManager`
-- [ ] Design Main Menu Information Layout v1 with portraits, richer party information, play time/currency, and location presentation without copying another game
+- [x] Implement Main Menu Information & Command Layout v1 with four active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels
+- [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
+- [ ] Add canonical persistent play-time tracking before replacing the main menu TIME placeholder
+- [ ] Implement Order as active-party position management; add front/back row choice only when player-row mechanics are deliberately implemented
+- [ ] Separate multi-level Valor progression / Valor Arts from the ordinary Skill menu/runtime without duplicating the action engine
+- [ ] Implement ROSTER (Remote Organization & Strategic Team Evaluation Registry) for active/reserve party switching once reserve characters exist
 - [x] Polish Tactical Help bar size/transparency during the battle UI presentation pass
 
 ---
@@ -167,7 +172,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Define additional Skill costs/resources beyond Valor when approved designs require them
 - [x] Expand Skills beyond physical-damage techniques with reusable percentage-heal and status-application effects required by Character Valor Arts v1
 - [x] Add enemy Skill actions through the shared Skills runtime with the first canonical enemy technique
-- [x] Define Valor Arts Runtime v1 within the Skills namespace
+- [x] Define Valor Arts Runtime v1 within the Skills namespace (legacy/current runtime foundation)
+- [ ] Refactor player-facing Valor progression into its dedicated menu/system while reusing the established Skill action engine where appropriate
 - [x] Design the first canonical character-specific Valor Arts
 - [ ] Design long-term Valor Art unlock/progression rules
 

@@ -655,3 +655,13 @@ If the answer is yes, we're probably somewhere interesting.
 ---
 
 Built with ❤️ by **Sarah & Tyler**
+
+## Main Menu Information Language
+
+The main menu uses the screen heading **MAIN MENU** rather than repeating the game title or adding a redundant COMMANDS label. Player-facing menu destination names are intentionally singular: **Item, Magick, Skill, Essence, Equip, Status, Order, Valor, Option, ROSTER, Save, Exit**. Subscreens should follow the same singular heading language (`ITEM`, `MAGICK`, `SKILL`, `ESSENCE`, `EQUIP`, `STATUS`, `OPTION`, and future equivalents).
+
+The left side represents the currently active four-member party, not the full character roster. Its information hierarchy is portrait, name/Level, HP/MP/Valor, Status, and Next Level EXP. Character portraits may use placeholders until canonical portrait art is deliberately selected. The right side owns commands, followed by compact currency/time and location panels. TIME must not fake persistent play time from wall-clock/session timing; it remains unresolved until a canonical save-aware timer exists.
+
+**Order** and **ROSTER** are deliberately different concepts. Order will arrange active members (positions 1-4, with front/back rows only after player-row mechanics exist). **ROSTER** means **Remote Organization & Strategic Team Evaluation Registry** and will own active/reserve party switching when the roster grows beyond four.
+
+**Skill** is the player-facing home for ordinary non-Magick techniques such as Scan and future physical/technical/support abilities. **Valor** is intended to become its own multi-level progression/menu concept with multiple Arts. The existing Valor-Art implementation in the Skills runtime is reusable engine groundwork, not a requirement that Valor remain visually nested under Skill forever.

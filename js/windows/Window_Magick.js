@@ -179,7 +179,7 @@ class Window_Magick {
 
     this.actorNavigation.drawHeader(
       context,
-      "Magick",
+      "MAGICK",
       this.x,
       this.y,
       this.width,

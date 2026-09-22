@@ -169,7 +169,7 @@ function testEssenceWindowUsesActorRulesAndPartySwitching() {
   assert.equal(window.actor(), first);
   window.draw();
   assert.equal(
-    drawCalls.some((call) => call[0] === "fillText" && call[1] === "Essences"),
+    drawCalls.some((call) => call[0] === "fillText" && call[1] === "ESSENCE"),
     true,
   );
 

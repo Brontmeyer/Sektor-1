@@ -18,6 +18,13 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Main Menu Information & Command Layout v1 with four active-party information cards, singular command naming, utility/location panels, and a dedicated MAIN MENU heading
+- Added exact main-menu destinations for Item / Magick / Skill / Essence / Equip / Status / Order / Valor / Option / ROSTER / Save / Exit, with no extra COMMANDS or game-title banner
+- Added active-party HP/MP/Valor gauges, Level, Status, and Next Level EXP presentation using live actor state; portrait slots remain deliberate placeholders until character portrait art is selected
+- Added current map-location handoff from `Scene_Map` into `Scene_Menu`, while leaving play-time visibly unresolved (`--:--:--`) until a canonical persistent timer exists
+- Added honest temporary feedback for planned Order, Valor, and ROSTER destinations without half-implementing those systems
+- Added dedicated Main Menu Information Layout regression coverage for the naming contract, four-member party display, layout separation, destination placeholders, singular screen headings, and script load order
+
 - Added Menu Window Softening & Frame Polish v1 through centralized rounded panel clipping, soft outer shadows, and inset highlight strokes in `UIAssetManager`
 - Softened battle/menu/accent panels without changing semantic asset roles or individual window ownership
 - Rounded selected-row asset clipping and HP/MP/Valor fallback fills so controls, selectors, and gauges share one cushioned visual language

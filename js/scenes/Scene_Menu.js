@@ -1,10 +1,14 @@
 "use strict";
 
 class Scene_Menu extends Scene_Base {
-  constructor() {
+  constructor(locationName = "") {
     super();
 
-    this.commandWindow = new Window_MenuCommand();
+    this.layout = MainMenuLayout.calculate(Graphics.width, Graphics.height);
+    this.locationName = locationName || "Unknown Location";
+
+    this.commandWindow = new Window_MenuCommand(this.layout.commands);
+    this.partyWindow = new Window_MainMenuParty($gameParty, this.layout.party);
 
     const actor = $gameParty.leader();
 
@@ -22,8 +26,6 @@ class Scene_Menu extends Scene_Base {
   }
 
   update(deltaTime) {
-    // SAVE MESSAGE TIMER
-
     if (this.saveMessageTimer > 0) {
       this.saveMessageTimer -= deltaTime;
 
@@ -32,13 +34,8 @@ class Scene_Menu extends Scene_Base {
       }
     }
 
-    // ===============================
-    // SAVE / LOAD SLOTS OPEN
-    // ===============================
-
     if (this.saveSlotsWindow.hasResult()) {
       const slotId = this.saveSlotsWindow.takeResult();
-
       const mode = this.saveSlotsWindow.mode;
 
       if (mode === "save") {
@@ -54,14 +51,12 @@ class Scene_Menu extends Scene_Base {
       } else if (mode === "load") {
         if (!SaveManager.exists(slotId)) {
           this.saveMessage = `Slot ${slotId} is empty.`;
-
           this.saveMessageTimer = 3;
         } else {
           SaveManager.load(slotId)
             .then((success) => {
               if (success) {
                 SceneManager.pop();
-
                 DebugManager.log(`Loaded from slot ${slotId}.`);
                 return;
               }
@@ -82,177 +77,228 @@ class Scene_Menu extends Scene_Base {
 
     if (this.saveSlotsWindow.isOpen()) {
       this.saveSlotsWindow.update();
-
       return;
     }
-
-    // =====================================
-    // INVENTORY OPEN
-    // =====================================
 
     if (this.inventoryWindow.isOpen()) {
       this.inventoryWindow.update();
-
       return;
     }
-
-    // ================================
-    // MAGIC WINDOW
-    // ================================
 
     if (this.magickWindow.isOpen()) {
       this.magickWindow.update();
-
       return;
     }
-
-    // ================================
-    // SKILLS WINDOW
-    // ================================
 
     if (this.skillsWindow.isOpen()) {
       this.skillsWindow.update();
       return;
     }
 
-    // =====================================
-    // ESSENCE OPEN
-    // =====================================
-
     if (this.essenceWindow.isOpen()) {
       this.essenceWindow.update();
-
       return;
     }
-
-    // =====================================
-    // STATUS OPEN
-    // =====================================
 
     if (this.statusWindow.isOpen()) {
       this.statusWindow.update();
-
       return;
     }
-
-    // =====================================
-    // EQUIPMENT OPEN
-    // =====================================
 
     if (this.equipmentWindow.isOpen()) {
       this.equipmentWindow.update();
-
       return;
     }
-
-    // =====================================
-    // CLOSE MAIN MENU
-    // =====================================
 
     if (Input.isActionTriggered("menu")) {
       SceneManager.pop();
-
       return;
     }
 
-    // =====================================
-    // UPDATE MENU COMMANDS
-    // =====================================
-
     this.commandWindow.update();
 
-    // =====================================
-    // SELECT MENU COMMAND
-    // =====================================
+    if (!Input.isActionTriggered("confirm")) {
+      return;
+    }
 
-    if (Input.isActionTriggered("confirm")) {
-      const command = this.commandWindow.currentCommand();
+    const command = this.commandWindow.currentCommand();
 
-      switch (command) {
-        case "Items":
-          this.inventoryWindow.show();
+    switch (command) {
+      case "Item":
+        this.inventoryWindow.show();
+        break;
 
-          break;
+      case "Magick":
+        this.magickWindow.show();
+        break;
 
-        case "Magick":
-          this.magickWindow.show();
+      case "Skill":
+        this.skillsWindow.show();
+        break;
 
-          break;
+      case "Essence":
+        this.essenceWindow.show();
+        break;
 
-        case "Skills":
-          this.skillsWindow.show();
+      case "Equip":
+        this.equipmentWindow.show();
+        break;
 
-          break;
+      case "Status":
+        this.statusWindow.show();
+        break;
 
-        case "Essence":
-          this.essenceWindow.show();
+      case "Option":
+        SceneManager.push(Scene_Options);
+        break;
 
-          break;
+      case "Save":
+        this.saveSlotsWindow.show("save");
+        break;
 
-        case "Status":
-          this.statusWindow.show();
+      case "Exit":
+        SceneManager.pop();
+        break;
 
-          break;
+      case "Order":
+      case "Valor":
+      case "ROSTER":
+        this.saveMessage = `${command} is planned for a focused pass.`;
+        this.saveMessageTimer = 2;
+        DebugManager.log(`${command} is planned but not implemented yet.`);
+        break;
 
-        case "Equipment":
-          this.equipmentWindow.show();
-
-          break;
-
-        case "Save":
-          this.saveSlotsWindow.show("save");
-
-          break;
-
-        case "Load":
-          this.saveSlotsWindow.show("load");
-
-          break;
-
-        case "Options":
-          SceneManager.push(Scene_Options);
-
-          break;
-
-        default:
-          DebugManager.log(`${command} is not implemented yet.`);
-
-          break;
-      }
+      default:
+        DebugManager.log(`${command} is not implemented yet.`);
+        break;
     }
   }
 
-  draw() {
-    const context = Graphics.context;
+  hasSubWindowOpen() {
+    return (
+      this.saveSlotsWindow.isOpen() ||
+      this.inventoryWindow.isOpen() ||
+      this.magickWindow.isOpen() ||
+      this.skillsWindow.isOpen() ||
+      this.essenceWindow.isOpen() ||
+      this.statusWindow.isOpen() ||
+      this.equipmentWindow.isOpen()
+    );
+  }
 
-    context.save();
-
-    // Menu background
-
-    context.fillStyle = "#20252b";
+  drawBackground(context) {
+    context.fillStyle = "#171d27";
     context.fillRect(0, 0, Graphics.width, Graphics.height);
 
     const gradient = context.createLinearGradient(0, 0, Graphics.width, 0);
-    gradient.addColorStop(0, "rgba(150, 171, 187, 0.12)");
-    gradient.addColorStop(0.5, "rgba(32, 37, 43, 0)");
-    gradient.addColorStop(1, "rgba(118, 139, 154, 0.08)");
+    gradient.addColorStop(0, "rgba(74, 110, 166, 0.2)");
+    gradient.addColorStop(0.5, "rgba(23, 29, 39, 0)");
+    gradient.addColorStop(1, "rgba(43, 76, 130, 0.14)");
     context.fillStyle = gradient;
     context.fillRect(0, 0, Graphics.width, Graphics.height);
+  }
 
-    // Game title
+  drawPanel(context, bounds, options = {}) {
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      return UIAssetManager.drawPanel(
+        context,
+        "menuPanel",
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height,
+        {
+          fallbackFill: "rgba(14, 19, 29, 0.94)",
+          fallbackStroke: "rgba(139, 174, 225, 0.72)",
+          innerStroke: "rgba(228, 238, 249, 0.15)",
+          assetAlpha: 0.5,
+          lineWidth: 1.5,
+          sourceMargin: 12,
+          destMargin: 12,
+          ...options,
+        },
+      );
+    }
 
-    context.fillStyle = "#f2f4f6";
-    context.font = "32px sans-serif";
+    context.fillStyle = options.fallbackFill || "rgba(14, 19, 29, 0.94)";
+    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    context.strokeStyle =
+      options.fallbackStroke || "rgba(139, 174, 225, 0.72)";
+    context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    return false;
+  }
+
+  drawMainHeader(context) {
+    this.drawPanel(context, this.layout.header, { assetAlpha: 0.48 });
+    context.fillStyle = "#f4f7fb";
+    context.font = "600 20px sans-serif";
     context.textAlign = "left";
+    context.textBaseline = "middle";
+    context.fillText(
+      "MAIN MENU",
+      this.layout.header.x + 20,
+      this.layout.header.y + this.layout.header.height / 2,
+    );
+  }
 
-    context.fillText(DatabaseManager.system.gameTitle || "Sektor 1", 60, 60);
+  formattedPlayTime() {
+    // A persistent play-time runtime does not exist yet. Do not fabricate one
+    // from wall-clock/session time and silently present it as save playtime.
+    return "--:--:--";
+  }
 
-    context.restore();
+  drawUtilityPanels(context) {
+    this.drawPanel(context, this.layout.utility, { assetAlpha: 0.46 });
+    this.drawPanel(context, this.layout.location, { assetAlpha: 0.46 });
 
-    // =====================================
-    // DRAW ACTIVE WINDOW
-    // =====================================
+    const utilityX = this.layout.utility.x + 16;
+    const valueX = this.layout.utility.x + this.layout.utility.width - 16;
 
+    context.font = "600 15px sans-serif";
+    context.textBaseline = "middle";
+    context.textAlign = "left";
+    context.fillStyle = "#cbd8e7";
+    context.fillText("GIL", utilityX, this.layout.utility.y + 23);
+    context.fillText("TIME", utilityX, this.layout.utility.y + 49);
+
+    context.textAlign = "right";
+    context.fillStyle = "#ffd75a";
+    context.fillText(
+      Number($gameParty.gil?.() || 0).toLocaleString(),
+      valueX,
+      this.layout.utility.y + 23,
+    );
+    context.fillStyle = "#6fd8ff";
+    context.fillText(this.formattedPlayTime(), valueX, this.layout.utility.y + 49);
+
+    context.textAlign = "left";
+    context.fillStyle = "#aebfd1";
+    context.font = "13px sans-serif";
+    context.fillText(
+      "LOCATION",
+      this.layout.location.x + 16,
+      this.layout.location.y + 18,
+    );
+    context.fillStyle = "#f1f5fa";
+    context.font = "15px sans-serif";
+    context.fillText(
+      this.locationName,
+      this.layout.location.x + 16,
+      this.layout.location.y + 42,
+    );
+  }
+
+  drawMainMenu(context) {
+    this.drawMainHeader(context);
+    this.partyWindow.draw();
+    this.commandWindow.draw();
+    this.drawUtilityPanels(context);
+  }
+
+  drawActiveWindow() {
     if (this.saveSlotsWindow.isOpen()) {
       this.saveSlotsWindow.draw();
     } else if (this.inventoryWindow.isOpen()) {
@@ -267,45 +313,50 @@ class Scene_Menu extends Scene_Base {
       this.statusWindow.draw();
     } else if (this.equipmentWindow.isOpen()) {
       this.equipmentWindow.draw();
+    }
+  }
+
+  drawSaveMessage(context) {
+    if (!this.saveMessage) {
+      return;
+    }
+
+    const boxWidth = 340;
+    const boxHeight = 92;
+    const boxX = (Graphics.width - boxWidth) / 2;
+    const boxY = Graphics.height - boxHeight - 70;
+    const bounds = { x: boxX, y: boxY, width: boxWidth, height: boxHeight };
+
+    context.save();
+    this.drawPanel(context, bounds, {
+      assetAlpha: 0.62,
+      fallbackStroke: "rgba(240, 243, 248, 0.8)",
+    });
+    context.fillStyle = "#ffffff";
+    context.font = "20px sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(
+      this.saveMessage,
+      Graphics.width / 2,
+      boxY + boxHeight / 2,
+    );
+    context.restore();
+  }
+
+  draw() {
+    const context = Graphics.context;
+
+    context.save();
+    this.drawBackground(context);
+
+    if (this.hasSubWindowOpen()) {
+      this.drawActiveWindow();
     } else {
-      this.commandWindow.draw();
+      this.drawMainMenu(context);
     }
 
-    // ===============================
-    // SAVE CONFIRMATION WINDOW
-    // ===============================
-
-    if (this.saveMessage) {
-      const boxWidth = 340;
-      const boxHeight = 100;
-
-      const boxX = (Graphics.width - boxWidth) / 2;
-      const boxY = Graphics.height - boxHeight - 325;
-
-      context.save();
-
-      // Window background
-      context.fillStyle = "#000000";
-      context.fillRect(boxX, boxY, boxWidth, boxHeight);
-
-      // Window border
-      context.strokeStyle = "#ffffff";
-      context.lineWidth = 2;
-      context.strokeRect(boxX, boxY, boxWidth, boxHeight);
-
-      // Message
-      context.fillStyle = "#ffffff";
-      context.font = "22px sans-serif";
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-
-      context.fillText(
-        this.saveMessage,
-        Graphics.width / 2,
-        boxY + boxHeight / 2,
-      );
-
-      context.restore();
-    }
+    this.drawSaveMessage(context);
+    context.restore();
   }
 }
