@@ -18,6 +18,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Asset / UI Skinning Foundation v1 with centralized `UIAssetManager` loading, named presentation slots, optional windowskin nine-slice drawing, icon-sheet extraction, and safe asset fallbacks
+- Curated the user-provided RPG Maker MZ system assets down to `Window.png`, `IconSet.png`, `ButtonSet.png`, and `Shadow2.png` rather than importing engine/plugin code wholesale
+- Added asset-backed side-view battler shadows as the first visible skinning proof while keeping all battle mechanics and existing vector UI fallbacks unchanged
+- Added `docs/ui_asset_skinning.md` to record selected, deferred, and deliberately excluded asset families and the presentation ownership boundary
+- Added dedicated UI asset skinning regression coverage for manifest contracts, non-browser fallback, nine-slice drawing, icon extraction, battle-shadow rendering, and repository asset presence
+
 - Added Battle UI / Presentation Polish v1 with a tighter four-row HUD, reduced command-reserve proportions, and softer Sektor 1 battle framing
 - Reworked Tactical Help into a smaller centered translucent panel with compact two-line scanned/unknown enemy information and remapped Help-key labeling
 - Added transient battle-banner fade-in/fade-out presentation while preserving Battle Message Speed ownership and the existing banner queue

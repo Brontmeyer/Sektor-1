@@ -513,6 +513,7 @@ Battle-presentation directions and current status:
 - ✅ Game Options / Config Foundation v1 with battle/message pacing, battle cursor memory, Magick ordering, and save-slot-independent persistence
 - ✅ Custom Controls / Input Mapping v1 with named actions, persistent two-slot keyboard bindings, dynamic hints, and a dedicated Controls screen
 - ✅ Battle UI / Presentation Polish v1 with tighter HUD/command proportions, compact translucent Tactical Help, banner fades, softer hints, and battle accent cursors
+- ✅ Asset / UI Skinning Foundation v1 with centralized asset loading, curated UI art, safe fallbacks, windowskin/icon primitives, and optional battler shadows
 
 ---
 
@@ -520,6 +521,6 @@ Built with ❤️ by **Sarah & Tyler**
 
 ## Presentation Status
 
-Custom Controls / Input Mapping v1 and Battle UI / Presentation Polish v1 are complete. Runtime input resolves named actions through Config Runtime v2, player-facing battle hints follow remapped bindings, and the accumulated HUD/Tactical Help/banner/cursor presentation notes have been folded back into the existing battle UI owners without adding gameplay authority. Save Runtime remains v9 because these are configuration and presentation concerns rather than game progress.
+Custom Controls / Input Mapping v1, Battle UI / Presentation Polish v1, and Asset / UI Skinning Foundation v1 are complete. Runtime input resolves named actions through Config Runtime v2, player-facing battle hints follow remapped bindings, and reusable presentation images now resolve through one named asset boundary with safe fallbacks. The supplied art has been curated rather than imported wholesale; future skinning can progressively replace vector placeholders without adding gameplay authority. Save Runtime remains v9 because these are configuration and presentation concerns rather than game progress.
 
 Future battle skinning can now focus on final assets, frames, icons, gauges, portraits, and animation language without needing to redesign the current HUD ownership or input-hint contracts first.

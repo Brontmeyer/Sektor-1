@@ -8,6 +8,10 @@ async function startGame() {
   ConfigManager.initialize();
   SceneManager.initialize();
 
+  // Presentation assets load before the first scene. Failures are non-fatal:
+  // every consumer retains its existing vector/fallback rendering path.
+  await UIAssetManager.initialize();
+
   // =====================================
   // LOAD DATABASE FIRST
   // =====================================

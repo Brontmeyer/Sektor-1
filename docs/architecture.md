@@ -394,11 +394,15 @@ For example, a Magick window may display whether a Magick is usable, but the und
 
 # 🖼️ Assets and Presentation
 
-Visual assets are stored under `js/sprites/`, currently including actor and enemy battle sprites.
+Visual assets are stored under `js/sprites/`, including actor/enemy battle sprites and the curated `js/sprites/ui/` presentation library.
 
-Presentation code may use these assets through scenes, battle rendering, windows, or other future rendering systems. `Scene_Battle` reports configured battle-sprite load failures explicitly, while `BattleRenderer` falls back to a named outline placeholder so a missing visual remains diagnosable without changing combat state.
+`UIAssetManager` is the canonical owner of reusable UI/presentation image paths. Asset / UI Skinning Foundation v1 gives consumers named slots such as `windowSkin`, `iconSet`, `buttonSet`, and `battleShadow`; it also owns optional windowskin nine-slice drawing and icon-sheet extraction so windows/renderers do not duplicate source-rectangle knowledge. Presentation assets load before the first scene. A failed UI asset load is reported but is never fatal: consumers retain the established vector/no-image fallback.
 
-Game mechanics should not depend on a particular sprite existing in order to determine their mechanical result.
+`BattleRenderer` demonstrates that boundary with optional asset-backed side-view shadows. Shadow art changes only presentation; positions, hit logic, facing, targeting, and damage remain owned by the existing battle systems.
+
+`Scene_Battle` separately reports configured battler-sprite load failures, while `BattleRenderer` falls back to a named outline placeholder so a missing battler visual remains diagnosable without changing combat state.
+
+Game mechanics must not depend on a particular presentation asset existing in order to determine their mechanical result. See `docs/ui_asset_skinning.md` for the current curated asset set and deferred candidates.
 
 ---
 

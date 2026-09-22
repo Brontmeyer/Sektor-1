@@ -170,6 +170,10 @@ Pass 52 is post-audit input/configuration work and does not reopen a historical 
 
 Pass 53 is post-audit presentation refinement and does not reopen a historical finding. `BattleHudLayout` remains the geometry owner while `BattleRenderer` and `Window_BattleCommand` refine spacing, transparency, fades, selection accents, hint backing, and target-cursor presentation. Tactical Help still reads `BattleScanManager` state, banner fades still use the existing Battle Message Speed clock, and displayed controls still come from named Input bindings. No battle rule or persistent game state changes, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Asset / UI Skinning Foundation v1
+
+Pass 54 is post-audit presentation infrastructure and does not reopen a historical finding. `UIAssetManager` centralizes curated UI image paths, asynchronous loading/failure reporting, windowskin/icon primitives, and optional battle-shadow drawing. `BattleRenderer` consumes the named shadow asset without making art authoritative over battlefield geometry or combat rules. Missing UI art preserves existing fallbacks. No persistent state changes, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

@@ -406,6 +406,20 @@ class BattleRenderer {
     context.restore();
   }
 
+  drawAssetBattleShadow(context, x, y, scale = 1, alpha = 0.55) {
+    if (
+      typeof UIAssetManager === "undefined" ||
+      typeof UIAssetManager.drawBattleShadow !== "function"
+    ) {
+      return false;
+    }
+
+    return UIAssetManager.drawBattleShadow(context, x, y, {
+      scale: Math.max(0.45, Number(scale) || 1),
+      alpha,
+    });
+  }
+
   drawActorSprite(context, x, y, actor) {
     if (!actor) {
       return;
@@ -826,14 +840,17 @@ class BattleRenderer {
       }
 
       const position = this.scene.getEnemyBattlePosition(i);
+      const drawX = position.x + battleData.visualX;
+      const scale = this.scene.getEnemyFormationScale(enemy);
 
-      this.drawEnemySprite(
+      this.drawAssetBattleShadow(
         context,
-        position.x + battleData.visualX,
-        position.y,
-        enemy,
-        battleData,
+        drawX,
+        position.y + 7,
+        scale,
+        this.scene.getEnemyVisualAlpha(enemy) * 0.5,
       );
+      this.drawEnemySprite(context, drawX, position.y, enemy, battleData);
     }
   }
 
@@ -964,10 +981,18 @@ class BattleRenderer {
 
       const visualX = battleData?.visualX || 0;
       const visualY = battleData?.visualY || 0;
+      const drawX = position.x + visualX;
 
+      this.drawAssetBattleShadow(
+        context,
+        drawX,
+        position.y + 7,
+        this.scene.getActorRenderScale(actor),
+        this.scene.getActorVisualAlpha(actor) * 0.5,
+      );
       this.drawActorSprite(
         context,
-        position.x + visualX,
+        drawX,
         position.y + visualY + this.scene.getActorStateYOffset(actor),
         actor,
       );
