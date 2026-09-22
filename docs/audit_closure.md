@@ -194,6 +194,10 @@ Pass 58 is post-audit menu refinement/foundation work and does not reopen a hist
 
 Pass 59 is post-audit party-menu/formation-state work and does not reopen a historical finding. `Window_MainMenuParty` owns active-card focus, `Scene_Menu` coordinates actor-targeted destination handoff, and `Window_ActorNavigator` opens/cycles character screens within the active four. `Game_Party` owns validated `front` / `back` row preference, while the menu communicates that state by portrait offset only. ROSTER is hidden by default until a future story unlock explicitly publishes it. Row preference introduces persistent game state, so Save Runtime advances to v10; v9 migration defaults missing rows to front without re-injecting forgotten Skill state. No battle-row damage, range, weapon, or coordinate rule is introduced by this pass.
 
+## Post-Audit Feature Note: Party Formation Ordering & Valor Visibility v1
+
+Pass 60 is post-audit party-presentation and Valor-visibility work and does not reopen a historical finding. `Game_Party` now owns a visual formation order separate from active-party mechanical order; Order-mode card swapping, menu actor navigation, and battlefield drawing consume that visual order without changing turn scheduling, stats, damage, action priority, or party membership. The new formation order is persistent, so Save Runtime advances to v11 with v10 and older saves defaulting missing visual order to their existing active-party order. Valor damage routing remains the hostile-source contract established earlier; battle, Status, and main-menu presentation now preserves one decimal so fractional gains from small hostile Attack/Skill/Magick damage cannot appear as zero.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

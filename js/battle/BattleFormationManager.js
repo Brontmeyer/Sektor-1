@@ -78,8 +78,10 @@ class BattleFormationManager {
   }
 
   positionForActor(actor) {
-    const index = $gameParty.battleMemberIndex(actor);
-    return this.partyPosition(index < 0 ? 0 : index);
+    const formationIndex =
+      $gameParty.battleFormationIndex?.(actor) ??
+      $gameParty.battleMemberIndex(actor);
+    return this.partyPosition(formationIndex < 0 ? 0 : formationIndex);
   }
 
   encounterMember(index) {

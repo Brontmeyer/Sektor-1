@@ -83,14 +83,38 @@ function createParty() {
     actor(3, "Aboo"),
     actor(4, "G Prime"),
   ];
+  const battleMembers = [...members];
+  const formationMembers = [...members];
   const rows = new Map(members.map((member) => [member.actorId, "front"]));
 
   return {
     members,
+    battleMembers,
+    formationMembers,
     rows,
     party: {
       members: () => members,
-      battleMembers: () => members,
+      battleMembers: () => battleMembers,
+      battleFormationMembers: () => formationMembers,
+      swapBattleFormationSlots(firstIndex, secondIndex) {
+        if (
+          !Number.isInteger(firstIndex) ||
+          !Number.isInteger(secondIndex) ||
+          firstIndex < 0 ||
+          secondIndex < 0 ||
+          firstIndex >= formationMembers.length ||
+          secondIndex >= formationMembers.length ||
+          firstIndex === secondIndex
+        ) {
+          return false;
+        }
+
+        [formationMembers[firstIndex], formationMembers[secondIndex]] = [
+          formationMembers[secondIndex],
+          formationMembers[firstIndex],
+        ];
+        return true;
+      },
       battleRow(actorOrId) {
         const id = Number(actorOrId?.actorId ?? actorOrId);
         return rows.get(id) || "front";
@@ -151,9 +175,9 @@ function testActorSelectionFocusWrapsAndConfirms() {
   assert.equal(result.type, "cancel");
 }
 
-function testOrderModeMovesRowsWithoutCombatRules() {
+function testOrderModeMovesRowsAndSwapsVisualFormationOnly() {
   const { Window_MainMenuParty, triggered } = createHarness();
-  const { party, members, rows } = createParty();
+  const { party, members, battleMembers, formationMembers, rows } = createParty();
   const window = new Window_MainMenuParty(party, {
     x: 20,
     y: 80,
@@ -177,11 +201,33 @@ function testOrderModeMovesRowsWithoutCombatRules() {
   assert.equal(rows.get(1), "front");
 
   result = trigger(window, triggered, "confirm");
-  assert.equal(result.type, "row");
-  assert.equal(result.row, "back");
-  assert.equal(rows.get(1), "back");
+  assert.equal(result.type, "swapStart");
+  assert.equal(result.actor, members[0]);
+  assert.equal(window.hasPendingSwap(), true);
+
+  trigger(window, triggered, "down");
+  trigger(window, triggered, "down");
+  result = trigger(window, triggered, "confirm");
+  assert.equal(result.type, "swap");
+  assert.deepEqual(
+    formationMembers.map((member) => member.name),
+    ["Aboo", "Sarah", "Tyler", "G Prime"],
+  );
+  assert.deepEqual(
+    battleMembers.map((member) => member.name),
+    ["Tyler", "Sarah", "Aboo", "G Prime"],
+    "visual formation swaps must not rewrite active-party mechanical order",
+  );
+  assert.equal(window.currentActor(), members[0]);
+
+  result = trigger(window, triggered, "confirm");
+  assert.equal(result.type, "swapStart");
+  result = trigger(window, triggered, "cancel");
+  assert.equal(result.type, "swapCancel");
+  assert.equal(window.hasPendingSwap(), false);
+
   assert.equal(window.setActorRow(members[0], "sideways"), false);
-  assert.equal(rows.get(1), "back");
+  assert.equal(rows.get(1), "front");
 }
 
 function testPortraitOffsetIsTheOnlyRowLabel() {
@@ -248,7 +294,7 @@ function testSceneMenuUsesSharedActorSelectionContract() {
 
 function run() {
   testActorSelectionFocusWrapsAndConfirms();
-  testOrderModeMovesRowsWithoutCombatRules();
+  testOrderModeMovesRowsAndSwapsVisualFormationOnly();
   testPortraitOffsetIsTheOnlyRowLabel();
   testActorNavigatorUsesActivePartyAndCanSelectExplicitActor();
   testSceneMenuUsesSharedActorSelectionContract();

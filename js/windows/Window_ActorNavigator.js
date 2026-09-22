@@ -9,6 +9,10 @@ class Window_ActorNavigator {
 
   members() {
     if (this.party) {
+      if (typeof this.party.battleFormationMembers === "function") {
+        return this.party.battleFormationMembers() || [];
+      }
+
       if (typeof this.party.battleMembers === "function") {
         return this.party.battleMembers() || [];
       }

@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 10;
+    return 11;
   }
 
   static clearError() {
@@ -132,6 +132,13 @@ class SaveManager {
         battleRows: this.isPlainObject(data.party?.battleRows)
           ? data.party.battleRows
           : {},
+        battleFormationActorIds: Array.isArray(
+          data.party?.battleFormationActorIds,
+        )
+          ? data.party.battleFormationActorIds
+          : Array.isArray(data.party?.battleActorIds)
+            ? data.party.battleActorIds
+            : [],
       },
     });
 
@@ -139,10 +146,11 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if (inferredVersion === 9) {
-      // v9 already owns explicit Skill state, including deliberate forgotten
-      // starter Arts. Pass 59 only adds party row state, so preserve Skill
-      // ownership exactly while defaulting missing rows to front.
+    if ([10, 9].includes(inferredVersion)) {
+      // v9+ already owns explicit Skill state, including deliberately forgotten
+      // starter Arts. v10 adds row state; v11 adds visual formation ordering.
+      // Preserve existing state exactly and default a missing formation order to
+      // the saved active-party order.
       return upgradeToCurrent(saveData);
     }
 
@@ -416,6 +424,13 @@ class SaveManager {
         !Array.isArray(saveData.party.battleActorIds)
       ) {
         errors.push("Party battleActorIds must be an array.");
+      }
+
+      if (
+        saveData.party.battleFormationActorIds !== undefined &&
+        !Array.isArray(saveData.party.battleFormationActorIds)
+      ) {
+        errors.push("Party battleFormationActorIds must be an array.");
       }
 
       if (
@@ -696,6 +711,15 @@ class SaveManager {
       $gameParty.setBattleActorIds(partyData.battleActorIds);
     }
 
+    if (
+      typeof $gameParty.setBattleFormationActorIds === "function" &&
+      Array.isArray(partyData.battleFormationActorIds)
+    ) {
+      $gameParty.setBattleFormationActorIds(
+        partyData.battleFormationActorIds,
+      );
+    }
+
     if (typeof $gameParty.setBattleRows === "function") {
       $gameParty.setBattleRows(partyData.battleRows || {});
     }
@@ -868,6 +892,10 @@ class SaveManager {
           accessories: { ...$gameParty.accessories },
           gil: typeof $gameParty.gil === "function" ? $gameParty.gil() : 0,
           battleActorIds: $gameParty.battleActorIds(),
+          battleFormationActorIds:
+            typeof $gameParty.battleFormationActorIds === "function"
+              ? $gameParty.battleFormationActorIds()
+              : $gameParty.battleActorIds(),
           battleRows:
             typeof $gameParty.battleRows === "function"
               ? $gameParty.battleRows()

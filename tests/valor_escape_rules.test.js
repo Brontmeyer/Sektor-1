@@ -185,6 +185,27 @@ function testPassiveValorRequiresHostileBattleActionDamage() {
   assert.ok(tyler.valor > 0, "enemy Skill damage must generate Valor");
 }
 
+function testMissAndZeroDamageDoNotGenerateValor() {
+  const fixture = createFixture({ partySize: 1 });
+  const actor = fixture.partyMembers[0];
+  const enemy = fixture.enemies[0];
+  const hpBefore = actor.hp;
+
+  actor.setValor(0);
+  assert.equal(
+    fixture.manager.performEnemyPhysicalAction(enemy, actor, () => 0.999999),
+    true,
+  );
+  assert.equal(actor.hp, hpBefore);
+  assert.equal(actor.valor, 0, "a missed hostile Attack must not generate Valor");
+
+  actor.receiveDamage(0, {
+    category: "physical",
+    ...fixture.manager.damageContext(enemy, actor),
+  });
+  assert.equal(actor.valor, 0, "zero resolved damage must not generate Valor");
+}
+
 function testDirectDamageWithoutHostileProvenanceDoesNotGenerateValor() {
   const fixture = createFixture({ partySize: 1 });
   const actor = fixture.partyMembers[0];
@@ -358,6 +379,7 @@ function testValorSkillSchemaIsValidatedExplicitly() {
 
 function run() {
   testPassiveValorRequiresHostileBattleActionDamage();
+  testMissAndZeroDamageDoNotGenerateValor();
   testDirectDamageWithoutHostileProvenanceDoesNotGenerateValor();
   testExplicitValorSkillEffectUsesNarrowSkillHook();
   testEscapeChanceUsesAgilityAndFailurePressure();

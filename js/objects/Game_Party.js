@@ -14,6 +14,7 @@ class Game_Party {
     // a maximum of four active battle members.
     this._actors = [];
     this._battleActorIds = [];
+    this._battleFormationActorIds = [];
     this._battleRows = {};
 
     for (const actor of initialActors) {
@@ -61,6 +62,7 @@ class Game_Party {
 
     if (this._battleActorIds.length < 4) {
       this._battleActorIds.push(actor.actorId);
+      this._battleFormationActorIds.push(actor.actorId);
     }
 
     return true;
@@ -76,6 +78,9 @@ class Game_Party {
 
     this._actors.splice(index, 1);
     this._battleActorIds = this._battleActorIds.filter(
+      (memberId) => memberId !== id,
+    );
+    this._battleFormationActorIds = this._battleFormationActorIds.filter(
       (memberId) => memberId !== id,
     );
     delete this._battleRows[id];
@@ -117,6 +122,7 @@ class Game_Party {
     }
 
     this._battleActorIds = validIds;
+    this.syncBattleFormationActorIds();
     return this._battleActorIds.length > 0;
   }
 
@@ -132,6 +138,90 @@ class Game_Party {
 
   battleMemberIndex(actor) {
     return this.battleMembers().indexOf(actor);
+  }
+
+  syncBattleFormationActorIds() {
+    const activeIds = this.battleActorIds();
+    const orderedIds = this._battleFormationActorIds.filter(
+      (actorId) => activeIds.includes(actorId),
+    );
+
+    for (const actorId of activeIds) {
+      if (!orderedIds.includes(actorId)) {
+        orderedIds.push(actorId);
+      }
+    }
+
+    this._battleFormationActorIds = orderedIds.slice(0, 4);
+    return [...this._battleFormationActorIds];
+  }
+
+  battleFormationActorIds() {
+    return this.syncBattleFormationActorIds();
+  }
+
+  setBattleFormationActorIds(actorIds) {
+    if (!Array.isArray(actorIds)) {
+      return false;
+    }
+
+    const activeIds = this.battleActorIds();
+    const orderedIds = [];
+
+    for (const rawActorId of actorIds) {
+      const actorId = Number(rawActorId);
+
+      if (
+        !Number.isInteger(actorId) ||
+        !activeIds.includes(actorId) ||
+        orderedIds.includes(actorId)
+      ) {
+        continue;
+      }
+
+      orderedIds.push(actorId);
+    }
+
+    for (const actorId of activeIds) {
+      if (!orderedIds.includes(actorId)) {
+        orderedIds.push(actorId);
+      }
+    }
+
+    this._battleFormationActorIds = orderedIds.slice(0, 4);
+    return this._battleFormationActorIds.length === activeIds.length;
+  }
+
+  battleFormationMembers() {
+    return this.battleFormationActorIds()
+      .map((actorId) => this.actorById(actorId))
+      .filter((actor) => actor !== null);
+  }
+
+  battleFormationIndex(actor) {
+    return this.battleFormationMembers().indexOf(actor);
+  }
+
+  swapBattleFormationSlots(firstIndex, secondIndex) {
+    const first = Number(firstIndex);
+    const second = Number(secondIndex);
+    const members = this.battleFormationActorIds();
+
+    if (
+      !Number.isInteger(first) ||
+      !Number.isInteger(second) ||
+      first < 0 ||
+      second < 0 ||
+      first >= members.length ||
+      second >= members.length ||
+      first === second
+    ) {
+      return false;
+    }
+
+    [members[first], members[second]] = [members[second], members[first]];
+    this._battleFormationActorIds = members;
+    return true;
   }
 
   normalizeBattleRow(row) {

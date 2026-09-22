@@ -832,7 +832,8 @@ class BattleRenderer {
     );
 
     const valorReady = actor.isValorReady?.() === true;
-    const valorValue = Math.floor(Number(actor.valor) || 0);
+    const rawValor = Math.max(0, Number(actor.valor) || 0);
+    const valorValue = Math.round(rawValor * 10) / 10;
     const valorMaximum = Math.max(0, Number(actor.maxValor) || 0);
     const valorLabel = valorReady
       ? "VALOR READY"
@@ -842,7 +843,7 @@ class BattleRenderer {
     context.fillText(valorLabel, valorX, centerY - 5);
     this.drawHudGauge(
       context,
-      valorValue,
+      rawValor,
       valorMaximum,
       valorX,
       centerY + 8,
@@ -858,9 +859,10 @@ class BattleRenderer {
     const names = this.scene.hudLayout.nameColumnBounds();
     const command = this.scene.hudLayout.commandBounds();
     const stats = this.scene.hudLayout.statsBounds();
-    const members = $gameParty
-      .battleMembers()
-      .slice(0, BattleHudLayout.PARTY_SLOTS);
+    const members = (
+      $gameParty.battleFormationMembers?.() ||
+      $gameParty.battleMembers()
+    ).slice(0, BattleHudLayout.PARTY_SLOTS);
     const activeActor = this.hudActivePartyBattler();
 
     context.save();
@@ -998,12 +1000,9 @@ class BattleRenderer {
     let y;
 
     if (this.scene.targetGroup === "ally") {
-      const position = this.scene.getAllyBattlePosition(
-        this.scene.selectedAllyIndex,
-      );
-
       const ally =
         this.scene.getBattlePartyMembers()[this.scene.selectedAllyIndex];
+      const position = this.scene.getAllyPosition(ally);
       x = position.x;
       y = position.y - this.scene.getActorSpriteHeight(ally) - 18;
     } else {
@@ -1060,8 +1059,8 @@ class BattleRenderer {
     context.font = "24px Arial";
     context.fillStyle = "#ffffff";
 
-    partyMembers.forEach((actor, index) => {
-      const position = this.scene.getAllyBattlePosition(index);
+    partyMembers.forEach((actor) => {
+      const position = this.scene.getAllyPosition(actor);
       const battleData = this.scene.getPartyBattleData(actor);
 
       const visualX = battleData?.visualX || 0;

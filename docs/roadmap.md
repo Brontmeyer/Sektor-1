@@ -40,7 +40,7 @@ Completed engine foundations include:
 - Turn queue
 - Multi-character turns
 - Data-driven actor collection ownership with explicit party/leader context
-- Save / Load with version-aware multi-actor Save Runtime v10, persistent learned Skills / Valor / Runes (legacy Gil field) / accessory equipment / slot-aware Essence / party-row state, v9 row migration, and preserved v1-v8 starter-Valor-Art migration
+- Save / Load with version-aware multi-actor Save Runtime v11, persistent learned Skills / Valor / Runes (legacy Gil field) / accessory equipment / slot-aware Essence / party-row state, v9 row migration, and preserved v1-v8 starter-Valor-Art migration
 - Equipment system with Weapon, Armor, and Accessory slots
 - Inventory system
 - Shops & Runes Spending v1 with canonical-price purchases for items and conventional equipment
@@ -518,7 +518,7 @@ Battle-presentation directions and current status:
 - ✅ Menu Window Softening & Frame Polish v1 with centralized rounded clipping, depth/shadow, inset highlights, and softened gauges/selections
 - ✅ Main Menu Information & Command Layout v1 with four active-party information cards, singular destination naming, live currency/location presentation, and reserved Order / Valor / ROSTER destinations
 - ✅ Main Menu Refinement & Command Availability Foundation v1 with restored Load, RUNES labeling, tighter party-card proportions, generic command state policy, and validated future Save/Load area gates
-- ✅ Main Menu Actor Selection & Order Foundation v1 with shared active-party focus, explicit actor handoff, persistent front/back row state, portrait-offset row language, hidden-until-unlocked ROSTER, and Save Runtime v10
+- ✅ Main Menu Actor Selection & Order Foundation v1 with shared active-party focus, explicit actor handoff, persistent front/back row state, portrait-offset row language, hidden-until-unlocked ROSTER, and Save Runtime v11
 
 ---
 
@@ -526,6 +526,6 @@ Built with ❤️ by **Sarah & Tyler**
 
 ## Presentation Status
 
-Custom Controls / Input Mapping v1, Battle UI / Presentation Polish v1, Asset / UI Skinning Foundation v1, UI Style Integration Prototype v1, and Menu Window Softening & Frame Polish v1 are complete. Runtime input resolves named actions through Config Runtime v2, player-facing battle hints follow remapped bindings, and reusable presentation images resolve through one named asset boundary with safe fallbacks. The Adventure UI prototype now tests a softer framed JRPG direction across battle HUD/commands/selectors plus Options, Controls, and the main menu, while the centralized panel renderer supplies rounded silhouettes and restrained depth without hard-coding frame geometry into consumers. Save Runtime is now v10 because Pass 59 adds persistent party-row game state; Config Runtime remains v2.
+Custom Controls / Input Mapping v1, Battle UI / Presentation Polish v1, Asset / UI Skinning Foundation v1, UI Style Integration Prototype v1, and Menu Window Softening & Frame Polish v1 are complete. Runtime input resolves named actions through Config Runtime v2, player-facing battle hints follow remapped bindings, and reusable presentation images resolve through one named asset boundary with safe fallbacks. The Adventure UI prototype now tests a softer framed JRPG direction across battle HUD/commands/selectors plus Options, Controls, and the main menu, while the centralized panel renderer supplies rounded silhouettes and restrained depth without hard-coding frame geometry into consumers. Save Runtime is now v11 because Pass 60 adds persistent visual party-formation order on top of Pass 59 row state; Config Runtime remains v2.
 
-Main Menu Information & Command Layout v1, Main Menu Refinement & Command Availability Foundation v1, and Main Menu Actor Selection & Order Foundation v1 now supply the richer four-member menu structure, restored Save/Load command pair, RUNES presentation, generic availability policy, shared actor-selection handoff, and persistent menu-side front/back row preference. ROSTER is hidden until explicitly unlocked. Future passes can replace portrait placeholders with canonical art, add persistent play-time, add four-corner Window Color configuration, extend Order with slot reordering and battle-row consequences, then implement multi-level Valor and ROSTER mechanics. Battle backgrounds, icons, and battle VFX can continue independently without redesigning menu ownership first.
+Main Menu Information & Command Layout v1, Main Menu Refinement & Command Availability Foundation v1, Main Menu Actor Selection & Order Foundation v1, and Party Formation Ordering & Valor Visibility v1 now supply the richer four-member menu structure, restored Save/Load command pair, RUNES presentation, generic availability policy, shared actor-selection handoff, persistent menu-side front/back row preference, and visual-only formation slot swapping. ROSTER is hidden until explicitly unlocked. Future passes can replace portrait placeholders with canonical art, add persistent play-time, add four-corner Window Color configuration, connect front/back row state to battlefield geometry without combat bonuses, then implement multi-level Valor and ROSTER mechanics. Battle backgrounds, icons, and battle VFX can continue independently without redesigning menu ownership first.

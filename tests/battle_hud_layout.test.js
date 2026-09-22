@@ -139,9 +139,13 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
     actor("Aboo", 67, 18, 10),
     actor("G Prime", 0, 12, 0),
   ];
+  const formation = [party[2], party[1], party[3], party[0]];
   const globals = {
     Graphics,
-    $gameParty: { battleMembers: () => party },
+    $gameParty: {
+      battleMembers: () => party,
+      battleFormationMembers: () => formation,
+    },
   };
   const { BattleHudLayout, BattleRenderer } = loadPresentation(globals);
   const scene = {
@@ -162,6 +166,15 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
   for (const battler of party) {
     assert.equal(text.includes(battler.name), true);
   }
+
+  const renderedNames = text.filter((entry) =>
+    party.some((battler) => battler.name === entry),
+  );
+  assert.deepEqual(
+    renderedNames,
+    ["Aboo", "Sarah", "G Prime", "Tyler"],
+    "battle HUD roster must follow visual formation order",
+  );
 
   assert.equal(text.includes("VALOR READY"), true);
   assert.equal(text.includes("DEFEATED"), true);

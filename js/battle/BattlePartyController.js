@@ -85,13 +85,15 @@ class BattlePartyController {
   }
 
   positionForBattler(battler) {
-    const index = $gameParty.battleMemberIndex(battler);
+    const formationIndex =
+      $gameParty.battleFormationIndex?.(battler) ??
+      $gameParty.battleMemberIndex(battler);
 
-    if (index < 0) {
+    if (formationIndex < 0) {
       return this.battlePosition(0);
     }
 
-    return this.battlePosition(index);
+    return this.battlePosition(formationIndex);
   }
 
   currentBattler() {

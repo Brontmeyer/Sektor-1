@@ -124,9 +124,10 @@ class Scene_Menu extends Scene_Base {
     }
 
     if (this.partyWindow.mode === "order") {
-      // Row changes are committed immediately to Game_Party. They alter only
-      // formation state/presentation in v1; battle penalties are deliberately
-      // deferred until the player-row combat contract exists.
+      // Row edits and slot swaps are committed immediately to Game_Party.
+      // Formation ordering is visual only: active-party membership, turn
+      // scheduling, stats, damage, targeting rules, and action priority stay
+      // independent from where a battler is drawn.
       return;
     }
 
@@ -354,9 +355,13 @@ class Scene_Menu extends Scene_Base {
     }
 
     if (this.partyWindow.mode === "order") {
-      return `${Input.actionLabel("up")}/${Input.actionLabel("down")}: Actor   ` +
+      const swapping = this.partyWindow.hasPendingSwap?.() === true;
+      const confirmLabel = swapping ? "Swap" : "Pick Up";
+      const cancelLabel = swapping ? "Cancel" : "Back";
+
+      return `${Input.actionLabel("up")}/${Input.actionLabel("down")}: ${swapping ? "Destination" : "Actor"}   ` +
         `${Input.actionLabel("left")}: Back   ${Input.actionLabel("right")}: Front   ` +
-        `${Input.actionLabel("confirm")}: Toggle   ${Input.actionLabel("cancel")}: Back`;
+        `${Input.actionLabel("confirm")}: ${confirmLabel}   ${Input.actionLabel("cancel")}: ${cancelLabel}`;
     }
 
     return `${this.pendingActorCommand}: choose actor   ` +

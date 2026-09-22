@@ -6,6 +6,7 @@ class Window_MainMenuParty {
     this.active = false;
     this.mode = "view";
     this.index = 0;
+    this.swapSourceIndex = -1;
     this.setBounds(bounds);
   }
 
@@ -17,13 +18,17 @@ class Window_MainMenuParty {
   }
 
   members() {
-    const members = this.party?.battleMembers?.() || [];
+    const members =
+      this.party?.battleFormationMembers?.() ||
+      this.party?.battleMembers?.() ||
+      [];
     return members.slice(0, 4);
   }
 
   activate(mode = "actor") {
     this.mode = mode === "order" ? "order" : "actor";
     this.active = true;
+    this.swapSourceIndex = -1;
     this.index = Math.max(0, Math.min(this.index, this.members().length - 1));
     return this.currentActor() !== null;
   }
@@ -31,6 +36,11 @@ class Window_MainMenuParty {
   deactivate() {
     this.active = false;
     this.mode = "view";
+    this.swapSourceIndex = -1;
+  }
+
+  hasPendingSwap() {
+    return this.mode === "order" && this.swapSourceIndex >= 0;
   }
 
   isActive() {
@@ -73,6 +83,10 @@ class Window_MainMenuParty {
     return this.party?.toggleBattleRow?.(actor) === true;
   }
 
+  swapFormationSlots(firstIndex, secondIndex) {
+    return this.party?.swapBattleFormationSlots?.(firstIndex, secondIndex) === true;
+  }
+
   update() {
     if (!this.active) {
       return null;
@@ -89,6 +103,11 @@ class Window_MainMenuParty {
     }
 
     if (Input.isActionTriggered("cancel")) {
+      if (this.hasPendingSwap()) {
+        this.swapSourceIndex = -1;
+        return { type: "swapCancel", actor: this.currentActor() };
+      }
+
       return { type: "cancel", actor: this.currentActor() };
     }
 
@@ -110,8 +129,29 @@ class Window_MainMenuParty {
       }
 
       if (Input.isActionTriggered("confirm")) {
-        this.toggleActorRow(actor);
-        return { type: "row", actor, row: this.actorRow(actor) };
+        if (!this.hasPendingSwap()) {
+          this.swapSourceIndex = this.index;
+          return { type: "swapStart", actor, index: this.index };
+        }
+
+        const fromIndex = this.swapSourceIndex;
+        const toIndex = this.index;
+        this.swapSourceIndex = -1;
+
+        if (fromIndex === toIndex) {
+          return { type: "swapCancel", actor };
+        }
+
+        if (!this.swapFormationSlots(fromIndex, toIndex)) {
+          return { type: "swapCancel", actor };
+        }
+
+        return {
+          type: "swap",
+          actor: this.currentActor(),
+          fromIndex,
+          toIndex,
+        };
       }
 
       return null;
@@ -214,11 +254,21 @@ class Window_MainMenuParty {
 
   drawActorCard(context, actor, index, x, y, width, height) {
     const selected = this.active && index === this.index;
+    const swapSource =
+      this.active && this.mode === "order" && index === this.swapSourceIndex;
     this.drawPanel(context, x, y, width, height, {
       assetAlpha: index % 2 === 0 ? 0.42 : 0.36,
       shadow: false,
-      fallbackStroke: selected ? "rgba(255, 215, 90, 0.92)" : undefined,
-      innerStroke: selected ? "rgba(255, 230, 140, 0.25)" : undefined,
+      fallbackStroke: swapSource
+        ? "rgba(139, 220, 255, 0.96)"
+        : selected
+          ? "rgba(255, 215, 90, 0.92)"
+          : undefined,
+      innerStroke: swapSource
+        ? "rgba(139, 220, 255, 0.28)"
+        : selected
+          ? "rgba(255, 230, 140, 0.25)"
+          : undefined,
     });
 
     const padding = 12;
@@ -308,7 +358,11 @@ class Window_MainMenuParty {
       const gx = statX + statIndex * (gaugeWidth + gaugeGap);
       context.fillStyle = stat.color;
       context.font = "600 13px sans-serif";
-      const displayValue = Math.floor(Math.max(0, Number(stat.value) || 0));
+      const numericValue = Math.max(0, Number(stat.value) || 0);
+      const displayValue =
+        stat.label === "VALOR"
+          ? Math.round(numericValue * 10) / 10
+          : Math.floor(numericValue);
       const displayMax = Math.floor(Math.max(0, Number(stat.maximum) || 0));
       context.fillText(
         `${stat.label} ${displayValue}/${displayMax}`,

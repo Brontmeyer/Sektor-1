@@ -61,6 +61,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Main Menu Information & Command Layout v1
 -   ✅ Main Menu Refinement & Command Availability Foundation v1
 -   ✅ Main Menu Actor Selection & Order Foundation v1
+-   ✅ Party Formation Ordering & Valor Visibility v1
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
 
@@ -78,7 +79,7 @@ Completed foundations include:
 -   ✅ Party foundation
 -   ✅ Multi-character turn system
 -   ✅ Turn queue
--   ✅ Save / Load (version-aware Save Runtime v10)
+-   ✅ Save / Load (version-aware Save Runtime v11)
 -   ✅ Save-slot-independent Config Runtime v2
 -   ✅ Equipment system (Weapon / Armor / Accessory)
 -   ✅ Inventory system
@@ -132,9 +133,9 @@ Battle HUD & Message Layout v1 established reusable four-row geometry. Battle Pr
 
 # ⚙️ Options / Config
 
-Config Runtime v2 stores player preferences independently from Save Runtime v10, so loading a different game slot does not change pacing, presentation, ordering, or keyboard bindings. Current settings are **Battle Speed**, **Battle Message Speed**, **Field Message Speed**, **Battle Cursor** (Initial / Memory), and **Magick Order** (Default / Alphabetical / Element), plus a dedicated **Controls** screen. Controls use named actions with two binding slots each; required navigation/confirm/back actions cannot be cleared completely, context-sensitive actions may intentionally share a key, and Reset Controls restores the canonical defaults. Existing Config Runtime v1 preferences migrate automatically.
+Config Runtime v2 stores player preferences independently from Save Runtime v11, so loading a different game slot does not change pacing, presentation, ordering, or keyboard bindings. Current settings are **Battle Speed**, **Battle Message Speed**, **Field Message Speed**, **Battle Cursor** (Initial / Memory), and **Magick Order** (Default / Alphabetical / Element), plus a dedicated **Controls** screen. Controls use named actions with two binding slots each; required navigation/confirm/back actions cannot be cleared completely, context-sensitive actions may intentionally share a key, and Reset Controls restores the canonical defaults. Existing Config Runtime v1 preferences migrate automatically.
 
-The main menu presents the active four party members through dedicated actor cards with Level, live HP/MP/Valor, current Status, and Next Level EXP, plus compact **RUNES**, TIME, and location panels. The redundant PARTY INFORMATION label is removed so the four cards use more of the vertical space, and the neutral near-black scene backdrop stays visually separate from the swappable window skin. The command stack follows the approved singular vocabulary: **Item / Magick / Skill / Essence / Equip / Status / Order / Valor / Option / ROSTER / Save / Load / Exit**. There is no redundant game-title or COMMANDS heading. Magick, Skill, Essence, Equip, Status, and Valor now transfer focus into the active-party cards first; confirming an actor opens the existing character screen on that actor (Valor remains a focused future destination). **Order** reuses the same party focus in an Order mode: front/back row state is persistent, and the portrait shifts horizontally to communicate row position without adding FRONT/BACK text. This row state has no battle damage/range effect yet. `MenuAccessPolicy` owns command visibility/enabled state; **ROSTER (Remote Organization & Strategic Team Evaluation Registry)** is hidden by default until a future story system explicitly unlocks it, while maps may optionally restrict Save/Load and debug mode keeps development permissive. Persistent play time is not yet canonical, so TIME remains a visible placeholder rather than presenting session time as save data.
+The main menu presents the active four party members through dedicated actor cards with Level, live HP/MP/Valor, current Status, and Next Level EXP, plus compact **RUNES**, TIME, and location panels. The redundant PARTY INFORMATION label is removed so the four cards use more of the vertical space, and the neutral near-black scene backdrop stays visually separate from the swappable window skin. The command stack follows the approved singular vocabulary: **Item / Magick / Skill / Essence / Equip / Status / Order / Valor / Option / ROSTER / Save / Load / Exit**. There is no redundant game-title or COMMANDS heading. Magick, Skill, Essence, Equip, Status, and Valor transfer focus into the active-party cards first; confirming an actor opens the existing character screen on that actor (Valor remains a focused future destination). **Order** reuses the same party focus: left/right edits persistent Back/Front presentation, while Confirm picks up a card and Confirm on another slot swaps the two actors' visual formation positions. The menu, battle HUD roster, and battlefield consume that visual order, but active-party membership, turn scheduling, stats, damage, targeting eligibility, and action priority remain independent of slot position. `MenuAccessPolicy` owns command visibility/enabled state; **ROSTER (Remote Organization & Strategic Team Evaluation Registry)** is hidden by default until a future story system explicitly unlocks it, while maps may optionally restrict Save/Load and debug mode keeps development permissive. Persistent play time is not yet canonical, so TIME remains a visible placeholder rather than presenting session time as save data.
 
 ------------------------------------------------------------------------
 
@@ -178,7 +179,7 @@ Battle Command Navigation & Side Actions v1 keeps the visible command list to **
 
 **Valor** is Sektor 1's pressure-response battle resource. Actors build passive Valor from actual hostile opposing-side battle-action HP loss, with the base gain proportional to the percentage of Max HP lost. Fury, Sadness, and Near-Death modify that gain through the shared data-driven `valorGainMultiplier` status contract.
 
-Current actors have a data-driven Max Valor of 100. Valor persists between battles and through Save Runtime v10, caps at the actor's configured maximum, and is shown in both the battle HUD and Status menu. A full gauge becomes **VALOR: READY**.
+Current actors have a data-driven Max Valor of 100. Valor persists between battles and through Save Runtime v11, caps at the actor's configured maximum, and is shown in the battle HUD, Status menu, and main-menu actor cards. Fractional gain is displayed to one decimal when needed so small valid hits remain visible. A full gauge becomes **VALOR: READY**.
 
 Valor Runtime v1 establishes the gauge, gain rules, persistence, ready state, and consumption API. Valor Arts Runtime v1 consumes that API through the Skills cost hook without moving gauge ownership out of `Game_Actor`, and Character Valor Arts v1 now supplies the first four canonical Arts. Their future unlock/progression rules and later Art sets remain separate design work.
 
@@ -211,7 +212,7 @@ Accessories Equipment v1 adds a third conventional equipment slot beside Weapon 
 
 The initial accessory contract supports additive Attack, Defense, Magic Attack, Magic Defense, and Critical bonuses. This keeps the first runtime small while leaving status, elemental, and more specialized accessory effects for later data/runtime extensions.
 
-The current Save Runtime v10 persists both equipped accessory IDs and party accessory inventory. The existing test chest can award a Power Wrist through the validated accessory event-command path.
+The current Save Runtime v11 persists both equipped accessory IDs and party accessory inventory. The existing test chest can award a Power Wrist through the validated accessory event-command path.
 
 ------------------------------------------------------------------------
 

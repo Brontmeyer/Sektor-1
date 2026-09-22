@@ -104,3 +104,7 @@ Future Window Color customization should not add per-window RGB constants. The i
 The main-menu party panel is now both presentation and a shared selection surface. It intentionally has no PARTY INFORMATION label; the space belongs to the four actor cards. Selected cards use the existing semantic menu-panel focus treatment. Front/back row preference is communicated only through portrait horizontal offset (back left, front right), keeping row state legible without adding another text badge. The scene backdrop is neutral near-black so future four-corner Window Color customization can change the window palette without fighting a second saturated background.
 
 The portrait offset is presentation of `Game_Party` row state, not ownership of it. `Window_MainMenuParty` may request row changes during Order mode, but persistent state and validation stay in `Game_Party`, and battle-row combat rules remain outside the UI layer.
+
+## Pass 60: Visual formation ordering
+
+Order confirmation now picks up the focused actor card; moving vertically chooses another formation slot and confirming again swaps the two visual positions. The picked source card uses a cool cyan focus outline while the live cursor remains the gold interaction marker. This ordering is presentation state only: battlefield actor drawing, spatial selection, and menu actor cycling consume it, while active-party composition, turn scheduling, stats, and damage do not.

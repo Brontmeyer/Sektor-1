@@ -34,10 +34,14 @@ function createFormationFixture(formation, members) {
     battleSpriteHeight: 96,
   }));
   const Graphics = { width: 1600, height: 900 };
+  const formationOrder = [...actors];
   const party = {
     battleMembers: () => actors,
     battleMemberIndex(actor) {
       return actors.indexOf(actor);
+    },
+    battleFormationIndex(actor) {
+      return formationOrder.indexOf(actor);
     },
   };
   const { Class: BattleFormationManager } = loadClass(
@@ -62,7 +66,7 @@ function createFormationFixture(formation, members) {
   };
   const manager = new BattleFormationManager(scene);
 
-  return { manager, scene, actors, enemies, Graphics };
+  return { manager, scene, actors, enemies, Graphics, formationOrder };
 }
 
 function testCanonicalEncounterFormationData() {
@@ -153,6 +157,32 @@ function testPincerPlacesEnemiesOnBothSidesOfCenteredParty() {
   scene.selectingEnemyTarget = false;
   assert.equal(manager.isPartyRearExposed(enemies[2], actors[0]), true);
   assert.equal(manager.isPartyRearExposed(enemies[0], actors[0]), false);
+}
+
+function testVisualPartyOrderChangesPlacementWithoutChangingPincerFacing() {
+  const { manager, actors, formationOrder } = createFormationFixture(
+    "pincer",
+    [
+      { enemyId: 1, slot: 0, side: "left" },
+      { enemyId: 1, slot: 0, side: "right" },
+    ],
+  );
+
+  const firstPosition = manager.positionForActor(actors[0]);
+  const secondPosition = manager.positionForActor(actors[1]);
+  assert.equal(firstPosition.y < secondPosition.y, true);
+  assert.equal(manager.actorFacing(actors[0]), -1);
+  assert.equal(manager.actorFacing(actors[1]), 1);
+
+  [formationOrder[0], formationOrder[1]] = [
+    formationOrder[1],
+    formationOrder[0],
+  ];
+
+  assert.equal(manager.positionForActor(actors[0]).y, secondPosition.y);
+  assert.equal(manager.positionForActor(actors[1]).y, firstPosition.y);
+  assert.equal(manager.actorFacing(actors[0]), -1);
+  assert.equal(manager.actorFacing(actors[1]), 1);
 }
 
 function testEnemyRowsExposeDistinctFrontAndBackGeometry() {
@@ -317,6 +347,7 @@ function run() {
   testNormalFormationUsesFourVerticalPartyLanesAndSafeScale();
   testBackAttackKeepsPartyLeftAndUsesFacingExposure();
   testPincerPlacesEnemiesOnBothSidesOfCenteredParty();
+  testVisualPartyOrderChangesPlacementWithoutChangingPincerFacing();
   testEnemyRowsExposeDistinctFrontAndBackGeometry();
   testFormationSchemaValidation();
   testFormationManagerLoadsBeforeFormationConsumers();

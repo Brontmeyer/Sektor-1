@@ -109,9 +109,11 @@ class Window_Status {
     context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, leftX, this.y + 135);
     context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, rightX, this.y + 135);
 
+    const valorDisplay =
+      Math.round(Math.max(0, Number(actor.valor) || 0) * 10) / 10;
     const valorText = actor.isValorReady?.()
       ? "Valor: READY"
-      : `Valor: ${Math.floor(Number(actor.valor) || 0)} / ${actor.maxValor}`;
+      : `Valor: ${valorDisplay} / ${actor.maxValor}`;
     context.font = "18px sans-serif";
     context.fillText(valorText, leftX, this.y + 170);
 

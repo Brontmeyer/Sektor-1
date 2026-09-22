@@ -107,6 +107,11 @@ function testValorUsesResolvedDamageAndStatusMultipliers() {
   assert.equal(actor.valor, 0);
   assert.equal(actor.valorGainMultiplier(), 1);
 
+  actor.receiveDamage(4, { category: "physical", valorEligible: true });
+  assert.equal(actor.valor, 0.8);
+
+  actor.recoverAllHp();
+  actor.setValor(0);
   actor.receiveDamage(100, { category: "physical", valorEligible: true });
   assert.equal(actor.valor, 20);
 
@@ -196,7 +201,7 @@ function testBattleHudExposesValorState() {
   actor.setValor(42.8);
   renderer.drawBattleHud(context.Graphics.context);
   assert.equal(
-    drawCalls.some((call) => call[0] === "VALOR 42/100"),
+    drawCalls.some((call) => call[0] === "VALOR 42.8/100"),
     true,
   );
 
@@ -218,7 +223,7 @@ function testStatusWindowExposesValorState() {
   window.draw();
 
   assert.equal(
-    drawCalls.some((call) => call[0] === "Valor: 55 / 100"),
+    drawCalls.some((call) => call[0] === "Valor: 55.9 / 100"),
     true,
   );
 

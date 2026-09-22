@@ -18,8 +18,13 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Party Formation Ordering & Valor Visibility v1: Order can now pick up one active-party card and swap it with another visual formation slot without changing active-party mechanical order or stat authority
+- Added persistent visual `battleFormationActorIds` state and Save Runtime v11; v10 and older saves default formation order to their existing active-party order
+- Routed the battle HUD roster, battlefield actor drawing, and spatial target presentation through visual formation slots while leaving turn scheduling, stats, damage, action priority, and active-party membership independent of slot position
+- Made fractional Valor visible to one decimal in battle, Status, and main-menu gauges so low-damage hostile Attacks/Skills no longer look like zero gain while preserving the existing proportional damage-to-Valor formula
+- Extended regression coverage for visual-only formation swapping, save migration/persistence, hostile Attack/Skill/Magick Valor, misses, zero damage, self/friendly exclusion, and fractional Valor presentation
 - Added Main Menu Actor Selection & Order Foundation v1 with shared party-card focus for Magick / Skill / Essence / Equip / Status / Valor and explicit actor handoff into existing character menus
-- Added Order-mode party-card navigation with menu-owned front/back row state; left/right or confirm moves the selected actor between rows by shifting the portrait horizontally with no FRONT/BACK text labels
+- Added Order-mode party-card navigation with menu-owned front/back row state; left/right moves the selected actor between rows by shifting the portrait horizontally with no FRONT/BACK text labels
 - Added persistent party `battleRows` state and Save Runtime v10 with v9 migration that defaults missing rows to front while preserving explicit v9 Skill ownership
 - Added `Window_ActorNavigator.selectActor()` and active-battle-party navigation so character subscreens open on the actor chosen from the main menu and continue cycling only through the active four
 - Made ROSTER hidden by default through `MenuAccessPolicy` until a future story system explicitly publishes its unlocked state
