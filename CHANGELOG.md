@@ -18,6 +18,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Menu Window Softening & Frame Polish v1 through centralized rounded panel clipping, soft outer shadows, and inset highlight strokes in `UIAssetManager`
+- Softened battle/menu/accent panels without changing semantic asset roles or individual window ownership
+- Rounded selected-row asset clipping and HP/MP/Valor fallback fills so controls, selectors, and gauges share one cushioned visual language
+- Added role-aware corner radii for large menu panels, battle panels, and compact accent surfaces while retaining no-image/vector fallbacks
+- Added dedicated UI window softening regression coverage for rounded clipping, shadow/inset framing, proportional radii, gauge capsules, and centralized ownership
+
 - Added UI Style Integration Prototype v1 using a curated soft-framed Adventure UI family behind semantic `UIAssetManager` roles
 - Added image-backed battle HUD, command, battle selector, Options, Controls, and main-menu framing while preserving existing vector fallbacks
 - Added reusable soft selection-panel drawing and capsule-style gauge framing while retaining Sektor 1's HP/MP/Valor fill colors

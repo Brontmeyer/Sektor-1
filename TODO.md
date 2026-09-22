@@ -101,7 +101,9 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Battle UI / Presentation Polish v1 with tighter HUD/command geometry, translucent Tactical Help, banner fades, contextual hint backing, and target/selection accents
 - [x] Implement Asset / UI Skinning Foundation v1 with centralized asset loading, curated UI assets, fallbacks, windowskin/icon primitives, and optional battle shadows
 - [x] Apply UI Style Integration Prototype v1 selectively to battle/menu windows with semantic asset roles and vector fallbacks
+- [x] Apply Menu Window Softening & Frame Polish v1 through centralized rounded clipping, inset framing, shadows, and softened gauge/selection silhouettes
 - [ ] Continue final UI skin curation after hands-on visual review; keep all art swappable through `UIAssetManager`
+- [ ] Design Main Menu Information Layout v1 with portraits, richer party information, play time/currency, and location presentation without copying another game
 - [x] Polish Tactical Help bar size/transparency during the battle UI presentation pass
 
 ---

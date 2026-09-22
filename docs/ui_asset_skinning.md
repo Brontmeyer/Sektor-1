@@ -72,3 +72,19 @@ Semantic mappings currently are:
   - Neutral capsule border for HP/MP/Valor. Gauge fills remain vector-colored by Sektor 1 rather than inheriting fixed source colors.
 
 The prototype intentionally does not declare these images final art. Their purpose is to validate a softer beveled JRPG direction in motion while proving that the semantic asset boundary makes later replacement cheap. Consumers must continue to ask for semantic roles, and all panels/gauges must remain usable when the corresponding image is unavailable.
+## Pass 56: Menu window softening and frame polish
+
+Menu Window Softening & Frame Polish v1 does not replace the Pass 55 semantic mappings. Instead it upgrades the shared drawing contract in `UIAssetManager` so the same assets read more like finished JRPG windows and less like hard rectangles.
+
+The shared treatment now provides:
+
+- role-aware rounded panel radii (`menuPanel` 14px, `battlePanel` 12px, compact `accentPanel` up to 10px)
+- rounded clipping around nine-slice panel art
+- a restrained outer shadow for separation from the scene beneath
+- a subtle inset highlight stroke for cushioned frame depth
+- rounded clipping for selected-row art
+- capsule clipping for vector HP/MP/Valor fills before the optional gauge frame is drawn
+
+These details remain manager-owned. Battle/menu windows do not call `roundRect()` or reproduce shadow/inset math themselves. The current values are prototype presentation choices and may be tuned or replaced after hands-on review without changing semantic roles or gameplay behavior.
+
+The richer portrait-and-party-information main-menu layout discussed for later work is deliberately deferred; Pass 56 changes frame language, not menu information architecture.

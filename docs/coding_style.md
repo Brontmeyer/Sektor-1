@@ -427,7 +427,7 @@ Use `confuse`, not `confusion`.
 
 These distinctions prevent tiny vocabulary differences from becoming very large debugging adventures.
 
-UI skinning must use semantic `UIAssetManager` roles rather than direct filenames in scenes, windows, or renderers. Asset-backed panels should preserve a vector fallback path, and cosmetic image availability must never become a prerequisite for navigation, battle rules, target resolution, or configuration state. Prefer reusable drawing helpers for nine-slice panels, selection rows, and gauge frames instead of duplicating crop/stretch math across consumers.
+UI skinning must use semantic `UIAssetManager` roles rather than direct filenames in scenes, windows, or renderers. Asset-backed panels should preserve a vector fallback path, and cosmetic image availability must never become a prerequisite for navigation, battle rules, target resolution, or configuration state. Prefer reusable drawing helpers for nine-slice panels, rounded clipping, soft shadows/inset strokes, selection rows, and gauge frames instead of duplicating crop/stretch or corner math across consumers. Windows should request a semantic surface and let `UIAssetManager` decide the current frame silhouette.
 
 ---
 

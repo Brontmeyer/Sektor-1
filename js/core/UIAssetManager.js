@@ -281,6 +281,125 @@ class UIAssetManager {
     return true;
   }
 
+  static panelCornerRadius(role, width, height) {
+    const roleRadius = {
+      battlePanel: 12,
+      menuPanel: 14,
+      accentPanel: 10,
+    }[role] || 12;
+
+    return Math.max(
+      0,
+      Math.min(roleRadius, Number(width) / 4, Number(height) / 3),
+    );
+  }
+
+  static roundedRectPath(context, x, y, width, height, radius) {
+    if (
+      !context ||
+      typeof context.beginPath !== "function" ||
+      width <= 0 ||
+      height <= 0
+    ) {
+      return false;
+    }
+
+    const safeRadius = Math.max(
+      0,
+      Math.min(Number(radius) || 0, width / 2, height / 2),
+    );
+
+    context.beginPath();
+
+    if (typeof context.roundRect === "function") {
+      context.roundRect(x, y, width, height, safeRadius);
+      return true;
+    }
+
+    if (
+      typeof context.moveTo !== "function" ||
+      typeof context.lineTo !== "function" ||
+      typeof context.quadraticCurveTo !== "function"
+    ) {
+      return false;
+    }
+
+    const right = x + width;
+    const bottom = y + height;
+
+    context.moveTo(x + safeRadius, y);
+    context.lineTo(right - safeRadius, y);
+    context.quadraticCurveTo(right, y, right, y + safeRadius);
+    context.lineTo(right, bottom - safeRadius);
+    context.quadraticCurveTo(right, bottom, right - safeRadius, bottom);
+    context.lineTo(x + safeRadius, bottom);
+    context.quadraticCurveTo(x, bottom, x, bottom - safeRadius);
+    context.lineTo(x, y + safeRadius);
+    context.quadraticCurveTo(x, y, x + safeRadius, y);
+    return true;
+  }
+
+  static drawSoftPanelShadow(
+    context,
+    x,
+    y,
+    width,
+    height,
+    radius,
+    { color = "rgba(0, 0, 0, 0.42)", blur = 12, offsetY = 4 } = {},
+  ) {
+    if (
+      !this.roundedRectPath(context, x, y, width, height, radius) ||
+      typeof context.fill !== "function"
+    ) {
+      return false;
+    }
+
+    context.save?.();
+    context.shadowColor = color;
+    context.shadowBlur = blur;
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = offsetY;
+    context.fillStyle = "rgba(6, 9, 14, 0.62)";
+    context.fill();
+    context.restore?.();
+    return true;
+  }
+
+  static drawRoundedStroke(
+    context,
+    x,
+    y,
+    width,
+    height,
+    radius,
+    strokeStyle,
+    lineWidth = 1,
+  ) {
+    if (!strokeStyle) {
+      return false;
+    }
+
+    if (
+      this.roundedRectPath(context, x, y, width, height, radius) &&
+      typeof context.stroke === "function"
+    ) {
+      context.strokeStyle = strokeStyle;
+      context.lineWidth = lineWidth;
+      context.stroke();
+      return true;
+    }
+
+    if (typeof context.strokeRect === "function") {
+      context.strokeStyle = strokeStyle;
+      context.lineWidth = lineWidth;
+      context.strokeRect(x, y, width, height);
+      return true;
+    }
+
+    return false;
+  }
+
   static drawPanel(
     context,
     role,
@@ -291,36 +410,79 @@ class UIAssetManager {
     {
       fallbackFill = "rgba(9, 13, 18, 0.94)",
       fallbackStroke = "rgba(151, 196, 229, 0.55)",
+      innerStroke = "rgba(229, 241, 250, 0.18)",
       lineWidth = 1.5,
       assetAlpha = 0.5,
       sourceMargin = 12,
       destMargin = 12,
+      cornerRadius = this.panelCornerRadius(role, width, height),
+      shadow = true,
     } = {},
   ) {
     if (!context || width <= 0 || height <= 0) {
       return false;
     }
 
+    const radius = Math.max(
+      0,
+      Math.min(Number(cornerRadius) || 0, width / 2, height / 2),
+    );
+    const canClip =
+      this.roundedRectPath(context, x, y, width, height, radius) &&
+      typeof context.clip === "function";
+
+    if (shadow) {
+      this.drawSoftPanelShadow(context, x, y, width, height, radius);
+    }
+
     context.save?.();
+
+    if (canClip) {
+      // roundedRectPath above created the clipping path before save(). Rebuild
+      // it inside the saved state so restore() cleanly removes the clip.
+      this.roundedRectPath(context, x, y, width, height, radius);
+      context.clip();
+    }
 
     if (fallbackFill && typeof context.fillRect === "function") {
       context.fillStyle = fallbackFill;
       context.fillRect(x, y, width, height);
     }
 
-    if (fallbackStroke && typeof context.strokeRect === "function") {
-      context.strokeStyle = fallbackStroke;
-      context.lineWidth = lineWidth;
-      context.strokeRect(x, y, width, height);
-    }
-
-    context.restore?.();
-
-    return this.drawNineSlice(role, context, x, y, width, height, {
+    const assetDrawn = this.drawNineSlice(role, context, x, y, width, height, {
       sourceMargin,
       destMargin,
       alpha: assetAlpha,
     });
+
+    context.restore?.();
+
+    context.save?.();
+    this.drawRoundedStroke(
+      context,
+      x + lineWidth / 2,
+      y + lineWidth / 2,
+      Math.max(0, width - lineWidth),
+      Math.max(0, height - lineWidth),
+      Math.max(0, radius - lineWidth / 2),
+      fallbackStroke,
+      lineWidth,
+    );
+
+    const inset = Math.max(2.5, lineWidth + 1.5);
+    this.drawRoundedStroke(
+      context,
+      x + inset,
+      y + inset,
+      Math.max(0, width - inset * 2),
+      Math.max(0, height - inset * 2),
+      Math.max(0, radius - inset),
+      innerStroke,
+      1,
+    );
+    context.restore?.();
+
+    return assetDrawn;
   }
 
   static drawSelectionPanel(
@@ -329,13 +491,39 @@ class UIAssetManager {
     y,
     width,
     height,
-    { alpha = 0.24 } = {},
+    { alpha = 0.24, cornerRadius = Math.min(9, height / 3) } = {},
   ) {
-    return this.drawNineSlice("selectionPanel", context, x, y, width, height, {
-      sourceMargin: 7,
-      destMargin: Math.min(9, Math.max(4, height / 4)),
-      alpha,
-    });
+    if (!context || width <= 0 || height <= 0) {
+      return false;
+    }
+
+    const canClip =
+      this.roundedRectPath(context, x, y, width, height, cornerRadius) &&
+      typeof context.clip === "function";
+
+    context.save?.();
+
+    if (canClip) {
+      this.roundedRectPath(context, x, y, width, height, cornerRadius);
+      context.clip();
+    }
+
+    const drawn = this.drawNineSlice(
+      "selectionPanel",
+      context,
+      x,
+      y,
+      width,
+      height,
+      {
+        sourceMargin: 7,
+        destMargin: Math.min(9, Math.max(4, height / 4)),
+        alpha,
+      },
+    );
+
+    context.restore?.();
+    return drawn;
   }
 
   static drawHorizontalImage(
@@ -393,8 +581,19 @@ class UIAssetManager {
         : 0;
 
     // Keep the fill vector-based so HP/MP/Valor retain Sektor 1's palette.
-    // The supplied Adventure capsule contributes only soft framing.
+    // Clip the vector fill into a capsule so even the fallback presentation has
+    // the same softened silhouette as the optional Adventure frame.
     context.save?.();
+    const gaugeRadius = Math.max(0, height / 2);
+    const gaugeCanClip =
+      this.roundedRectPath(context, x, y, width, height, gaugeRadius) &&
+      typeof context.clip === "function";
+
+    if (gaugeCanClip) {
+      this.roundedRectPath(context, x, y, width, height, gaugeRadius);
+      context.clip();
+    }
+
     context.fillStyle = "rgba(18, 23, 29, 0.82)";
     context.fillRect?.(x, y, width, height);
 

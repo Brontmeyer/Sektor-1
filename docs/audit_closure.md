@@ -178,6 +178,10 @@ Pass 54 is post-audit presentation infrastructure and does not reopen a historic
 
 Pass 55 is post-audit presentation work and does not reopen a historical finding. A curated Adventure UI subset is mapped through semantic `UIAssetManager` roles and consumed by battle HUD/command/selectors, Options, Controls, and main-menu presentation. Existing vector drawing remains the fallback path for every skinned surface, and no asset affects battle, input, targeting, or save-state authority. No persistent state changes, so Save Runtime remains v9.
 
+## Post-Audit Feature Note: Menu Window Softening & Frame Polish v1
+
+Pass 56 is post-audit presentation refinement and does not reopen a historical finding. Rounded clipping, soft panel depth, inset highlights, selection silhouettes, and gauge capsules are centralized in `UIAssetManager`; battle/menu consumers continue to request semantic roles and retain safe fallbacks. No gameplay, targeting, input, configuration, or persistent state changes, so Save Runtime remains v9.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:
