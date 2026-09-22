@@ -220,13 +220,37 @@ class Window_BattleCommand {
 
     const enabled = this.isCommandEnabled(command);
 
-    context.fillStyle = "rgba(7, 10, 15, 0.92)";
-    context.fillRect(x, y, this.sideWidth, this.sideHeight);
-    context.strokeStyle = enabled
+    const sideStroke = enabled
       ? "rgba(255, 215, 90, 0.8)"
       : "rgba(151, 196, 229, 0.35)";
-    context.lineWidth = 1.5;
-    context.strokeRect(x, y, this.sideWidth, this.sideHeight);
+
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      UIAssetManager.drawPanel(
+        context,
+        "accentPanel",
+        x,
+        y,
+        this.sideWidth,
+        this.sideHeight,
+        {
+          fallbackFill: "rgba(7, 10, 15, 0.92)",
+          fallbackStroke: sideStroke,
+          lineWidth: 1.5,
+          assetAlpha: enabled ? 0.4 : 0.2,
+          sourceMargin: 14,
+          destMargin: 8,
+        },
+      );
+    } else {
+      context.fillStyle = "rgba(7, 10, 15, 0.92)";
+      context.fillRect(x, y, this.sideWidth, this.sideHeight);
+      context.strokeStyle = sideStroke;
+      context.lineWidth = 1.5;
+      context.strokeRect(x, y, this.sideWidth, this.sideHeight);
+    }
 
     context.font = "17px Arial";
     context.textAlign = "center";
@@ -249,11 +273,33 @@ class Window_BattleCommand {
 
     context.save();
 
-    context.fillStyle = "rgba(7, 10, 15, 0.93)";
-    context.fillRect(this.x, this.y, this.width, this.height);
-    context.strokeStyle = "rgba(151, 196, 229, 0.58)";
-    context.lineWidth = 1.5;
-    context.strokeRect(this.x, this.y, this.width, this.height);
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      UIAssetManager.drawPanel(
+        context,
+        "battlePanel",
+        this.x,
+        this.y,
+        this.width,
+        this.height,
+        {
+          fallbackFill: "rgba(7, 10, 15, 0.93)",
+          fallbackStroke: "rgba(151, 196, 229, 0.58)",
+          lineWidth: 1.5,
+          assetAlpha: 0.48,
+          sourceMargin: 12,
+          destMargin: 10,
+        },
+      );
+    } else {
+      context.fillStyle = "rgba(7, 10, 15, 0.93)";
+      context.fillRect(this.x, this.y, this.width, this.height);
+      context.strokeStyle = "rgba(151, 196, 229, 0.58)";
+      context.lineWidth = 1.5;
+      context.strokeRect(this.x, this.y, this.width, this.height);
+    }
 
     context.font = "19px Arial";
     context.textAlign = "left";
@@ -266,13 +312,31 @@ class Window_BattleCommand {
       const drawY = this.y + this.lineHeight / 2 + i * this.lineHeight;
 
       if (selected) {
-        context.fillStyle = "rgba(255, 215, 90, 0.09)";
-        context.fillRect(
-          this.x + 1,
-          this.y + i * this.lineHeight + 1,
-          this.width - 2,
-          this.lineHeight - 2,
-        );
+        const selectionX = this.x + 5;
+        const selectionY = this.y + i * this.lineHeight + 3;
+        const selectionWidth = this.width - 10;
+        const selectionHeight = this.lineHeight - 6;
+        const assetSelectionDrawn =
+          typeof UIAssetManager !== "undefined" &&
+          typeof UIAssetManager.drawSelectionPanel === "function" &&
+          UIAssetManager.drawSelectionPanel(
+            context,
+            selectionX,
+            selectionY,
+            selectionWidth,
+            selectionHeight,
+            { alpha: 0.2 },
+          );
+
+        if (!assetSelectionDrawn) {
+          context.fillStyle = "rgba(255, 215, 90, 0.09)";
+          context.fillRect(
+            selectionX,
+            selectionY,
+            selectionWidth,
+            selectionHeight,
+          );
+        }
         context.fillStyle = "#ffd75a";
         context.fillRect(
           this.x + 3,

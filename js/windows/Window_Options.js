@@ -82,11 +82,33 @@ class Window_Options {
     const valueX = this.x + this.width - this.padding;
 
     context.save();
-    context.fillStyle = "rgba(8, 12, 18, 0.94)";
-    context.fillRect(this.x, this.y, this.width, this.height);
-    context.strokeStyle = "rgba(135, 205, 255, 0.72)";
-    context.lineWidth = 2;
-    context.strokeRect(this.x, this.y, this.width, this.height);
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      UIAssetManager.drawPanel(
+        context,
+        "menuPanel",
+        this.x,
+        this.y,
+        this.width,
+        this.height,
+        {
+          fallbackFill: "rgba(15, 18, 22, 0.94)",
+          fallbackStroke: "rgba(154, 183, 204, 0.66)",
+          lineWidth: 1.5,
+          assetAlpha: 0.58,
+          sourceMargin: 12,
+          destMargin: 13,
+        },
+      );
+    } else {
+      context.fillStyle = "rgba(15, 18, 22, 0.94)";
+      context.fillRect(this.x, this.y, this.width, this.height);
+      context.strokeStyle = "rgba(154, 183, 204, 0.66)";
+      context.lineWidth = 1.5;
+      context.strokeRect(this.x, this.y, this.width, this.height);
+    }
 
     context.textBaseline = "middle";
     context.font = "22px Arial";
@@ -97,13 +119,31 @@ class Window_Options {
       const rowY = this.y + 54 + i * this.lineHeight;
 
       if (selected) {
-        context.fillStyle = "rgba(255, 215, 90, 0.09)";
-        context.fillRect(
-          this.x + 8,
-          rowY - this.lineHeight / 2 + 4,
-          this.width - 16,
-          this.lineHeight - 8,
-        );
+        const selectionX = this.x + 12;
+        const selectionY = rowY - this.lineHeight / 2 + 6;
+        const selectionWidth = this.width - 24;
+        const selectionHeight = this.lineHeight - 12;
+        const assetSelectionDrawn =
+          typeof UIAssetManager !== "undefined" &&
+          typeof UIAssetManager.drawSelectionPanel === "function" &&
+          UIAssetManager.drawSelectionPanel(
+            context,
+            selectionX,
+            selectionY,
+            selectionWidth,
+            selectionHeight,
+            { alpha: 0.18 },
+          );
+
+        if (!assetSelectionDrawn) {
+          context.fillStyle = "rgba(255, 215, 90, 0.09)";
+          context.fillRect(
+            selectionX,
+            selectionY,
+            selectionWidth,
+            selectionHeight,
+          );
+        }
         context.fillStyle = "#ffd75a";
         context.fillRect(
           this.x + 8,

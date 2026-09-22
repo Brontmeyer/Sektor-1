@@ -124,14 +124,33 @@ class Window_BattleMagick {
 
     context.save();
 
-    context.fillStyle = "rgba(0, 0, 0, 0.9)";
-
-    context.fillRect(this.x, this.y, this.width, this.height);
-
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 2;
-
-    context.strokeRect(this.x, this.y, this.width, this.height);
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      UIAssetManager.drawPanel(
+        context,
+        "battlePanel",
+        this.x,
+        this.y,
+        this.width,
+        this.height,
+        {
+          fallbackFill: "rgba(7, 10, 15, 0.94)",
+          fallbackStroke: "rgba(151, 196, 229, 0.6)",
+          lineWidth: 1.5,
+          assetAlpha: 0.5,
+          sourceMargin: 12,
+          destMargin: 10,
+        },
+      );
+    } else {
+      context.fillStyle = "rgba(7, 10, 15, 0.94)";
+      context.fillRect(this.x, this.y, this.width, this.height);
+      context.strokeStyle = "rgba(151, 196, 229, 0.6)";
+      context.lineWidth = 1.5;
+      context.strokeRect(this.x, this.y, this.width, this.height);
+    }
 
     context.textAlign = "left";
     context.textBaseline = "middle";
@@ -152,13 +171,39 @@ class Window_BattleMagick {
     for (let i = range.start; i < range.end; i++) {
       const magick = magickList[i];
 
-      const prefix = i === this.index ? "▶ " : "   ";
+      const selected = i === this.index;
+      const prefix = selected ? "▶ " : "   ";
       const visibleRow = i - range.start;
       const drawY = this.y + 75 + visibleRow * this.lineHeight;
 
       const usable = this.actor().canUseMagick(magick.id);
 
+      if (selected) {
+        const drawn =
+          typeof UIAssetManager !== "undefined" &&
+          typeof UIAssetManager.drawSelectionPanel === "function" &&
+          UIAssetManager.drawSelectionPanel(
+            context,
+            this.x + 10,
+            drawY - this.lineHeight / 2 + 4,
+            this.width - 20,
+            this.lineHeight - 8,
+            { alpha: 0.18 },
+          );
+
+        if (!drawn) {
+          context.fillStyle = "rgba(255, 215, 90, 0.08)";
+          context.fillRect(
+            this.x + 10,
+            drawY - this.lineHeight / 2 + 4,
+            this.width - 20,
+            this.lineHeight - 8,
+          );
+        }
+      }
+
       context.globalAlpha = usable ? 1.0 : 0.4;
+      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
       context.fillText(`${prefix}${magick.name}`, this.x + this.padding, drawY);
       context.textAlign = "right";
 

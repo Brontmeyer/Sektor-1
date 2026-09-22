@@ -18,6 +18,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added UI Style Integration Prototype v1 using a curated soft-framed Adventure UI family behind semantic `UIAssetManager` roles
+- Added image-backed battle HUD, command, battle selector, Options, Controls, and main-menu framing while preserving existing vector fallbacks
+- Added reusable soft selection-panel drawing and capsule-style gauge framing while retaining Sektor 1's HP/MP/Valor fill colors
+- Added restrained asset-backed treatment for battle action/state banners and Tactical Help without changing battle rules or information ownership
+- Added dedicated UI style integration regression coverage for semantic-role isolation, nine-slice fallback behavior, optional selection/gauge art, curated asset/license presence, and primary consumer boundaries
+
 - Added Asset / UI Skinning Foundation v1 with centralized `UIAssetManager` loading, named presentation slots, optional windowskin nine-slice drawing, icon-sheet extraction, and safe asset fallbacks
 - Curated the user-provided RPG Maker MZ system assets down to `Window.png`, `IconSet.png`, `ButtonSet.png`, and `Shadow2.png` rather than importing engine/plugin code wholesale
 - Added asset-backed side-view battler shadows as the first visible skinning proof while keeping all battle mechanics and existing vector UI fallbacks unchanged

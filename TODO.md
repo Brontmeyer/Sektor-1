@@ -100,7 +100,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Custom Controls / Input Mapping v1 with named actions, persistent two-slot bindings, dynamic hints, and rebinding UI
 - [x] Implement Battle UI / Presentation Polish v1 with tighter HUD/command geometry, translucent Tactical Help, banner fades, contextual hint backing, and target/selection accents
 - [x] Implement Asset / UI Skinning Foundation v1 with centralized asset loading, curated UI assets, fallbacks, windowskin/icon primitives, and optional battle shadows
-- [ ] Apply approved asset-backed skins selectively to battle/menu windows after visual review; preserve the vector theme as fallback
+- [x] Apply UI Style Integration Prototype v1 selectively to battle/menu windows with semantic asset roles and vector fallbacks
+- [ ] Continue final UI skin curation after hands-on visual review; keep all art swappable through `UIAssetManager`
 - [x] Polish Tactical Help bar size/transparency during the battle UI presentation pass
 
 ---

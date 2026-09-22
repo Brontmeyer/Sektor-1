@@ -173,14 +173,38 @@ class BattleRenderer {
         ? banner.text
         : Window_TextLayout.ellipsize(context, banner.text, maxTextWidth);
 
-    context.fillStyle = "rgba(8, 11, 17, 0.74)";
-    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    context.strokeStyle =
+    const bannerStroke =
       banner.type === "state"
         ? "rgba(255, 215, 90, 0.8)"
         : "rgba(151, 196, 229, 0.72)";
-    context.lineWidth = 1.5;
-    context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      UIAssetManager.drawPanel(
+        context,
+        "accentPanel",
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height,
+        {
+          fallbackFill: "rgba(8, 11, 17, 0.74)",
+          fallbackStroke: bannerStroke,
+          lineWidth: 1.5,
+          assetAlpha: 0.28,
+          sourceMargin: 14,
+          destMargin: 10,
+        },
+      );
+    } else {
+      context.fillStyle = "rgba(8, 11, 17, 0.74)";
+      context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+      context.strokeStyle = bannerStroke;
+      context.lineWidth = 1.5;
+      context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    }
     context.fillStyle = banner.type === "state" ? "#ffd75a" : "#ffffff";
     context.fillText(
       displayText,
@@ -227,11 +251,33 @@ class BattleRenderer {
     const maxWidth = bounds.width - paddingX * 2;
 
     context.save();
-    context.fillStyle = "rgba(7, 10, 15, 0.76)";
-    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    context.strokeStyle = "rgba(151, 196, 229, 0.48)";
-    context.lineWidth = 1;
-    context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      UIAssetManager.drawPanel(
+        context,
+        "menuPanel",
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height,
+        {
+          fallbackFill: "rgba(7, 10, 15, 0.76)",
+          fallbackStroke: "rgba(151, 196, 229, 0.48)",
+          lineWidth: 1,
+          assetAlpha: 0.28,
+          sourceMargin: 12,
+          destMargin: 8,
+        },
+      );
+    } else {
+      context.fillStyle = "rgba(7, 10, 15, 0.76)";
+      context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+      context.strokeStyle = "rgba(151, 196, 229, 0.48)";
+      context.lineWidth = 1;
+      context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    }
     context.textBaseline = "middle";
 
     context.font = "12px Arial";
@@ -663,6 +709,23 @@ class BattleRenderer {
 
 
   drawHudGauge(context, value, maximum, x, y, width, fillStyle) {
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawGauge === "function"
+    ) {
+      UIAssetManager.drawGauge(
+        context,
+        value,
+        maximum,
+        x,
+        y - 1,
+        width,
+        7,
+        fillStyle,
+      );
+      return;
+    }
+
     const max = Number(maximum);
     const current = Number(value);
     const rate =
@@ -801,11 +864,33 @@ class BattleRenderer {
     const activeActor = this.hudActivePartyBattler();
 
     context.save();
-    context.fillStyle = "rgba(7, 10, 15, 0.91)";
-    context.fillRect(hud.x, hud.y, hud.width, hud.height);
-    context.strokeStyle = "rgba(151, 196, 229, 0.56)";
-    context.lineWidth = 1.5;
-    context.strokeRect(hud.x, hud.y, hud.width, hud.height);
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      UIAssetManager.drawPanel(
+        context,
+        "battlePanel",
+        hud.x,
+        hud.y,
+        hud.width,
+        hud.height,
+        {
+          fallbackFill: "rgba(7, 10, 15, 0.91)",
+          fallbackStroke: "rgba(151, 196, 229, 0.56)",
+          lineWidth: 1.5,
+          assetAlpha: 0.42,
+          sourceMargin: 12,
+          destMargin: 11,
+        },
+      );
+    } else {
+      context.fillStyle = "rgba(7, 10, 15, 0.91)";
+      context.fillRect(hud.x, hud.y, hud.width, hud.height);
+      context.strokeStyle = "rgba(151, 196, 229, 0.56)";
+      context.lineWidth = 1.5;
+      context.strokeRect(hud.x, hud.y, hud.width, hud.height);
+    }
 
     // The middle command reserve intentionally stays empty while no actor is
     // choosing a command. Future Barrier / MBarrier-style presentation can

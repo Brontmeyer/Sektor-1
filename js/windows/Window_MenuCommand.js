@@ -67,16 +67,35 @@ class Window_MenuCommand {
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
 
-    // Background
+    // Background / soft frame
 
-    context.fillStyle = "rgba(0, 0, 0, 0.95)";
-    context.fillRect(this.x, this.y, this.width, this.height);
-
-    // Border
-
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 2;
-    context.strokeRect(this.x, this.y, this.width, this.height);
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      UIAssetManager.drawPanel(
+        context,
+        "menuPanel",
+        this.x,
+        this.y,
+        this.width,
+        this.height,
+        {
+          fallbackFill: "rgba(15, 18, 22, 0.95)",
+          fallbackStroke: "rgba(154, 183, 204, 0.66)",
+          lineWidth: 1.5,
+          assetAlpha: 0.6,
+          sourceMargin: 12,
+          destMargin: 12,
+        },
+      );
+    } else {
+      context.fillStyle = "rgba(15, 18, 22, 0.95)";
+      context.fillRect(this.x, this.y, this.width, this.height);
+      context.strokeStyle = "rgba(154, 183, 204, 0.66)";
+      context.lineWidth = 1.5;
+      context.strokeRect(this.x, this.y, this.width, this.height);
+    }
 
     // Title
 
@@ -99,9 +118,37 @@ class Window_MenuCommand {
 
     for (let i = 0; i < this.commands.length; i++) {
       const selected = i === this.index;
-
       const prefix = selected ? "▶ " : "  ";
 
+      if (selected) {
+        const selectionX = this.x + 12;
+        const selectionY = drawY - 27;
+        const selectionWidth = this.width - 24;
+        const selectionHeight = 35;
+        const assetSelectionDrawn =
+          typeof UIAssetManager !== "undefined" &&
+          typeof UIAssetManager.drawSelectionPanel === "function" &&
+          UIAssetManager.drawSelectionPanel(
+            context,
+            selectionX,
+            selectionY,
+            selectionWidth,
+            selectionHeight,
+            { alpha: 0.2 },
+          );
+
+        if (!assetSelectionDrawn) {
+          context.fillStyle = "rgba(255, 215, 90, 0.08)";
+          context.fillRect(
+            selectionX,
+            selectionY,
+            selectionWidth,
+            selectionHeight,
+          );
+        }
+      }
+
+      context.fillStyle = selected ? "#ffd75a" : "#f0f3f7";
       context.fillText(
         `${prefix}${this.commands[i]}`,
         this.x + this.padding,

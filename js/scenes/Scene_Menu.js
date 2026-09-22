@@ -229,12 +229,19 @@ class Scene_Menu extends Scene_Base {
 
     // Menu background
 
-    context.fillStyle = "#202020";
+    context.fillStyle = "#20252b";
+    context.fillRect(0, 0, Graphics.width, Graphics.height);
+
+    const gradient = context.createLinearGradient(0, 0, Graphics.width, 0);
+    gradient.addColorStop(0, "rgba(150, 171, 187, 0.12)");
+    gradient.addColorStop(0.5, "rgba(32, 37, 43, 0)");
+    gradient.addColorStop(1, "rgba(118, 139, 154, 0.08)");
+    context.fillStyle = gradient;
     context.fillRect(0, 0, Graphics.width, Graphics.height);
 
     // Game title
 
-    context.fillStyle = "#ffffff";
+    context.fillStyle = "#f2f4f6";
     context.font = "32px sans-serif";
     context.textAlign = "left";
 

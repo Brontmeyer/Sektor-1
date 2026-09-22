@@ -11,6 +11,15 @@ class UIAssetManager {
     iconSet: "js/sprites/ui/rmmz/IconSet.png",
     buttonSet: "js/sprites/ui/rmmz/ButtonSet.png",
     battleShadow: "js/sprites/ui/rmmz/Shadow2.png",
+
+    // Pass 55 - UI Style Integration Prototype v1
+    // Consumers request semantic roles. Actual source filenames stay here so
+    // the visual skin can be swapped later without editing gameplay windows.
+    battlePanel: "js/sprites/ui/adventure/panel_grey_blue.png",
+    menuPanel: "js/sprites/ui/adventure/panel_grey_dark.png",
+    accentPanel: "js/sprites/ui/adventure/panel_grey_bolts_blue.png",
+    selectionPanel: "js/sprites/ui/adventure/button_grey.png",
+    gaugeFrame: "js/sprites/ui/adventure/progress_transparent.png",
   });
 
   static _images = new Map();
@@ -102,6 +111,307 @@ class UIAssetManager {
     }
 
     context.drawImage(image, ...args);
+    return true;
+  }
+
+  static clampAlpha(value, fallback = 1) {
+    const number = Number(value);
+
+    if (!Number.isFinite(number)) {
+      return fallback;
+    }
+
+    return Math.max(0, Math.min(1, number));
+  }
+
+  static drawNineSlice(
+    key,
+    context,
+    x,
+    y,
+    width,
+    height,
+    {
+      sourceMargin = 12,
+      destMargin = sourceMargin,
+      alpha = 1,
+      drawCenter = true,
+    } = {},
+  ) {
+    const image = this.image(key);
+
+    if (
+      !image ||
+      !context ||
+      typeof context.drawImage !== "function" ||
+      width <= 0 ||
+      height <= 0
+    ) {
+      return false;
+    }
+
+    const sourceWidth = Number(image.naturalWidth || image.width || 0);
+    const sourceHeight = Number(image.naturalHeight || image.height || 0);
+
+    if (sourceWidth <= 0 || sourceHeight <= 0) {
+      return false;
+    }
+
+    const sxMargin = Math.max(
+      0,
+      Math.min(Number(sourceMargin) || 0, sourceWidth / 2, sourceHeight / 2),
+    );
+    const dxMargin = Math.max(
+      0,
+      Math.min(Number(destMargin) || 0, width / 2, height / 2),
+    );
+    const sourceMiddleWidth = Math.max(0, sourceWidth - sxMargin * 2);
+    const sourceMiddleHeight = Math.max(0, sourceHeight - sxMargin * 2);
+    const destMiddleWidth = Math.max(0, width - dxMargin * 2);
+    const destMiddleHeight = Math.max(0, height - dxMargin * 2);
+
+    context.save?.();
+    const previousAlpha = Number.isFinite(context.globalAlpha)
+      ? context.globalAlpha
+      : 1;
+    context.globalAlpha = previousAlpha * this.clampAlpha(alpha);
+
+    if (drawCenter && sourceMiddleWidth > 0 && sourceMiddleHeight > 0) {
+      context.drawImage(
+        image,
+        sxMargin,
+        sxMargin,
+        sourceMiddleWidth,
+        sourceMiddleHeight,
+        x + dxMargin,
+        y + dxMargin,
+        destMiddleWidth,
+        destMiddleHeight,
+      );
+    }
+
+    // Corners.
+    context.drawImage(image, 0, 0, sxMargin, sxMargin, x, y, dxMargin, dxMargin);
+    context.drawImage(
+      image,
+      sourceWidth - sxMargin,
+      0,
+      sxMargin,
+      sxMargin,
+      x + width - dxMargin,
+      y,
+      dxMargin,
+      dxMargin,
+    );
+    context.drawImage(
+      image,
+      0,
+      sourceHeight - sxMargin,
+      sxMargin,
+      sxMargin,
+      x,
+      y + height - dxMargin,
+      dxMargin,
+      dxMargin,
+    );
+    context.drawImage(
+      image,
+      sourceWidth - sxMargin,
+      sourceHeight - sxMargin,
+      sxMargin,
+      sxMargin,
+      x + width - dxMargin,
+      y + height - dxMargin,
+      dxMargin,
+      dxMargin,
+    );
+
+    // Edges.
+    if (sourceMiddleWidth > 0 && destMiddleWidth > 0) {
+      context.drawImage(
+        image,
+        sxMargin,
+        0,
+        sourceMiddleWidth,
+        sxMargin,
+        x + dxMargin,
+        y,
+        destMiddleWidth,
+        dxMargin,
+      );
+      context.drawImage(
+        image,
+        sxMargin,
+        sourceHeight - sxMargin,
+        sourceMiddleWidth,
+        sxMargin,
+        x + dxMargin,
+        y + height - dxMargin,
+        destMiddleWidth,
+        dxMargin,
+      );
+    }
+
+    if (sourceMiddleHeight > 0 && destMiddleHeight > 0) {
+      context.drawImage(
+        image,
+        0,
+        sxMargin,
+        sxMargin,
+        sourceMiddleHeight,
+        x,
+        y + dxMargin,
+        dxMargin,
+        destMiddleHeight,
+      );
+      context.drawImage(
+        image,
+        sourceWidth - sxMargin,
+        sxMargin,
+        sxMargin,
+        sourceMiddleHeight,
+        x + width - dxMargin,
+        y + dxMargin,
+        dxMargin,
+        destMiddleHeight,
+      );
+    }
+
+    context.restore?.();
+    return true;
+  }
+
+  static drawPanel(
+    context,
+    role,
+    x,
+    y,
+    width,
+    height,
+    {
+      fallbackFill = "rgba(9, 13, 18, 0.94)",
+      fallbackStroke = "rgba(151, 196, 229, 0.55)",
+      lineWidth = 1.5,
+      assetAlpha = 0.5,
+      sourceMargin = 12,
+      destMargin = 12,
+    } = {},
+  ) {
+    if (!context || width <= 0 || height <= 0) {
+      return false;
+    }
+
+    context.save?.();
+
+    if (fallbackFill && typeof context.fillRect === "function") {
+      context.fillStyle = fallbackFill;
+      context.fillRect(x, y, width, height);
+    }
+
+    if (fallbackStroke && typeof context.strokeRect === "function") {
+      context.strokeStyle = fallbackStroke;
+      context.lineWidth = lineWidth;
+      context.strokeRect(x, y, width, height);
+    }
+
+    context.restore?.();
+
+    return this.drawNineSlice(role, context, x, y, width, height, {
+      sourceMargin,
+      destMargin,
+      alpha: assetAlpha,
+    });
+  }
+
+  static drawSelectionPanel(
+    context,
+    x,
+    y,
+    width,
+    height,
+    { alpha = 0.24 } = {},
+  ) {
+    return this.drawNineSlice("selectionPanel", context, x, y, width, height, {
+      sourceMargin: 7,
+      destMargin: Math.min(9, Math.max(4, height / 4)),
+      alpha,
+    });
+  }
+
+  static drawHorizontalImage(
+    key,
+    context,
+    x,
+    y,
+    width,
+    height,
+    { alpha = 1 } = {},
+  ) {
+    const image = this.image(key);
+
+    if (
+      !image ||
+      !context ||
+      typeof context.drawImage !== "function" ||
+      width <= 0 ||
+      height <= 0
+    ) {
+      return false;
+    }
+
+    context.save?.();
+    const previousAlpha = Number.isFinite(context.globalAlpha)
+      ? context.globalAlpha
+      : 1;
+    context.globalAlpha = previousAlpha * this.clampAlpha(alpha);
+    context.translate?.(x + width, y);
+    context.rotate?.(Math.PI / 2);
+    context.drawImage(image, 0, 0, height, width);
+    context.restore?.();
+    return true;
+  }
+
+  static drawGauge(
+    context,
+    value,
+    maximum,
+    x,
+    y,
+    width,
+    height,
+    fillStyle,
+  ) {
+    if (!context || width <= 0 || height <= 0) {
+      return false;
+    }
+
+    const max = Number(maximum);
+    const current = Number(value);
+    const rate =
+      Number.isFinite(max) && max > 0 && Number.isFinite(current)
+        ? Math.max(0, Math.min(1, current / max))
+        : 0;
+
+    // Keep the fill vector-based so HP/MP/Valor retain Sektor 1's palette.
+    // The supplied Adventure capsule contributes only soft framing.
+    context.save?.();
+    context.fillStyle = "rgba(18, 23, 29, 0.82)";
+    context.fillRect?.(x, y, width, height);
+
+    if (rate > 0) {
+      context.fillStyle = fillStyle;
+      context.fillRect?.(
+        x + 1,
+        y + 1,
+        Math.max(0, (width - 2) * rate),
+        Math.max(1, height - 2),
+      );
+    }
+    context.restore?.();
+
+    this.drawHorizontalImage("gaugeFrame", context, x, y, width, height, {
+      alpha: 0.72,
+    });
     return true;
   }
 

@@ -396,7 +396,7 @@ For example, a Magick window may display whether a Magick is usable, but the und
 
 Visual assets are stored under `js/sprites/`, including actor/enemy battle sprites and the curated `js/sprites/ui/` presentation library.
 
-`UIAssetManager` is the canonical owner of reusable UI/presentation image paths. Asset / UI Skinning Foundation v1 gives consumers named slots such as `windowSkin`, `iconSet`, `buttonSet`, and `battleShadow`; it also owns optional windowskin nine-slice drawing and icon-sheet extraction so windows/renderers do not duplicate source-rectangle knowledge. Presentation assets load before the first scene. A failed UI asset load is reported but is never fatal: consumers retain the established vector/no-image fallback.
+`UIAssetManager` is the canonical owner of reusable UI/presentation image paths. Asset / UI Skinning Foundation v1 gives consumers named slots such as `windowSkin`, `iconSet`, `buttonSet`, and `battleShadow`; it also owns optional windowskin nine-slice drawing and icon-sheet extraction so windows/renderers do not duplicate source-rectangle knowledge. UI Style Integration Prototype v1 extends that same boundary with semantic roles such as `battlePanel`, `menuPanel`, `accentPanel`, `selectionPanel`, and `gaugeFrame`, plus reusable panel/selection/gauge drawing helpers. Consumers never name Adventure-pack files directly. Presentation assets load before the first scene. A failed UI asset load is reported but is never fatal: every skinned surface retains the established vector/no-image fallback.
 
 `BattleRenderer` demonstrates that boundary with optional asset-backed side-view shadows. Shadow art changes only presentation; positions, hit logic, facing, targeting, and damage remain owned by the existing battle systems.
 
