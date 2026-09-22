@@ -190,6 +190,10 @@ Pass 57 is post-audit menu presentation/ownership work and does not reopen a his
 
 Pass 58 is post-audit menu refinement/foundation work and does not reopen a historical finding. `MenuAccessPolicy` owns menu command visibility/enabled state, validated map `menuAccess.allowSave` / `allowLoad` flags provide future area restrictions, and debug mode deliberately preserves unrestricted Save/Load testing. `Window_MenuCommand` only presents policy state. Load is restored to the menu, RUNES is the player-facing currency label, and party-card/palette changes are presentation-only. No persistent story-unlock state or Config schema change is introduced, so Save Runtime remains v9 and Config Runtime remains v2.
 
+## Post-Audit Feature Note: Main Menu Actor Selection & Order Foundation v1
+
+Pass 59 is post-audit party-menu/formation-state work and does not reopen a historical finding. `Window_MainMenuParty` owns active-card focus, `Scene_Menu` coordinates actor-targeted destination handoff, and `Window_ActorNavigator` opens/cycles character screens within the active four. `Game_Party` owns validated `front` / `back` row preference, while the menu communicates that state by portrait offset only. ROSTER is hidden by default until a future story unlock explicitly publishes it. Row preference introduces persistent game state, so Save Runtime advances to v10; v9 migration defaults missing rows to front without re-injecting forgotten Skill state. No battle-row damage, range, weapon, or coordinate rule is introduced by this pass.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

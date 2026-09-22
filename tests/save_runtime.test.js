@@ -184,7 +184,7 @@ function rawSave(localStorage, SaveManager, slotId = 1) {
   return JSON.parse(localStorage.getItem(SaveManager.saveKey(slotId)));
 }
 
-function testV9SaveSerializesSkillStateValorEquipmentCurrencyEssencesAndStatuses() {
+function testV10SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesAndRows() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
 
@@ -204,13 +204,14 @@ function testV9SaveSerializesSkillStateValorEquipmentCurrencyEssencesAndStatuses
   party.armors = { 1: 1 };
   party.accessories = { 1: 2, 3: 1 };
   assert.equal(party.gainGil(77), true);
+  assert.equal(party.setBattleRow(second, "back"), true);
 
   assert.equal(SaveManager.save(1), true);
 
   const saveData = rawSave(localStorage, SaveManager);
   const savedSecond = saveData.actors.find((actor) => actor.actorId === 2);
 
-  assert.equal(saveData.version, 9);
+  assert.equal(saveData.version, 10);
   assert.equal(saveData.actors.length, 4);
   assert.equal(Object.hasOwn(saveData, "actor"), false);
   assert.equal(savedSecond.exp, 321);
@@ -225,6 +226,12 @@ function testV9SaveSerializesSkillStateValorEquipmentCurrencyEssencesAndStatuses
     ["fury"],
   );
   assert.deepEqual(saveData.party.battleActorIds, [1, 2, 3, 4]);
+  assert.deepEqual(saveData.party.battleRows, {
+    1: "front",
+    2: "back",
+    3: "front",
+    4: "front",
+  });
   assert.equal(saveData.party.gil, 77);
   assert.equal(savedSecond.accessoryId, 3);
   assert.deepEqual(saveData.party.accessories, { 1: 2, 3: 1 });
@@ -234,7 +241,7 @@ function testV9SaveSerializesSkillStateValorEquipmentCurrencyEssencesAndStatuses
   assert.deepEqual(Array.from(savedSecond.equippedEssenceIds), [1, null, null]);
 }
 
-async function testV9LoadRestoresSkillStateValorAccessoryStateAndNormalizesInventory() {
+async function testV10LoadRestoresSkillStateValorAccessoryStateRowsAndNormalizesInventory() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
 
@@ -250,6 +257,7 @@ async function testV9LoadRestoresSkillStateValorAccessoryStateAndNormalizesInven
   party.items = { 1: 2 };
   party.accessories = { 1: 1, 2: 2 };
   assert.equal(party.gainGil(120), true);
+  assert.equal(party.setBattleRow(second, "back"), true);
 
   assert.equal(SaveManager.save(1), true);
 
@@ -270,6 +278,7 @@ async function testV9LoadRestoresSkillStateValorAccessoryStateAndNormalizesInven
   party.items = {};
   party.accessories = {};
   party.setGil(0);
+  party.setBattleRow(second, "front");
 
   assert.equal(await SaveManager.load(1), true);
   assert.deepEqual(Array.from(second.skillIds), [2, 1]);
@@ -284,6 +293,7 @@ async function testV9LoadRestoresSkillStateValorAccessoryStateAndNormalizesInven
   assert.equal(party.itemCount(2), 0);
   assert.equal(party.itemCount(999), 0);
   assert.equal(party.gil(), 120);
+  assert.equal(party.battleRow(second), "back");
   assert.equal(second.accessoryId, 1);
   assert.equal(party.accessoryCount(1), 1);
   assert.equal(party.accessoryCount(2), 2);
@@ -292,7 +302,7 @@ async function testV9LoadRestoresSkillStateValorAccessoryStateAndNormalizesInven
 }
 
 
-async function testVersionNineSavePreservesExplicitSkillState() {
+async function testVersionTenSavePreservesExplicitSkillState() {
   const { localStorage, partyActors, SaveManager } = createHarness();
   const second = partyActors[1];
 
@@ -303,6 +313,45 @@ async function testVersionNineSavePreservesExplicitSkillState() {
   second.skillIds = [2];
   assert.equal(await SaveManager.load(1), true);
   assert.deepEqual(Array.from(second.skillIds), []);
+}
+
+async function testVersionNineSaveMigratesRowsWithoutReinjectingForgottenSkills() {
+  const { localStorage, party, partyActors, SaveManager } = createHarness();
+  const second = partyActors[1];
+
+  assert.equal(second.forgetSkill(2), true);
+  assert.deepEqual(Array.from(second.skillIds), []);
+
+  const v9 = {
+    version: 9,
+    metadata: { actorName: partyActors[0].name, level: 1, timestamp: Date.now() },
+    actors: partyActors.map((actor) => SaveManager.serializeActor(actor)),
+    party: {
+      items: {},
+      weapons: {},
+      armors: {},
+      accessories: {},
+      battleActorIds: [1, 2, 3, 4],
+      gil: 0,
+    },
+    switches: { data: {} },
+    variables: { data: {} },
+    selfSwitches: { data: {} },
+    location: { mapId: 1, x: 7, y: 8 },
+  };
+
+  localStorage.setItem(SaveManager.saveKey(1), JSON.stringify(v9));
+  second.skillIds = [2];
+  party.setBattleRow(second, "back");
+
+  assert.equal(await SaveManager.load(1), true);
+  assert.deepEqual(Array.from(second.skillIds), []);
+  assert.deepEqual(JSON.parse(JSON.stringify(party.battleRows())), {
+    1: "front",
+    2: "front",
+    3: "front",
+    4: "front",
+  });
 }
 
 async function testVersionEightSaveMigratesCanonicalStarterSkills() {
@@ -634,6 +683,32 @@ async function testVersionOneSaveMigratesLeaderWithoutOverwritingOtherActors() {
   assert.equal(second.exp, secondExpBefore);
 }
 
+async function testInvalidBattleRowsAreRejected() {
+  const { localStorage, partyActors, SaveManager } = createHarness();
+  const saveData = {
+    version: 10,
+    metadata: { actorName: partyActors[0].name, level: 1, timestamp: Date.now() },
+    actors: partyActors.map((actor) => SaveManager.serializeActor(actor)),
+    party: {
+      items: {},
+      weapons: {},
+      armors: {},
+      accessories: {},
+      battleActorIds: [1, 2, 3, 4],
+      battleRows: { 1: "front", 2: "sideways" },
+      gil: 0,
+    },
+    switches: { data: {} },
+    variables: { data: {} },
+    selfSwitches: { data: {} },
+    location: { mapId: 1, x: 7, y: 8 },
+  };
+
+  localStorage.setItem(SaveManager.saveKey(1), JSON.stringify(saveData));
+  assert.equal(await SaveManager.load(1), false);
+  assert.match(SaveManager.errorMessage(), /battleRows actor 2 must be front or back/i);
+}
+
 async function testMalformedAndFutureSavesFailWithoutThrowing() {
   const { localStorage, partyActors, SaveManager } = createHarness();
   const leader = partyActors[0];
@@ -668,9 +743,10 @@ function testSaveStorageFailureReturnsFalse() {
 }
 
 async function run() {
-  testV9SaveSerializesSkillStateValorEquipmentCurrencyEssencesAndStatuses();
-  await testV9LoadRestoresSkillStateValorAccessoryStateAndNormalizesInventory();
-  await testVersionNineSavePreservesExplicitSkillState();
+  testV10SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesAndRows();
+  await testV10LoadRestoresSkillStateValorAccessoryStateRowsAndNormalizesInventory();
+  await testVersionTenSavePreservesExplicitSkillState();
+  await testVersionNineSaveMigratesRowsWithoutReinjectingForgottenSkills();
   await testVersionEightSaveMigratesCanonicalStarterSkills();
   await testVersionSevenSaveMigratesSkillDefaults();
   await testVersionSixSaveMigratesValorDefault();
@@ -679,6 +755,7 @@ async function run() {
   await testVersionThreeSaveMigratesLegacySkillsToMagickIds();
   await testVersionTwoSaveMigratesCurrencyAndEssenceDefaults();
   await testVersionOneSaveMigratesLeaderWithoutOverwritingOtherActors();
+  await testInvalidBattleRowsAreRejected();
   await testMalformedAndFutureSavesFailWithoutThrowing();
   testSaveStorageFailureReturnsFalse();
 

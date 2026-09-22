@@ -3,6 +3,9 @@
 class Window_MainMenuParty {
   constructor(party, bounds = {}) {
     this.party = party;
+    this.active = false;
+    this.mode = "view";
+    this.index = 0;
     this.setBounds(bounds);
   }
 
@@ -16,6 +19,109 @@ class Window_MainMenuParty {
   members() {
     const members = this.party?.battleMembers?.() || [];
     return members.slice(0, 4);
+  }
+
+  activate(mode = "actor") {
+    this.mode = mode === "order" ? "order" : "actor";
+    this.active = true;
+    this.index = Math.max(0, Math.min(this.index, this.members().length - 1));
+    return this.currentActor() !== null;
+  }
+
+  deactivate() {
+    this.active = false;
+    this.mode = "view";
+  }
+
+  isActive() {
+    return this.active;
+  }
+
+  currentActor() {
+    return this.members()[this.index] || null;
+  }
+
+  changeSelection(offset) {
+    const members = this.members();
+
+    if (members.length === 0) {
+      this.index = 0;
+      return false;
+    }
+
+    const numericOffset = Number(offset);
+
+    if (!Number.isInteger(numericOffset) || numericOffset === 0) {
+      return false;
+    }
+
+    this.index =
+      ((this.index + numericOffset) % members.length + members.length) %
+      members.length;
+    return true;
+  }
+
+  actorRow(actor) {
+    return this.party?.battleRow?.(actor) === "back" ? "back" : "front";
+  }
+
+  setActorRow(actor, row) {
+    return this.party?.setBattleRow?.(actor, row) === true;
+  }
+
+  toggleActorRow(actor) {
+    return this.party?.toggleBattleRow?.(actor) === true;
+  }
+
+  update() {
+    if (!this.active) {
+      return null;
+    }
+
+    if (Input.isActionTriggered("up")) {
+      this.changeSelection(-1);
+      return { type: "move", actor: this.currentActor() };
+    }
+
+    if (Input.isActionTriggered("down")) {
+      this.changeSelection(1);
+      return { type: "move", actor: this.currentActor() };
+    }
+
+    if (Input.isActionTriggered("cancel")) {
+      return { type: "cancel", actor: this.currentActor() };
+    }
+
+    const actor = this.currentActor();
+
+    if (!actor) {
+      return null;
+    }
+
+    if (this.mode === "order") {
+      if (Input.isActionTriggered("left")) {
+        this.setActorRow(actor, "back");
+        return { type: "row", actor, row: "back" };
+      }
+
+      if (Input.isActionTriggered("right")) {
+        this.setActorRow(actor, "front");
+        return { type: "row", actor, row: "front" };
+      }
+
+      if (Input.isActionTriggered("confirm")) {
+        this.toggleActorRow(actor);
+        return { type: "row", actor, row: this.actorRow(actor) };
+      }
+
+      return null;
+    }
+
+    if (Input.isActionTriggered("confirm")) {
+      return { type: "confirm", actor };
+    }
+
+    return null;
   }
 
   statusText(actor) {
@@ -78,7 +184,8 @@ class Window_MainMenuParty {
       context.strokeRect(x, y, size, size);
     }
 
-    const initial = String(actor?.name || "?").trim().charAt(0).toUpperCase() || "?";
+    const initial =
+      String(actor?.name || "?").trim().charAt(0).toUpperCase() || "?";
     context.fillStyle = "#eef4fb";
     context.font = `600 ${Math.max(24, Math.floor(size * 0.4))}px sans-serif`;
     context.textAlign = "center";
@@ -106,14 +213,20 @@ class Window_MainMenuParty {
   }
 
   drawActorCard(context, actor, index, x, y, width, height) {
+    const selected = this.active && index === this.index;
     this.drawPanel(context, x, y, width, height, {
       assetAlpha: index % 2 === 0 ? 0.42 : 0.36,
       shadow: false,
+      fallbackStroke: selected ? "rgba(255, 215, 90, 0.92)" : undefined,
+      innerStroke: selected ? "rgba(255, 230, 140, 0.25)" : undefined,
     });
 
     const padding = 12;
-    const portraitSize = Math.max(72, Math.min(104, height - padding * 2));
-    const portraitX = x + padding;
+    const portraitSize = Math.max(78, Math.min(112, height - padding * 2));
+    const rowTravel = Math.max(20, Math.min(30, Math.floor(portraitSize * 0.28)));
+    const portraitBaseX = x + padding + 8;
+    const portraitX =
+      portraitBaseX + (this.actorRow(actor) === "front" ? rowTravel : 0);
     const portraitY = y + (height - portraitSize) / 2;
     this.drawPortraitPlaceholder(
       context,
@@ -123,11 +236,13 @@ class Window_MainMenuParty {
       portraitSize,
     );
 
-    const infoX = portraitX + portraitSize + 16;
+    // Identity/stats remain fixed while only the portrait shifts horizontally.
+    // The shift itself is the menu's visual language for battle row position.
+    const infoX = portraitBaseX + rowTravel + portraitSize + 18;
     const infoWidth = Math.max(220, width - (infoX - x) - padding);
     const identityWidth = Math.max(
-      150,
-      Math.min(195, Math.floor(infoWidth * 0.25)),
+      148,
+      Math.min(190, Math.floor(infoWidth * 0.25)),
     );
     const statX = infoX + identityWidth;
     const gaugeGap = 10;
@@ -145,7 +260,8 @@ class Window_MainMenuParty {
     context.font = "600 20px sans-serif";
     context.fillText(actor?.name || "Unknown", infoX, topY);
 
-    const nameWidth = context.measureText?.(actor?.name || "Unknown")?.width || 80;
+    const nameWidth =
+      context.measureText?.(actor?.name || "Unknown")?.width || 80;
     context.fillStyle = "#ffd75a";
     context.font = "600 16px sans-serif";
     context.fillText(`LV ${actor?.level ?? "?"}`, infoX + nameWidth + 14, topY);
@@ -153,7 +269,8 @@ class Window_MainMenuParty {
     context.font = "15px sans-serif";
     context.fillStyle = "#a8b8ca";
     context.fillText("Status:", infoX, topY + 27);
-    context.fillStyle = this.statusText(actor) === "Normal" ? "#55e0c2" : "#ff89c8";
+    context.fillStyle =
+      this.statusText(actor) === "Normal" ? "#55e0c2" : "#ff89c8";
     context.fillText(this.statusText(actor), infoX + 54, topY + 27);
 
     const requiredExp = actor?.expForNextLevel?.();
@@ -193,10 +310,11 @@ class Window_MainMenuParty {
       context.font = "600 13px sans-serif";
       const displayValue = Math.floor(Math.max(0, Number(stat.value) || 0));
       const displayMax = Math.floor(Math.max(0, Number(stat.maximum) || 0));
-      const label = stat.label === "VALOR"
-        ? `${stat.label} ${displayValue}/${displayMax}`
-        : `${stat.label} ${displayValue}/${displayMax}`;
-      context.fillText(label, gx, gaugeY);
+      context.fillText(
+        `${stat.label} ${displayValue}/${displayMax}`,
+        gx,
+        gaugeY,
+      );
       this.drawGauge(
         context,
         stat.value,
@@ -207,6 +325,14 @@ class Window_MainMenuParty {
         stat.color,
       );
     });
+
+    if (selected) {
+      context.fillStyle = "#ffd75a";
+      context.font = "20px sans-serif";
+      context.textAlign = "left";
+      context.textBaseline = "middle";
+      context.fillText("▶", x + 4, y + height / 2);
+    }
   }
 
   draw() {
@@ -218,17 +344,11 @@ class Window_MainMenuParty {
       assetAlpha: 0.48,
     });
 
-    context.fillStyle = "#f3f7fc";
-    context.font = "600 16px sans-serif";
-    context.textAlign = "left";
-    context.textBaseline = "alphabetic";
-    context.fillText("PARTY INFORMATION", this.x + 20, this.y + 28);
-
     const cardGap = 10;
-    const contentTop = this.y + 42;
-    const contentBottom = this.y + this.height - 14;
+    const contentTop = this.y + 12;
+    const contentBottom = this.y + this.height - 12;
     const cardHeight = Math.max(
-      94,
+      102,
       (contentBottom - contentTop - cardGap * 3) / 4,
     );
     const cardX = this.x + 12;

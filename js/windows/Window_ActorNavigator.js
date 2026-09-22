@@ -9,6 +9,10 @@ class Window_ActorNavigator {
 
   members() {
     if (this.party) {
+      if (typeof this.party.battleMembers === "function") {
+        return this.party.battleMembers() || [];
+      }
+
       return this.party.members() || [];
     }
 
@@ -17,6 +21,19 @@ class Window_ActorNavigator {
 
   actor() {
     return this.members()[this.actorIndex] || null;
+  }
+
+  selectActor(actorOrId) {
+    const actorId = Number(actorOrId?.actorId ?? actorOrId);
+    const members = this.members();
+    const index = members.findIndex((member) => member?.actorId === actorId);
+
+    if (index < 0) {
+      return false;
+    }
+
+    this.actorIndex = index;
+    return true;
   }
 
   changeActor(offset) {

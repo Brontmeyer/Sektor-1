@@ -99,3 +99,8 @@ The main-menu command list is intentionally singular and does not display an ext
 The main/menu semantic role now uses the blue Adventure panel rather than the darker grey panel, paired with a deeper blue-violet fallback/background treatment. This is a default prototype, not a final locked palette. Party-card spacing is also rebalanced so larger portrait slots, identity text, and HP/MP/Valor gauges use the horizontal card area more evenly.
 
 Future Window Color customization should not add per-window RGB constants. The intended direction is a four-corner configurable color model owned by Config Runtime and consumed through shared UI rendering. That later pass may tint/recolor semantic panel surfaces, but Pass 58 intentionally does not add an incomplete color editor.
+## Pass 59: Party-card interaction and row presentation
+
+The main-menu party panel is now both presentation and a shared selection surface. It intentionally has no PARTY INFORMATION label; the space belongs to the four actor cards. Selected cards use the existing semantic menu-panel focus treatment. Front/back row preference is communicated only through portrait horizontal offset (back left, front right), keeping row state legible without adding another text badge. The scene backdrop is neutral near-black so future four-corner Window Color customization can change the window palette without fighting a second saturated background.
+
+The portrait offset is presentation of `Game_Party` row state, not ownership of it. `Window_MainMenuParty` may request row changes during Order mode, but persistent state and validation stay in `Game_Party`, and battle-row combat rules remain outside the UI layer.

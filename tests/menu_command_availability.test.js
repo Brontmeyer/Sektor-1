@@ -81,6 +81,26 @@ function testDebugModeKeepsSaveAndLoadPermissiveForDevelopment() {
   assert.equal(policy.isEnabled("Load"), true);
 }
 
+
+function testRosterIsHiddenByDefaultUntilExplicitStoryUnlock() {
+  const Policy = loadPolicy();
+  const lockedPolicy = new Policy();
+  const locked = loadWindow(lockedPolicy).window;
+
+  assert.equal(locked.commands.includes("ROSTER"), false);
+  assert.equal(lockedPolicy.isVisible("ROSTER"), false);
+
+  const unlockedPolicy = new Policy({
+    commandStates: {
+      ROSTER: { visible: true, enabled: true },
+    },
+  });
+  const unlocked = loadWindow(unlockedPolicy).window;
+
+  assert.equal(unlocked.commands.includes("ROSTER"), true);
+  assert.equal(unlockedPolicy.isVisible("ROSTER"), true);
+}
+
 function testFutureStoryUnlocksCanHideOrDisableCommands() {
   const Policy = loadPolicy();
   const policy = new Policy({
@@ -148,6 +168,7 @@ function testPolicyLoadsBeforeMenuConsumers() {
 function run() {
   testMapRestrictionsDisableSaveAndLoadOutsideDebugMode();
   testDebugModeKeepsSaveAndLoadPermissiveForDevelopment();
+  testRosterIsHiddenByDefaultUntilExplicitStoryUnlock();
   testFutureStoryUnlocksCanHideOrDisableCommands();
   testLoadIsRestoredBesideSaveAndDisabledCommandsRenderMuted();
   testPolicyLoadsBeforeMenuConsumers();

@@ -108,7 +108,9 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Main Menu Refinement & Command Availability Foundation v1 with restored Load, RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and future map-based Save/Load restrictions
 - [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
 - [ ] Add canonical persistent play-time tracking before replacing the main menu TIME placeholder
-- [ ] Implement Order as active-party position management; add front/back row choice only when player-row mechanics are deliberately implemented
+- [x] Implement Main Menu Actor Selection & Order Foundation v1 with shared party-card focus, actor handoff, persistent front/back row state, portrait-position row language, and ROSTER hidden-by-default policy
+- [ ] Extend Order with active-party slot reordering (positions 1-4) when the final interaction is approved
+- [ ] Connect player front/back row state to battle geometry and later row-dependent weapon/damage rules in a focused battle-row pass
 - [ ] Separate multi-level Valor progression / Valor Arts from the ordinary Skill menu/runtime without duplicating the action engine
 - [ ] Implement ROSTER (Remote Organization & Strategic Team Evaluation Registry) for active/reserve party switching once reserve characters exist
 - [x] Polish Tactical Help bar size/transparency during the battle UI presentation pass
@@ -228,7 +230,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v9 with persistent learned Skills/Valor/equipment/Essence state plus v1-v8 migration and Pass-38 starter-Art content migration
+- [x] Save Runtime v10 with persistent learned Skills/Valor/equipment/Essence/party-row state, v9 row-default migration, and preserved v1-v8 starter-Art migrations
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies

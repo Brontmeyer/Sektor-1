@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 9;
+    return 10;
   }
 
   static clearError() {
@@ -129,10 +129,20 @@ class SaveManager {
         gil: Number.isInteger(Number(data.party?.gil))
           ? Math.max(0, Number(data.party.gil))
           : 0,
+        battleRows: this.isPlainObject(data.party?.battleRows)
+          ? data.party.battleRows
+          : {},
       },
     });
 
     if (inferredVersion === this.currentVersion()) {
+      return upgradeToCurrent(saveData);
+    }
+
+    if (inferredVersion === 9) {
+      // v9 already owns explicit Skill state, including deliberate forgotten
+      // starter Arts. Pass 59 only adds party row state, so preserve Skill
+      // ownership exactly while defaulting missing rows to front.
       return upgradeToCurrent(saveData);
     }
 
@@ -408,6 +418,26 @@ class SaveManager {
         errors.push("Party battleActorIds must be an array.");
       }
 
+      if (
+        saveData.party.battleRows !== undefined &&
+        !this.isPlainObject(saveData.party.battleRows)
+      ) {
+        errors.push("Party battleRows must be an object.");
+      } else if (this.isPlainObject(saveData.party.battleRows)) {
+        for (const [rawActorId, rawRow] of Object.entries(saveData.party.battleRows)) {
+          const actorId = Number(rawActorId);
+          const row = String(rawRow || "").toLowerCase();
+
+          if (!Number.isInteger(actorId) || actorId <= 0 || !$gameParty?.actorById?.(actorId)) {
+            errors.push(`Party battleRows references unknown actor ${rawActorId}.`);
+            continue;
+          }
+
+          if (!["front", "back"].includes(row)) {
+            errors.push(`Party battleRows actor ${actorId} must be front or back.`);
+          }
+        }
+      }
 
       const gil = Number(saveData.party.gil);
       if (!Number.isInteger(gil) || gil < 0) {
@@ -665,6 +695,10 @@ class SaveManager {
     if (Array.isArray(partyData.battleActorIds)) {
       $gameParty.setBattleActorIds(partyData.battleActorIds);
     }
+
+    if (typeof $gameParty.setBattleRows === "function") {
+      $gameParty.setBattleRows(partyData.battleRows || {});
+    }
   }
 
   static restoreObjectData(target, source) {
@@ -834,6 +868,10 @@ class SaveManager {
           accessories: { ...$gameParty.accessories },
           gil: typeof $gameParty.gil === "function" ? $gameParty.gil() : 0,
           battleActorIds: $gameParty.battleActorIds(),
+          battleRows:
+            typeof $gameParty.battleRows === "function"
+              ? $gameParty.battleRows()
+              : {},
         },
 
         switches: {

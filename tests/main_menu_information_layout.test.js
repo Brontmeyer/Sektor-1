@@ -136,7 +136,7 @@ function testPartyWindowDrawsTheActiveFourWithRealStats() {
     .filter((call) => call[0] === "fillText")
     .map((call) => String(call[1]));
 
-  assert.equal(text.includes("PARTY INFORMATION"), true);
+  assert.equal(text.includes("PARTY INFORMATION"), false);
   for (const member of members) {
     assert.equal(text.includes(member.name), true);
   }

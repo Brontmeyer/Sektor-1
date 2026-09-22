@@ -18,6 +18,14 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Main Menu Actor Selection & Order Foundation v1 with shared party-card focus for Magick / Skill / Essence / Equip / Status / Valor and explicit actor handoff into existing character menus
+- Added Order-mode party-card navigation with menu-owned front/back row state; left/right or confirm moves the selected actor between rows by shifting the portrait horizontally with no FRONT/BACK text labels
+- Added persistent party `battleRows` state and Save Runtime v10 with v9 migration that defaults missing rows to front while preserving explicit v9 Skill ownership
+- Added `Window_ActorNavigator.selectActor()` and active-battle-party navigation so character subscreens open on the actor chosen from the main menu and continue cycling only through the active four
+- Made ROSTER hidden by default through `MenuAccessPolicy` until a future story system explicitly publishes its unlocked state
+- Removed the redundant PARTY INFORMATION label and reclaimed the space for taller actor cards; the main-menu backdrop now uses a neutral near-black treatment beneath the configurable window skin
+- Added dedicated actor-selection / Order regression coverage plus Save Runtime v10 row-state migration and validation coverage
+
 - Added Main Menu Refinement & Command Availability Foundation v1 with restored Load, player-facing RUNES currency labeling across menu/shop/results presentation, rebalanced party-card spacing, and a richer blue-violet default menu palette
 - Added `MenuAccessPolicy` so menu destinations can be independently visible/enabled with contextual reasons, supporting future story unlocks such as ROSTER without hard-coding narrative checks into `Window_MenuCommand`
 - Added optional per-map `menuAccess.allowSave` / `menuAccess.allowLoad` contracts with database validation; debug mode deliberately overrides these restrictions so development testing can still Save/Load anywhere

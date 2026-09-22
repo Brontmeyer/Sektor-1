@@ -25,8 +25,114 @@ class Scene_Menu extends Scene_Base {
     this.skillsWindow = new Window_Skills($gameParty);
     this.essenceWindow = new Window_Essence($gameParty);
 
+    this.pendingActorCommand = null;
     this.saveMessage = "";
     this.saveMessageTimer = 0;
+  }
+
+  actorDestinationWindow(command) {
+    return {
+      Magick: this.magickWindow,
+      Skill: this.skillsWindow,
+      Essence: this.essenceWindow,
+      Equip: this.equipmentWindow,
+      Status: this.statusWindow,
+    }[command] || null;
+  }
+
+  selectActorInWindow(window, actor) {
+    if (!window || !actor) {
+      return false;
+    }
+
+    if (window.actorNavigation?.selectActor) {
+      window.actorNavigation.selectActor(actor);
+    }
+
+    if (typeof window.onActorChanged === "function") {
+      window.onActorChanged();
+    }
+
+    window.show?.();
+    return true;
+  }
+
+  beginActorSelection(command) {
+    if (!this.partyWindow.activate("actor")) {
+      this.saveMessage = "No active party member is available.";
+      this.saveMessageTimer = 2;
+      return false;
+    }
+
+    this.pendingActorCommand = command;
+    return true;
+  }
+
+  beginOrderSelection() {
+    if (!this.partyWindow.activate("order")) {
+      this.saveMessage = "No active party member is available.";
+      this.saveMessageTimer = 2;
+      return false;
+    }
+
+    this.pendingActorCommand = "Order";
+    return true;
+  }
+
+  endPartySelection() {
+    this.partyWindow.deactivate();
+    this.pendingActorCommand = null;
+  }
+
+  openActorDestination(command, actor) {
+    if (!actor) {
+      return false;
+    }
+
+    if (command === "Valor") {
+      this.saveMessage = `${actor.name}'s Valor progression is planned for a focused pass.`;
+      this.saveMessageTimer = 2;
+      this.endPartySelection();
+      return true;
+    }
+
+    const window = this.actorDestinationWindow(command);
+
+    if (!window) {
+      return false;
+    }
+
+    const opened = this.selectActorInWindow(window, actor);
+
+    if (opened) {
+      this.endPartySelection();
+    }
+
+    return opened;
+  }
+
+  updatePartySelection() {
+    const result = this.partyWindow.update();
+
+    if (!result) {
+      return;
+    }
+
+    if (result.type === "cancel") {
+      this.endPartySelection();
+      return;
+    }
+
+    if (this.partyWindow.mode === "order") {
+      // Row changes are committed immediately to Game_Party. They alter only
+      // formation state/presentation in v1; battle penalties are deliberately
+      // deferred until the player-row combat contract exists.
+      return;
+    }
+
+    if (result.type === "confirm") {
+      this.openActorDestination(this.pendingActorCommand, result.actor);
+    }
   }
 
   update(deltaTime) {
@@ -114,6 +220,11 @@ class Scene_Menu extends Scene_Base {
       return;
     }
 
+    if (this.partyWindow.isActive()) {
+      this.updatePartySelection();
+      return;
+    }
+
     if (Input.isActionTriggered("menu")) {
       SceneManager.pop();
       return;
@@ -140,23 +251,16 @@ class Scene_Menu extends Scene_Base {
         break;
 
       case "Magick":
-        this.magickWindow.show();
-        break;
-
       case "Skill":
-        this.skillsWindow.show();
-        break;
-
       case "Essence":
-        this.essenceWindow.show();
-        break;
-
       case "Equip":
-        this.equipmentWindow.show();
+      case "Status":
+      case "Valor":
+        this.beginActorSelection(command);
         break;
 
-      case "Status":
-        this.statusWindow.show();
+      case "Order":
+        this.beginOrderSelection();
         break;
 
       case "Option":
@@ -175,12 +279,10 @@ class Scene_Menu extends Scene_Base {
         SceneManager.pop();
         break;
 
-      case "Order":
-      case "Valor":
       case "ROSTER":
-        this.saveMessage = `${command} is planned for a focused pass.`;
+        this.saveMessage = "ROSTER is planned for a focused pass.";
         this.saveMessageTimer = 2;
-        DebugManager.log(`${command} is planned but not implemented yet.`);
+        DebugManager.log("ROSTER is planned but not implemented yet.");
         break;
 
       default:
@@ -202,13 +304,13 @@ class Scene_Menu extends Scene_Base {
   }
 
   drawBackground(context) {
-    context.fillStyle = "#10162a";
+    context.fillStyle = "#0b0e13";
     context.fillRect(0, 0, Graphics.width, Graphics.height);
 
     const gradient = context.createLinearGradient(0, 0, Graphics.width, 0);
-    gradient.addColorStop(0, "rgba(74, 92, 190, 0.24)");
-    gradient.addColorStop(0.5, "rgba(16, 22, 42, 0)");
-    gradient.addColorStop(1, "rgba(82, 55, 156, 0.17)");
+    gradient.addColorStop(0, "rgba(46, 52, 62, 0.2)");
+    gradient.addColorStop(0.5, "rgba(11, 14, 19, 0)");
+    gradient.addColorStop(1, "rgba(35, 39, 48, 0.14)");
     context.fillStyle = gradient;
     context.fillRect(0, 0, Graphics.width, Graphics.height);
   }
@@ -246,6 +348,21 @@ class Scene_Menu extends Scene_Base {
     return false;
   }
 
+  partySelectionHint() {
+    if (!this.partyWindow.isActive()) {
+      return "";
+    }
+
+    if (this.partyWindow.mode === "order") {
+      return `${Input.actionLabel("up")}/${Input.actionLabel("down")}: Actor   ` +
+        `${Input.actionLabel("left")}: Back   ${Input.actionLabel("right")}: Front   ` +
+        `${Input.actionLabel("confirm")}: Toggle   ${Input.actionLabel("cancel")}: Back`;
+    }
+
+    return `${this.pendingActorCommand}: choose actor   ` +
+      `${Input.actionLabel("confirm")}: Select   ${Input.actionLabel("cancel")}: Back`;
+  }
+
   drawMainHeader(context) {
     this.drawPanel(context, this.layout.header, { assetAlpha: 0.48 });
     context.fillStyle = "#f4f7fb";
@@ -257,6 +374,19 @@ class Scene_Menu extends Scene_Base {
       this.layout.header.x + 20,
       this.layout.header.y + this.layout.header.height / 2,
     );
+
+    const hint = this.partySelectionHint();
+
+    if (hint) {
+      context.font = "13px sans-serif";
+      context.textAlign = "right";
+      context.fillStyle = "#bdc9d8";
+      context.fillText(
+        hint,
+        this.layout.header.x + this.layout.header.width - 18,
+        this.layout.header.y + this.layout.header.height / 2,
+      );
+    }
   }
 
   formattedPlayTime() {
@@ -336,7 +466,7 @@ class Scene_Menu extends Scene_Base {
       return;
     }
 
-    const boxWidth = 340;
+    const boxWidth = 420;
     const boxHeight = 92;
     const boxX = (Graphics.width - boxWidth) / 2;
     const boxY = Graphics.height - boxHeight - 70;

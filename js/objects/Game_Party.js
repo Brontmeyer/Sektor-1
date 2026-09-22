@@ -14,6 +14,7 @@ class Game_Party {
     // a maximum of four active battle members.
     this._actors = [];
     this._battleActorIds = [];
+    this._battleRows = {};
 
     for (const actor of initialActors) {
       this.addActor(actor);
@@ -54,6 +55,9 @@ class Game_Party {
     }
 
     this._actors.push(actor);
+    this._battleRows[actor.actorId] = this.normalizeBattleRow(
+      this._battleRows[actor.actorId],
+    );
 
     if (this._battleActorIds.length < 4) {
       this._battleActorIds.push(actor.actorId);
@@ -74,6 +78,7 @@ class Game_Party {
     this._battleActorIds = this._battleActorIds.filter(
       (memberId) => memberId !== id,
     );
+    delete this._battleRows[id];
 
     return true;
   }
@@ -127,6 +132,67 @@ class Game_Party {
 
   battleMemberIndex(actor) {
     return this.battleMembers().indexOf(actor);
+  }
+
+  normalizeBattleRow(row) {
+    return String(row || "front").toLowerCase() === "back"
+      ? "back"
+      : "front";
+  }
+
+  battleRow(actorOrId) {
+    const actorId = Number(actorOrId?.actorId ?? actorOrId);
+
+    if (!Number.isInteger(actorId) || !this.actorById(actorId)) {
+      return "front";
+    }
+
+    return this.normalizeBattleRow(this._battleRows[actorId]);
+  }
+
+  setBattleRow(actorOrId, row) {
+    const actorId = Number(actorOrId?.actorId ?? actorOrId);
+    const normalizedRow = String(row || "").toLowerCase();
+
+    if (
+      !Number.isInteger(actorId) ||
+      !this.actorById(actorId) ||
+      !["front", "back"].includes(normalizedRow)
+    ) {
+      return false;
+    }
+
+    this._battleRows[actorId] = normalizedRow;
+    return true;
+  }
+
+  toggleBattleRow(actorOrId) {
+    const current = this.battleRow(actorOrId);
+    return this.setBattleRow(actorOrId, current === "front" ? "back" : "front");
+  }
+
+  battleRows() {
+    const rows = {};
+
+    for (const actor of this._actors) {
+      rows[actor.actorId] = this.battleRow(actor);
+    }
+
+    return rows;
+  }
+
+  setBattleRows(rows = {}) {
+    const source = rows && typeof rows === "object" && !Array.isArray(rows)
+      ? rows
+      : {};
+
+    for (const actor of this._actors) {
+      this._battleRows[actor.actorId] = this.normalizeBattleRow(
+        source[actor.actorId] ?? source[String(actor.actorId)],
+      );
+    }
+
+    return true;
   }
 
   livingBattleMembers() {
