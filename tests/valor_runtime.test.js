@@ -70,6 +70,7 @@ function createHarness() {
     Input: { isTriggered() { return false; } },
   });
   const source = [
+    "js/core/UIResourcePalette.js",
     "js/objects/Game_Battler.js",
     "js/objects/Game_Essence.js",
     "js/objects/Game_Actor.js",
@@ -200,18 +201,14 @@ function testBattleHudExposesValorState() {
 
   actor.setValor(42.8);
   renderer.drawBattleHud(context.Graphics.context);
-  assert.equal(
-    drawCalls.some((call) => call[0] === "VALOR 42.8/100"),
-    true,
-  );
+  assert.equal(drawCalls.some((call) => call[0] === "VALOR"), true);
+  assert.equal(drawCalls.some((call) => call[0] === "42.8/100"), true);
 
   drawCalls.length = 0;
   actor.setValor(100);
   renderer.drawBattleHud(context.Graphics.context);
-  assert.equal(
-    drawCalls.some((call) => call[0] === "VALOR READY"),
-    true,
-  );
+  assert.equal(drawCalls.some((call) => call[0] === "VALOR"), true);
+  assert.equal(drawCalls.some((call) => call[0] === "READY"), true);
 }
 
 function testStatusWindowExposesValorState() {
@@ -222,18 +219,14 @@ function testStatusWindowExposesValorState() {
   window.show();
   window.draw();
 
-  assert.equal(
-    drawCalls.some((call) => call[0] === "Valor: 55.9 / 100"),
-    true,
-  );
+  assert.equal(drawCalls.some((call) => call[0] === "Valor:"), true);
+  assert.equal(drawCalls.some((call) => call[0] === "55.9 / 100"), true);
 
   drawCalls.length = 0;
   actor.setValor(100);
   window.draw();
-  assert.equal(
-    drawCalls.some((call) => call[0] === "Valor: READY"),
-    true,
-  );
+  assert.equal(drawCalls.some((call) => call[0] === "Valor:"), true);
+  assert.equal(drawCalls.some((call) => call[0] === "READY"), true);
 }
 
 function run() {

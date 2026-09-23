@@ -11,6 +11,7 @@ const read = (relativePath) =>
 
 function loadPresentation(globals = {}) {
   const source = [
+    "js/core/UIResourcePalette.js",
     "js/windows/Window_TextLayout.js",
     "js/battle/BattleHudLayout.js",
     "js/battle/BattleRenderer.js",
@@ -176,13 +177,70 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
     "battle HUD roster must follow visual formation order",
   );
 
-  assert.equal(text.includes("VALOR READY"), true);
+  assert.equal(text.includes("VALOR"), true);
+  assert.equal(text.includes("READY"), true);
   assert.equal(text.includes("DEFEATED"), true);
   assert.equal(
     textCalls.some(
       (call) => call[1] === "#ffd75a" && call[2] === "Sarah",
     ),
     true,
+  );
+  assert.equal(
+    textCalls.some(
+      (call) => call[1] === "#66d7ff" && call[2] === "HP",
+    ),
+    true,
+    "HP label should use the shared blue-cyan resource color",
+  );
+  assert.equal(
+    textCalls.some(
+      (call) => call[1] === "#ffffff" && call[2] === "67/100",
+    ),
+    true,
+    "HP numbers should remain neutral white",
+  );
+  assert.equal(
+    textCalls.some(
+      (call) => call[1] === "#78ef91" && call[2] === "MP",
+    ),
+    true,
+    "MP label should use the shared green resource color",
+  );
+  assert.equal(
+    textCalls.some(
+      (call) => call[1] === "#ffffff" && call[2] === "18/30",
+    ),
+    true,
+    "MP numbers should remain neutral white",
+  );
+  assert.equal(
+    textCalls.some(
+      (call) => call[1] === "#e3a0ff" && call[2] === "VALOR",
+    ),
+    true,
+    "Valor label should use the shared magenta resource color",
+  );
+  assert.equal(
+    textCalls.some(
+      (call) => call[1] === "#ffffff" && call[2] === "10/100",
+    ),
+    true,
+    "Valor numbers should remain neutral white",
+  );
+  assert.equal(
+    textCalls.some(
+      (call) => call[1] === "#f0c4ff" && call[2] === "VALOR",
+    ),
+    true,
+    "Valor Ready should brighten the Valor label within its color family",
+  );
+  assert.equal(
+    textCalls.some(
+      (call) => call[1] === "#ffffff" && call[2] === "READY",
+    ),
+    true,
+    "Valor Ready value should remain neutral white",
   );
 
   for (const call of textCalls.filter((call) => /^(HP|MP|VALOR)/.test(call[2]))) {

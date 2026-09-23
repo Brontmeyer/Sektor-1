@@ -807,8 +807,14 @@ class BattleRenderer {
     }
 
     context.font = "14px Arial";
-    context.fillStyle = "#ffffff";
-    context.fillText(`HP ${actor.hp}/${actor.maxHp}`, hpX, centerY - 5);
+    context.fillStyle = UIResourcePalette.text("hp");
+    context.fillText("HP", hpX, centerY - 5);
+    context.fillStyle = UIResourcePalette.valueText();
+    context.fillText(
+      `${actor.hp}/${actor.maxHp}`,
+      hpX + context.measureText("HP ").width,
+      centerY - 5,
+    );
     this.drawHudGauge(
       context,
       actor.hp,
@@ -816,11 +822,17 @@ class BattleRenderer {
       hpX,
       centerY + 8,
       Math.max(42, hpWidth - 18),
-      "#63d471",
+      UIResourcePalette.fill("hp"),
     );
 
-    context.fillStyle = "#55df74";
-    context.fillText(`MP ${actor.mp}/${actor.maxMp}`, mpX, centerY - 5);
+    context.fillStyle = UIResourcePalette.text("mp");
+    context.fillText("MP", mpX, centerY - 5);
+    context.fillStyle = UIResourcePalette.valueText();
+    context.fillText(
+      `${actor.mp}/${actor.maxMp}`,
+      mpX + context.measureText("MP ").width,
+      centerY - 5,
+    );
     this.drawHudGauge(
       context,
       actor.mp,
@@ -828,19 +840,27 @@ class BattleRenderer {
       mpX,
       centerY + 8,
       Math.max(42, mpWidth - 18),
-      "#4fa3ff",
+      UIResourcePalette.fill("mp"),
     );
 
     const valorReady = actor.isValorReady?.() === true;
     const rawValor = Math.max(0, Number(actor.valor) || 0);
     const valorValue = Math.round(rawValor * 10) / 10;
     const valorMaximum = Math.max(0, Number(actor.maxValor) || 0);
-    const valorLabel = valorReady
-      ? "VALOR READY"
-      : `VALOR ${valorValue}/${valorMaximum}`;
+    const valorValueText = valorReady
+      ? "READY"
+      : `${valorValue}/${valorMaximum}`;
 
-    context.fillStyle = valorReady ? "#ffd75a" : "#ffffff";
-    context.fillText(valorLabel, valorX, centerY - 5);
+    context.fillStyle = UIResourcePalette.text("valor", {
+      ready: valorReady,
+    });
+    context.fillText("VALOR", valorX, centerY - 5);
+    context.fillStyle = UIResourcePalette.valueText();
+    context.fillText(
+      valorValueText,
+      valorX + context.measureText("VALOR ").width,
+      centerY - 5,
+    );
     this.drawHudGauge(
       context,
       rawValor,
@@ -848,7 +868,7 @@ class BattleRenderer {
       valorX,
       centerY + 8,
       Math.max(46, valorWidth - 12),
-      valorReady ? "#ffd75a" : "#c86cff",
+      UIResourcePalette.fill("valor", { ready: valorReady }),
     );
 
     context.restore();

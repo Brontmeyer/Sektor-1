@@ -198,6 +198,10 @@ Pass 59 is post-audit party-menu/formation-state work and does not reopen a hist
 
 Pass 60 is post-audit party-presentation and Valor-visibility work and does not reopen a historical finding. `Game_Party` now owns a visual formation order separate from active-party mechanical order; Order-mode card swapping, menu actor navigation, and battlefield drawing consume that visual order without changing turn scheduling, stats, damage, action priority, or party membership. The new formation order is persistent, so Save Runtime advances to v11 with v10 and older saves defaulting missing visual order to their existing active-party order. Valor damage routing remains the hostile-source contract established earlier; battle, Status, and main-menu presentation now preserves one decimal so fractional gains from small hostile Attack/Skill/Magick damage cannot appear as zero.
 
+## Post-Audit Feature Note: Resource Color Consistency v1
+
+Pass 61 is post-audit presentation consistency work and does not reopen a historical finding. `UIResourcePalette` centralizes HP / MP / Valor color identity and primary party UI consumers read that shared contract instead of maintaining swapped or divergent local constants. The pass changes presentation only: HP/MP/Valor values, formulas, battle rules, Save Runtime v11, and Config Runtime v2 remain unchanged.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

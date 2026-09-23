@@ -52,7 +52,8 @@ function loadMenuWindows() {
   });
 
   vm.runInContext(
-    `${read("js/windows/MainMenuLayout.js")}\n` +
+    `${read("js/core/UIResourcePalette.js")}\n` +
+      `${read("js/windows/MainMenuLayout.js")}\n` +
       `${read("js/windows/Window_MainMenuParty.js")}\n` +
       `${read("js/windows/Window_MenuCommand.js")}\n` +
       `globalThis.__classes = { MainMenuLayout, Window_MainMenuParty, Window_MenuCommand };`,
@@ -140,9 +141,12 @@ function testPartyWindowDrawsTheActiveFourWithRealStats() {
   for (const member of members) {
     assert.equal(text.includes(member.name), true);
   }
-  assert.equal(text.some((value) => value.includes("HP 640/750")), true);
-  assert.equal(text.some((value) => value.includes("MP 124/145")), true);
-  assert.equal(text.some((value) => value.includes("VALOR 45/100")), true);
+  assert.equal(text.includes("HP"), true);
+  assert.equal(text.includes("640/750"), true);
+  assert.equal(text.includes("MP"), true);
+  assert.equal(text.includes("124/145"), true);
+  assert.equal(text.includes("VALOR"), true);
+  assert.equal(text.includes("45/100"), true);
   assert.equal(text.includes("Status:"), true);
   assert.equal(text.includes("Next Level:"), true);
 }
@@ -163,7 +167,7 @@ function testActorIdentityAndStatsUseTheCardWidthMoreEvenly() {
   window.draw();
   const textCalls = calls.filter((call) => call[0] === "fillText");
   const nameCall = textCalls.find((call) => call[1] === "Tyler");
-  const hpCall = textCalls.find((call) => String(call[1]).includes("HP 640/750"));
+  const hpCall = textCalls.find((call) => call[1] === "HP");
   const statusCall = textCalls.find((call) => call[1] === "Status:");
   const nextLevelCall = textCalls.find((call) => call[1] === "Next Level:");
 

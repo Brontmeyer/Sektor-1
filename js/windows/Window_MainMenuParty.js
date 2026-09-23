@@ -336,27 +336,26 @@ class Window_MainMenuParty {
     const stats = [
       {
         label: "HP",
+        resource: "hp",
         value: actor?.hp ?? 0,
         maximum: actor?.maxHp ?? 0,
-        color: "#5cd477",
       },
       {
         label: "MP",
+        resource: "mp",
         value: actor?.mp ?? 0,
         maximum: actor?.maxMp ?? 0,
-        color: "#45aaff",
       },
       {
         label: "VALOR",
+        resource: "valor",
         value: actor?.valor ?? 0,
         maximum: actor?.maxValor ?? 0,
-        color: "#f2aa3f",
       },
     ];
 
     stats.forEach((stat, statIndex) => {
       const gx = statX + statIndex * (gaugeWidth + gaugeGap);
-      context.fillStyle = stat.color;
       context.font = "600 13px sans-serif";
       const numericValue = Math.max(0, Number(stat.value) || 0);
       const displayValue =
@@ -364,9 +363,12 @@ class Window_MainMenuParty {
           ? Math.round(numericValue * 10) / 10
           : Math.floor(numericValue);
       const displayMax = Math.floor(Math.max(0, Number(stat.maximum) || 0));
+      context.fillStyle = UIResourcePalette.text(stat.resource);
+      context.fillText(stat.label, gx, gaugeY);
+      context.fillStyle = UIResourcePalette.valueText();
       context.fillText(
-        `${stat.label} ${displayValue}/${displayMax}`,
-        gx,
+        `${displayValue}/${displayMax}`,
+        gx + context.measureText(`${stat.label} `).width,
         gaugeY,
       );
       this.drawGauge(
@@ -376,7 +378,7 @@ class Window_MainMenuParty {
         gx,
         gaugeY + 7,
         gaugeWidth,
-        stat.color,
+        UIResourcePalette.fill(stat.resource),
       );
     });
 

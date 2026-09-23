@@ -69,7 +69,7 @@ Semantic mappings currently are:
 - `selectionPanel` -> `button_grey.png`
   - Soft selected-row backing under the existing gold focus language.
 - `gaugeFrame` -> `progress_transparent.png`
-  - Neutral capsule border for HP/MP/Valor. Gauge fills remain vector-colored by Sektor 1 rather than inheriting fixed source colors.
+  - Neutral capsule border for HP/MP/Valor. Gauge fills remain vector-colored by Sektor 1 through `UIResourcePalette` rather than inheriting fixed source colors.
 
 The prototype intentionally does not declare these images final art. Their purpose is to validate a softer beveled JRPG direction in motion while proving that the semantic asset boundary makes later replacement cheap. Consumers must continue to ask for semantic roles, and all panels/gauges must remain usable when the corresponding image is unavailable.
 ## Pass 56: Menu window softening and frame polish
@@ -108,3 +108,7 @@ The portrait offset is presentation of `Game_Party` row state, not ownership of 
 ## Pass 60: Visual formation ordering
 
 Order confirmation now picks up the focused actor card; moving vertically chooses another formation slot and confirming again swaps the two visual positions. The picked source card uses a cool cyan focus outline while the live cursor remains the gold interaction marker. This ordering is presentation state only: battlefield actor drawing, spatial selection, and menu actor cycling consume it, while active-party composition, turn scheduling, stats, and damage do not.
+
+## Pass 61: Resource color consistency
+
+`UIResourcePalette` now owns the canonical player-resource color families used by the battle HUD, main-menu party cards, Status, and Item HP presentation. HP uses blue-cyan (`#66d7ff` label / `#4db8ff` fill), MP uses green (`#78ef91` / `#4fd46b`), and Valor uses magenta-purple (`#e3a0ff` / `#c06cff`). Dynamic current/max values use neutral white (`#ffffff`) instead of inheriting the resource hue. Valor Ready brightens the Valor label/fill to `#f0c4ff` / `#d98cff` while its READY value remains white. The neutral gauge frame and dark track remain separate from resource identity, so future skin/window-color work can change surrounding surfaces without silently swapping the meaning of HP, MP, or Valor.

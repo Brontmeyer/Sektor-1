@@ -128,6 +128,7 @@ function createHarness() {
   });
 
   const source = [
+    "js/core/UIResourcePalette.js",
     "js/objects/Game_Battler.js",
     "js/objects/Game_Essence.js",
     "js/objects/Game_Actor.js",

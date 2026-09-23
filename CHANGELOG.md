@@ -18,6 +18,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Resource Color Consistency v1 with one shared `UIResourcePalette` contract for player-facing HP / MP / Valor identity across the battle HUD, main-menu party cards, Status, and Item HP presentation
+- Standardized HP labels/gauges to a blue-cyan family, MP labels/gauges to a green family, and Valor labels/gauges to a magenta-purple family while keeping live resource values neutral white for faster numeric readability; Valor Ready stays within the brighter end of the Valor family
+- Removed the swapped/per-screen HP/MP gauge constants from primary party resource surfaces and added dedicated palette/load-order/integration regression coverage
 - Added Party Formation Ordering & Valor Visibility v1: Order can now pick up one active-party card and swap it with another visual formation slot without changing active-party mechanical order or stat authority
 - Added persistent visual `battleFormationActorIds` state and Save Runtime v11; v10 and older saves default formation order to their existing active-party order
 - Routed the battle HUD roster, battlefield actor drawing, and spatial target presentation through visual formation slots while leaving turn scheduling, stats, damage, action priority, and active-party membership independent of slot position

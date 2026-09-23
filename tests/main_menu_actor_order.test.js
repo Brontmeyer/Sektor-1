@@ -45,7 +45,8 @@ function createHarness() {
   });
 
   vm.runInContext(
-    `${read("js/windows/Window_MainMenuParty.js")}\n` +
+    `${read("js/core/UIResourcePalette.js")}\n` +
+      `${read("js/windows/Window_MainMenuParty.js")}\n` +
       `${read("js/windows/Window_ActorNavigator.js")}\n` +
       `globalThis.__classes = { Window_MainMenuParty, Window_ActorNavigator };`,
     context,

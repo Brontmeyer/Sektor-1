@@ -244,7 +244,7 @@ class Window_Inventory {
     // -------------------------
 
     context.font = "18px sans-serif";
-    context.fillStyle = "#ffffff";
+    context.fillStyle = UIResourcePalette.text("hp");
     context.fillText("HP", this.x + this.padding, hpY);
 
     // -------------------------
@@ -264,7 +264,7 @@ class Window_Inventory {
     // Current HP
     // -------------------------
 
-    context.fillStyle = "#ffffff";
+    context.fillStyle = UIResourcePalette.fill("hp");
     context.fillRect(barX, barY, barWidth * hpRatio, barHeight);
 
     // -------------------------
@@ -274,7 +274,7 @@ class Window_Inventory {
     const hpText = `${hp}/${maxHp}`;
 
     context.font = "18px sans-serif";
-    context.fillStyle = "#ffffff";
+    context.fillStyle = UIResourcePalette.valueText();
     context.fillText(hpText, barX + barWidth + 15, hpY);
     context.restore();
   }

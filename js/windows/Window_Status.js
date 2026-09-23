@@ -106,16 +106,39 @@ class Window_Status {
     // =========================
 
     context.font = "22px sans-serif";
-    context.fillText(`HP: ${actor.hp} / ${actor.maxHp}`, leftX, this.y + 135);
-    context.fillText(`MP: ${actor.mp} / ${actor.maxMp}`, rightX, this.y + 135);
+    context.fillStyle = UIResourcePalette.text("hp");
+    context.fillText("HP:", leftX, this.y + 135);
+    context.fillStyle = UIResourcePalette.valueText();
+    context.fillText(
+      `${actor.hp} / ${actor.maxHp}`,
+      leftX + context.measureText("HP: ").width,
+      this.y + 135,
+    );
+
+    context.fillStyle = UIResourcePalette.text("mp");
+    context.fillText("MP:", rightX, this.y + 135);
+    context.fillStyle = UIResourcePalette.valueText();
+    context.fillText(
+      `${actor.mp} / ${actor.maxMp}`,
+      rightX + context.measureText("MP: ").width,
+      this.y + 135,
+    );
 
     const valorDisplay =
       Math.round(Math.max(0, Number(actor.valor) || 0) * 10) / 10;
-    const valorText = actor.isValorReady?.()
-      ? "Valor: READY"
-      : `Valor: ${valorDisplay} / ${actor.maxValor}`;
+    const valorReady = actor.isValorReady?.() === true;
+    const valorText = valorReady
+      ? "READY"
+      : `${valorDisplay} / ${actor.maxValor}`;
     context.font = "18px sans-serif";
-    context.fillText(valorText, leftX, this.y + 170);
+    context.fillStyle = UIResourcePalette.text("valor", { ready: valorReady });
+    context.fillText("Valor:", leftX, this.y + 170);
+    context.fillStyle = UIResourcePalette.valueText();
+    context.fillText(
+      valorText,
+      leftX + context.measureText("Valor: ").width,
+      this.y + 170,
+    );
 
     // =========================
     // DIVIDER
