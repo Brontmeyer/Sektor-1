@@ -18,6 +18,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Essence Menu Presentation & List Navigation v1 with the same full-screen actor-summary / metadata / description language used by MAGICK and SKILL while preserving Essence-specific slot equipment and progression ownership
+- Added a two-column Essence catalog with shared held-direction repeat, row scrolling, contextual arrows, live equip legality, and preview of persistent Resonance / level / Mastery Ready state before selection
+- Added a dedicated progression panel for current level, next Resonance milestone, Mastery Ready feedback, and data-driven Magick Awakening entries without inventing passive or Mastery-Trial runtime behavior
+- Added shared `Window_ActorSummary` presentation ownership so MAGICK, SKILL, and ESSENCE now use one actor identity / stacked HP / stacked MP mini-gauge contract instead of maintaining separate copies
+- Added dedicated Essence Menu Presentation regression coverage for two-dimensional catalog navigation, scrolling, duplicate-slot legality, real progression preview, shared actor-summary usage, and script load order
+
 - Added Skill Menu Presentation & List Navigation v1 with the same actor-summary / detail / description / three-column grid grammar established by MAGICK
 - Field SKILL now presents ordinary non-Valor techniques only; Valor Arts remain reusable through the shared Skill runtime and battle selector while the dedicated Valor menu/progression pass remains future work
 - Added held-direction repeat, row scrolling, contextual scroll arrows, fixed selected-actor browsing, and dedicated Skill Menu Presentation regression coverage

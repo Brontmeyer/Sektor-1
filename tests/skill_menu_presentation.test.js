@@ -92,6 +92,7 @@ function createHarness() {
     `${read("js/windows/Window_ListViewport.js")}\n` +
       `${read("js/windows/Window_TextLayout.js")}\n` +
       `${read("js/windows/Window_ActorNavigator.js")}\n` +
+      `${read("js/windows/Window_ActorSummary.js")}\n` +
       `${read("js/windows/Window_Skills.js")}\n` +
       `globalThis.__Window = Window_Skills;`,
     context,
@@ -191,7 +192,7 @@ function testSkillReferenceHierarchyAndActorSummary() {
   assert.equal(gaugeCalls.length, 2, "HP and MP each get one mini gauge");
 }
 
-function testLevelIsUnderNameAndHpMpStayNeighboring() {
+function testLevelAndVitalsUseSharedStackedLayout() {
   const harness = createHarness();
   harness.window.show();
   harness.window.draw();
@@ -207,9 +208,9 @@ function testLevelIsUnderNameAndHpMpStayNeighboring() {
   assert.notEqual(mp, undefined);
   assert.equal(level.y > name.y, true, "LV sits below the character name");
   assert.equal(Math.abs(level.x - name.x) <= 2, true);
-  assert.equal(mp.x > hp.x, true);
-  assert.equal(mp.x - hp.x <= 210, true, "MP stays visually near HP");
-  assert.equal(Math.abs(mp.y - hp.y) <= 2, true);
+  assert.equal(Math.abs(mp.x - hp.x) <= 2, true);
+  assert.equal(mp.y > hp.y, true, "MP stacks beneath HP");
+  assert.equal(mp.y - hp.y <= 36, true);
 }
 
 function testSkillUsesSharedHeldDirectionContract() {
@@ -227,7 +228,7 @@ function run() {
   testThreeColumnGridConsumesAllDirectionsAndKeepsActorFixed();
   testGridScrollsByRowsAndShowsOnlyNeededArrows();
   testSkillReferenceHierarchyAndActorSummary();
-  testLevelIsUnderNameAndHpMpStayNeighboring();
+  testLevelAndVitalsUseSharedStackedLayout();
   testSkillUsesSharedHeldDirectionContract();
   console.log("Skill menu presentation regression tests passed.");
 }

@@ -136,6 +136,7 @@ function createHarness() {
     "js/windows/Window_ListViewport.js",
     "js/windows/Window_TextLayout.js",
     "js/windows/Window_ActorNavigator.js",
+    "js/windows/Window_ActorSummary.js",
     "js/windows/Window_EquipSelect.js",
     "js/windows/Window_Equipment.js",
     "js/windows/Window_Essence.js",
@@ -270,9 +271,11 @@ function testActorCyclingMenusShareLeftRightNavigation() {
     drawCalls.length = 0;
     window.draw();
     assert.equal(
-      actorHeaderWasDrawn(drawCalls, "Sarah"),
+      drawCalls.some(
+        (call) => call[0] === "fillText" && String(call[1]).includes("Sarah"),
+      ),
       true,
-      `${testCase.name} draws the shared actor arrows`,
+      `${testCase.name} draws the selected actor name`,
     );
 
     trigger(window, triggered, "KeyA");
@@ -353,7 +356,9 @@ function testSceneMenuPassesPartyContextToAllCharacterMenus() {
   }
 
   const helperIndex = indexSource.indexOf("Window_ActorNavigator.js");
+  const summaryIndex = indexSource.indexOf("Window_ActorSummary.js");
   assert.equal(helperIndex >= 0, true);
+  assert.equal(summaryIndex > helperIndex, true);
 
   for (const windowFile of [
     "Window_Equipment.js",
@@ -363,7 +368,10 @@ function testSceneMenuPassesPartyContextToAllCharacterMenus() {
     "Window_Status.js",
   ]) {
     assert.equal(
-      helperIndex < indexSource.indexOf(windowFile),
+      helperIndex < indexSource.indexOf(windowFile) &&
+        (windowFile === "Window_Equipment.js" ||
+          windowFile === "Window_Status.js" ||
+          summaryIndex < indexSource.indexOf(windowFile)),
       true,
       `actor navigator must load before ${windowFile}`,
     );

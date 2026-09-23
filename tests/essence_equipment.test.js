@@ -79,6 +79,7 @@ function createHarness() {
     "js/objects/Game_Party.js",
     "js/windows/Window_ListViewport.js",
     "js/windows/Window_ActorNavigator.js",
+    "js/windows/Window_ActorSummary.js",
     "js/windows/Window_Essence.js",
   ]
     .map((relativePath) =>

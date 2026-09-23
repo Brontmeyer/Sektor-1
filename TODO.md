@@ -107,6 +107,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add Window Color Customization v1 under Config with four persistent corners, live preview, RGB editing/reset, and centralized shared-panel tinting through Config Runtime v3 / `UIAssetManager`
 - [x] Add Magick Menu Presentation & List Navigation v1 with actor summary, selected-Magick details, three-column scrolling grid, conditional arrows, shared held-direction repeat, Config naming, and white RUNES value presentation
 - [x] Add Skill Menu Presentation & List Navigation v1 with ordinary-technique filtering, actor summary/detail hierarchy, three-column scrolling grid, conditional arrows, shared held-direction repeat, and MAGICK/main-menu identity-layout consistency
+- [x] Add Essence Menu Presentation & List Navigation v1 with shared stacked-vitals actor summary, slot/catalog equipment flow, two-column held-repeat catalog navigation, progression/Mastery Ready preview, and Magick Awakening presentation
 - [x] Implement Main Menu Information & Command Layout v1 with four active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels
 - [x] Implement Main Menu Refinement & Command Availability Foundation v1 with restored Load, RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and future map-based Save/Load restrictions
 - [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
@@ -140,6 +141,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Define Essence Evolution eligibility
 - [x] Implement Essence database loading
 - [x] Implement player-facing Essence equipping UI / slot rules
+- [x] Present Essence equipment/progression through the full-screen shared actor-summary menu with scrolling catalog and live Resonance milestones
 - [x] Implement Resonance gain
 - [x] Implement Essence leveling
 - [x] Implement Mastery Ready state

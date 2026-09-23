@@ -86,6 +86,7 @@ function createHarness() {
     `${read("js/windows/Window_ListViewport.js")}\n` +
       `${read("js/windows/Window_TextLayout.js")}\n` +
       `${read("js/windows/Window_ActorNavigator.js")}\n` +
+      `${read("js/windows/Window_ActorSummary.js")}\n` +
       `${read("js/windows/Window_Magick.js")}\n` +
       `globalThis.__Window = Window_Magick;`,
     context,
@@ -165,7 +166,7 @@ function testReferenceHierarchyUsesRealActorAndMagickData() {
   assert.equal(text.some((value) => value.includes("Spell 01")), true);
 }
 
-function testActorSummaryUsesStackedLevelAndNeighboringMiniGauges() {
+function testActorSummaryUsesStackedLevelAndVitals() {
   const harness = createHarness();
   harness.window.show();
   harness.window.draw();
@@ -183,9 +184,9 @@ function testActorSummaryUsesStackedLevelAndNeighboringMiniGauges() {
   assert.notEqual(mp, undefined);
   assert.equal(level.y > name.y, true);
   assert.equal(Math.abs(level.x - name.x) <= 2, true);
-  assert.equal(mp.x > hp.x, true);
-  assert.equal(mp.x - hp.x <= 210, true);
-  assert.equal(Math.abs(mp.y - hp.y) <= 2, true);
+  assert.equal(Math.abs(mp.x - hp.x) <= 2, true);
+  assert.equal(mp.y > hp.y, true);
+  assert.equal(mp.y - hp.y <= 36, true);
   assert.equal(
     harness.calls.filter((call) => call[0] === "drawGauge").length,
     2,
@@ -224,7 +225,7 @@ function run() {
   testThreeColumnGridConsumesAllDirections();
   testGridScrollsByRowsAndShowsOnlyNeededArrows();
   testReferenceHierarchyUsesRealActorAndMagickData();
-  testActorSummaryUsesStackedLevelAndNeighboringMiniGauges();
+  testActorSummaryUsesStackedLevelAndVitals();
   testConfigRenameAndWhiteRunesValueArePlayerFacingOnly();
   testMagickUsesSharedHeldDirectionContract();
   console.log("Magick menu presentation regression tests passed.");

@@ -218,6 +218,10 @@ Pass 64 is post-audit menu presentation/input work and does not reopen a histori
 
 Pass 65 is post-audit field-menu presentation/input work and does not reopen a historical finding. `Window_Skills` now reuses the MAGICK-style actor/detail/description/grid hierarchy, shared held-direction repeat, and row-scrolling viewport while deliberately excluding `valorArt: true` records from the field SKILL screen. Battle Valor Arts continue to use the established Skill runtime/selector, so this is a player-facing separation rather than a combat-engine fork. MAIN MENU and MAGICK actor summaries also move LV beneath the name, and MAGICK groups HP/MP with mini gauges. No save/config schema or combat-rule change is introduced, so Save Runtime remains v11 and Config Runtime remains v3.
 
+## Post-Audit Feature Note: Essence Menu Presentation & List Navigation v1
+
+Pass 66 is post-audit field-menu presentation/input work and does not reopen a historical finding. `Window_Essence` preserves the established actor-owned Essence slot/progression APIs while presenting them through the same full-screen field-menu language as MAGICK/SKILL. The catalog uses shared held-direction repeat and viewport scrolling; equip legality still delegates to `Game_Actor`. The progression panel reads `Game_Essence` level/Resonance/Mastery Ready and canonical awakening data without implementing future passive, Mastery-Trial, ownership, or Evolution mechanics. `Window_ActorSummary` centralizes actor identity plus stacked HP/MP gauges for MAGICK/SKILL/ESSENCE. No save/config schema or combat-rule change is introduced, so Save Runtime remains v11 and Config Runtime remains v3.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:
