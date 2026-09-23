@@ -67,7 +67,7 @@ function testScrollableListWindowsUseSharedViewport() {
     const source = fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
 
     assert.equal(
-      source.includes("new Window_ListViewport(5)"),
+      source.includes("new Window_ListViewport("),
       true,
       `${relativePath} should use the shared list viewport`,
     );

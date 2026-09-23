@@ -97,7 +97,7 @@ function testCommandNamingContractAndNoCommandHeading() {
     "Status",
     "Order",
     "Valor",
-    "Option",
+    "Config",
     "ROSTER",
     "Save",
     "Load",
@@ -113,6 +113,7 @@ function testCommandNamingContractAndNoCommandHeading() {
   assert.equal(text.includes("Menu"), false);
   assert.equal(text.includes("Skills"), false);
   assert.equal(text.includes("Essences"), false);
+  assert.equal(text.includes("Option"), false);
   assert.equal(text.includes("Options"), false);
 }
 
@@ -205,9 +206,10 @@ function testSceneUsesMainMenuHeadingAndHonestPlaceholderDestinations() {
   assert.equal(scene.includes('case "Items"'), false);
   assert.equal(scene.includes('case "Skills"'), false);
   assert.equal(scene.includes('case "Options"'), false);
+  assert.equal(scene.includes('case "Option"'), false);
   assert.match(scene, /case "Item":/);
   assert.match(scene, /case "Skill":/);
-  assert.match(scene, /case "Option":/);
+  assert.match(scene, /case "Config":/);
   assert.match(scene, /case "Order":/);
   assert.match(scene, /case "Valor":/);
   assert.match(scene, /case "ROSTER":/);
@@ -250,7 +252,7 @@ function testSingularHeadingContractAndLoadOrder() {
   assert.match(skills, /"SKILL"/);
   assert.match(essence, /"ESSENCE"/);
   assert.match(equipment, /"EQUIP"/);
-  assert.match(options, /fillText\("OPTION"/);
+  assert.match(options, /fillText\("CONFIG"/);
 
   const layoutIndex = index.indexOf("MainMenuLayout.js");
   const partyIndex = index.indexOf("Window_MainMenuParty.js");

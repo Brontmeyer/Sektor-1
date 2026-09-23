@@ -210,6 +210,10 @@ Pass 62 is post-audit battle-presentation geometry work and does not reopen a hi
 
 Pass 63 is post-audit configuration/presentation work and does not reopen a historical finding. Config Runtime advances to v3 with validated four-corner window-color persistence and automatic migration from v2/v1. `Scene_WindowColor` / `Window_WindowColor` provide the editing UI and live preview, while `UIAssetManager` remains the sole owner of shared panel tint interpolation. `UIResourcePalette` stays independent so HP / MP / Valor identity colors are not altered by window customization. This pass changes no game-save state or combat rule, so Save Runtime remains v11.
 
+## Post-Audit Feature Note: Magick Menu Presentation & List Navigation v1
+
+Pass 64 is post-audit menu presentation/input work and does not reopen a historical finding. `Window_Magick` keeps the existing actor handoff, learned-Magick ownership, ConfigManager ordering, MP costs, and field-use execution rules while replacing the old vertical box with an actor summary, selected-Magick details, description strip, and a three-column row-scrolling grid. `Input.update()` / `isActionRepeated()` centralize held-direction cadence before scene updates rather than adding per-window timers. The player-facing Option label is renamed Config without renaming internal `Scene_Options` / `Window_Options`, and the RUNES amount becomes neutral white. No save or config schema changes are introduced, so Save Runtime remains v11 and Config Runtime remains v3.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

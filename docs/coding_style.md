@@ -786,3 +786,8 @@ And if we ever forget how we're supposed to write this darn stuff, this file is 
 ---
 
 Built with ❤️ by **Sarah & Tyler**
+
+
+### Held directional navigation
+
+Do not implement per-window timers or depend on native browser key-repeat for held menu movement. Use named actions through `Input.isActionRepeated()` when a menu deliberately supports held directional movement. `Input.update(deltaTime)` owns repeat cadence and must run before scene updates. Windows should still use `isActionTriggered()` for one-shot actions such as Confirm and Cancel unless repeated activation is explicitly part of the interaction contract.

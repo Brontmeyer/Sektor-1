@@ -604,3 +604,10 @@ Keeping that distinction clear is what allows Sektor 1 to grow without making ev
 ---
 
 Built with ❤️ by **Sarah & Tyler**
+
+
+## Shared Direction Repeat and Magick Menu Navigation
+
+`Input.update(deltaTime)` now owns held-action repeat timing independently from browser key-repeat events. `Input.isActionRepeated(action)` reports the initial mapped trigger immediately, waits through a short shared delay, then reports steady repeat pulses while the mapped action remains pressed. `GameLoop` advances this repeat state before scene updates so windows consume one deterministic action pulse per frame. Physical keys remain behind Config Runtime bindings.
+
+`Window_Magick` receives the actor chosen through the existing main-menu actor-selection handoff, but intentionally does not call `Window_ActorNavigator.update()` while open. Its three-column grid owns Up / Down / Left / Right, avoiding an input conflict between horizontal spell navigation and actor cycling. `Window_ActorNavigator` remains the actor-context owner/select helper, while `ConfigManager.sortMagick()` remains list-order authority and `Window_ListViewport` tracks visible grid rows.

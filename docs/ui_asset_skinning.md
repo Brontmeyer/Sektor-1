@@ -114,6 +114,11 @@ Order confirmation now picks up the focused actor card; moving vertically choose
 `UIResourcePalette` now owns the canonical player-resource color families used by the battle HUD, main-menu party cards, Status, and Item HP presentation. HP uses blue-cyan (`#66d7ff` label / `#4db8ff` fill), MP uses green (`#78ef91` / `#4fd46b`), and Valor uses magenta-purple (`#e3a0ff` / `#c06cff`). Dynamic current/max values use neutral white (`#ffffff`) instead of inheriting the resource hue. Valor Ready brightens the Valor label/fill to `#f0c4ff` / `#d98cff` while its READY value remains white. The neutral gauge frame and dark track remain separate from resource identity, so future skin/window-color work can change surrounding surfaces without silently swapping the meaning of HP, MP, or Valor.
 ## Pass 63: Window Color customization
 
-Window Color Customization v1 adds a dedicated `WINDOW COLOR` editor under Option. The editor exposes Top Left, Top Right, Bottom Left, and Bottom Right colors as RGB channels, previews changes immediately through the same semantic `menuPanel` renderer used by the game, and provides a color-only reset. Changes persist through Config Runtime v3 rather than Save Runtime.
+Window Color Customization v1 adds a dedicated `WINDOW COLOR` editor under Config. The editor exposes Top Left, Top Right, Bottom Left, and Bottom Right colors as RGB channels, previews changes immediately through the same semantic `menuPanel` renderer used by the game, and provides a color-only reset. Changes persist through Config Runtime v3 rather than Save Runtime.
 
 `UIAssetManager.drawPanel()` owns the actual four-corner blend. It interpolates the configured top and bottom edge colors across narrow vertical strips, then applies that blend inside the existing rounded clip after fallback/image panel drawing. Battle/menu/accent consumers inherit the result automatically and may opt out only through the shared draw contract. Selection surfaces and `UIResourcePalette` gauges are not recolored by this system; HP blue-cyan, MP green, and Valor magenta-purple remain stable readability anchors.
+
+
+## Pass 64: Magick menu composition
+
+The field Magick screen now composes four semantic `menuPanel` surfaces through `UIAssetManager`: actor summary, selected-Magick information, description strip, and learned-Magick grid. It inherits the configured four-corner window palette automatically and keeps HP / MP label identity in `UIResourcePalette`. No Magick window owns copies of the player's RGB configuration.

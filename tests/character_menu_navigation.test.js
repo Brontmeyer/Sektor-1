@@ -228,17 +228,6 @@ function testCharacterMenusShareLeftRightActorNavigation() {
 
   const cases = [
     {
-      name: "Magick",
-      window: new Window_Magick(party),
-      actor: (window) => window.actor,
-      beforeSwitch(window) {
-        window.index = 1;
-      },
-      afterSwitch(window) {
-        assert.equal(window.index, 0);
-      },
-    },
-    {
       name: "Skills",
       window: new Window_Skills(party),
       actor: (window) => window.actor,
@@ -302,6 +291,30 @@ function testCharacterMenusShareLeftRightActorNavigation() {
   }
 }
 
+function testMagickUsesDirectionsForGridAfterActorHandoff() {
+  const { party, partyActors, triggered, drawCalls, Window_Magick } = createHarness();
+  const window = new Window_Magick(party);
+
+  assert.equal(window.actorNavigation.selectActor(partyActors[1]), true);
+  window.show();
+  assert.equal(window.actor, partyActors[1]);
+  assert.equal(window.index, 0);
+
+  trigger(window, triggered, "ArrowRight");
+  assert.equal(window.actor, partyActors[1]);
+  assert.equal(window.index, 1);
+
+  trigger(window, triggered, "ArrowLeft");
+  assert.equal(window.index, 0);
+
+  drawCalls.length = 0;
+  window.draw();
+  assert.equal(
+    drawCalls.some((call) => call[0] === "fillText" && call[1] === "Sarah"),
+    true,
+  );
+}
+
 function testSceneMenuPassesPartyContextToAllCharacterMenus() {
   const sceneMenuSource = fs.readFileSync(
     path.join(projectRoot, "js/scenes/Scene_Menu.js"),
@@ -344,6 +357,7 @@ function testSceneMenuPassesPartyContextToAllCharacterMenus() {
 function run() {
   testSharedNavigatorWrapsPartyMembers();
   testCharacterMenusShareLeftRightActorNavigation();
+  testMagickUsesDirectionsForGridAfterActorHandoff();
   testSceneMenuPassesPartyContextToAllCharacterMenus();
 
   console.log("Character menu navigation regression tests passed.");

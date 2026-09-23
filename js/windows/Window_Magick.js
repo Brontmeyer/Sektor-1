@@ -6,23 +6,63 @@ class Window_Magick {
     this.visible = false;
     this.index = 0;
 
-    this.width = 500;
-    this.height = 420;
+    this.columns = 3;
+    this.visibleRows = 7;
+    this.rowHeight = 42;
+    this.listViewport = new Window_ListViewport(this.visibleRows);
 
-    this.padding = 24;
-    this.itemHeight = 40;
-    this.listViewport = new Window_ListViewport(5);
-
-    this.x = (Graphics.width - this.width) / 2;
-    this.y = (Graphics.height - this.height) / 2;
+    this.refreshLayout();
   }
+
   get actor() {
     return this.actorNavigation.actor();
   }
 
+  refreshLayout() {
+    const margin = Math.max(12, Math.min(22, Math.floor(Graphics.width * 0.014)));
+    const gap = 8;
+    const totalWidth = Graphics.width - margin * 2;
+    const totalHeight = Graphics.height - margin * 2;
+    const headerHeight = Math.max(150, Math.min(174, Math.floor(totalHeight * 0.245)));
+    const descriptionHeight = 56;
+    const infoWidth = Math.max(240, Math.min(310, Math.floor(totalWidth * 0.245)));
+
+    this.x = margin;
+    this.y = margin;
+    this.width = totalWidth;
+    this.height = totalHeight;
+
+    this.actorBounds = {
+      x: this.x,
+      y: this.y,
+      width: this.width - infoWidth - gap,
+      height: headerHeight,
+    };
+    this.infoBounds = {
+      x: this.actorBounds.x + this.actorBounds.width + gap,
+      y: this.y,
+      width: infoWidth,
+      height: headerHeight,
+    };
+    this.descriptionBounds = {
+      x: this.x,
+      y: this.y + headerHeight + gap,
+      width: this.width,
+      height: descriptionHeight,
+    };
+    this.listBounds = {
+      x: this.x,
+      y: this.descriptionBounds.y + descriptionHeight + gap,
+      width: this.width,
+      height:
+        this.y + this.height -
+        (this.descriptionBounds.y + descriptionHeight + gap),
+    };
+  }
+
   onActorChanged() {
     this.index = 0;
-    this.listViewport.reset(this.index, this.magickList().length);
+    this.resetViewport();
   }
 
   changeActor(offset) {
@@ -31,6 +71,89 @@ class Window_Magick {
     }
 
     this.onActorChanged();
+    return true;
+  }
+
+  magickList() {
+    const magick = this.actor
+      ?.knownMagick?.()
+      ?.filter((entry) => entry?.type === "magick") || [];
+
+    return typeof ConfigManager === "undefined"
+      ? magick
+      : ConfigManager.sortMagick(magick);
+  }
+
+  currentMagick() {
+    return this.magickList()[this.index] || null;
+  }
+
+  rowCount(totalEntries = this.magickList().length) {
+    return Math.ceil(Math.max(0, Number(totalEntries) || 0) / this.columns);
+  }
+
+  selectedRow() {
+    return Math.floor(this.index / this.columns);
+  }
+
+  resetViewport() {
+    this.listViewport.reset(this.selectedRow(), this.rowCount());
+  }
+
+  ensureSelectionVisible() {
+    this.listViewport.ensureVisible(this.selectedRow(), this.rowCount());
+  }
+
+  directionRepeated(action) {
+    return typeof Input.isActionRepeated === "function"
+      ? Input.isActionRepeated(action)
+      : Input.isActionTriggered(action);
+  }
+
+  moveHorizontal(direction, totalEntries) {
+    const total = Math.max(0, Number(totalEntries) || 0);
+
+    if (total <= 0) {
+      return false;
+    }
+
+    const row = Math.floor(this.index / this.columns);
+    const column = this.index % this.columns;
+    const nextColumn = column + (direction < 0 ? -1 : 1);
+
+    if (nextColumn < 0 || nextColumn >= this.columns) {
+      return false;
+    }
+
+    const nextIndex = row * this.columns + nextColumn;
+
+    if (nextIndex < 0 || nextIndex >= total) {
+      return false;
+    }
+
+    this.index = nextIndex;
+    this.ensureSelectionVisible();
+    return true;
+  }
+
+  moveVertical(direction, totalEntries) {
+    const total = Math.max(0, Number(totalEntries) || 0);
+    const rows = this.rowCount(total);
+
+    if (total <= 0 || rows <= 0) {
+      return false;
+    }
+
+    const row = Math.floor(this.index / this.columns);
+    const column = this.index % this.columns;
+    const nextRow = row + (direction < 0 ? -1 : 1);
+
+    if (nextRow < 0 || nextRow >= rows) {
+      return false;
+    }
+
+    this.index = Math.min(nextRow * this.columns + column, total - 1);
+    this.ensureSelectionVisible();
     return true;
   }
 
@@ -44,34 +167,21 @@ class Window_Magick {
       return;
     }
 
-    if (this.actorNavigation.update()) {
-      this.onActorChanged();
-      return;
-    }
-
     const magickList = this.magickList();
 
     if (magickList.length === 0) {
       return;
     }
 
-    if (Input.isActionTriggered("up")) {
-      this.index--;
-
-      if (this.index < 0) {
-        this.index = magickList.length - 1;
-      }
+    if (this.directionRepeated("up")) {
+      this.moveVertical(-1, magickList.length);
+    } else if (this.directionRepeated("down")) {
+      this.moveVertical(1, magickList.length);
+    } else if (this.directionRepeated("left")) {
+      this.moveHorizontal(-1, magickList.length);
+    } else if (this.directionRepeated("right")) {
+      this.moveHorizontal(1, magickList.length);
     }
-
-    if (Input.isActionTriggered("down")) {
-      this.index++;
-
-      if (this.index >= magickList.length) {
-        this.index = 0;
-      }
-    }
-
-    this.listViewport.ensureVisible(this.index, magickList.length);
 
     if (Input.isActionTriggered("confirm")) {
       const currentMagick = this.currentMagick();
@@ -80,8 +190,6 @@ class Window_Magick {
         return;
       }
 
-      // Field menu currently only supports
-      // magick that can target the player.
       if (!this.canUseFromField(currentMagick)) {
         DebugManager.log(`${currentMagick.name} cannot be used from the field menu.`);
         return;
@@ -91,44 +199,24 @@ class Window_Magick {
     }
   }
 
-  magickList() {
-    const magick = this.actor
-      .knownMagick()
-      .filter((entry) => entry.type === "magick");
-
-    return typeof ConfigManager === "undefined"
-      ? magick
-      : ConfigManager.sortMagick(magick);
-  }
-
-  currentMagick() {
-    const magickList = this.magickList();
-
-    return magickList[this.index] || null;
-  }
-
   canUseFromField(magick) {
-    if (!magick) {
+    if (!magick || !this.actor) {
       return false;
     }
 
     const canTargetPlayer =
       Array.isArray(magick.target) &&
       (magick.target.includes("ally") || magick.target.includes("self"));
-
     const isFieldEffect = magick.effect === "heal";
 
-    if (!canTargetPlayer || !isFieldEffect) {
-      return false;
-    }
-
-    return this.actor.canUseMagick(magick.id);
+    return canTargetPlayer && isFieldEffect && this.actor.canUseMagick(magick.id);
   }
 
   show() {
     this.visible = true;
     this.index = 0;
-    this.listViewport.reset(this.index, this.magickList().length);
+    this.refreshLayout();
+    this.resetViewport();
   }
 
   hide() {
@@ -139,21 +227,296 @@ class Window_Magick {
     return this.visible;
   }
 
-  drawScrollIndicators(context, totalEntries) {
-    context.save();
-    context.fillStyle = "#ffffff";
-    context.font = "16px sans-serif";
-    context.textAlign = "right";
-
-    if (this.listViewport.hasPrevious()) {
-      context.fillText("▲", this.x + this.width - 8, this.y + 105);
+  drawPanel(context, bounds, options = {}) {
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      return UIAssetManager.drawPanel(
+        context,
+        "menuPanel",
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height,
+        {
+          fallbackFill: "rgba(11, 16, 28, 0.96)",
+          fallbackStroke: "rgba(150, 176, 220, 0.78)",
+          lineWidth: 1.5,
+          assetAlpha: 0.54,
+          sourceMargin: 12,
+          destMargin: 12,
+          ...options,
+        },
+      );
     }
 
-    if (this.listViewport.hasNext(totalEntries)) {
-      context.fillText("▼", this.x + this.width - 8, this.y + 285);
+    context.fillStyle = options.fallbackFill || "rgba(11, 16, 28, 0.96)";
+    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    context.strokeStyle = options.fallbackStroke || "rgba(150, 176, 220, 0.78)";
+    context.lineWidth = 1.5;
+    context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    return false;
+  }
+
+  drawPortraitPlaceholder(context, x, y, size) {
+    const initial = String(this.actor?.name || "?").trim().charAt(0).toUpperCase() || "?";
+
+    context.fillStyle = "rgba(12, 23, 45, 0.94)";
+    context.fillRect(x, y, size, size);
+    context.strokeStyle = "rgba(137, 182, 235, 0.85)";
+    context.lineWidth = 1.5;
+    context.strokeRect(x, y, size, size);
+    context.fillStyle = "#f3f7fc";
+    context.font = `600 ${Math.max(28, Math.floor(size * 0.4))}px sans-serif`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(initial, x + size / 2, y + size / 2);
+  }
+
+  resourceText(resource) {
+    return typeof UIResourcePalette !== "undefined"
+      ? UIResourcePalette.text(resource)
+      : resource === "hp"
+        ? "#66d7ff"
+        : "#78ef91";
+  }
+
+  valueText() {
+    return typeof UIResourcePalette !== "undefined"
+      ? UIResourcePalette.valueText()
+      : "#ffffff";
+  }
+
+  drawActorPanel(context) {
+    const bounds = this.actorBounds;
+    const actor = this.actor;
+    this.drawPanel(context, bounds);
+
+    const portraitSize = Math.min(104, bounds.height - 34);
+    const portraitX = bounds.x + 18;
+    const portraitY = bounds.y + (bounds.height - portraitSize) / 2;
+    this.drawPortraitPlaceholder(context, portraitX, portraitY, portraitSize);
+
+    const infoX = portraitX + portraitSize + 20;
+    const nameY = bounds.y + 52;
+
+    context.textAlign = "left";
+    context.textBaseline = "alphabetic";
+    context.fillStyle = "#ffffff";
+    context.font = "600 22px sans-serif";
+    context.fillText(actor?.name || "Unknown", infoX, nameY);
+
+    const nameWidth = context.measureText?.(actor?.name || "Unknown")?.width || 80;
+    context.fillStyle = "#ffd75a";
+    context.font = "600 16px sans-serif";
+    context.fillText("LV", infoX + nameWidth + 14, nameY);
+    context.fillStyle = this.valueText();
+    context.fillText(String(actor?.level ?? "?"), infoX + nameWidth + 42, nameY);
+
+    const statY = nameY + 38;
+    const statGap = Math.max(145, Math.floor((bounds.width - (infoX - bounds.x) - 34) / 2));
+
+    context.font = "600 16px sans-serif";
+    context.fillStyle = this.resourceText("hp");
+    context.fillText("HP", infoX, statY);
+    context.fillStyle = this.valueText();
+    context.fillText(`${actor?.hp ?? 0}/${actor?.maxHp ?? 0}`, infoX + 28, statY);
+
+    context.fillStyle = this.resourceText("mp");
+    context.fillText("MP", infoX + statGap, statY);
+    context.fillStyle = this.valueText();
+    context.fillText(
+      `${actor?.mp ?? 0}/${actor?.maxMp ?? 0}`,
+      infoX + statGap + 29,
+      statY,
+    );
+  }
+
+  titleCase(value, fallback = "--") {
+    const text = String(value || "").trim();
+    return text ? text.charAt(0).toUpperCase() + text.slice(1) : fallback;
+  }
+
+  scopeLabel(magick) {
+    const scope = Array.isArray(magick?.scope) ? magick.scope : [];
+
+    if (scope.includes("single") && scope.includes("all")) {
+      return "Single / All";
+    }
+
+    return scope.length > 0 ? scope.map((entry) => this.titleCase(entry)).join(" / ") : "--";
+  }
+
+  drawMagickInfoPanel(context) {
+    const bounds = this.infoBounds;
+    const magick = this.currentMagick();
+    this.drawPanel(context, bounds);
+
+    context.textAlign = "center";
+    context.textBaseline = "alphabetic";
+    context.fillStyle = "#ffffff";
+    context.font = "600 22px sans-serif";
+    context.fillText("MAGICK", bounds.x + bounds.width / 2, bounds.y + 34);
+
+    context.textAlign = "left";
+    context.font = "14px sans-serif";
+    context.fillStyle = "#aebbd0";
+    context.fillText("Category", bounds.x + 18, bounds.y + 64);
+    context.fillText("Element", bounds.x + 18, bounds.y + 87);
+    context.fillText("Scope", bounds.x + 18, bounds.y + 110);
+
+    context.textAlign = "right";
+    context.fillStyle = "#ffffff";
+    context.fillText(this.titleCase(magick?.category), bounds.x + bounds.width - 18, bounds.y + 64);
+    context.fillText(this.titleCase(magick?.element), bounds.x + bounds.width - 18, bounds.y + 87);
+    context.fillText(this.scopeLabel(magick), bounds.x + bounds.width - 18, bounds.y + 110);
+
+    context.textAlign = "center";
+    context.fillStyle = "#cbd5e3";
+    context.font = "600 14px sans-serif";
+    context.fillText("MP NEEDED", bounds.x + bounds.width / 2, bounds.y + 136);
+    context.fillStyle = "#ffffff";
+    context.font = "600 20px sans-serif";
+    context.fillText(
+      String(Math.max(0, Number(magick?.mpCost) || 0)).padStart(3, "0"),
+      bounds.x + bounds.width / 2,
+      bounds.y + 160,
+    );
+  }
+
+  drawDescription(context) {
+    const bounds = this.descriptionBounds;
+    const magick = this.currentMagick();
+    this.drawPanel(context, bounds, { assetAlpha: 0.46 });
+
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+    context.fillStyle = "#ffffff";
+    context.font = "16px sans-serif";
+
+    if (typeof Window_TextLayout !== "undefined" && Window_TextLayout.drawWrappedText) {
+      Window_TextLayout.drawWrappedText(
+        context,
+        magick?.description || "No Magick selected.",
+        bounds.x + 18,
+        bounds.y + 21,
+        bounds.width - 36,
+        18,
+        2,
+      );
+    } else {
+      context.fillText(
+        magick?.description || "No Magick selected.",
+        bounds.x + 18,
+        bounds.y + bounds.height / 2,
+      );
+    }
+  }
+
+  drawScrollIndicators(context, totalRows) {
+    const bounds = this.listBounds;
+    const arrowX = bounds.x + bounds.width - 18;
+
+    context.save();
+    context.fillStyle = "#ffffff";
+    context.font = "17px sans-serif";
+    context.textAlign = "center";
+
+    if (this.listViewport.hasPrevious()) {
+      context.fillText("▲", arrowX, bounds.y + 24);
+    }
+
+    if (this.listViewport.hasNext(totalRows)) {
+      context.fillText("▼", arrowX, bounds.y + bounds.height - 44);
     }
 
     context.restore();
+  }
+
+  drawList(context) {
+    const bounds = this.listBounds;
+    const magickList = this.magickList();
+    const totalRows = this.rowCount(magickList.length);
+    const range = this.listViewport.visibleRange(this.selectedRow(), totalRows);
+    this.drawPanel(context, bounds);
+
+    if (magickList.length === 0) {
+      context.fillStyle = "#ffffff";
+      context.font = "18px sans-serif";
+      context.textAlign = "left";
+      context.fillText("(No Magick learned)", bounds.x + 24, bounds.y + 42);
+      return;
+    }
+
+    const horizontalPadding = 24;
+    const columnGap = 16;
+    const contentWidth = bounds.width - horizontalPadding * 2 - 28;
+    const columnWidth = (contentWidth - columnGap * (this.columns - 1)) / this.columns;
+    const firstY = bounds.y + 42;
+
+    context.textBaseline = "middle";
+    context.font = "18px sans-serif";
+
+    for (let row = range.start; row < range.end; row++) {
+      const visibleRow = row - range.start;
+      const drawY = firstY + visibleRow * this.rowHeight;
+
+      for (let column = 0; column < this.columns; column++) {
+        const index = row * this.columns + column;
+
+        if (index >= magickList.length) {
+          continue;
+        }
+
+        const magick = magickList[index];
+        const selected = index === this.index;
+        const usable = this.canUseFromField(magick);
+        const columnX = bounds.x + horizontalPadding + column * (columnWidth + columnGap);
+
+        if (selected) {
+          const drawn =
+            typeof UIAssetManager !== "undefined" &&
+            typeof UIAssetManager.drawSelectionPanel === "function" &&
+            UIAssetManager.drawSelectionPanel(
+              context,
+              columnX - 7,
+              drawY - this.rowHeight / 2 + 4,
+              columnWidth + 2,
+              this.rowHeight - 8,
+              { alpha: 0.2 },
+            );
+
+          if (!drawn) {
+            context.fillStyle = "rgba(255, 215, 90, 0.1)";
+            context.fillRect(
+              columnX - 7,
+              drawY - this.rowHeight / 2 + 4,
+              columnWidth + 2,
+              this.rowHeight - 8,
+            );
+          }
+        }
+
+        context.globalAlpha = usable ? 1 : 0.46;
+        context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+        context.textAlign = "left";
+        context.fillText(`${selected ? "▶ " : "  "}${magick.name}`, columnX, drawY);
+        context.globalAlpha = 1;
+      }
+    }
+
+    this.drawScrollIndicators(context, totalRows);
+
+    context.fillStyle = "#aebbd0";
+    context.font = "13px sans-serif";
+    context.textAlign = "right";
+    context.fillText(
+      `${Input.actionLabel("up")}/${Input.actionLabel("down")}/${Input.actionLabel("left")}/${Input.actionLabel("right")}: Choose   ` +
+        `${Input.actionLabel("confirm")}: Use   ${Input.actionLabel("cancel")}: Back`,
+      bounds.x + bounds.width - 28,
+      bounds.y + bounds.height - 14,
+    );
   }
 
   draw() {
@@ -162,111 +525,15 @@ class Window_Magick {
     }
 
     const context = Graphics.context;
-
     context.save();
+    context.fillStyle = "#0b0e13";
+    context.fillRect(0, 0, Graphics.width, Graphics.height);
 
-    context.textAlign = "left";
-    context.textBaseline = "alphabetic";
+    this.drawActorPanel(context);
+    this.drawMagickInfoPanel(context);
+    this.drawDescription(context);
+    this.drawList(context);
 
-    // Background
-    context.fillStyle = "rgba(0, 0, 0, 0.95)";
-    context.fillRect(this.x, this.y, this.width, this.height);
-
-    // Border
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 2;
-    context.strokeRect(this.x, this.y, this.width, this.height);
-
-    this.actorNavigation.drawHeader(
-      context,
-      "MAGICK",
-      this.x,
-      this.y,
-      this.width,
-      this.padding,
-    );
-
-    // =====================================
-    // MAGICK LIST
-    // =====================================
-
-    const magickList = this.magickList();
-
-    context.font = "22px sans-serif";
-
-    if (magickList.length === 0) {
-      context.fillText("(No magick)", this.x + this.padding, this.y + 105);
-
-      context.restore();
-      return;
-    }
-
-    const range = this.listViewport.visibleRange(this.index, magickList.length);
-    let drawY = this.y + 105;
-
-    for (let i = range.start; i < range.end; i++) {
-      const magick = magickList[i];
-
-      const prefix = i === this.index ? "▶ " : "   ";
-
-      const usable = this.canUseFromField(magick);
-
-      context.globalAlpha = usable ? 1.0 : 0.4;
-
-      context.fillText(`${prefix}${magick.name}`, this.x + this.padding, drawY);
-
-      context.fillText(
-        `${magick.mpCost || 0} MP`,
-        this.x + this.width - 110,
-        drawY,
-      );
-
-      context.globalAlpha = 1.0;
-
-      drawY += this.itemHeight;
-    }
-
-    this.drawScrollIndicators(context, magickList.length);
-
-    // =====================================
-    // CURRENT MAGICK DETAILS
-    // =====================================
-
-    const currentMagick = this.currentMagick();
-
-    if (currentMagick) {
-      const dividerY = this.y + 295;
-      const detailX = this.x + this.padding;
-      const detailWidth = this.width - this.padding * 2;
-
-      context.beginPath();
-      context.moveTo(detailX, dividerY);
-      context.lineTo(this.x + this.width - this.padding, dividerY);
-      context.stroke();
-
-      context.font = "18px sans-serif";
-      context.fillText(
-        `MP: ${this.actor.mp} / ${this.actor.maxMp}`,
-        detailX,
-        dividerY + 23,
-      );
-
-      Window_TextLayout.drawWrappedText(
-        context,
-        currentMagick.description || "",
-        detailX,
-        dividerY + 47,
-        detailWidth,
-        20,
-        3,
-      );
-
-      context.fillText(
-        `Category: ${currentMagick.category || "other"}`,
-        detailX,
-        this.y + this.height - 13,
-      );
-    }
     context.restore();
   }
 }

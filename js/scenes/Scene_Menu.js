@@ -264,7 +264,7 @@ class Scene_Menu extends Scene_Base {
         this.beginOrderSelection();
         break;
 
-      case "Option":
+      case "Config":
         SceneManager.push(Scene_Options);
         break;
 
@@ -415,7 +415,7 @@ class Scene_Menu extends Scene_Base {
     context.fillText("TIME", utilityX, this.layout.utility.y + 49);
 
     context.textAlign = "right";
-    context.fillStyle = "#ffd75a";
+    context.fillStyle = "#ffffff";
     context.fillText(
       Number($gameParty.gil?.() || 0).toLocaleString(),
       valueX,

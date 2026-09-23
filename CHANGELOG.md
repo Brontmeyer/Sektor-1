@@ -18,7 +18,14 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
-- Added Window Color Customization v1 with a dedicated `WINDOW COLOR` editor reachable from Option, four independently editable corner colors, live shared-window preview, RGB channel editing, and window-color-only reset
+- Added Magick Menu Presentation & List Navigation v1 with a reference-inspired actor summary, selected-Magick metadata panel, description strip, three-column learned-Magick grid, row scrolling, and conditional scroll arrows
+- Added shared held-direction repeat through `Input.update()` / `Input.isActionRepeated()` so directional menus can move immediately on press, pause briefly, then repeat at a steady interval without relying on browser key-repeat timing
+- Gave the Magick grid ownership of all four directions after the main-menu actor handoff; the selected actor remains fixed while browsing so horizontal movement cannot accidentally switch party members
+- Renamed the player-facing main-menu `Option` destination and screen heading to **Config** while preserving the established internal `Scene_Options` / `Window_Options` class names
+- Changed the main-menu RUNES amount to neutral white for numeric consistency while leaving the RUNES label styling unchanged
+- Added dedicated Magick Menu Presentation and Input Repeat Navigation regression coverage
+
+- Added Window Color Customization v1 with a dedicated `WINDOW COLOR` editor reachable from Config, four independently editable corner colors, live shared-window preview, RGB channel editing, and window-color-only reset
 - Advanced Config Runtime to v3 so window colors persist independently from save slots while Config Runtime v2/v1 options and keyboard bindings migrate forward automatically
 - Added centralized four-corner tint blending in `UIAssetManager.drawPanel()` for semantic battle/menu/accent windows; individual consumers remain unaware of RGB values and may opt out only through the shared panel contract
 - Kept `UIResourcePalette` independent from window tinting so HP / MP / Valor labels and gauges retain their established resource identities regardless of player-selected window colors

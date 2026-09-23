@@ -12,6 +12,7 @@ class GameLoop {
   }
 
   static update(deltaTime) {
+    Input.update(deltaTime);
     Graphics.clear();
 
     SceneManager.update(deltaTime);

@@ -15,7 +15,7 @@ class Window_MenuCommand {
       "Status",
       "Order",
       "Valor",
-      "Option",
+      "Config",
       "ROSTER",
       "Save",
       "Load",
