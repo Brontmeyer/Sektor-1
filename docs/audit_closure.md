@@ -222,6 +222,10 @@ Pass 65 is post-audit field-menu presentation/input work and does not reopen a h
 
 Pass 66 is post-audit field-menu presentation/input work and does not reopen a historical finding. `Window_Essence` preserves the established actor-owned Essence slot/progression APIs while presenting them through the same full-screen field-menu language as MAGICK/SKILL. The catalog uses shared held-direction repeat and viewport scrolling; equip legality still delegates to `Game_Actor`. The progression panel reads `Game_Essence` level/Resonance/Mastery Ready and canonical awakening data without implementing future passive, Mastery-Trial, ownership, or Evolution mechanics. `Window_ActorSummary` centralizes actor identity plus stacked HP/MP gauges for MAGICK/SKILL/ESSENCE. No save/config schema or combat-rule change is introduced, so Save Runtime remains v11 and Config Runtime remains v3.
 
+## Post-Audit Feature Note: Equip Menu Presentation & Stat Preview v1
+
+Pass 67 is post-audit field-menu presentation work and does not reopen a historical finding. `Window_Equipment` now consumes the shared actor-summary language and delegates candidate traversal/stat previews to `Window_EquipSelect`; actual Weapon / Armor / Accessory changes still execute only through `Game_Actor` equip/unequip APIs. Candidate comparisons call existing derived-stat helpers rather than reimplementing combat formulas. The `Essence Growth` row is presentation-only and defaults to `Normal`; no Resonance modifier is introduced. MAIN MENU portrait placeholders are standardized to square frames. No save/config schema or combat-rule change is introduced, so Save Runtime remains v11 and Config Runtime remains v3.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

@@ -18,6 +18,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Equip Menu Presentation & Stat Preview v1 with the shared actor-summary header, full Weapon / Armor / Accessories labels, current loadout summary, description strip, integrated equipment list, and live current-to-preview combat stat comparisons
+- Added held-direction repeat and shared list-viewport scrolling to equipment selection while preserving actor-owned equip / unequip APIs and existing inventory/database ownership
+- Added a presentation-only **Essence Growth** row that defaults to `Normal` and can display future gear metadata without applying any Resonance multiplier until that mechanic is explicitly implemented
+- Standardized MAIN MENU portrait placeholders to square frames so MAIN MENU, MAGICK, SKILL, ESSENCE, and EQUIP use the same portrait silhouette
+- Added dedicated Equip Menu Presentation regression coverage for square portraits, full equipment labels, stat preview calculations, held navigation, scrolling, and non-mechanical Essence Growth presentation
+
 - Added Essence Menu Presentation & List Navigation v1 with the same full-screen actor-summary / metadata / description language used by MAGICK and SKILL while preserving Essence-specific slot equipment and progression ownership
 - Added a two-column Essence catalog with shared held-direction repeat, row scrolling, contextual arrows, live equip legality, and preview of persistent Resonance / level / Mastery Ready state before selection
 - Added a dedicated progression panel for current level, next Resonance milestone, Mastery Ready feedback, and data-driven Magick Awakening entries without inventing passive or Mastery-Trial runtime behavior

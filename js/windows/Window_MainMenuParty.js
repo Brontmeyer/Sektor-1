@@ -204,28 +204,17 @@ class Window_MainMenuParty {
   }
 
   drawPortraitPlaceholder(context, actor, x, y, size) {
-    const radius = Math.min(12, size / 5);
-    const canRound =
-      typeof UIAssetManager !== "undefined" &&
-      typeof UIAssetManager.roundedRectPath === "function" &&
-      UIAssetManager.roundedRectPath(context, x, y, size, size, radius);
-
-    context.save();
-    if (canRound && typeof context.fill === "function") {
-      context.fillStyle = "rgba(19, 30, 49, 0.96)";
-      context.fill();
-      context.strokeStyle = "rgba(142, 180, 236, 0.72)";
-      context.lineWidth = 1.25;
-      context.stroke();
-    } else {
-      context.fillStyle = "rgba(19, 30, 49, 0.96)";
-      context.fillRect(x, y, size, size);
-      context.strokeStyle = "rgba(142, 180, 236, 0.72)";
-      context.strokeRect(x, y, size, size);
-    }
-
+    // Keep portrait frames square across MAIN MENU, MAGICK, SKILL, ESSENCE,
+    // and EQUIP. Only horizontal portrait position communicates battle row.
     const initial =
       String(actor?.name || "?").trim().charAt(0).toUpperCase() || "?";
+
+    context.save();
+    context.fillStyle = "rgba(19, 30, 49, 0.96)";
+    context.fillRect(x, y, size, size);
+    context.strokeStyle = "rgba(142, 180, 236, 0.72)";
+    context.lineWidth = 1.25;
+    context.strokeRect(x, y, size, size);
     context.fillStyle = "#eef4fb";
     context.font = `600 ${Math.max(24, Math.floor(size * 0.4))}px sans-serif`;
     context.textAlign = "center";

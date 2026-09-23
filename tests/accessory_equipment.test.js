@@ -89,6 +89,7 @@ function createHarness() {
     "js/objects/Game_Interpreter.js",
     "js/windows/Window_ListViewport.js",
     "js/windows/Window_ActorNavigator.js",
+    "js/windows/Window_ActorSummary.js",
     "js/windows/Window_EquipSelect.js",
     "js/windows/Window_Equipment.js",
   ]
@@ -246,7 +247,7 @@ function testEquipmentWindowAddsOneAccessorySlotAndDrawsSafely() {
   window.draw();
 
   assert.equal(
-    drawCalls.some((call) => String(call[0]).includes("Accessory")),
+    drawCalls.some((call) => String(call[0]).includes("Accessories")),
     true,
   );
   assert.equal(

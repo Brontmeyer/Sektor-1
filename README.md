@@ -116,6 +116,7 @@ Current battle features include:
 Systems currently being expanded include:
 
 -   ✅ Essence Equipment & Menu v1
+-   ✅ Equip Menu Presentation & Stat Preview v1
 -   ✅ Essence Menu Presentation & List Navigation v1
 -   🚧 Essence ability grants and passive runtime
 -   ✅ Enemy Actions & AI v1
@@ -146,6 +147,8 @@ The main menu presents the active four party members through dedicated actor car
 # 💎 Essence Menu
 
 **Essence Menu Presentation & List Navigation v1** keeps the established actor-owned Essence equipment/runtime contract but gives it the same modern field-menu presentation language as MAGICK and SKILL. The selected actor uses the shared portrait/name/LV plus stacked HP/MP mini-gauge header. The selected Essence metadata panel shows Type / Element / Level / Resonance, followed by its canonical description. The lower-left surface preserves the real slot workflow: choose an equipped slot, then browse a two-column catalog with shared held-direction repeat, row scrolling, conditional `▲ / ▼` arrows, and duplicate-slot legality. The lower-right progression surface reads persistent `Game_Essence` state for current level, next Resonance milestone, Mastery Ready, and data-driven Magick Awakening entries. The pass does not invent Essence ownership filtering, passive execution, Mastery Trial completion, or Evolution behavior that the runtime does not yet own.
+
+**Equip Menu Presentation & Stat Preview v1** replaces the old centered equipment box with the same full-screen character-menu language used by MAGICK / SKILL / ESSENCE. The actor summary uses `Window_ActorSummary`; the right header lists current Weapon / Armor / Accessories names in full; a description strip tracks the selected/current gear; and the lower surfaces separate slot/stat comparison from the equipment catalog. Browsing a candidate previews Attack, Attack %, Defense, Defense %, Magic Attack, Magic Defense, Magic Defense %, and Critical using the actor's real calculation APIs before Confirm commits through the existing equip/unequip methods. The list uses shared held-direction repeat plus `Window_ListViewport` scrolling. An **Essence Growth** presentation row currently defaults to `Normal`; it reserves a clean future gear-data contract but does not modify Resonance yet. MAIN MENU portrait placeholders are now square like the shared actor-summary portraits.
 
 ------------------------------------------------------------------------
 

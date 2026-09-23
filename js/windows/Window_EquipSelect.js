@@ -5,88 +5,65 @@ class Window_EquipSelect {
     this.actor = actor;
     this.visible = false;
     this.type = null;
-
     this.index = 0;
     this.result = null;
+    this.lineHeight = 42;
+    this.visibleRows = 8;
+    this.listViewport = new Window_ListViewport(this.visibleRows);
+    this.setBounds({ x: 0, y: 0, width: 420, height: 420 });
+  }
 
-    this.width = 620;
-    this.height = 480;
-    this.padding = 30;
-    this.lineHeight = 40;
-    this.listViewport = new Window_ListViewport(5);
+  setBounds(bounds = {}) {
+    this.x = Number(bounds.x) || 0;
+    this.y = Number(bounds.y) || 0;
+    this.width = Math.max(300, Number(bounds.width) || 420);
+    this.height = Math.max(300, Number(bounds.height) || 420);
+    this.padding = 20;
+    this.visibleRows = Math.max(
+      4,
+      Math.floor((this.height - 92) / this.lineHeight),
+    );
+    this.listViewport.maxVisibleRows = this.visibleRows;
+  }
 
-    this.x = (Graphics.width - this.width) / 2;
-    this.y = (Graphics.height - this.height) / 2;
+  directionRepeated(action) {
+    return typeof Input.isActionRepeated === "function"
+      ? Input.isActionRepeated(action)
+      : Input.isActionTriggered(action);
   }
 
   equipmentConfig() {
     if (this.type === "weapon") {
       return {
-        title: "Select Weapon",
+        title: "WEAPON",
         inventory: $gameParty.weapons,
         count: (id) => $gameParty.weaponCount(id),
         lookup: (id) => DatabaseManager.weapon(id),
         equippedId: () => this.actor?.weaponId ?? 0,
-        bonusText: (weapon) => {
-          const parts = [`+${weapon.attack || 0} Attack`];
-
-          if ((weapon.magicAttack || 0) > 0) {
-            parts.push(`+${weapon.magicAttack} Magic Attack`);
-          }
-
-          if ((weapon.criticalBonus || 0) > 0) {
-            parts.push(`+${weapon.criticalBonus} Critical`);
-          }
-
-          return parts.join(", ");
-        },
       };
     }
 
     if (this.type === "armor") {
       return {
-        title: "Select Armor",
+        title: "ARMOR",
         inventory: $gameParty.armors,
         count: (id) => $gameParty.armorCount(id),
         lookup: (id) => DatabaseManager.armor(id),
         equippedId: () => this.actor?.armorId ?? 0,
-        bonusText: (armor) => `+${armor.defense || 0} Defense`,
       };
     }
 
     if (this.type === "accessory") {
       return {
-        title: "Select Accessory",
+        title: "ACCESSORIES",
         inventory: $gameParty.accessories,
         count: (id) => $gameParty.accessoryCount(id),
         lookup: (id) => DatabaseManager.accessory(id),
         equippedId: () => this.actor?.accessoryId ?? 0,
-        bonusText: (accessory) => this.accessoryBonusText(accessory),
       };
     }
 
     return null;
-  }
-
-  accessoryBonusText(accessory) {
-    const labels = {
-      attack: "Attack",
-      defense: "Defense",
-      magicAttack: "Magic Attack",
-      magicDefense: "Magic Defense",
-      criticalBonus: "Critical",
-    };
-    const parts = [];
-
-    for (const [key, label] of Object.entries(labels)) {
-      const value = Number(accessory?.bonuses?.[key]);
-
-      if (Number.isFinite(value) && value !== 0) {
-        parts.push(`+${value} ${label}`);
-      }
-    }
-
-    return parts.join(", ") || "No combat bonus";
   }
 
   update() {
@@ -101,15 +78,15 @@ class Window_EquipSelect {
 
     const entries = this.entries();
 
-    if (Input.isActionTriggered("up")) {
-      this.index = (this.index - 1 + entries.length) % entries.length;
-    }
+    if (entries.length > 0) {
+      if (this.directionRepeated("up")) {
+        this.index = (this.index - 1 + entries.length) % entries.length;
+      } else if (this.directionRepeated("down")) {
+        this.index = (this.index + 1) % entries.length;
+      }
 
-    if (Input.isActionTriggered("down")) {
-      this.index = (this.index + 1) % entries.length;
+      this.listViewport.ensureVisible(this.index, entries.length);
     }
-
-    this.listViewport.ensureVisible(this.index, entries.length);
 
     if (Input.isActionTriggered("confirm")) {
       this.result = this.currentEntry();
@@ -165,7 +142,6 @@ class Window_EquipSelect {
         name: data.name,
         count: config.count(id),
         data,
-        bonusText: config.bonusText(data),
       });
     }
 
@@ -174,6 +150,20 @@ class Window_EquipSelect {
 
   currentEntry() {
     return this.entries()[this.index] || null;
+  }
+
+  selectedEquipment() {
+    return this.currentEntry()?.data || null;
+  }
+
+  selectedDescription() {
+    return this.selectedEquipment()?.description || "No equipment selected.";
+  }
+
+  essenceGrowthLabel() {
+    const equipment = this.selectedEquipment();
+    const growth = String(equipment?.essenceGrowth || "Normal").trim();
+    return growth || "Normal";
   }
 
   hasResult() {
@@ -186,89 +176,85 @@ class Window_EquipSelect {
     return result;
   }
 
-  previewStats() {
-    const entry = this.currentEntry();
+  statRows() {
+    const actor = this.actor;
 
-    if (!entry || !this.actor) {
+    if (!actor) {
       return [];
     }
 
-    if (this.type === "weapon") {
-      const weapon = entry.id === 0 ? null : entry.data;
+    const current = {
+      attack: actor.totalAttack(),
+      attackPercent: actor.totalAttackPercent(),
+      defense: actor.totalDefense(),
+      defensePercent: actor.totalDefensePercent?.() ?? actor.defensePercent ?? 0,
+      magicAttack: actor.totalMagicAttack(),
+      magicDefense: actor.totalMagicDefense(),
+      magicDefensePercent:
+        actor.totalMagicDefensePercent?.() ?? actor.magicDefensePercent ?? 0,
+      critical: actor.totalCritical(),
+    };
+    const preview = { ...current };
+    const entry = this.currentEntry();
 
-      return [
-        {
-          name: "Attack",
-          current: this.actor.totalAttack(),
-          preview: this.actor.attackWithWeapon(weapon),
-        },
-        {
-          name: "Magic Attack",
-          current: this.actor.totalMagicAttack(),
-          preview: this.actor.magicAttackWithWeapon(weapon),
-        },
-      ];
+    if (entry) {
+      if (this.type === "weapon") {
+        const weapon = entry.id === 0 ? null : entry.data;
+        preview.attack = actor.attackWithWeapon(weapon);
+        preview.attackPercent = actor.attackPercentWithWeapon(weapon);
+        preview.magicAttack = actor.magicAttackWithWeapon(weapon);
+        preview.critical = actor.criticalWithWeapon(weapon);
+      } else if (this.type === "armor") {
+        const armor = entry.id === 0 ? null : entry.data;
+        preview.defense = actor.defenseWithArmor(armor);
+      } else if (this.type === "accessory") {
+        const accessory = entry.id === 0 ? null : entry.data;
+        preview.attack = actor.attackWithWeapon(actor.weapon(), accessory);
+        preview.defense = actor.defenseWithArmor(actor.armor(), accessory);
+        preview.magicAttack = actor.magicAttackWithWeapon(actor.weapon(), accessory);
+        preview.magicDefense = actor.magicDefenseWithAccessory(accessory);
+        preview.critical = actor.criticalWithWeapon(actor.weapon(), accessory);
+      }
     }
 
-    if (this.type === "armor") {
-      const armor = entry.id === 0 ? null : entry.data;
-
-      return [
-        {
-          name: "Defense",
-          current: this.actor.totalDefense(),
-          preview: this.actor.defenseWithArmor(armor),
-        },
-      ];
-    }
-
-    if (this.type === "accessory") {
-      const accessory = entry.id === 0 ? null : entry.data;
-
-      return [
-        {
-          name: "Attack",
-          current: this.actor.totalAttack(),
-          preview: this.actor.attackWithWeapon(this.actor.weapon(), accessory),
-        },
-        {
-          name: "Defense",
-          current: this.actor.totalDefense(),
-          preview: this.actor.defenseWithArmor(this.actor.armor(), accessory),
-        },
-        {
-          name: "Magic Attack",
-          current: this.actor.totalMagicAttack(),
-          preview: this.actor.magicAttackWithWeapon(this.actor.weapon(), accessory),
-        },
-        {
-          name: "Magic Defense",
-          current: this.actor.totalMagicDefense(),
-          preview: this.actor.magicDefenseWithAccessory(accessory),
-        },
-        {
-          name: "Critical",
-          current: this.actor.totalCritical(),
-          preview: this.actor.criticalWithWeapon(this.actor.weapon(), accessory),
-        },
-      ];
-    }
-
-    return [];
+    return [
+      ["Attack", current.attack, preview.attack],
+      ["Attack %", current.attackPercent, preview.attackPercent],
+      ["Defense", current.defense, preview.defense],
+      ["Defense %", current.defensePercent, preview.defensePercent],
+      ["Magic Attack", current.magicAttack, preview.magicAttack],
+      ["Magic Defense", current.magicDefense, preview.magicDefense],
+      ["Magic Defense %", current.magicDefensePercent, preview.magicDefensePercent],
+      ["Critical", current.critical, preview.critical],
+    ].map(([name, currentValue, previewValue]) => ({
+      name,
+      current: currentValue,
+      preview: previewValue,
+    }));
   }
 
-  drawScrollIndicators(context, totalEntries) {
+  previewStats() {
+    return this.statRows();
+  }
+
+  drawPanel(context, bounds, options = {}) {
+    return Window_ActorSummary.drawPanel(context, bounds, options);
+  }
+
+  drawScrollIndicators(context, entries) {
+    const arrowX = this.x + this.width - 18;
+
     context.save();
     context.fillStyle = "#ffffff";
     context.font = "16px sans-serif";
-    context.textAlign = "right";
+    context.textAlign = "center";
 
     if (this.listViewport.hasPrevious()) {
-      context.fillText("▲", this.x + this.width - 8, this.y + 110);
+      context.fillText("▲", arrowX, this.y + 58);
     }
 
-    if (this.listViewport.hasNext(totalEntries)) {
-      context.fillText("▼", this.x + this.width - 8, this.y + 285);
+    if (this.listViewport.hasNext(entries.length)) {
+      context.fillText("▼", arrowX, this.y + this.height - 38);
     }
 
     context.restore();
@@ -282,68 +268,91 @@ class Window_EquipSelect {
     const context = Graphics.context;
     const entries = this.entries();
     const config = this.equipmentConfig();
+    const bounds = {
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+    };
 
+    this.drawPanel(context, bounds);
     context.save();
-    context.textAlign = "left";
-    context.textBaseline = "alphabetic";
-
-    context.fillStyle = "rgba(0, 0, 0, 0.98)";
-    context.fillRect(this.x, this.y, this.width, this.height);
-
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 2;
-    context.strokeRect(this.x, this.y, this.width, this.height);
-
+    context.textBaseline = "middle";
     context.fillStyle = "#ffffff";
-    context.font = "26px sans-serif";
-    context.fillText(config?.title || "Select Equipment", this.x + this.padding, this.y + 45);
+    context.font = "600 20px sans-serif";
+    context.textAlign = "left";
+    context.fillText(config?.title || "EQUIPMENT", this.x + 18, this.y + 28);
 
-    context.beginPath();
-    context.moveTo(this.x + this.padding, this.y + 65);
-    context.lineTo(this.x + this.width - this.padding, this.y + 65);
-    context.stroke();
-
-    context.font = "19px sans-serif";
     const range = this.listViewport.visibleRange(this.index, entries.length);
-    let drawY = this.y + 110;
     const equippedId = config?.equippedId?.() ?? 0;
+    let drawY = this.y + 68;
+
+    context.font = "18px sans-serif";
 
     for (let i = range.start; i < range.end; i++) {
       const entry = entries[i];
-      const prefix = i === this.index ? "▶ " : "  ";
-      let text = `${prefix}${entry.name}`;
+      const selected = i === this.index;
 
-      if (entry.id !== 0 && entry.count > 1) {
-        text += ` x${entry.count}`;
+      if (selected) {
+        const drawn =
+          typeof UIAssetManager !== "undefined" &&
+          typeof UIAssetManager.drawSelectionPanel === "function" &&
+          UIAssetManager.drawSelectionPanel(
+            context,
+            this.x + 10,
+            drawY - this.lineHeight / 2 + 2,
+            this.width - 38,
+            this.lineHeight - 4,
+            { alpha: 0.2 },
+          );
+
+        if (!drawn) {
+          context.fillStyle = "rgba(255, 215, 90, 0.1)";
+          context.fillRect(
+            this.x + 10,
+            drawY - this.lineHeight / 2 + 2,
+            this.width - 38,
+            this.lineHeight - 4,
+          );
+        }
       }
 
-      if (entry.id !== 0 && entry.bonusText) {
-        text += `   ${entry.bonusText}`;
+      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+      context.textAlign = "left";
+      context.fillText(`${selected ? "▶ " : "  "}${entry.name}`, this.x + 20, drawY);
+
+      let suffix = "";
+
+      if (entry.id !== 0 && entry.count > 1) {
+        suffix += `x${entry.count}`;
       }
 
       if (entry.id === equippedId) {
-        text += "   [Equipped]";
+        suffix += `${suffix ? "  " : ""}Equipped`;
       }
 
-      context.fillText(text, this.x + this.padding, drawY);
+      if (suffix) {
+        context.fillStyle = "#aebbd0";
+        context.font = "13px sans-serif";
+        context.textAlign = "right";
+        context.fillText(suffix, this.x + this.width - 28, drawY);
+        context.font = "18px sans-serif";
+      }
+
       drawY += this.lineHeight;
     }
 
-    this.drawScrollIndicators(context, entries.length);
+    this.drawScrollIndicators(context, entries);
 
-    const preview = this.previewStats();
-    context.font = "18px sans-serif";
-    let previewY = this.y + 340;
-
-    for (const stat of preview) {
-      context.fillText(
-        `${stat.name}: ${stat.current} → ${stat.preview}`,
-        this.x + this.padding,
-        previewY,
-      );
-      previewY += 24;
-    }
-
+    context.fillStyle = "#aebbd0";
+    context.font = "13px sans-serif";
+    context.textAlign = "right";
+    context.fillText(
+      `${Input.actionLabel("up")}/${Input.actionLabel("down")}: Choose   ` +
+        `${Input.actionLabel("confirm")}: Equip   ${Input.actionLabel("cancel")}: Back`,
+      this.x + this.width - 18,
+      this.y + this.height - 14,
+    );
     context.restore();
   }
 }

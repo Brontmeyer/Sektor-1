@@ -792,4 +792,7 @@ Built with ❤️ by **Sarah & Tyler**
 
 Do not implement per-window timers or depend on native browser key-repeat for held menu movement. Use named actions through `Input.isActionRepeated()` when a menu deliberately supports held directional movement. `Input.update(deltaTime)` owns repeat cadence and must run before scene updates. Windows should still use `isActionTriggered()` for one-shot actions such as Confirm and Cancel unless repeated activation is explicitly part of the interaction contract.
 
-Character field menus that show the same actor identity/vitals block should consume `Window_ActorSummary` rather than copy portrait, LV, HP/MP label, and gauge geometry. Screen-specific metadata belongs outside that shared summary so MAGICK, SKILL, ESSENCE, and future actor-targeted menus can evolve independently without resource-layout drift.
+Character field menus that show the same actor identity/vitals block should consume `Window_ActorSummary` rather than copy portrait, LV, HP/MP label, and gauge geometry. Screen-specific metadata belongs outside that shared summary so MAGICK, SKILL, ESSENCE, EQUIP, and future actor-targeted menus can evolve independently without resource-layout drift.
+
+
+Equipment preview calculations should call actor-owned derived-stat helpers with candidate gear rather than duplicating combat formulas in UI code. Equipment mutation must continue through `equip*` / `unequip*` actor APIs. Presentation-only future metadata such as Essence Growth must not affect progression until its runtime contract is implemented.
