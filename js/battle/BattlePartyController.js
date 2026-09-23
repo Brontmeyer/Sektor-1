@@ -85,6 +85,13 @@ class BattlePartyController {
   }
 
   positionForBattler(battler) {
+    if (
+      this.scene.formationManager &&
+      typeof this.scene.formationManager.positionForActor === "function"
+    ) {
+      return this.scene.formationManager.positionForActor(battler);
+    }
+
     const formationIndex =
       $gameParty.battleFormationIndex?.(battler) ??
       $gameParty.battleMemberIndex(battler);

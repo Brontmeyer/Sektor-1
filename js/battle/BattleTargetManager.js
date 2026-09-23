@@ -176,7 +176,8 @@ class BattleTargetManager {
 
   targetPosition(group, battler) {
     return group === "ally"
-      ? this.scene.getAllyPosition(battler)
+      ? this.scene.getAllyTargetPosition?.(battler) ||
+        this.scene.getAllyPosition(battler)
       : this.scene.getEnemyPosition(battler);
   }
 
@@ -557,7 +558,7 @@ class BattleTargetManager {
         continue;
       }
 
-      const allyPosition = this.scene.getAllyPosition(ally);
+      const allyPosition = this.targetPosition("ally", ally);
       const distance = Math.hypot(
         allyPosition.x - enemyPosition.x,
         allyPosition.y - enemyPosition.y,
@@ -585,7 +586,7 @@ class BattleTargetManager {
       return this.selectFirstSelectableEnemy(definition);
     }
 
-    const allyPosition = this.scene.getAllyPosition(ally);
+    const allyPosition = this.targetPosition("ally", ally);
 
     let bestIndex = -1;
     let bestDistance = Infinity;

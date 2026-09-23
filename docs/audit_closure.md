@@ -202,6 +202,10 @@ Pass 60 is post-audit party-presentation and Valor-visibility work and does not 
 
 Pass 61 is post-audit presentation consistency work and does not reopen a historical finding. `UIResourcePalette` centralizes HP / MP / Valor color identity and primary party UI consumers read that shared contract instead of maintaining swapped or divergent local constants. The pass changes presentation only: HP/MP/Valor values, formulas, battle rules, Save Runtime v11, and Config Runtime v2 remain unchanged.
 
+## Post-Audit Feature Note: Player Battle Row Geometry v1
+
+Pass 62 is post-audit battle-presentation geometry work and does not reopen a historical finding. `BattleFormationManager` now consumes persistent party `battleRows` when resolving visible actor X positions, while exposing a separate row-neutral target/combat position for spatial target selection and rear-exposure checks. Normal/Back Attack preserve the existing Front line and shift Back actors away from the enemy; Pincer Front actors step outward toward a stable mechanical-party flank while Back actors remain at party center. The pass adds no row damage, range, stat, targeting-eligibility, or turn-order rules and introduces no new persistent state, so Save Runtime remains v11 and Config Runtime remains v2.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

@@ -9,6 +9,8 @@ class BattleFormationManager {
   static REAR_PHYSICAL_DAMAGE_MULTIPLIER = 1.5;
   static MAX_ENEMIES = 8;
   static ROW_SLOT_COUNT = 4;
+  static PARTY_BACK_ROW_OFFSET = 0.04;
+  static PINCER_FRONT_ROW_OFFSET = 0.035;
 
   constructor(scene) {
     this.scene = scene;
@@ -63,6 +65,45 @@ class BattleFormationManager {
     return Graphics.width * 0.17;
   }
 
+  partyRow(actor) {
+    return $gameParty.battleRow?.(actor) === BattleFormationManager.BACK_ROW
+      ? BattleFormationManager.BACK_ROW
+      : BattleFormationManager.FRONT_ROW;
+  }
+
+  pincerPartyDirection(actor) {
+    const battleIndex = Math.max(0, $gameParty.battleMemberIndex(actor));
+    return battleIndex % 2 === 0 ? -1 : 1;
+  }
+
+  partyVisualX(actor) {
+    const row = this.partyRow(actor);
+
+    if (this.is(BattleFormationManager.PINCER)) {
+      // Pincer actors keep a stable side based on mechanical active-party
+      // order. Front-row actors step outward toward that flank; back-row
+      // actors remain sheltered at the party center. Target selection never
+      // changes this side, so moving the cursor cannot move a battler.
+      if (row === BattleFormationManager.BACK_ROW) {
+        return this.partyX();
+      }
+
+      return (
+        this.partyX() +
+        Graphics.width *
+          BattleFormationManager.PINCER_FRONT_ROW_OFFSET *
+          this.pincerPartyDirection(actor)
+      );
+    }
+
+    // Front is the established party line. Back row moves away from the
+    // enemy side, preserving existing front-row placement for old/default
+    // saves while making the chosen row visible on the battlefield.
+    return row === BattleFormationManager.BACK_ROW
+      ? this.partyX() - Graphics.width * BattleFormationManager.PARTY_BACK_ROW_OFFSET
+      : this.partyX();
+  }
+
   partyPosition(index) {
     const positions = this.verticalPartyPositions();
     const safeIndex = Math.max(
@@ -77,11 +118,20 @@ class BattleFormationManager {
     };
   }
 
-  positionForActor(actor) {
+  targetPositionForActor(actor) {
     const formationIndex =
       $gameParty.battleFormationIndex?.(actor) ??
       $gameParty.battleMemberIndex(actor);
     return this.partyPosition(formationIndex < 0 ? 0 : formationIndex);
+  }
+
+  positionForActor(actor) {
+    const position = this.targetPositionForActor(actor);
+
+    return {
+      x: this.partyVisualX(actor),
+      y: position.y,
+    };
   }
 
   encounterMember(index) {
@@ -280,7 +330,9 @@ class BattleFormationManager {
     }
 
     const attackerPosition = this.enemyPosition(this.scene.enemies.indexOf(attacker));
-    const targetPosition = this.positionForActor(target);
+    // Row is presentation-only. Rear exposure intentionally uses the
+    // row-neutral combat/targeting position rather than the visual offset.
+    const targetPosition = this.targetPositionForActor(target);
     const directionToAttacker = Math.sign(attackerPosition.x - targetPosition.x);
 
     if (directionToAttacker === 0) {

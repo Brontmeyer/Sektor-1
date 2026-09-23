@@ -18,6 +18,11 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Player Battle Row Geometry v1: saved party `front` / `back` row state now changes actor battlefield X placement while preserving the existing visual formation slots and party mechanics
+- Kept Normal / Back Attack front-row actors on the established party line and shifted back-row actors away from the enemy side; Pincer front-row actors step outward toward their stable mechanical flank while back-row actors remain sheltered at party center
+- Added a separate row-neutral ally targeting/combat position so row presentation cannot change spatial target heuristics, target legality, or rear-exposure damage rules; effects/cursors still anchor to the visible actor position
+- Added dedicated Player Battle Row Geometry regression coverage for Normal, Back Attack, Pincer, formation swaps, rear damage isolation, party-controller routing, and targeting isolation
+
 - Added Resource Color Consistency v1 with one shared `UIResourcePalette` contract for player-facing HP / MP / Valor identity across the battle HUD, main-menu party cards, Status, and Item HP presentation
 - Standardized HP labels/gauges to a blue-cyan family, MP labels/gauges to a green family, and Valor labels/gauges to a magenta-purple family while keeping live resource values neutral white for faster numeric readability; Valor Ready stays within the brighter end of the Valor family
 - Removed the swapped/per-screen HP/MP gauge constants from primary party resource surfaces and added dedicated palette/load-order/integration regression coverage

@@ -111,7 +111,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Add canonical persistent play-time tracking before replacing the main menu TIME placeholder
 - [x] Implement Main Menu Actor Selection & Order Foundation v1 with shared party-card focus, actor handoff, persistent front/back row state, portrait-position row language, and ROSTER hidden-by-default policy
 - [x] Extend Order with persistent active-party visual formation swapping (positions 1-4) without changing mechanical party/turn order
-- [ ] Connect player front/back row state to battlefield geometry as presentation only; keep row/slot position free of damage, weapon, targeting, or stat advantages unless the design is explicitly revisited
+- [x] Connect player front/back row state to battlefield geometry as presentation only; keep row/slot position free of damage, weapon, targeting, or stat advantages unless the design is explicitly revisited
 - [ ] Separate multi-level Valor progression / Valor Arts from the ordinary Skill menu/runtime without duplicating the action engine
 - [ ] Implement ROSTER (Remote Organization & Strategic Team Evaluation Registry) for active/reserve party switching once reserve characters exist
 - [x] Polish Tactical Help bar size/transparency during the battle UI presentation pass

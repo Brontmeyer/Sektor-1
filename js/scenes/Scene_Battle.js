@@ -725,6 +725,17 @@ class Scene_Battle extends Scene_Base {
     return this.partyController.positionForBattler(actor);
   }
 
+  getAllyTargetPosition(actor) {
+    if (
+      this.formationManager &&
+      typeof this.formationManager.targetPositionForActor === "function"
+    ) {
+      return this.formationManager.targetPositionForActor(actor);
+    }
+
+    return this.getAllyPosition(actor);
+  }
+
   getEnemyBattlePosition(index) {
     return this.formationManager.enemyPosition(index);
   }
