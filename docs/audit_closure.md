@@ -206,6 +206,10 @@ Pass 61 is post-audit presentation consistency work and does not reopen a histor
 
 Pass 62 is post-audit battle-presentation geometry work and does not reopen a historical finding. `BattleFormationManager` now consumes persistent party `battleRows` when resolving visible actor X positions, while exposing a separate row-neutral target/combat position for spatial target selection and rear-exposure checks. Normal/Back Attack preserve the existing Front line and shift Back actors away from the enemy; Pincer Front actors step outward toward a stable mechanical-party flank while Back actors remain at party center. The pass adds no row damage, range, stat, targeting-eligibility, or turn-order rules and introduces no new persistent state, so Save Runtime remains v11 and Config Runtime remains v2.
 
+## Post-Audit Feature Note: Window Color Customization v1
+
+Pass 63 is post-audit configuration/presentation work and does not reopen a historical finding. Config Runtime advances to v3 with validated four-corner window-color persistence and automatic migration from v2/v1. `Scene_WindowColor` / `Window_WindowColor` provide the editing UI and live preview, while `UIAssetManager` remains the sole owner of shared panel tint interpolation. `UIResourcePalette` stays independent so HP / MP / Valor identity colors are not altered by window customization. This pass changes no game-save state or combat rule, so Save Runtime remains v11.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

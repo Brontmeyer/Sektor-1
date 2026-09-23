@@ -2,15 +2,15 @@
 
 class ConfigManager {
   static currentVersion() {
-    return 2;
+    return 3;
   }
 
   static storageKey() {
-    return "Sektor1_Config_v2";
+    return "Sektor1_Config_v3";
   }
 
   static legacyStorageKeys() {
-    return ["Sektor1_Config_v1"];
+    return ["Sektor1_Config_v2", "Sektor1_Config_v1"];
   }
 
   static defaults() {
@@ -21,6 +21,23 @@ class ConfigManager {
       battleCursorMemory: "initial",
       magickOrder: "default",
     };
+  }
+
+  static windowColorDefaults() {
+    return {
+      topLeft: "#314a78",
+      topRight: "#463d79",
+      bottomLeft: "#182a4d",
+      bottomRight: "#2a214f",
+    };
+  }
+
+  static windowColorKeys() {
+    return ["topLeft", "topRight", "bottomLeft", "bottomRight"];
+  }
+
+  static colorChannelKeys() {
+    return ["r", "g", "b"];
   }
 
   static optionDefinitions() {
@@ -94,12 +111,13 @@ class ConfigManager {
   static initialize() {
     this.data = this.defaults();
     this.bindings = this.defaultBindings();
+    this.windowColors = this.windowColorDefaults();
     this.lastError = "";
     this.load();
   }
 
   static ensureInitialized() {
-    if (!this.data || !this.bindings) {
+    if (!this.data || !this.bindings || !this.windowColors) {
       this.initialize();
     }
   }
@@ -111,6 +129,10 @@ class ConfigManager {
 
     if (!this.bindings) {
       this.bindings = this.defaultBindings();
+    }
+
+    if (!this.windowColors) {
+      this.windowColors = this.windowColorDefaults();
     }
   }
 
@@ -179,6 +201,141 @@ class ConfigManager {
     return result;
   }
 
+  static normalizeHexColor(value, fallback = "#000000") {
+    if (typeof value !== "string") {
+      return fallback;
+    }
+
+    const trimmed = value.trim();
+
+    if (!/^#[0-9a-fA-F]{6}$/.test(trimmed)) {
+      return fallback;
+    }
+
+    return trimmed.toLowerCase();
+  }
+
+  static sanitizeWindowColors(source) {
+    const defaults = this.windowColorDefaults();
+    const result = { ...defaults };
+
+    if (!source || typeof source !== "object" || Array.isArray(source)) {
+      return result;
+    }
+
+    for (const key of this.windowColorKeys()) {
+      result[key] = this.normalizeHexColor(source[key], defaults[key]);
+    }
+
+    return result;
+  }
+
+  static hexToRgb(value) {
+    const normalized = this.normalizeHexColor(value, "#000000");
+    return {
+      r: Number.parseInt(normalized.slice(1, 3), 16),
+      g: Number.parseInt(normalized.slice(3, 5), 16),
+      b: Number.parseInt(normalized.slice(5, 7), 16),
+    };
+  }
+
+  static rgbToHex(r, g, b) {
+    const clamp = (value) =>
+      Math.max(0, Math.min(255, Math.round(Number(value) || 0)));
+    return `#${[clamp(r), clamp(g), clamp(b)]
+      .map((value) => value.toString(16).padStart(2, "0"))
+      .join("")}`;
+  }
+
+  static getWindowColors() {
+    this.ensureInitializedWithoutLoad();
+    return { ...this.windowColors };
+  }
+
+  static windowColor(key) {
+    this.ensureInitializedWithoutLoad();
+    return this.windowColors[key] || null;
+  }
+
+  static setWindowColor(key, value, { persist = true } = {}) {
+    this.ensureInitializedWithoutLoad();
+
+    if (!this.windowColorKeys().includes(key)) {
+      return false;
+    }
+
+    const normalized = this.normalizeHexColor(value, "");
+
+    if (!normalized) {
+      return false;
+    }
+
+    this.windowColors[key] = normalized;
+
+    if (persist) {
+      this.save();
+    }
+
+    return true;
+  }
+
+  static windowColorChannel(key, channel) {
+    if (!this.windowColorKeys().includes(key) || !this.colorChannelKeys().includes(channel)) {
+      return null;
+    }
+
+    return this.hexToRgb(this.windowColor(key))[channel];
+  }
+
+  static setWindowColorChannel(
+    key,
+    channel,
+    value,
+    { persist = true } = {},
+  ) {
+    if (!this.windowColorKeys().includes(key) || !this.colorChannelKeys().includes(channel)) {
+      return false;
+    }
+
+    const rgb = this.hexToRgb(this.windowColor(key));
+    rgb[channel] = Math.max(0, Math.min(255, Math.round(Number(value) || 0)));
+    return this.setWindowColor(
+      key,
+      this.rgbToHex(rgb.r, rgb.g, rgb.b),
+      { persist },
+    );
+  }
+
+  static adjustWindowColorChannel(
+    key,
+    channel,
+    amount,
+    { persist = true } = {},
+  ) {
+    const current = this.windowColorChannel(key, channel);
+
+    if (current === null) {
+      return false;
+    }
+
+    return this.setWindowColorChannel(
+      key,
+      channel,
+      current + (Number(amount) || 0),
+      { persist },
+    );
+  }
+
+  static resetWindowColors({ persist = true } = {}) {
+    this.windowColors = this.windowColorDefaults();
+
+    if (persist) {
+      this.save();
+    }
+
+    return this.getWindowColors();
+  }
+
   static readStoredPayload() {
     const keys = [this.storageKey(), ...this.legacyStorageKeys()];
 
@@ -213,6 +370,7 @@ class ConfigManager {
 
       this.data = this.sanitize(payload);
       this.bindings = this.sanitizeBindings(parsed?.bindings);
+      this.windowColors = this.sanitizeWindowColors(parsed?.windowColors);
 
       if (stored.key !== this.storageKey()) {
         this.save();
@@ -224,6 +382,7 @@ class ConfigManager {
       console.warn(this.lastError, error);
       this.data = this.defaults();
       this.bindings = this.defaultBindings();
+      this.windowColors = this.windowColorDefaults();
       return false;
     }
   }
@@ -241,6 +400,7 @@ class ConfigManager {
             [...slots],
           ]),
         ),
+        windowColors: { ...this.windowColors },
       };
       localStorage.setItem(this.storageKey(), JSON.stringify(payload));
       this.lastError = "";
@@ -294,6 +454,7 @@ class ConfigManager {
 
   static reset() {
     this.data = this.defaults();
+    this.windowColors = this.windowColorDefaults();
     this.save();
     return { ...this.data };
   }

@@ -5,6 +5,7 @@ class Scene_Options extends Scene_Base {
     super();
     this.optionsWindow = new Window_Options({
       onControls: () => SceneManager.push(Scene_Controls),
+      onWindowColor: () => SceneManager.push(Scene_WindowColor),
     });
   }
 

@@ -64,6 +64,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Party Formation Ordering & Valor Visibility v1
 -   ✅ Resource Color Consistency v1
 -   ✅ Player Battle Row Geometry v1
+-   ✅ Window Color Customization v1
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
 
@@ -82,7 +83,7 @@ Completed foundations include:
 -   ✅ Multi-character turn system
 -   ✅ Turn queue
 -   ✅ Save / Load (version-aware Save Runtime v11)
--   ✅ Save-slot-independent Config Runtime v2
+-   ✅ Save-slot-independent Config Runtime v3
 -   ✅ Equipment system (Weapon / Armor / Accessory)
 -   ✅ Inventory system
 
@@ -135,7 +136,7 @@ Battle HUD & Message Layout v1 established reusable four-row geometry. Battle Pr
 
 # ⚙️ Options / Config
 
-Config Runtime v2 stores player preferences independently from Save Runtime v11, so loading a different game slot does not change pacing, presentation, ordering, or keyboard bindings. Current settings are **Battle Speed**, **Battle Message Speed**, **Field Message Speed**, **Battle Cursor** (Initial / Memory), and **Magick Order** (Default / Alphabetical / Element), plus a dedicated **Controls** screen. Controls use named actions with two binding slots each; required navigation/confirm/back actions cannot be cleared completely, context-sensitive actions may intentionally share a key, and Reset Controls restores the canonical defaults. Existing Config Runtime v1 preferences migrate automatically.
+Config Runtime v3 stores player preferences independently from Save Runtime v11, so loading a different game slot does not change pacing, presentation, ordering, keyboard bindings, or window colors. Current settings are **Battle Speed**, **Battle Message Speed**, **Field Message Speed**, **Battle Cursor** (Initial / Memory), and **Magick Order** (Default / Alphabetical / Element), plus dedicated **Window Color** and **Controls** screens. Window Color edits Top Left / Top Right / Bottom Left / Bottom Right RGB values with a live shared-window preview and a color-only reset; semantic panel rendering consumes those colors centrally while HP / MP / Valor colors remain owned by `UIResourcePalette`. Controls use named actions with two binding slots each; required navigation/confirm/back actions cannot be cleared completely, context-sensitive actions may intentionally share a key, and Reset Controls restores the canonical defaults. Existing Config Runtime v2/v1 preferences migrate automatically.
 
 The main menu presents the active four party members through dedicated actor cards with Level, live HP/MP/Valor, current Status, and Next Level EXP, plus compact **RUNES**, TIME, and location panels. The redundant PARTY INFORMATION label is removed so the four cards use more of the vertical space, and the neutral near-black scene backdrop stays visually separate from the swappable window skin. The command stack follows the approved singular vocabulary: **Item / Magick / Skill / Essence / Equip / Status / Order / Valor / Option / ROSTER / Save / Load / Exit**. There is no redundant game-title or COMMANDS heading. Magick, Skill, Essence, Equip, Status, and Valor transfer focus into the active-party cards first; confirming an actor opens the existing character screen on that actor (Valor remains a focused future destination). **Order** reuses the same party focus: left/right edits persistent Back/Front presentation, while Confirm picks up a card and Confirm on another slot swaps the two actors' visual formation positions. The menu, battle HUD roster, and battlefield consume that visual order, but active-party membership, turn scheduling, stats, damage, targeting eligibility, and action priority remain independent of slot position. The saved row choice now also drives battlefield presentation: back-row actors stand farther from the enemy side in Normal/Back Attack, while Pincer front-row actors step outward toward their stable flank and back-row actors remain closer to party center. This row offset is deliberately excluded from target-selection heuristics and rear-damage calculations. `MenuAccessPolicy` owns command visibility/enabled state; **ROSTER (Remote Organization & Strategic Team Evaluation Registry)** is hidden by default until a future story system explicitly unlocks it, while maps may optionally restrict Save/Load and debug mode keeps development permissive. Persistent play time is not yet canonical, so TIME remains a visible placeholder rather than presenting session time as save data.
 

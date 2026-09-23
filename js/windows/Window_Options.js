@@ -1,14 +1,21 @@
 "use strict";
 
 class Window_Options {
-  constructor({ onControls = null } = {}) {
+  constructor({ onControls = null, onWindowColor = null } = {}) {
     this.index = 0;
     this.onControls = onControls;
+    this.onWindowColor = onWindowColor;
     this.options = [
       ...ConfigManager.optionDefinitions().map((option) => ({
         type: "option",
         ...option,
       })),
+      {
+        type: "windowColor",
+        key: "windowColor",
+        label: "Window Color",
+        description: "Customize the four corner colors used by shared window panels.",
+      },
       {
         type: "controls",
         key: "controls",
@@ -18,9 +25,9 @@ class Window_Options {
     ];
 
     this.x = 150;
-    this.y = 130;
+    this.y = 125;
     this.width = Graphics.width - 300;
-    this.height = Graphics.height - 220;
+    this.height = Graphics.height - 180;
     this.padding = 28;
     this.lineHeight = 56;
   }
@@ -52,6 +59,8 @@ class Window_Options {
 
       if (option?.type === "controls") {
         this.onControls?.();
+      } else if (option?.type === "windowColor") {
+        this.onWindowColor?.();
       } else {
         this.cycleCurrent(1);
       }
@@ -160,7 +169,7 @@ class Window_Options {
       context.textAlign = "right";
       context.fillStyle = selected ? "#ffd75a" : "#c8d3df";
       context.fillText(
-        option.type === "controls"
+        option.type === "controls" || option.type === "windowColor"
           ? "Configure  ▶"
           : `◀  ${ConfigManager.displayValue(option.key)}  ▶`,
         valueX,

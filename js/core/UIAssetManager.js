@@ -25,6 +25,8 @@ class UIAssetManager {
   static _images = new Map();
   static _failed = new Set();
   static _initialized = false;
+  static _windowColorTextureKey = "";
+  static _windowColorTexture = null;
 
   static manifest() {
     return { ...this._manifest };
@@ -400,6 +402,194 @@ class UIAssetManager {
     return false;
   }
 
+  static colorablePanelRole(role) {
+    return ["battlePanel", "menuPanel", "accentPanel"].includes(role);
+  }
+
+  static parseHexColor(value) {
+    if (typeof value !== "string" || !/^#[0-9a-fA-F]{6}$/.test(value)) {
+      return null;
+    }
+
+    return {
+      r: Number.parseInt(value.slice(1, 3), 16),
+      g: Number.parseInt(value.slice(3, 5), 16),
+      b: Number.parseInt(value.slice(5, 7), 16),
+    };
+  }
+
+  static mixRgb(left, right, rate) {
+    const t = Math.max(0, Math.min(1, Number(rate) || 0));
+    return {
+      r: Math.round(left.r + (right.r - left.r) * t),
+      g: Math.round(left.g + (right.g - left.g) * t),
+      b: Math.round(left.b + (right.b - left.b) * t),
+    };
+  }
+
+  static rgbCss(color) {
+    return `rgb(${color.r}, ${color.g}, ${color.b})`;
+  }
+
+  static configuredWindowColors() {
+    if (
+      typeof ConfigManager === "undefined" ||
+      typeof ConfigManager.getWindowColors !== "function"
+    ) {
+      return null;
+    }
+
+    const colors = ConfigManager.getWindowColors();
+    const parsed = {};
+
+    for (const key of ["topLeft", "topRight", "bottomLeft", "bottomRight"]) {
+      parsed[key] = this.parseHexColor(colors?.[key]);
+
+      if (!parsed[key]) {
+        return null;
+      }
+    }
+
+    return parsed;
+  }
+
+  static windowColorTexture(colors, size = 24) {
+    const key = [
+      colors.topLeft,
+      colors.topRight,
+      colors.bottomLeft,
+      colors.bottomRight,
+      size,
+    ]
+      .map((color) =>
+        typeof color === "object"
+          ? `${color.r},${color.g},${color.b}`
+          : String(color),
+      )
+      .join("|");
+
+    if (this._windowColorTextureKey === key && this._windowColorTexture) {
+      return this._windowColorTexture;
+    }
+
+    let canvas = null;
+
+    if (typeof OffscreenCanvas === "function") {
+      canvas = new OffscreenCanvas(size, size);
+    } else if (
+      typeof document !== "undefined" &&
+      typeof document.createElement === "function"
+    ) {
+      canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+    }
+
+    const context = canvas?.getContext?.("2d");
+
+    if (
+      !context ||
+      typeof context.createImageData !== "function" ||
+      typeof context.putImageData !== "function"
+    ) {
+      return null;
+    }
+
+    const imageData = context.createImageData(size, size);
+
+    for (let y = 0; y < size; y++) {
+      const verticalRate = size <= 1 ? 0 : y / (size - 1);
+
+      for (let x = 0; x < size; x++) {
+        const horizontalRate = size <= 1 ? 0 : x / (size - 1);
+        const top = this.mixRgb(
+          colors.topLeft,
+          colors.topRight,
+          horizontalRate,
+        );
+        const bottom = this.mixRgb(
+          colors.bottomLeft,
+          colors.bottomRight,
+          horizontalRate,
+        );
+        const color = this.mixRgb(top, bottom, verticalRate);
+        const offset = (y * size + x) * 4;
+        imageData.data[offset] = color.r;
+        imageData.data[offset + 1] = color.g;
+        imageData.data[offset + 2] = color.b;
+        imageData.data[offset + 3] = 255;
+      }
+    }
+
+    context.putImageData(imageData, 0, 0);
+    this._windowColorTextureKey = key;
+    this._windowColorTexture = canvas;
+    return canvas;
+  }
+
+  static drawWindowColorOverlay(
+    context,
+    x,
+    y,
+    width,
+    height,
+    { alpha = 0.62, strips = 24 } = {},
+  ) {
+    if (
+      !context ||
+      typeof context.createLinearGradient !== "function" ||
+      typeof context.fillRect !== "function" ||
+      width <= 0 ||
+      height <= 0
+    ) {
+      return false;
+    }
+
+    const colors = this.configuredWindowColors();
+
+    if (!colors) {
+      return false;
+    }
+
+    const stripCount = Math.max(8, Math.min(48, Math.round(Number(strips) || 24)));
+    const stripWidth = width / stripCount;
+
+    context.save?.();
+    const previousAlpha = Number.isFinite(context.globalAlpha)
+      ? context.globalAlpha
+      : 1;
+    context.globalAlpha = previousAlpha * this.clampAlpha(alpha, 0.62);
+    context.globalCompositeOperation = "source-atop";
+
+    const texture = this.windowColorTexture(colors);
+
+    if (texture && typeof context.drawImage === "function") {
+      context.imageSmoothingEnabled = true;
+      context.drawImage(texture, x, y, width, height);
+      context.restore?.();
+      return true;
+    }
+
+    for (let index = 0; index < stripCount; index++) {
+      const rate = stripCount === 1 ? 0 : index / (stripCount - 1);
+      const top = this.mixRgb(colors.topLeft, colors.topRight, rate);
+      const bottom = this.mixRgb(colors.bottomLeft, colors.bottomRight, rate);
+      const gradient = context.createLinearGradient(0, y, 0, y + height);
+      gradient.addColorStop(0, this.rgbCss(top));
+      gradient.addColorStop(1, this.rgbCss(bottom));
+      context.fillStyle = gradient;
+      context.fillRect(
+        x + index * stripWidth,
+        y,
+        stripWidth + 1,
+        height,
+      );
+    }
+
+    context.restore?.();
+    return true;
+  }
+
   static drawPanel(
     context,
     role,
@@ -417,6 +607,8 @@ class UIAssetManager {
       destMargin = 12,
       cornerRadius = this.panelCornerRadius(role, width, height),
       shadow = true,
+      windowTint = true,
+      windowTintAlpha = 0.62,
     } = {},
   ) {
     if (!context || width <= 0 || height <= 0) {
@@ -454,6 +646,12 @@ class UIAssetManager {
       destMargin,
       alpha: assetAlpha,
     });
+
+    if (windowTint && this.colorablePanelRole(role)) {
+      this.drawWindowColorOverlay(context, x, y, width, height, {
+        alpha: windowTintAlpha,
+      });
+    }
 
     context.restore?.();
 

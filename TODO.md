@@ -104,7 +104,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Apply Menu Window Softening & Frame Polish v1 through centralized rounded clipping, inset framing, shadows, and softened gauge/selection silhouettes
 - [x] Apply Resource Color Consistency v1 through shared `UIResourcePalette` ownership: HP blue-cyan, MP green, Valor magenta-purple across primary party resource surfaces
 - [ ] Continue final UI skin curation after hands-on visual review; keep all art swappable through `UIAssetManager`
-- [ ] Add four-corner Window Color customization under Option/Config, persisted in Config Runtime and applied through shared UI rendering rather than per-window colors
+- [x] Add Window Color Customization v1 under Option/Config with four persistent corners, live preview, RGB editing/reset, and centralized shared-panel tinting through Config Runtime v3 / `UIAssetManager`
 - [x] Implement Main Menu Information & Command Layout v1 with four active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels
 - [x] Implement Main Menu Refinement & Command Availability Foundation v1 with restored Load, RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and future map-based Save/Load restrictions
 - [ ] Select/integrate canonical character portrait art for the main-menu portrait slots

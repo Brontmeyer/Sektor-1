@@ -18,6 +18,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Window Color Customization v1 with a dedicated `WINDOW COLOR` editor reachable from Option, four independently editable corner colors, live shared-window preview, RGB channel editing, and window-color-only reset
+- Advanced Config Runtime to v3 so window colors persist independently from save slots while Config Runtime v2/v1 options and keyboard bindings migrate forward automatically
+- Added centralized four-corner tint blending in `UIAssetManager.drawPanel()` for semantic battle/menu/accent windows; individual consumers remain unaware of RGB values and may opt out only through the shared panel contract
+- Kept `UIResourcePalette` independent from window tinting so HP / MP / Valor labels and gauges retain their established resource identities regardless of player-selected window colors
+- Added dedicated Window Color regression coverage for migration, sanitization, channel clamping, persistence, live editor/reset behavior, centralized four-corner blending, Options routing, and script order
+
 - Added Player Battle Row Geometry v1: saved party `front` / `back` row state now changes actor battlefield X placement while preserving the existing visual formation slots and party mechanics
 - Kept Normal / Back Attack front-row actors on the established party line and shifted back-row actors away from the enemy side; Pincer front-row actors step outward toward their stable mechanical flank while back-row actors remain sheltered at party center
 - Added a separate row-neutral ally targeting/combat position so row presentation cannot change spatial target heuristics, target legality, or rear-exposure damage rules; effects/cursors still anchor to the visible actor position
