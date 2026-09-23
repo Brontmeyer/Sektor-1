@@ -325,6 +325,23 @@ class Window_Equipment {
     context.restore();
   }
 
+  statAndFooterLayout(bounds, rowCount) {
+    const footerHeight = 38;
+    const footerTop = bounds.y + bounds.height - footerHeight;
+    const dividerY = bounds.y + 188;
+    const statStartY = dividerY + 24;
+    const usableHeight = Math.max(0, footerTop - statStartY - 8);
+    const rowSpacing = Math.max(20, Math.min(25, Math.floor(usableHeight / Math.max(1, rowCount))));
+
+    return {
+      dividerY,
+      statStartY,
+      rowSpacing,
+      footerTop,
+      footerY: footerTop + footerHeight / 2,
+    };
+  }
+
   drawSlotAndStats(context) {
     const bounds = this.detailBounds;
     const slot = this.currentSlot();
@@ -339,9 +356,9 @@ class Window_Equipment {
     context.fillStyle = "#ffffff";
     context.fillText("EQUIPMENT", bounds.x + 20, bounds.y + 28);
 
-    const slotStartY = bounds.y + 68;
+    const slotStartY = bounds.y + 60;
     this.slots.forEach((entry, index) => {
-      const y = slotStartY + index * 36;
+      const y = slotStartY + index * 32;
       const selected = index === this.index && !selecting;
       context.fillStyle = selected ? "#ffd75a" : "#aebbd0";
       context.font = selected ? "600 17px sans-serif" : "17px sans-serif";
@@ -355,22 +372,22 @@ class Window_Equipment {
       );
     });
 
-    const growthY = bounds.y + 184;
+    const growthY = bounds.y + 166;
     context.fillStyle = "#aebbd0";
     context.font = "17px sans-serif";
     context.fillText("Essence Growth", bounds.x + 24, growthY);
     context.fillStyle = "#ffffff";
     context.fillText(this.essenceGrowthLabel(), bounds.x + 190, growthY);
 
-    const dividerY = bounds.y + 214;
+    const layout = this.statAndFooterLayout(bounds, rows.length);
     context.strokeStyle = "rgba(210, 222, 242, 0.38)";
     context.lineWidth = 1;
     context.beginPath();
-    context.moveTo(bounds.x + 20, dividerY);
-    context.lineTo(bounds.x + bounds.width - 20, dividerY);
+    context.moveTo(bounds.x + 20, layout.dividerY);
+    context.lineTo(bounds.x + bounds.width - 20, layout.dividerY);
     context.stroke();
 
-    let y = dividerY + 30;
+    let y = layout.statStartY;
     const labelX = bounds.x + 42;
     const currentX = bounds.x + Math.floor(bounds.width * 0.58);
     const arrowX = bounds.x + Math.floor(bounds.width * 0.72);
@@ -399,8 +416,14 @@ class Window_Equipment {
         context.fillText(String(preview), previewX, y);
       }
 
-      y += 27;
+      y += layout.rowSpacing;
     });
+
+    context.strokeStyle = "rgba(210, 222, 242, 0.28)";
+    context.beginPath();
+    context.moveTo(bounds.x + 20, layout.footerTop);
+    context.lineTo(bounds.x + bounds.width - 20, layout.footerTop);
+    context.stroke();
 
     context.fillStyle = "#aebbd0";
     context.font = "13px sans-serif";
@@ -410,7 +433,7 @@ class Window_Equipment {
       : `${Input.actionLabel("left")}/${Input.actionLabel("right")}: Actor   ` +
         `${Input.actionLabel("up")}/${Input.actionLabel("down")}: Slot   ` +
         `${Input.actionLabel("confirm")}: Change   ${Input.actionLabel("cancel")}: Back`;
-    context.fillText(help, bounds.x + 18, bounds.y + bounds.height - 14);
+    context.fillText(help, bounds.x + 18, layout.footerY);
     context.restore();
   }
 

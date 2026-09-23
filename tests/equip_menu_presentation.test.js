@@ -153,6 +153,36 @@ function testSelectionListUsesHeldRepeatAndViewport() {
   assert.match(source, /hasNext\(entries\.length\)/);
 }
 
+function testEquipmentStatsReserveARealFooterStrip() {
+  const globals = {
+    Graphics: { width: 1280, height: 720 },
+    Window_ActorNavigator: class { constructor() {} actor() { return null; } },
+    Window_EquipSelect: class {
+      constructor() {}
+      setBounds() {}
+      isOpen() { return false; }
+      hide() {}
+    },
+  };
+  const context = vm.createContext(globals);
+  vm.runInContext(
+    `${read("js/windows/Window_Equipment.js")}\nglobalThis.__Window = Window_Equipment;`,
+    context,
+  );
+  const window = new context.__Window(null);
+  const bounds = { x: 10, y: 258, width: 640, height: 452 };
+  const layout = window.statAndFooterLayout(bounds, 8);
+  const lastRowY = layout.statStartY + layout.rowSpacing * 7;
+
+  assert.equal(lastRowY < layout.footerTop - 4, true);
+  assert.equal(layout.footerY > layout.footerTop, true);
+
+  const source = read("js/windows/Window_Equipment.js");
+  assert.match(source, /layout\.footerTop/);
+  assert.match(source, /layout\.footerY/);
+  assert.match(source, /layout\.rowSpacing/);
+}
+
 function testEssenceGrowthIsPresentationOnlyDefault() {
   const { selector } = createSelectorHarness();
   selector.show("weapon");
@@ -169,6 +199,7 @@ function run() {
   testEquipUsesFullLabelsAndSharedActorSummary();
   testEquipmentPreviewIncludesReferenceStyleStats();
   testSelectionListUsesHeldRepeatAndViewport();
+  testEquipmentStatsReserveARealFooterStrip();
   testEssenceGrowthIsPresentationOnlyDefault();
   console.log("Equip menu presentation regression tests passed.");
 }

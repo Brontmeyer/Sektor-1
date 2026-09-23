@@ -12,11 +12,19 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Fixed Equip stat-preview compression by reserving a dedicated footer strip and deriving stat-row spacing from the remaining detail height, preventing Magic Defense % / Critical rows from colliding with help text
+
 - Fixed field choice prompts introduced by Config Runtime v1 so typewriter text continues revealing while `Window_Choice` owns confirm input
 - Prevented choice-owned E/Enter presses from also revealing or closing `Window_Message`, preserving one input owner per field-dialogue state
 - Added focused regression coverage for the Guard-style prompt flow and Scene_Map message/choice update ordering
 
 ### Added
+
+- Added Status Menu Presentation v1 with the shared actor-summary header, three reference-inspired pages, explicit page indicators, and dedicated page-switch controls that preserve left/right actor navigation
+- Added STATUS Main page presentation for real actor parameters, derived combat stats, current Weapon / Armor / Accessory loadout, equipped Essence slots, current statuses, EXP / Next Level, and live Valor without inventing unsupported progression fields
+- Added STATUS Element page presentation from the runtime's actual Magick-element vocabulary and `elementRate()` contract, using Normal / Resist / Weak / Immune labels instead of fabricating unsupported elemental attack/halve/absorb categories
+- Added STATUS Effect page presentation for live status effects plus the runtime's actual `statusRate()` resistance contract; derived-only statuses are excluded from resistance claims because they are condition-driven rather than normally applied
+- Added dedicated Status Menu Presentation regression coverage for three-page navigation, actor switching, truthful elemental/status data, Valor presentation, and absence of unsupported reference-only mechanics
 
 - Added Equip Menu Presentation & Stat Preview v1 with the shared actor-summary header, full Weapon / Armor / Accessories labels, current loadout summary, description strip, integrated equipment list, and live current-to-preview combat stat comparisons
 - Added held-direction repeat and shared list-viewport scrolling to equipment selection while preserving actor-owned equip / unequip APIs and existing inventory/database ownership

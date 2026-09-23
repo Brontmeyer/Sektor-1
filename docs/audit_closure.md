@@ -226,6 +226,10 @@ Pass 66 is post-audit field-menu presentation/input work and does not reopen a h
 
 Pass 67 is post-audit field-menu presentation work and does not reopen a historical finding. `Window_Equipment` now consumes the shared actor-summary language and delegates candidate traversal/stat previews to `Window_EquipSelect`; actual Weapon / Armor / Accessory changes still execute only through `Game_Actor` equip/unequip APIs. Candidate comparisons call existing derived-stat helpers rather than reimplementing combat formulas. The `Essence Growth` row is presentation-only and defaults to `Normal`; no Resonance modifier is introduced. MAIN MENU portrait placeholders are standardized to square frames. No save/config schema or combat-rule change is introduced, so Save Runtime remains v11 and Config Runtime remains v3.
 
+## Post-Audit Feature Note: Status Menu Presentation v1
+
+Pass 68 is post-audit field-menu presentation work and does not reopen a historical finding. `Window_Status` now reuses `Window_ActorSummary` and presents three pages: Main reads actor-owned parameters, derived stats, equipment, Essence slots, statuses, EXP, and Valor; Element reads the existing `elementRate()` contract from the current Magick-element vocabulary; Effect reads live status instances plus the existing `statusRate()` contract. Page switching uses vertical/Confirm input so left/right actor navigation remains consistent. The pass also reserves a fixed footer in `Window_Equipment` so stat previews cannot collide with help text. No save/config schema or combat-rule change is introduced, so Save Runtime remains v11 and Config Runtime remains v3.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:

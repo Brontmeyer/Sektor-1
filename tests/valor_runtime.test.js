@@ -78,6 +78,7 @@ function createHarness() {
     "js/battle/BattleHudLayout.js",
     "js/battle/BattleRenderer.js",
     "js/windows/Window_ActorNavigator.js",
+    "js/windows/Window_ActorSummary.js",
     "js/windows/Window_Status.js",
   ]
     .map((relativePath) =>

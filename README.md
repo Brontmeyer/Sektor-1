@@ -117,6 +117,7 @@ Systems currently being expanded include:
 
 -   ✅ Essence Equipment & Menu v1
 -   ✅ Equip Menu Presentation & Stat Preview v1
+-   ✅ Status Menu Presentation v1
 -   ✅ Essence Menu Presentation & List Navigation v1
 -   🚧 Essence ability grants and passive runtime
 -   ✅ Enemy Actions & AI v1
