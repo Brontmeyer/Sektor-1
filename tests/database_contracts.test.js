@@ -183,6 +183,7 @@ function testSkillsRuntimeMetadataContracts() {
       powerMultiplier: 1.5,
       status: { darkness: 0.5 },
       valorArt: true,
+      valorLevel: 1,
       target: ["enemy"],
       scope: ["single"],
     },
@@ -195,6 +196,7 @@ function testSkillsRuntimeMetadataContracts() {
       effect: "heal",
       healPercent: 0.25,
       valorArt: true,
+      valorLevel: 1,
       target: ["ally"],
       scope: ["all"],
     },
@@ -207,6 +209,7 @@ function testSkillsRuntimeMetadataContracts() {
       effect: "inflictStatus",
       status: { slow: 1 },
       valorArt: true,
+      valorLevel: 1,
       target: ["enemy"],
       scope: ["all"],
     },
@@ -220,6 +223,7 @@ function testSkillsRuntimeMetadataContracts() {
   invalid[1].type = "magick";
   invalid[1].powerMultiplier = 0;
   invalid[1].valorArt = "yes";
+  invalid[1].valorLevel = 5;
   invalid[1].target = ["somewhere"];
   invalid[2].healPercent = 2;
   invalid[3].status.typoStatus = 0.5;
@@ -230,6 +234,10 @@ function testSkillsRuntimeMetadataContracts() {
   assert.equal(invalidErrors.some((error) => error.includes("powerMultiplier")), true);
   assert.equal(
     invalidErrors.some((error) => error.includes("valorArt must be a boolean")),
+    true,
+  );
+  assert.equal(
+    invalidErrors.some((error) => error.includes("valorLevel")),
     true,
   );
   assert.equal(invalidErrors.some((error) => error.includes("unsupported value")), true);

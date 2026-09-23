@@ -143,6 +143,7 @@ function createHarness() {
     "js/windows/Window_Magick.js",
     "js/windows/Window_Skills.js",
     "js/windows/Window_Status.js",
+    "js/windows/Window_Valor.js",
   ]
     .map((relativePath) =>
       fs.readFileSync(path.join(projectRoot, relativePath), "utf8"),
@@ -150,7 +151,7 @@ function createHarness() {
     .join("\n");
 
   vm.runInContext(
-    `${source}\nglobalThis.__classes = { Game_Actor, Game_Party, Window_ActorNavigator, Window_Equipment, Window_Essence, Window_Magick, Window_Skills, Window_Status };`,
+    `${source}\nglobalThis.__classes = { Game_Actor, Game_Party, Window_ActorNavigator, Window_Equipment, Window_Essence, Window_Magick, Window_Skills, Window_Status, Window_Valor };`,
     context,
   );
 
@@ -163,6 +164,7 @@ function createHarness() {
     Window_Magick,
     Window_Skills,
     Window_Status,
+    Window_Valor,
   } = context.__classes;
   const partyActors = [1, 2, 3, 4].map((actorId) => new Game_Actor(actorId));
   const party = new Game_Party(partyActors);
@@ -180,6 +182,7 @@ function createHarness() {
     Window_Magick,
     Window_Skills,
     Window_Status,
+    Window_Valor,
   };
 }
 
@@ -225,6 +228,7 @@ function testActorCyclingMenusShareLeftRightNavigation() {
     Window_Magick,
     Window_Skills,
     Window_Status,
+    Window_Valor,
   } = createHarness();
 
   const cases = [
@@ -232,6 +236,17 @@ function testActorCyclingMenusShareLeftRightNavigation() {
       name: "Status",
       window: new Window_Status(party),
       actor: (window) => window.actor,
+    },
+    {
+      name: "Valor",
+      window: new Window_Valor(party),
+      actor: (window) => window.actor,
+      beforeSwitch(window) {
+        window.index = 0;
+      },
+      afterSwitch(window) {
+        assert.equal(window.index, 0);
+      },
     },
     {
       name: "Equipment",
@@ -345,6 +360,7 @@ function testSceneMenuPassesPartyContextToAllCharacterMenus() {
     "Window_Magick",
     "Window_Skills",
     "Window_Status",
+    "Window_Valor",
     "Window_Equipment",
     "Window_Essence",
   ]) {
@@ -366,6 +382,7 @@ function testSceneMenuPassesPartyContextToAllCharacterMenus() {
     "Window_Magick.js",
     "Window_Skills.js",
     "Window_Status.js",
+    "Window_Valor.js",
   ]) {
     assert.equal(
       helperIndex < indexSource.indexOf(windowFile) &&

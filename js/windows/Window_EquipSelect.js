@@ -55,7 +55,7 @@ class Window_EquipSelect {
 
     if (this.type === "accessory") {
       return {
-        title: "ACCESSORIES",
+        title: "ACCESSORY",
         inventory: $gameParty.accessories,
         count: (id) => $gameParty.accessoryCount(id),
         lookup: (id) => DatabaseManager.accessory(id),

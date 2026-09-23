@@ -544,6 +544,45 @@ class Game_Actor extends Game_Battler {
     return skill?.valorArt === true;
   }
 
+  valorArtLevel(skill) {
+    if (!this.isValorArt(skill)) {
+      return 0;
+    }
+
+    const level = Number(skill?.valorLevel);
+    return Number.isInteger(level) && level >= 1 && level <= 4 ? level : 1;
+  }
+
+  knownValorArts() {
+    return this.knownSkills()
+      .filter((skill) => this.isValorArt(skill))
+      .sort((left, right) => {
+        const levelDifference = this.valorArtLevel(left) - this.valorArtLevel(right);
+        return levelDifference !== 0
+          ? levelDifference
+          : (Number(left?.id) || 0) - (Number(right?.id) || 0);
+      });
+  }
+
+  valorArtsForLevel(level) {
+    const resolvedLevel = Number(level);
+
+    if (!Number.isInteger(resolvedLevel) || resolvedLevel < 1 || resolvedLevel > 4) {
+      return [];
+    }
+
+    return this.knownValorArts().filter(
+      (skill) => this.valorArtLevel(skill) === resolvedLevel,
+    );
+  }
+
+  highestKnownValorLevel() {
+    return this.knownValorArts().reduce(
+      (highest, skill) => Math.max(highest, this.valorArtLevel(skill)),
+      0,
+    );
+  }
+
   canPaySkillCost(skill) {
     if (this.isValorArt(skill)) {
       return this.isValorReady();

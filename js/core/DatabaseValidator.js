@@ -1712,6 +1712,7 @@ class DatabaseValidator {
           "valorGain",
           "status",
           "valorArt",
+          "valorLevel",
           "target",
           "scope",
         ],
@@ -1792,6 +1793,19 @@ class DatabaseValidator {
 
       if (skill.valorArt !== undefined && typeof skill.valorArt !== "boolean") {
         errors.push(`${label} valorArt must be a boolean when provided.`);
+      }
+
+      if (skill.valorLevel !== undefined) {
+        if (skill.valorArt !== true) {
+          errors.push(`${label} valorLevel is only supported by Valor Arts.`);
+        }
+
+        this.validateFiniteNumber(
+          `${label} valorLevel`,
+          skill.valorLevel,
+          errors,
+          { min: 1, max: 4, integer: true },
+        );
       }
 
       if (!Array.isArray(skill.target) || skill.target.length === 0) {

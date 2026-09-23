@@ -107,12 +107,13 @@ function testEquipUsesFullLabelsAndSharedActorSummary() {
 
   assert.match(source, /\{ type: "weapon", label: "Weapon" \}/);
   assert.match(source, /\{ type: "armor", label: "Armor" \}/);
-  assert.match(source, /\{ type: "accessory", label: "Accessories" \}/);
+  assert.match(source, /\{ type: "accessory", label: "Accessory" \}/);
   assert.match(source, /Window_ActorSummary\.draw\(context, this\.actor, this\.actorBounds\)/);
   assert.match(source, /drawEquippedSummary/);
   assert.match(source, /drawDescription/);
   assert.match(source, /drawSlotAndStats/);
   assert.match(source, /Essence Growth/);
+  assert.match(read("js/windows/Window_EquipSelect.js"), /title: "ACCESSORY"/);
 }
 
 function testEquipmentPreviewIncludesReferenceStyleStats() {

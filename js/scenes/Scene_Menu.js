@@ -18,6 +18,7 @@ class Scene_Menu extends Scene_Base {
 
     this.inventoryWindow = new Window_Inventory(actor);
     this.statusWindow = new Window_Status($gameParty);
+    this.valorWindow = new Window_Valor($gameParty);
     this.equipmentWindow = new Window_Equipment($gameParty);
     this.saveSlotsWindow = new Window_SaveSlots();
 
@@ -37,6 +38,7 @@ class Scene_Menu extends Scene_Base {
       Essence: this.essenceWindow,
       Equip: this.equipmentWindow,
       Status: this.statusWindow,
+      Valor: this.valorWindow,
     }[command] || null;
   }
 
@@ -87,13 +89,6 @@ class Scene_Menu extends Scene_Base {
   openActorDestination(command, actor) {
     if (!actor) {
       return false;
-    }
-
-    if (command === "Valor") {
-      this.saveMessage = `${actor.name}'s Valor progression is planned for a focused pass.`;
-      this.saveMessageTimer = 2;
-      this.endPartySelection();
-      return true;
     }
 
     const window = this.actorDestinationWindow(command);
@@ -216,6 +211,11 @@ class Scene_Menu extends Scene_Base {
       return;
     }
 
+    if (this.valorWindow.isOpen()) {
+      this.valorWindow.update();
+      return;
+    }
+
     if (this.equipmentWindow.isOpen()) {
       this.equipmentWindow.update();
       return;
@@ -300,6 +300,7 @@ class Scene_Menu extends Scene_Base {
       this.skillsWindow.isOpen() ||
       this.essenceWindow.isOpen() ||
       this.statusWindow.isOpen() ||
+      this.valorWindow.isOpen() ||
       this.equipmentWindow.isOpen()
     );
   }
@@ -461,6 +462,8 @@ class Scene_Menu extends Scene_Base {
       this.essenceWindow.draw();
     } else if (this.statusWindow.isOpen()) {
       this.statusWindow.draw();
+    } else if (this.valorWindow.isOpen()) {
+      this.valorWindow.draw();
     } else if (this.equipmentWindow.isOpen()) {
       this.equipmentWindow.draw();
     }

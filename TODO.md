@@ -117,7 +117,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Main Menu Actor Selection & Order Foundation v1 with shared party-card focus, actor handoff, persistent front/back row state, portrait-position row language, and ROSTER hidden-by-default policy
 - [x] Extend Order with persistent active-party visual formation swapping (positions 1-4) without changing mechanical party/turn order
 - [x] Connect player front/back row state to battlefield geometry as presentation only; keep row/slot position free of damage, weapon, targeting, or stat advantages unless the design is explicitly revisited
-- [ ] Separate multi-level Valor progression / Valor Arts from the ordinary Skill menu/runtime without duplicating the action engine
+- [x] Separate player-facing multi-level Valor progression from the ordinary Skill menu while reusing the shared Skill action runtime
 - [ ] Implement ROSTER (Remote Organization & Strategic Team Evaluation Registry) for active/reserve party switching once reserve characters exist
 - [x] Polish Tactical Help bar size/transparency during the battle UI presentation pass
 
@@ -184,7 +184,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Expand Skills beyond physical-damage techniques with reusable percentage-heal and status-application effects required by Character Valor Arts v1
 - [x] Add enemy Skill actions through the shared Skills runtime with the first canonical enemy technique
 - [x] Define Valor Arts Runtime v1 within the Skills namespace (legacy/current runtime foundation)
-- [ ] Refactor player-facing Valor progression into its dedicated menu/system while reusing the established Skill action engine where appropriate
+- [x] Refactor player-facing Valor progression into its dedicated menu/system while reusing the established Skill action engine
 - [x] Design the first canonical character-specific Valor Arts
 - [ ] Design long-term Valor Art unlock/progression rules
 

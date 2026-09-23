@@ -12,6 +12,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Renamed the player-facing Equip slot label from **Accessories** to singular **Accessory** to match the one-slot actor equipment contract
+
 - Fixed Equip stat-preview compression by reserving a dedicated footer strip and deriving stat-row spacing from the remaining detail height, preventing Magic Defense % / Critical rows from colliding with help text
 
 - Fixed field choice prompts introduced by Config Runtime v1 so typewriter text continues revealing while `Window_Choice` owns confirm input
@@ -19,6 +21,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added focused regression coverage for the Guard-style prompt flow and Scene_Map message/choice update ordering
 
 ### Added
+
+- Added Valor Menu Presentation & Progression Architecture v1 with a dedicated full-screen VALOR destination, shared actor-summary header, live Valor gauge/state, selected-Art description, and Limit-inspired LEVEL 1-4 progression groups
+- Added optional validated `valorLevel` metadata (1-4) for Valor Arts and canonical Level 1 assignments for Unbroken, Rallyheart, Wild Arc, and Zero Lock
+- Added actor-owned Valor progression query helpers derived from existing learned Skill IDs, avoiding duplicate ability ownership and avoiding a Save Runtime change
+- Wired MAIN MENU Valor actor handoff into `Window_Valor`, with left/right actor switching and up/down learned-Art browsing while the battle action engine remains the shared Skills runtime
+- Added dedicated Valor menu regression coverage for canonical level metadata, actor progression grouping, reference-inspired presentation, actor navigation, and Scene_Menu/script integration
 
 - Added Status Menu Presentation v1 with the shared actor-summary header, three reference-inspired pages, explicit page indicators, and dedicated page-switch controls that preserve left/right actor navigation
 - Added STATUS Main page presentation for real actor parameters, derived combat stats, current Weapon / Armor / Accessory loadout, equipped Essence slots, current statuses, EXP / Next Level, and live Valor without inventing unsupported progression fields

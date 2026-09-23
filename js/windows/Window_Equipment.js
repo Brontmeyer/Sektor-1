@@ -8,7 +8,7 @@ class Window_Equipment {
     this.slots = [
       { type: "weapon", label: "Weapon" },
       { type: "armor", label: "Armor" },
-      { type: "accessory", label: "Accessories" },
+      { type: "accessory", label: "Accessory" },
     ];
     this.selectWindow = new Window_EquipSelect(this.actor);
     this.refreshLayout();

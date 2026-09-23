@@ -247,7 +247,7 @@ function testEquipmentWindowAddsOneAccessorySlotAndDrawsSafely() {
   window.draw();
 
   assert.equal(
-    drawCalls.some((call) => String(call[0]).includes("Accessories")),
+    drawCalls.some((call) => String(call[0]).includes("Accessory")),
     true,
   );
   assert.equal(

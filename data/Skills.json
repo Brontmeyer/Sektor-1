@@ -10,6 +10,7 @@
     "effect": "damage",
     "powerMultiplier": 2.75,
     "valorArt": true,
+    "valorLevel": 1,
     "target": [
       "enemy"
     ],
@@ -27,6 +28,7 @@
     "effect": "heal",
     "healPercent": 0.35,
     "valorArt": true,
+    "valorLevel": 1,
     "target": [
       "ally"
     ],
@@ -47,6 +49,7 @@
       "darkness": 0.6
     },
     "valorArt": true,
+    "valorLevel": 1,
     "target": [
       "enemy"
     ],
@@ -66,6 +69,7 @@
       "slow": 1.0
     },
     "valorArt": true,
+    "valorLevel": 1,
     "target": [
       "enemy"
     ],

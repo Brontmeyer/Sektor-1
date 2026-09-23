@@ -290,7 +290,8 @@ function testSceneMenuUsesSharedActorSelectionContract() {
   assert.match(scene, /partyWindow\.activate\("actor"\)/);
   assert.match(scene, /partyWindow\.activate\("order"\)/);
   assert.match(scene, /actorNavigation\?\.selectActor/);
-  assert.match(scene, /Valor progression is planned for a focused pass/);
+  assert.match(scene, /Valor: this\.valorWindow/);
+  assert.doesNotMatch(scene, /Valor progression is planned for a focused pass/);
 }
 
 function run() {
