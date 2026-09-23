@@ -204,7 +204,7 @@ Skills may target self, allies, or enemies according to their data. `self` uses 
 
 Character Valor Arts v1 establishes the first canonical Skill content: **Unbroken** (Tyler, high-power single-enemy damage), **Rallyheart** (Sarah, 35% Max-HP healing to all injured allies), **Wild Arc** (Aboo, all-enemy physical damage with a 60% base Darkness chance), and **Zero Lock** (G Prime, all-enemy Slow attempt). These behaviors are expressed entirely through reusable Skill metadata.
 
-Valor Arts Runtime v1 remains the resource specialization: `valorArt: true` requires an actor to be Valor Ready and consumes the full gauge through the generic Skill-cost hook. Valor is paid only after the action still has at least one legal target, and it is paid once per committed Skill action rather than once per target. A later physical miss still spends the committed gauge. The battle and field Skills windows mark these entries with `[VALOR]`. Long-term Art unlock/progression rules remain intentionally undefined.
+Valor Arts Runtime v1 remains the resource specialization: `valorArt: true` requires an actor to be Valor Ready and consumes the full gauge through the generic Skill-cost hook. Valor is paid only after the action still has at least one legal target, and it is paid once per committed Skill action rather than once per target. A later physical miss still spends the committed gauge. The battle Skills selector continues to mark these entries with `[VALOR]`; the field SKILL menu deliberately filters Valor Arts so ordinary techniques have a separate player-facing home while dedicated Valor progression remains future work. Long-term Art unlock/progression rules remain intentionally undefined.
 
 ---
 

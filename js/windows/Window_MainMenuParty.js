@@ -310,27 +310,27 @@ class Window_MainMenuParty {
     context.font = "600 20px sans-serif";
     context.fillText(actor?.name || "Unknown", infoX, topY);
 
-    const nameWidth =
-      context.measureText?.(actor?.name || "Unknown")?.width || 80;
     context.fillStyle = "#ffd75a";
     context.font = "600 16px sans-serif";
-    context.fillText(`LV ${actor?.level ?? "?"}`, infoX + nameWidth + 14, topY);
+    context.fillText("LV", infoX, topY + 22);
+    context.fillStyle = "#eef4fb";
+    context.fillText(String(actor?.level ?? "?"), infoX + 28, topY + 22);
 
     context.font = "15px sans-serif";
     context.fillStyle = "#a8b8ca";
-    context.fillText("Status:", infoX, topY + 27);
+    context.fillText("Status:", infoX, topY + 44);
     context.fillStyle =
       this.statusText(actor) === "Normal" ? "#55e0c2" : "#ff89c8";
-    context.fillText(this.statusText(actor), infoX + 54, topY + 27);
+    context.fillText(this.statusText(actor), infoX + 54, topY + 44);
 
     const requiredExp = actor?.expForNextLevel?.();
     const expText = Number.isFinite(Number(requiredExp))
       ? `${Math.max(0, Number(actor?.exp) || 0)} / ${requiredExp}`
       : "-- / --";
     context.fillStyle = "#a8b8ca";
-    context.fillText("Next Level:", infoX, topY + 52);
+    context.fillText("Next Level:", infoX, topY + 66);
     context.fillStyle = "#eef4fb";
-    context.fillText(expText, infoX + 82, topY + 52);
+    context.fillText(expText, infoX + 82, topY + 66);
 
     const gaugeY = identityCenterY - 7;
     const stats = [

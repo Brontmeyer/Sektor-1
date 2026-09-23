@@ -168,14 +168,18 @@ function testActorIdentityAndStatsUseTheCardWidthMoreEvenly() {
   window.draw();
   const textCalls = calls.filter((call) => call[0] === "fillText");
   const nameCall = textCalls.find((call) => call[1] === "Tyler");
+  const levelCall = textCalls.find((call) => call[1] === "LV");
   const hpCall = textCalls.find((call) => call[1] === "HP");
   const statusCall = textCalls.find((call) => call[1] === "Status:");
   const nextLevelCall = textCalls.find((call) => call[1] === "Next Level:");
 
   assert.notEqual(nameCall, undefined);
+  assert.notEqual(levelCall, undefined);
   assert.notEqual(hpCall, undefined);
+  assert.equal(levelCall[3] > nameCall[3], true);
+  assert.equal(Math.abs(levelCall[2] - nameCall[2]) <= 2, true);
   assert.equal(hpCall[2] - nameCall[2] <= 230, true);
-  assert.equal(statusCall[3] > nameCall[3], true);
+  assert.equal(statusCall[3] > levelCall[3], true);
   assert.equal(nextLevelCall[3] > statusCall[3], true);
 }
 

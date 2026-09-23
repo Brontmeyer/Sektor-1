@@ -18,6 +18,11 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Skill Menu Presentation & List Navigation v1 with the same actor-summary / detail / description / three-column grid grammar established by MAGICK
+- Field SKILL now presents ordinary non-Valor techniques only; Valor Arts remain reusable through the shared Skill runtime and battle selector while the dedicated Valor menu/progression pass remains future work
+- Added held-direction repeat, row scrolling, contextual scroll arrows, fixed selected-actor browsing, and dedicated Skill Menu Presentation regression coverage
+- Refined MAIN MENU and MAGICK actor identity layout so LV sits directly beneath the character name; MAGICK HP/MP now form a compact neighboring pair with one mini gauge beneath each resource
+
 - Added Magick Menu Presentation & List Navigation v1 with a reference-inspired actor summary, selected-Magick metadata panel, description strip, three-column learned-Magick grid, row scrolling, and conditional scroll arrows
 - Added shared held-direction repeat through `Input.update()` / `Input.isActionRepeated()` so directional menus can move immediately on press, pause briefly, then repeat at a steady interval without relying on browser key-repeat timing
 - Gave the Magick grid ownership of all four directions after the main-menu actor handoff; the selected actor remains fixed while browsing so horizontal movement cannot accidentally switch party members

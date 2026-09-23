@@ -21,18 +21,27 @@ function createHarness() {
     measureText(text) { return { width: String(text).length * 8 }; },
   };
   const actions = new Set();
-  const magick = Array.from({ length: 24 }, (_, index) => ({
-    id: index + 1,
-    name: `Spell ${String(index + 1).padStart(2, "0")}`,
-    description: `Description for spell ${index + 1}.`,
-    type: "magick",
-    category: index % 2 === 0 ? "attack" : "restore",
-    element: index % 2 === 0 ? "fire" : "restorative",
-    effect: index % 2 === 0 ? "damage" : "heal",
-    mpCost: index + 3,
-    target: ["ally", "enemy"],
-    scope: ["single", "all"],
+  const skills = Array.from({ length: 24 }, (_, index) => ({
+    id: index + 10,
+    name: `Technique ${String(index + 1).padStart(2, "0")}`,
+    description: `Description for technique ${index + 1}.`,
+    type: "skill",
+    category: index % 2 === 0 ? "physical" : "support",
+    effect: index % 2 === 0 ? "damage" : "scan",
+    target: ["enemy"],
+    scope: index % 3 === 0 ? ["single", "all"] : ["single"],
   }));
+  const valorArt = {
+    id: 2,
+    name: "Rallyheart",
+    description: "Valor-only technique.",
+    type: "skill",
+    category: "support",
+    effect: "heal",
+    valorArt: true,
+    target: ["ally"],
+    scope: ["all"],
+  };
   const actor = {
     actorId: 2,
     name: "Sarah",
@@ -41,9 +50,7 @@ function createHarness() {
     maxHp: 500,
     mp: 81,
     maxMp: 100,
-    knownMagick: () => magick,
-    canUseMagick: () => true,
-    useMagick() { return true; },
+    knownSkills: () => [valorArt, ...skills],
   };
   const party = {
     battleFormationMembers: () => [actor],
@@ -57,13 +64,12 @@ function createHarness() {
       isActionTriggered(action) { return actions.has(action); },
       isActionRepeated(action) { return actions.has(action); },
       actionLabel(action) {
-        return { up: "↑", down: "↓", left: "←", right: "→", confirm: "E", cancel: "Q" }[action] || action;
+        return { up: "↑", down: "↓", left: "←", right: "→", cancel: "Q" }[action] || action;
       },
     },
-    ConfigManager: { sortMagick(list) { return [...list]; } },
-    DebugManager: { log() {} },
     UIResourcePalette: {
       text(resource) { return resource === "hp" ? "#66d7ff" : "#78ef91"; },
+      fill(resource) { return resource === "hp" ? "#35baf3" : "#55d872"; },
       valueText() { return "#ffffff"; },
     },
     UIAssetManager: {
@@ -86,14 +92,16 @@ function createHarness() {
     `${read("js/windows/Window_ListViewport.js")}\n` +
       `${read("js/windows/Window_TextLayout.js")}\n` +
       `${read("js/windows/Window_ActorNavigator.js")}\n` +
-      `${read("js/windows/Window_Magick.js")}\n` +
-      `globalThis.__Window = Window_Magick;`,
+      `${read("js/windows/Window_Skills.js")}\n` +
+      `globalThis.__Window = Window_Skills;`,
     context,
   );
 
   return {
     window: new context.__Window(party),
     actor,
+    skills,
+    valorArt,
     calls,
     actions,
   };
@@ -106,7 +114,22 @@ function press(harness, action) {
   harness.actions.clear();
 }
 
-function testThreeColumnGridConsumesAllDirections() {
+function textCalls(harness) {
+  return harness.calls
+    .filter((call) => call[0] === "fillText")
+    .map((call) => ({ text: String(call[2]), x: call[3], y: call[4] }));
+}
+
+function testFieldSkillListExcludesValorArts() {
+  const harness = createHarness();
+  const list = harness.window.skillList();
+
+  assert.equal(list.length, harness.skills.length);
+  assert.equal(list.some((skill) => skill.valorArt === true), false);
+  assert.equal(list.includes(harness.valorArt), false);
+}
+
+function testThreeColumnGridConsumesAllDirectionsAndKeepsActorFixed() {
   const harness = createHarness();
   const { window, actor } = harness;
   window.show();
@@ -123,7 +146,7 @@ function testThreeColumnGridConsumesAllDirections() {
   assert.equal(window.index, 3);
   press(harness, "up");
   assert.equal(window.index, 0);
-  assert.equal(window.actor, actor, "grid movement does not switch actors");
+  assert.equal(window.actor, actor);
 }
 
 function testGridScrollsByRowsAndShowsOnlyNeededArrows() {
@@ -142,76 +165,55 @@ function testGridScrollsByRowsAndShowsOnlyNeededArrows() {
   assert.equal(text.includes("▼"), false);
 }
 
-function testReferenceHierarchyUsesRealActorAndMagickData() {
+function testSkillReferenceHierarchyAndActorSummary() {
   const harness = createHarness();
   harness.window.show();
   harness.window.draw();
-  const text = harness.calls
-    .filter((call) => call[0] === "fillText")
-    .map((call) => String(call[2]));
+  const text = textCalls(harness);
+  const values = text.map((call) => call.text);
 
-  assert.equal(text.includes("MAGICK"), true);
-  assert.equal(text.includes("Sarah"), true);
-  assert.equal(text.includes("LV"), true);
-  assert.equal(text.includes("HP"), true);
-  assert.equal(text.includes("432/500"), true);
-  assert.equal(text.includes("MP"), true);
-  assert.equal(text.includes("81/100"), true);
-  assert.equal(text.includes("Category"), true);
-  assert.equal(text.includes("Element"), true);
-  assert.equal(text.includes("Scope"), true);
-  assert.equal(text.includes("MP NEEDED"), true);
-  assert.equal(text.includes("003"), true);
-  assert.equal(text.some((value) => value.includes("Spell 01")), true);
+  assert.equal(values.includes("SKILL"), true);
+  assert.equal(values.includes("Sarah"), true);
+  assert.equal(values.includes("LV"), true);
+  assert.equal(values.includes("7"), true);
+  assert.equal(values.includes("HP"), true);
+  assert.equal(values.includes("432/500"), true);
+  assert.equal(values.includes("MP"), true);
+  assert.equal(values.includes("81/100"), true);
+  assert.equal(values.includes("Category"), true);
+  assert.equal(values.includes("Effect"), true);
+  assert.equal(values.includes("Target"), true);
+  assert.equal(values.includes("Scope"), true);
+  assert.equal(values.some((value) => value.includes("Technique 01")), true);
+  assert.equal(values.some((value) => value.includes("Rallyheart")), false);
+
+  const gaugeCalls = harness.calls.filter((call) => call[0] === "drawGauge");
+  assert.equal(gaugeCalls.length, 2, "HP and MP each get one mini gauge");
 }
 
-function testActorSummaryUsesStackedLevelAndNeighboringMiniGauges() {
+function testLevelIsUnderNameAndHpMpStayNeighboring() {
   const harness = createHarness();
   harness.window.show();
   harness.window.draw();
-  const text = harness.calls
-    .filter((call) => call[0] === "fillText")
-    .map((call) => ({ text: String(call[2]), x: call[3], y: call[4] }));
-  const name = text.find((call) => call.text === "Sarah");
-  const level = text.find((call) => call.text === "LV");
-  const hp = text.find((call) => call.text === "HP");
-  const mp = text.find((call) => call.text === "MP");
+  const calls = textCalls(harness);
+  const name = calls.find((call) => call.text === "Sarah");
+  const level = calls.find((call) => call.text === "LV");
+  const hp = calls.find((call) => call.text === "HP");
+  const mp = calls.find((call) => call.text === "MP");
 
   assert.notEqual(name, undefined);
   assert.notEqual(level, undefined);
   assert.notEqual(hp, undefined);
   assert.notEqual(mp, undefined);
-  assert.equal(level.y > name.y, true);
+  assert.equal(level.y > name.y, true, "LV sits below the character name");
   assert.equal(Math.abs(level.x - name.x) <= 2, true);
   assert.equal(mp.x > hp.x, true);
-  assert.equal(mp.x - hp.x <= 210, true);
+  assert.equal(mp.x - hp.x <= 210, true, "MP stays visually near HP");
   assert.equal(Math.abs(mp.y - hp.y) <= 2, true);
-  assert.equal(
-    harness.calls.filter((call) => call[0] === "drawGauge").length,
-    2,
-    "HP and MP each render a mini gauge",
-  );
 }
 
-function testConfigRenameAndWhiteRunesValueArePlayerFacingOnly() {
-  const menu = read("js/windows/Window_MenuCommand.js");
-  const sceneMenu = read("js/scenes/Scene_Menu.js");
-  const sceneOptions = read("js/scenes/Scene_Options.js");
-
-  assert.match(menu, /"Config"/);
-  assert.doesNotMatch(menu, /"Option"/);
-  assert.match(sceneMenu, /case "Config":/);
-  assert.doesNotMatch(sceneMenu, /case "Option":/);
-  assert.match(sceneOptions, /fillText\("CONFIG"/);
-  assert.match(
-    sceneMenu,
-    /context\.fillStyle = "#ffffff";[\s\S]*Number\(\$gameParty\.gil\?\.\(\) \|\| 0\)\.toLocaleString\(\)/,
-  );
-  assert.match(sceneMenu, /SceneManager\.push\(Scene_Options\)/, "internal scene name stays stable");
-}
-
-function testMagickUsesSharedHeldDirectionContract() {
-  const source = read("js/windows/Window_Magick.js");
+function testSkillUsesSharedHeldDirectionContract() {
+  const source = read("js/windows/Window_Skills.js");
   assert.match(source, /Input\.isActionRepeated/);
   assert.match(source, /directionRepeated\("up"\)/);
   assert.match(source, /directionRepeated\("down"\)/);
@@ -221,13 +223,13 @@ function testMagickUsesSharedHeldDirectionContract() {
 }
 
 function run() {
-  testThreeColumnGridConsumesAllDirections();
+  testFieldSkillListExcludesValorArts();
+  testThreeColumnGridConsumesAllDirectionsAndKeepsActorFixed();
   testGridScrollsByRowsAndShowsOnlyNeededArrows();
-  testReferenceHierarchyUsesRealActorAndMagickData();
-  testActorSummaryUsesStackedLevelAndNeighboringMiniGauges();
-  testConfigRenameAndWhiteRunesValueArePlayerFacingOnly();
-  testMagickUsesSharedHeldDirectionContract();
-  console.log("Magick menu presentation regression tests passed.");
+  testSkillReferenceHierarchyAndActorSummary();
+  testLevelIsUnderNameAndHpMpStayNeighboring();
+  testSkillUsesSharedHeldDirectionContract();
+  console.log("Skill menu presentation regression tests passed.");
 }
 
 run();

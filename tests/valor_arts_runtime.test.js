@@ -332,8 +332,8 @@ function testSkillsCommandTracksValorReadiness() {
   assert.equal(window.isCommandEnabled("Skills"), true);
 }
 
-function testValorArtPresentationStaysInsideSkillsUi() {
-  const { Window_BattleSkills, Window_Skills } = createHarness();
+function testValorArtPresentationStaysInBattleSkillsButLeavesFieldSkillMenu() {
+  const { actor, Window_BattleSkills, Window_Skills } = createHarness();
   const art = testSkills[2];
   const regular = testSkills[1];
 
@@ -345,9 +345,15 @@ function testValorArtPresentationStaysInsideSkillsUi() {
     Window_BattleSkills.prototype.skillLabel(regular),
     "Test Technique",
   );
-  assert.equal(Window_Skills.prototype.skillLabel(art), "[VALOR] Test Valor Art");
-  assert.equal(Window_Skills.prototype.skillCategoryLabel(art), "Valor Art");
-  assert.equal(Window_Skills.prototype.skillCategoryLabel(regular), "physical");
+
+  actor.learnSkill(1);
+  actor.learnSkill(2);
+  const fieldWindow = Object.create(Window_Skills.prototype);
+  fieldWindow.actorNavigation = { actor: () => actor };
+  const fieldSkills = fieldWindow.skillList();
+
+  assert.equal(fieldSkills.includes(regular), true);
+  assert.equal(fieldSkills.includes(art), false);
 }
 
 function run() {
@@ -359,7 +365,7 @@ function run() {
   testInvalidTargetDoesNotSpendValor();
   testAllTargetValorArtConsumesOnlyOnce();
   testSkillsCommandTracksValorReadiness();
-  testValorArtPresentationStaysInsideSkillsUi();
+  testValorArtPresentationStaysInBattleSkillsButLeavesFieldSkillMenu();
 
   console.log("Valor Arts runtime regression tests passed.");
 }

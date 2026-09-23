@@ -524,6 +524,7 @@ Battle-presentation directions and current status:
 - ✅ Player Battle Row Geometry v1 with presentation-only party front/back battlefield offsets and row-neutral targeting/combat geometry
 - ✅ Window Color Customization v1 with Config Runtime v3 four-corner persistence, live RGB editing/preview, and centralized semantic-panel tint blending
 - ✅ Magick Menu Presentation & List Navigation v1 with Config naming, white RUNES value, actor summary/detail hierarchy, three-column row scrolling, contextual arrows, and shared held-direction repeat
+- ✅ Skill Menu Presentation & List Navigation v1 with ordinary-technique filtering, MAGICK-consistent actor/detail hierarchy, three-column row scrolling, contextual arrows, and shared held-direction repeat
 
 ---
 

@@ -213,7 +213,7 @@ function testSharedNavigatorWrapsPartyMembers() {
   assert.equal(fallback.actor(), partyActors[1]);
 }
 
-function testCharacterMenusShareLeftRightActorNavigation() {
+function testActorCyclingMenusShareLeftRightNavigation() {
   const {
     party,
     partyActors,
@@ -227,17 +227,6 @@ function testCharacterMenusShareLeftRightActorNavigation() {
   } = createHarness();
 
   const cases = [
-    {
-      name: "Skills",
-      window: new Window_Skills(party),
-      actor: (window) => window.actor,
-      beforeSwitch(window) {
-        window.index = 1;
-      },
-      afterSwitch(window) {
-        assert.equal(window.index, 0);
-      },
-    },
     {
       name: "Status",
       window: new Window_Status(party),
@@ -315,6 +304,33 @@ function testMagickUsesDirectionsForGridAfterActorHandoff() {
   );
 }
 
+function testSkillUsesDirectionsForGridAfterActorHandoff() {
+  const { party, partyActors, triggered, drawCalls, Window_Skills } = createHarness();
+  const actor = partyActors[0];
+  actor.learnSkill(5);
+  const window = new Window_Skills(party);
+
+  assert.equal(window.actorNavigation.selectActor(actor), true);
+  window.show();
+  assert.equal(window.actor, actor);
+  assert.equal(window.index, 0);
+  assert.equal(window.skillList().length >= 2, true);
+
+  trigger(window, triggered, "ArrowRight");
+  assert.equal(window.actor, actor);
+  assert.equal(window.index, 1);
+
+  trigger(window, triggered, "ArrowLeft");
+  assert.equal(window.index, 0);
+
+  drawCalls.length = 0;
+  window.draw();
+  assert.equal(
+    drawCalls.some((call) => call[0] === "fillText" && call[1] === "Tyler"),
+    true,
+  );
+}
+
 function testSceneMenuPassesPartyContextToAllCharacterMenus() {
   const sceneMenuSource = fs.readFileSync(
     path.join(projectRoot, "js/scenes/Scene_Menu.js"),
@@ -356,8 +372,9 @@ function testSceneMenuPassesPartyContextToAllCharacterMenus() {
 
 function run() {
   testSharedNavigatorWrapsPartyMembers();
-  testCharacterMenusShareLeftRightActorNavigation();
+  testActorCyclingMenusShareLeftRightNavigation();
   testMagickUsesDirectionsForGridAfterActorHandoff();
+  testSkillUsesDirectionsForGridAfterActorHandoff();
   testSceneMenuPassesPartyContextToAllCharacterMenus();
 
   console.log("Character menu navigation regression tests passed.");

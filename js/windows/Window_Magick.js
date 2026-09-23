@@ -288,6 +288,37 @@ class Window_Magick {
       : "#ffffff";
   }
 
+  resourceFill(resource) {
+    if (
+      typeof UIResourcePalette !== "undefined" &&
+      typeof UIResourcePalette.fill === "function"
+    ) {
+      return UIResourcePalette.fill(resource);
+    }
+
+    return resource === "hp" ? "#35baf3" : "#55d872";
+  }
+
+  drawGauge(context, value, maximum, x, y, width, resource) {
+    const color = this.resourceFill(resource);
+
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawGauge === "function"
+    ) {
+      UIAssetManager.drawGauge(context, value, maximum, x, y, width, 8, color);
+      return;
+    }
+
+    const max = Math.max(1, Number(maximum) || 1);
+    const current = Math.max(0, Number(value) || 0);
+    const rate = Math.max(0, Math.min(1, current / max));
+    context.fillStyle = "rgba(11, 15, 23, 0.92)";
+    context.fillRect(x, y, width, 8);
+    context.fillStyle = color;
+    context.fillRect(x + 1, y + 1, Math.max(0, (width - 2) * rate), 6);
+  }
+
   drawActorPanel(context) {
     const bounds = this.actorBounds;
     const actor = this.actor;
@@ -299,7 +330,7 @@ class Window_Magick {
     this.drawPortraitPlaceholder(context, portraitX, portraitY, portraitSize);
 
     const infoX = portraitX + portraitSize + 20;
-    const nameY = bounds.y + 52;
+    const nameY = bounds.y + 43;
 
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
@@ -307,30 +338,62 @@ class Window_Magick {
     context.font = "600 22px sans-serif";
     context.fillText(actor?.name || "Unknown", infoX, nameY);
 
-    const nameWidth = context.measureText?.(actor?.name || "Unknown")?.width || 80;
+    const levelY = nameY + 25;
     context.fillStyle = "#ffd75a";
     context.font = "600 16px sans-serif";
-    context.fillText("LV", infoX + nameWidth + 14, nameY);
+    context.fillText("LV", infoX, levelY);
     context.fillStyle = this.valueText();
-    context.fillText(String(actor?.level ?? "?"), infoX + nameWidth + 42, nameY);
+    context.fillText(String(actor?.level ?? "?"), infoX + 28, levelY);
 
-    const statY = nameY + 38;
-    const statGap = Math.max(145, Math.floor((bounds.width - (infoX - bounds.x) - 34) / 2));
+    // Keep the two field-menu resources as one compact visual unit. HP and MP
+    // sit beside each other and each owns a small gauge directly underneath.
+    const statsX = infoX + 155;
+    const statGap = 18;
+    const availableWidth = Math.max(260, bounds.x + bounds.width - statsX - 24);
+    const statWidth = Math.max(120, Math.min(170, (availableWidth - statGap) / 2));
+    const statY = bounds.y + 62;
+    const gaugeY = statY + 9;
 
-    context.font = "600 16px sans-serif";
-    context.fillStyle = this.resourceText("hp");
-    context.fillText("HP", infoX, statY);
-    context.fillStyle = this.valueText();
-    context.fillText(`${actor?.hp ?? 0}/${actor?.maxHp ?? 0}`, infoX + 28, statY);
+    context.font = "600 15px sans-serif";
 
-    context.fillStyle = this.resourceText("mp");
-    context.fillText("MP", infoX + statGap, statY);
-    context.fillStyle = this.valueText();
-    context.fillText(
-      `${actor?.mp ?? 0}/${actor?.maxMp ?? 0}`,
-      infoX + statGap + 29,
-      statY,
-    );
+    const stats = [
+      {
+        label: "HP",
+        resource: "hp",
+        value: actor?.hp ?? 0,
+        maximum: actor?.maxHp ?? 0,
+        x: statsX,
+      },
+      {
+        label: "MP",
+        resource: "mp",
+        value: actor?.mp ?? 0,
+        maximum: actor?.maxMp ?? 0,
+        x: statsX + statWidth + statGap,
+      },
+    ];
+
+    for (const stat of stats) {
+      context.fillStyle = this.resourceText(stat.resource);
+      context.fillText(stat.label, stat.x, statY);
+      context.fillStyle = this.valueText();
+      context.fillText(
+        `${Math.floor(Math.max(0, Number(stat.value) || 0))}/${Math.floor(
+          Math.max(0, Number(stat.maximum) || 0),
+        )}`,
+        stat.x + 28,
+        statY,
+      );
+      this.drawGauge(
+        context,
+        stat.value,
+        stat.maximum,
+        stat.x,
+        gaugeY,
+        statWidth,
+        stat.resource,
+      );
+    }
   }
 
   titleCase(value, fallback = "--") {

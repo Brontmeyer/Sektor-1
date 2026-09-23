@@ -214,6 +214,10 @@ Pass 63 is post-audit configuration/presentation work and does not reopen a hist
 
 Pass 64 is post-audit menu presentation/input work and does not reopen a historical finding. `Window_Magick` keeps the existing actor handoff, learned-Magick ownership, ConfigManager ordering, MP costs, and field-use execution rules while replacing the old vertical box with an actor summary, selected-Magick details, description strip, and a three-column row-scrolling grid. `Input.update()` / `isActionRepeated()` centralize held-direction cadence before scene updates rather than adding per-window timers. The player-facing Option label is renamed Config without renaming internal `Scene_Options` / `Window_Options`, and the RUNES amount becomes neutral white. No save or config schema changes are introduced, so Save Runtime remains v11 and Config Runtime remains v3.
 
+## Post-Audit Feature Note: Skill Menu Presentation & List Navigation v1
+
+Pass 65 is post-audit field-menu presentation/input work and does not reopen a historical finding. `Window_Skills` now reuses the MAGICK-style actor/detail/description/grid hierarchy, shared held-direction repeat, and row-scrolling viewport while deliberately excluding `valorArt: true` records from the field SKILL screen. Battle Valor Arts continue to use the established Skill runtime/selector, so this is a player-facing separation rather than a combat-engine fork. MAIN MENU and MAGICK actor summaries also move LV beneath the name, and MAGICK groups HP/MP with mini gauges. No save/config schema or combat-rule change is introduced, so Save Runtime remains v11 and Config Runtime remains v3.
+
 ## Pass Selection Gate
 
 Before starting a new improvement pass:
