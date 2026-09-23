@@ -814,6 +814,7 @@ class SaveManager {
       }
 
       this.restoreParty(saveData.party);
+      globalThis.$gameSystem?.setPlayTimeSeconds?.(saveData.metadata?.playTimeSeconds ?? 0);
 
       if (saveData.switches) {
         this.restoreObjectData($gameSwitches, saveData.switches.data || {});
@@ -881,6 +882,7 @@ class SaveManager {
           mapId: scene.map.id,
           mapName: scene.map.name || `Map ${scene.map.id}`,
           timestamp: Date.now(),
+          playTimeSeconds: globalThis.$gameSystem?.playTimeSeconds?.() ?? 0,
         },
 
         actors: actors.map((actor) => this.serializeActor(actor)),

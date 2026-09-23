@@ -24,12 +24,54 @@ class Window_Options {
       },
     ];
 
-    this.x = 150;
-    this.y = 125;
-    this.width = Graphics.width - 300;
-    this.height = Graphics.height - 180;
-    this.padding = 28;
-    this.lineHeight = 56;
+    this.refreshLayout();
+  }
+
+  refreshLayout() {
+    const margin = Math.max(12, Math.min(22, Math.floor(Graphics.width * 0.014)));
+    const gap = 8;
+    const width = Graphics.width - margin * 2;
+    const height = Graphics.height - margin * 2;
+    const headerHeight = 70;
+    const titleWidth = Math.max(250, Math.min(320, Math.floor(width * 0.255)));
+
+    this.x = margin;
+    this.y = margin;
+    this.width = width;
+    this.height = height;
+    this.gap = gap;
+    this.descriptionBounds = {
+      x: margin,
+      y: margin,
+      width: width - titleWidth - gap,
+      height: headerHeight,
+    };
+    this.titleBounds = {
+      x: margin + width - titleWidth,
+      y: margin,
+      width: titleWidth,
+      height: headerHeight,
+    };
+    this.contentBounds = {
+      x: margin,
+      y: margin + headerHeight + gap,
+      width,
+      height: height - headerHeight - gap,
+    };
+  }
+
+  currentOption() {
+    return this.options[this.index] || null;
+  }
+
+  cycleCurrent(direction) {
+    const option = this.currentOption();
+
+    if (!option || option.type !== "option") {
+      return null;
+    }
+
+    return ConfigManager.cycle(option.key, direction);
   }
 
   update() {
@@ -71,125 +113,178 @@ class Window_Options {
     return false;
   }
 
-  currentOption() {
-    return this.options[this.index] || null;
+  actionLabel(action, fallback) {
+    return typeof Input.actionLabel === "function"
+      ? Input.actionLabel(action)
+      : fallback;
   }
 
-  cycleCurrent(direction) {
-    const option = this.currentOption();
-
-    if (!option || option.type !== "option") {
-      return null;
-    }
-
-    return ConfigManager.cycle(option.key, direction);
-  }
-
-  draw() {
-    const context = Graphics.context;
-    const contentX = this.x + this.padding;
-    const valueX = this.x + this.width - this.padding;
-
-    context.save();
+  drawPanel(context, bounds, options = {}) {
     if (
       typeof UIAssetManager !== "undefined" &&
       typeof UIAssetManager.drawPanel === "function"
     ) {
-      UIAssetManager.drawPanel(
+      return UIAssetManager.drawPanel(
         context,
         "menuPanel",
-        this.x,
-        this.y,
-        this.width,
-        this.height,
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height,
         {
-          fallbackFill: "rgba(15, 18, 22, 0.94)",
-          fallbackStroke: "rgba(154, 183, 204, 0.66)",
+          fallbackFill: "rgba(11, 16, 28, 0.96)",
+          fallbackStroke: "rgba(150, 176, 220, 0.78)",
+          innerStroke: "rgba(232, 234, 255, 0.14)",
           lineWidth: 1.5,
-          assetAlpha: 0.58,
+          assetAlpha: 0.54,
           sourceMargin: 12,
-          destMargin: 13,
+          destMargin: 12,
+          ...options,
         },
       );
-    } else {
-      context.fillStyle = "rgba(15, 18, 22, 0.94)";
-      context.fillRect(this.x, this.y, this.width, this.height);
-      context.strokeStyle = "rgba(154, 183, 204, 0.66)";
-      context.lineWidth = 1.5;
-      context.strokeRect(this.x, this.y, this.width, this.height);
     }
 
+    context.fillStyle = options.fallbackFill || "rgba(11, 16, 28, 0.96)";
+    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    context.strokeStyle =
+      options.fallbackStroke || "rgba(150, 176, 220, 0.78)";
+    context.lineWidth = 1.5;
+    context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    return false;
+  }
+
+  drawSelection(context, x, y, width, height) {
+    const drawn =
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawSelectionPanel === "function" &&
+      UIAssetManager.drawSelectionPanel(context, x, y, width, height, {
+        alpha: 0.2,
+      });
+
+    if (!drawn) {
+      context.fillStyle = "rgba(255, 215, 90, 0.1)";
+      context.fillRect(x, y, width, height);
+    }
+  }
+
+  drawHeader(context) {
+    const option = this.currentOption();
+    const description = this.descriptionBounds;
+    const title = this.titleBounds;
+
+    this.drawPanel(context, description, { assetAlpha: 0.46 });
+    this.drawPanel(context, title, { assetAlpha: 0.54 });
+
+    context.save();
     context.textBaseline = "middle";
-    context.font = "22px Arial";
+    context.textAlign = "left";
+    context.fillStyle = "#ffffff";
+    context.font = "17px sans-serif";
+    context.fillText(
+      option?.description || "Configure Sektor 1.",
+      description.x + 20,
+      description.y + description.height / 2,
+      description.width - 40,
+    );
+
+    context.textAlign = "center";
+    context.fillStyle = "#ffffff";
+    context.font = "600 22px sans-serif";
+    context.fillText("CONFIG", title.x + title.width / 2, title.y + 27);
+    context.fillStyle = "#aebbd0";
+    context.font = "13px sans-serif";
+    context.fillText("SYSTEM", title.x + title.width / 2, title.y + 50);
+    context.restore();
+  }
+
+  optionValue(option) {
+    if (!option) {
+      return "";
+    }
+
+    if (option.type === "controls" || option.type === "windowColor") {
+      return "Open  ▶";
+    }
+
+    return `◀  ${ConfigManager.displayValue(option.key)}  ▶`;
+  }
+
+  drawContent(context) {
+    const bounds = this.contentBounds;
+    const footerHeight = 38;
+    const footerTop = bounds.y + bounds.height - footerHeight;
+    const bodyTop = bounds.y + 18;
+    const bodyBottom = footerTop - 10;
+    const rowHeight = Math.max(
+      52,
+      Math.min(68, Math.floor((bodyBottom - bodyTop) / this.options.length)),
+    );
+    const labelX = bounds.x + 30;
+    const valueX = bounds.x + bounds.width - 34;
+
+    this.drawPanel(context, bounds);
+    context.save();
+    context.textBaseline = "middle";
 
     for (let i = 0; i < this.options.length; i++) {
       const option = this.options[i];
       const selected = i === this.index;
-      const rowY = this.y + 54 + i * this.lineHeight;
+      const rowY = bodyTop + rowHeight / 2 + i * rowHeight;
 
       if (selected) {
-        const selectionX = this.x + 12;
-        const selectionY = rowY - this.lineHeight / 2 + 6;
-        const selectionWidth = this.width - 24;
-        const selectionHeight = this.lineHeight - 12;
-        const assetSelectionDrawn =
-          typeof UIAssetManager !== "undefined" &&
-          typeof UIAssetManager.drawSelectionPanel === "function" &&
-          UIAssetManager.drawSelectionPanel(
-            context,
-            selectionX,
-            selectionY,
-            selectionWidth,
-            selectionHeight,
-            { alpha: 0.18 },
-          );
-
-        if (!assetSelectionDrawn) {
-          context.fillStyle = "rgba(255, 215, 90, 0.09)";
-          context.fillRect(
-            selectionX,
-            selectionY,
-            selectionWidth,
-            selectionHeight,
-          );
-        }
-        context.fillStyle = "#ffd75a";
-        context.fillRect(
-          this.x + 8,
-          rowY - this.lineHeight / 2 + 8,
-          4,
-          this.lineHeight - 16,
+        this.drawSelection(
+          context,
+          bounds.x + 16,
+          rowY - rowHeight / 2 + 5,
+          bounds.width - 32,
+          rowHeight - 10,
         );
       }
 
       context.textAlign = "left";
-      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
-      context.fillText(`${selected ? "▶ " : "  "}${option.label}`, contentX, rowY);
+      context.fillStyle = selected ? "#ffd75a" : "#7ff0d5";
+      context.font = selected ? "600 18px sans-serif" : "18px sans-serif";
+      context.fillText(`${selected ? "▶ " : "  "}${option.label}`, labelX, rowY);
 
       context.textAlign = "right";
-      context.fillStyle = selected ? "#ffd75a" : "#c8d3df";
-      context.fillText(
-        option.type === "controls" || option.type === "windowColor"
-          ? "Configure  ▶"
-          : `◀  ${ConfigManager.displayValue(option.key)}  ▶`,
-        valueX,
-        rowY,
-      );
+      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+      context.font = selected ? "600 17px sans-serif" : "17px sans-serif";
+      context.fillText(this.optionValue(option), valueX, rowY);
     }
 
-    const option = this.currentOption();
-    const dividerY = this.y + this.height - 92;
-    context.strokeStyle = "rgba(255, 255, 255, 0.18)";
+    context.strokeStyle = "rgba(210, 222, 242, 0.34)";
+    context.lineWidth = 1;
     context.beginPath();
-    context.moveTo(contentX, dividerY);
-    context.lineTo(valueX, dividerY);
+    context.moveTo(bounds.x + 20, footerTop);
+    context.lineTo(bounds.x + bounds.width - 20, footerTop);
     context.stroke();
 
-    context.textAlign = "left";
-    context.fillStyle = "#aeb8c5";
-    context.font = "16px Arial";
-    context.fillText(option?.description || "", contentX, dividerY + 34);
+    const current = this.currentOption();
+    const changeHint = current?.type === "option"
+      ? `${this.actionLabel("left", "A / ←")}/${this.actionLabel("right", "D / →")}: Change   `
+      : "";
+    const confirmLabel = current?.type === "option" ? "Next" : "Open";
 
+    context.textAlign = "left";
+    context.fillStyle = "#aebbd0";
+    context.font = "13px sans-serif";
+    context.fillText(
+      `${this.actionLabel("up", "W / ↑")}/${this.actionLabel("down", "S / ↓")}: Setting   ` +
+        changeHint +
+        `${this.actionLabel("confirm", "E / Enter")}: ${confirmLabel}   ` +
+        `${this.actionLabel("cancel", "Q / Esc")}: Back`,
+      bounds.x + 18,
+      footerTop + footerHeight / 2,
+    );
+    context.restore();
+  }
+
+  draw() {
+    this.refreshLayout();
+    const context = Graphics.context;
+    context.save();
+    this.drawHeader(context);
+    this.drawContent(context);
     context.restore();
   }
 }

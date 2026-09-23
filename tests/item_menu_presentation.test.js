@@ -275,6 +275,16 @@ function testCancelMovesBackOneInteractionLevel() {
   assert.equal(harness.window.isOpen(), false);
 }
 
+
+function testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading() {
+  const source = read("js/windows/Window_Inventory.js");
+
+  assert.match(source, /contentColumns\(area\)/);
+  assert.match(source, /drawUsePage\(context, area\)[\s\S]*this\.contentColumns\(area\)/);
+  assert.match(source, /drawArrangePage\(context, area\)[\s\S]*this\.contentColumns\(area\)/);
+  assert.doesNotMatch(source, /\? "SELECT TARGET"[\s\S]*: "PARTY"/);
+}
+
 function testSceneRoutesItemMenuToPartyBackedInventoryWindow() {
   const scene = read("js/scenes/Scene_Menu.js");
 
@@ -289,6 +299,7 @@ function run() {
   testArrangeApplyReturnsFocusToArrangeHeading();
   testKeyItemsKeepReferenceTabFlowAndPartyRowsShowHpAndMp();
   testCancelMovesBackOneInteractionLevel();
+  testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading();
   testSceneRoutesItemMenuToPartyBackedInventoryWindow();
   console.log("Item menu presentation regression tests passed.");
 }

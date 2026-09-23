@@ -169,6 +169,15 @@ function createHarness() {
   context.$gameSwitches = { data: {} };
   context.$gameVariables = { data: {} };
   context.$gameSelfSwitches = { data: {} };
+  const gameSystem = {
+    seconds: 0,
+    playTimeSeconds() { return Math.max(0, Math.floor(this.seconds)); },
+    setPlayTimeSeconds(value) {
+      this.seconds = Math.max(0, Number(value) || 0);
+      return true;
+    },
+  };
+  context.$gameSystem = gameSystem;
 
   return {
     context,
@@ -177,6 +186,7 @@ function createHarness() {
     party,
     partyActors,
     SaveManager,
+    gameSystem,
   };
 }
 
@@ -185,7 +195,7 @@ function rawSave(localStorage, SaveManager, slotId = 1) {
 }
 
 function testV11SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesRowsAndFormation() {
-  const { localStorage, party, partyActors, SaveManager } = createHarness();
+  const { localStorage, party, partyActors, SaveManager, gameSystem } = createHarness();
   const second = partyActors[1];
 
   second.exp = 321;
@@ -206,6 +216,7 @@ function testV11SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesRo
   assert.equal(party.gainGil(77), true);
   assert.equal(party.setBattleRow(second, "back"), true);
   assert.equal(party.swapBattleFormationSlots(0, 2), true);
+  gameSystem.seconds = 5025.9;
 
   assert.equal(SaveManager.save(1), true);
 
@@ -213,6 +224,7 @@ function testV11SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesRo
   const savedSecond = saveData.actors.find((actor) => actor.actorId === 2);
 
   assert.equal(saveData.version, 11);
+  assert.equal(saveData.metadata.playTimeSeconds, 5025);
   assert.equal(saveData.actors.length, 4);
   assert.equal(Object.hasOwn(saveData, "actor"), false);
   assert.equal(savedSecond.exp, 321);
@@ -244,7 +256,7 @@ function testV11SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesRo
 }
 
 async function testV11LoadRestoresSkillStateValorAccessoryRowsFormationAndNormalizesInventory() {
-  const { localStorage, party, partyActors, SaveManager } = createHarness();
+  const { localStorage, party, partyActors, SaveManager, gameSystem } = createHarness();
   const second = partyActors[1];
 
   second.exp = 450;
@@ -261,6 +273,7 @@ async function testV11LoadRestoresSkillStateValorAccessoryRowsFormationAndNormal
   assert.equal(party.gainGil(120), true);
   assert.equal(party.setBattleRow(second, "back"), true);
   assert.equal(party.swapBattleFormationSlots(0, 3), true);
+  gameSystem.seconds = 3723;
 
   assert.equal(SaveManager.save(1), true);
 
@@ -283,6 +296,7 @@ async function testV11LoadRestoresSkillStateValorAccessoryRowsFormationAndNormal
   party.setGil(0);
   party.setBattleRow(second, "front");
   assert.equal(party.swapBattleFormationSlots(0, 1), true);
+  gameSystem.seconds = 9;
 
   assert.equal(await SaveManager.load(1), true);
   assert.deepEqual(Array.from(second.skillIds), [2, 1]);
@@ -305,6 +319,7 @@ async function testV11LoadRestoresSkillStateValorAccessoryRowsFormationAndNormal
   assert.equal(party.accessoryCount(2), 2);
   assert.equal(party.accessoryCount(999), 0);
   assert.equal(second.equippedEssence(4).resonance, 299);
+  assert.equal(gameSystem.playTimeSeconds(), 3723);
 }
 
 

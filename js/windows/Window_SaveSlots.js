@@ -167,6 +167,7 @@ class Window_SaveSlots {
         timestamp: null,
         party: [],
         runes: null,
+        playTimeSeconds: 0,
       };
     }
 
@@ -193,6 +194,7 @@ class Window_SaveSlots {
       timestamp: metadata.timestamp || null,
       party: actors.slice(0, 4),
       runes: Number.isFinite(runes) ? runes : null,
+      playTimeSeconds: Math.max(0, Number(metadata.playTimeSeconds) || 0),
     };
   }
 
@@ -225,6 +227,21 @@ class Window_SaveSlots {
       hour: "2-digit",
       minute: "2-digit",
     });
+  }
+
+  formatPlayTime(seconds) {
+    if (typeof Game_System !== "undefined" && Game_System.formatPlayTime) {
+      return Game_System.formatPlayTime(seconds);
+    }
+
+    const total = Math.max(0, Math.floor(Number(seconds) || 0));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const remainingSeconds = total % 60;
+
+    return [hours, minutes, remainingSeconds]
+      .map((value) => String(value).padStart(2, "0"))
+      .join(":");
   }
 
   screenTitle() {
@@ -334,13 +351,15 @@ class Window_SaveSlots {
     const innerX = bounds.x + 18;
     const innerY = bounds.y + 14;
     const innerHeight = bounds.height - 28;
-    const portraitSize = Math.max(56, Math.min(72, Math.floor(innerHeight * 0.47)));
+    const portraitSize = Math.max(64, Math.min(84, Math.floor(innerHeight * 0.54)));
     const portraitGap = 8;
     const partyWidth = portraitSize * 4 + portraitGap * 3;
-    const infoX = innerX + partyWidth + 28;
-    const rightWidth = Math.max(210, Math.floor(bounds.width * 0.2));
+    const infoX = innerX + partyWidth + 36;
+    const rightWidth = Math.max(224, Math.floor(bounds.width * 0.2));
     const rightX = bounds.x + bounds.width - rightWidth - 18;
-    const centerWidth = Math.max(180, rightX - infoX - 18);
+    const dividerX = rightX - 14;
+    const locationGap = 18;
+    const centerWidth = Math.max(160, dividerX - locationGap - infoX);
 
     context.save();
     context.textBaseline = "middle";
@@ -390,27 +409,37 @@ class Window_SaveSlots {
 
     context.strokeStyle = "rgba(210, 222, 242, 0.3)";
     context.beginPath();
-    context.moveTo(rightX - 14, innerY + 4);
-    context.lineTo(rightX - 14, bounds.y + bounds.height - 14);
+    context.moveTo(dividerX, innerY + 4);
+    context.lineTo(dividerX, bounds.y + bounds.height - 14);
     context.stroke();
 
     const valueX = bounds.x + bounds.width - 26;
+    const rowYs = [
+      portraitY + 8,
+      portraitY + 34,
+      portraitY + 60,
+      portraitY + 86,
+    ];
     context.font = "14px sans-serif";
     context.fillStyle = "#aebbd0";
-    context.fillText("Saved", rightX, portraitY + 12);
-    context.fillText("At", rightX, portraitY + 42);
-    context.fillText("RUNES", rightX, portraitY + 72);
+    context.fillText("Saved", rightX, rowYs[0]);
+    context.fillText("At", rightX, rowYs[1]);
+    context.fillText("TIME", rightX, rowYs[2]);
+    context.fillText("RUNES", rightX, rowYs[3]);
 
     context.textAlign = "right";
     context.fillStyle = "#ffffff";
-    context.fillText(this.formatDate(summary.timestamp), valueX, portraitY + 12);
-    context.fillText(this.formatClock(summary.timestamp), valueX, portraitY + 42);
+    context.fillText(this.formatDate(summary.timestamp), valueX, rowYs[0]);
+    context.fillText(this.formatClock(summary.timestamp), valueX, rowYs[1]);
+    context.fillStyle = "#6fd8ff";
+    context.fillText(this.formatPlayTime(summary.playTimeSeconds), valueX, rowYs[2]);
+    context.fillStyle = "#ffffff";
     context.fillText(
       summary.runes === null
         ? "—"
         : Math.max(0, summary.runes).toLocaleString(),
       valueX,
-      portraitY + 72,
+      rowYs[3],
     );
 
     context.restore();

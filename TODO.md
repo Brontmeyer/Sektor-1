@@ -105,6 +105,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Apply Resource Color Consistency v1 through shared `UIResourcePalette` ownership: HP blue-cyan, MP green, Valor magenta-purple across primary party resource surfaces
 - [ ] Continue final UI skin curation after hands-on visual review; keep all art swappable through `UIAssetManager`
 - [x] Add Window Color Customization v1 under Config with four persistent corners, live preview, RGB editing/reset, and centralized shared-panel tinting through Config Runtime v3 / `UIAssetManager`
+- [x] Add Config Menu Presentation v1 with unified framed layout, contextual description header, project-standard focus cues, and preserved Controls / Window Color routing
 - [x] Add Magick Menu Presentation & List Navigation v1 with actor summary, selected-Magick details, three-column scrolling grid, conditional arrows, shared held-direction repeat, Config naming, and white RUNES value presentation
 - [x] Add Skill Menu Presentation & List Navigation v1 with ordinary-technique filtering, actor summary/detail hierarchy, three-column scrolling grid, conditional arrows, shared held-direction repeat, and MAGICK/main-menu identity-layout consistency
 - [x] Add Equip Menu Presentation & Stat Preview v1 with shared actor summary, full Weapon/Armor/Accessories labels, description strip, held-repeat equipment browsing, live stat comparison, and square main-menu portrait consistency
@@ -118,7 +119,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Main Menu Information & Command Layout v1 with four active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels
 - [x] Implement Main Menu Refinement & Command Availability Foundation v1 with restored Load, RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and future map-based Save/Load restrictions
 - [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
-- [ ] Add canonical persistent play-time tracking before replacing the main menu TIME placeholder
+- [x] Add canonical persistent play-time tracking with main-menu HH:MM:SS and Save/Load persistence
 - [x] Implement Main Menu Actor Selection & Order Foundation v1 with shared party-card focus, actor handoff, persistent front/back row state, portrait-position row language, and ROSTER hidden-by-default policy
 - [x] Extend Order with persistent active-party visual formation swapping (positions 1-4) without changing mechanical party/turn order
 - [x] Connect player front/back row state to battlefield geometry as presentation only; keep row/slot position free of damage, weapon, targeting, or stat advantages unless the design is explicitly revisited

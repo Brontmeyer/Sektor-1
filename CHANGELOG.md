@@ -12,6 +12,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Finalized ITEM lower-panel geometry so **Use** and **Arrange** share the same left/right divider, removed the remaining party-side heading, and reclaimed the full target column height so all four actor cards keep HP and MP inside their frames
+- Refined SAVE/LOAD file cards with larger party portraits, a slightly later leader/location start, and an explicit breathing gap between the location box and right-side metadata divider
+
 - Refined ITEM navigation into an explicit three-step state machine inspired by the supplied reference flow: **Use tab → item list → party target**. Enter now advances one level, Q/Esc backs out one level, and successful use returns to the item list instead of leaving focus ambiguity behind.
 - ITEM target selection now keeps the pending item visibly marked, mirrors its name/quantity/target in the metadata panel, and spells out the pending action in the description strip so the player always knows which item is about to be used.
 - Applying an ITEM Arrange order now returns focus directly to the **Arrange** heading, removing the extra Up press that hands-on testing exposed.
@@ -30,6 +33,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added focused regression coverage for the Guard-style prompt flow and Scene_Map message/choice update ordering
 
 ### Added
+
+- Added canonical persistent play-time tracking on `Game_System`, advanced once per active scene update, saved/restored through optional v11 metadata, shown on MAIN MENU, and displayed as **TIME HH:MM:SS** above RUNES on SAVE/LOAD cards without requiring a save-version bump
+- Added Config Menu Presentation v1 with the same full-screen framed language, compact description/title header split, gold cursor plus dim selection rectangle, spacious setting rows, and preserved Config Runtime / Controls / Window Color ownership
+- Added dedicated Play Time Runtime and Config Menu Presentation regression suites, plus ITEM alignment coverage
 
 - Completed Load Menu Presentation v1 through the shared `Window_SaveSlots` file-card browser, giving SAVE and LOAD the same reference-inspired layout while preserving their separate `Scene_Menu` actions and Save Runtime v11 authority.
 - Extended ITEM presentation regression coverage for initial tab focus, hierarchical Use flow, pending-item visibility, one-level cancel behavior, Arrange focus return, and retained HP/MP party vitals.

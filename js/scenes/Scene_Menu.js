@@ -394,9 +394,7 @@ class Scene_Menu extends Scene_Base {
   }
 
   formattedPlayTime() {
-    // A persistent play-time runtime does not exist yet. Do not fabricate one
-    // from wall-clock/session time and silently present it as save playtime.
-    return "--:--:--";
+    return globalThis.$gameSystem?.formattedPlayTime?.() || "00:00:00";
   }
 
   drawUtilityPanels(context) {

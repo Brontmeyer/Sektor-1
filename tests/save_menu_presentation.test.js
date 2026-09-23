@@ -37,6 +37,7 @@ function createHarness() {
       level: 12,
       mapName: "Sector Gate",
       timestamp: 1760000000000,
+      playTimeSeconds: 5025,
     },
     actors: [
       { actorId: 1, name: "Tyler", level: 12 },
@@ -109,6 +110,8 @@ function testSaveUsesReferenceInspiredFileCardsWithoutCrampedDescriptionStrip() 
   assert.equal(includes(texts, "LV 12"), true);
   assert.equal(includes(texts, "Sector Gate"), true);
   assert.equal(includes(texts, "Saved"), true);
+  assert.equal(includes(texts, "TIME"), true);
+  assert.equal(includes(texts, "01:23:45"), true);
   assert.equal(includes(texts, "RUNES"), true);
   assert.equal(includes(texts, "2,345"), true);
   assert.equal(includes(texts, "EMPTY"), true);
@@ -139,7 +142,7 @@ function testSaveSlotNavigationAndResultRemainRuntimeCompatible() {
   assert.equal(harness.window.hasResult(), false);
 }
 
-function testLoadUsesSameFileCardLanguageWithoutInventingPlayTime() {
+function testLoadUsesSameFileCardLanguageWithPersistentPlayTime() {
   const harness = createHarness();
   harness.window.show("load");
   const texts = drawText(harness);
@@ -149,15 +152,18 @@ function testLoadUsesSameFileCardLanguageWithoutInventingPlayTime() {
   assert.equal(includes(texts, "FILE 01"), true);
   assert.equal(includes(texts, "Sector Gate"), true);
 
+  assert.equal(includes(texts, "TIME"), true);
+  assert.equal(includes(texts, "01:23:45"), true);
+
   const source = read("js/windows/Window_SaveSlots.js");
-  assert.doesNotMatch(source, /playTime|PLAY TIME|session time/i);
+  assert.match(source, /playTimeSeconds/);
 }
 
 function run() {
   testSaveUsesReferenceInspiredFileCardsWithoutCrampedDescriptionStrip();
   testHeaderTracksCurrentlySelectedFile();
   testSaveSlotNavigationAndResultRemainRuntimeCompatible();
-  testLoadUsesSameFileCardLanguageWithoutInventingPlayTime();
+  testLoadUsesSameFileCardLanguageWithPersistentPlayTime();
   console.log("Save menu presentation regression tests passed.");
 }
 

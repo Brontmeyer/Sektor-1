@@ -199,12 +199,14 @@ function testConfigRenameAndWhiteRunesValueArePlayerFacingOnly() {
   const menu = read("js/windows/Window_MenuCommand.js");
   const sceneMenu = read("js/scenes/Scene_Menu.js");
   const sceneOptions = read("js/scenes/Scene_Options.js");
+  const optionsWindow = read("js/windows/Window_Options.js");
 
   assert.match(menu, /"Config"/);
   assert.doesNotMatch(menu, /"Option"/);
   assert.match(sceneMenu, /case "Config":/);
   assert.doesNotMatch(sceneMenu, /case "Option":/);
-  assert.match(sceneOptions, /fillText\("CONFIG"/);
+  assert.match(optionsWindow, /fillText\("CONFIG"/);
+  assert.match(sceneOptions, /this\.optionsWindow\.draw\(\)/);
   assert.match(
     sceneMenu,
     /context\.fillStyle = "#ffffff";[\s\S]*Number\(\$gameParty\.gil\?\.\(\) \|\| 0\)\.toLocaleString\(\)/,

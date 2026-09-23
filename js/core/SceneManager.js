@@ -14,6 +14,7 @@ class SceneManager {
       return;
     }
 
+    globalThis.$gameSystem?.updatePlayTime?.(deltaTime);
     this.currentScene.update(deltaTime);
   }
 

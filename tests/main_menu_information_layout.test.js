@@ -218,7 +218,7 @@ function testSceneUsesMainMenuHeadingAndHonestPlaceholderDestinations() {
   assert.match(scene, /case "Valor":/);
   assert.match(scene, /case "ROSTER":/);
   assert.match(scene, /case "Load":/);
-  assert.match(scene, /return "--:--:--";/);
+  assert.match(scene, /globalThis\.\$gameSystem\?\.formattedPlayTime\?\.\(\)/);
   assert.match(scene, /fillText\("RUNES"/);
   assert.equal(scene.includes('fillText("GIL"'), false);
   assert.match(map, /SceneManager\.push\([\s\S]*Scene_Menu/);
@@ -250,7 +250,7 @@ function testSingularHeadingContractAndLoadOrder() {
   const skills = read("js/windows/Window_Skills.js");
   const essence = read("js/windows/Window_Essence.js");
   const equipment = read("js/windows/Window_Equipment.js");
-  const options = read("js/scenes/Scene_Options.js");
+  const options = read("js/windows/Window_Options.js");
 
   assert.match(inventory, /fillText\("ITEM"/);
   assert.match(skills, /"SKILL"/);

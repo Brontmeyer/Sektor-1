@@ -912,7 +912,7 @@ class Window_Inventory {
       actor?.mp ?? 0,
       actor?.maxMp ?? 0,
       gaugeX,
-      bounds.y + 72,
+      bounds.y + 70,
       gaugeWidth,
       "mp",
     );
@@ -938,11 +938,22 @@ class Window_Inventory {
     context.restore();
   }
 
-  drawUsePage(context, area) {
+  contentColumns(area) {
     const leftWidth = Math.max(280, Math.floor(area.bodyWidth * 0.36));
     const dividerX = area.bodyX + leftWidth + 8;
     const rightX = dividerX + 18;
-    const rightWidth = area.bodyX + area.bodyWidth - rightX;
+
+    return {
+      leftWidth,
+      dividerX,
+      rightX,
+      rightWidth: area.bodyX + area.bodyWidth - rightX,
+    };
+  }
+
+  drawUsePage(context, area) {
+    const { leftWidth, dividerX, rightX, rightWidth } =
+      this.contentColumns(area);
     const members = this.members();
     const items = this.usableItemIds();
 
@@ -960,13 +971,6 @@ class Window_Inventory {
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
     context.fillText(
-      this.focusArea === Window_Inventory.FOCUS.TARGETS
-        ? "SELECT TARGET"
-        : "PARTY",
-      area.bodyX + 6,
-      area.bodyY + 12,
-    );
-    context.fillText(
       this.focusArea === Window_Inventory.FOCUS.ITEMS
         ? "SELECT ITEM"
         : "ITEMS",
@@ -979,12 +983,12 @@ class Window_Inventory {
       context.font = "16px sans-serif";
       context.fillText("No active party members.", area.bodyX + 10, area.bodyY + 46);
     } else {
-      const rosterTop = area.bodyY + 28;
+      const rosterTop = area.bodyY + 4;
       const rowHeight = Math.max(
-        75,
-        Math.floor((area.bodyHeight - 30) / Math.max(1, members.length)),
+        78,
+        Math.floor((area.bodyHeight - 4) / Math.max(1, members.length)),
       );
-      const cardHeight = Math.max(72, rowHeight - 5);
+      const cardHeight = Math.max(76, rowHeight - 4);
 
       members.forEach((member, index) => {
         this.drawPartyMemberRow(
@@ -1073,10 +1077,8 @@ class Window_Inventory {
     const options = this.arrangeOptions();
     const previewMode = this.currentArrangeOption()?.mode || this.sortMode;
     const previewIds = this.usableItemIds(previewMode);
-    const leftWidth = Math.max(260, Math.floor(area.bodyWidth * 0.31));
-    const dividerX = area.bodyX + leftWidth + 8;
-    const rightX = dividerX + 18;
-    const rightWidth = area.bodyX + area.bodyWidth - rightX;
+    const { leftWidth, dividerX, rightX, rightWidth } =
+      this.contentColumns(area);
 
     context.save();
     context.textAlign = "left";
