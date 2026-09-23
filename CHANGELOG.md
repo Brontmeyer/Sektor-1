@@ -22,6 +22,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Item Menu Presentation & Inventory Navigation v1 with the shared actor-summary header, ITEM metadata panel, description strip, and reference-inspired **Use / Arrange / Key Items** tabs
+- Added a party-targeted Use page that keeps the active roster visible while the player browses owned items, selects a target, and uses the existing `Game_Party.useItem()` runtime without inventing new item mechanics
+- Added Arrange-page support for the currently implemented inventory sort orders (Default / Name / Most / Least) with live preview instead of fabricating unsupported Field / Battle / Throw style categories
+- Added Key Items presentation support for future `keyItem` inventory entries while truthfully showing an empty-state message when none are owned
+- Added dedicated Item menu regression coverage for tab navigation, target/item usage flow, supported sort behavior, key-item presentation, Scene_Menu routing, and shared resource-palette consumption
+
 - Added Valor Menu Presentation & Progression Architecture v1 with a dedicated full-screen VALOR destination, shared actor-summary header, live Valor gauge/state, selected-Art description, and Limit-inspired LEVEL 1-4 progression groups
 - Added optional validated `valorLevel` metadata (1-4) for Valor Arts and canonical Level 1 assignments for Unbroken, Rallyheart, Wild Arc, and Zero Lock
 - Added actor-owned Valor progression query helpers derived from existing learned Skill IDs, avoiding duplicate ability ownership and avoiding a Save Runtime change

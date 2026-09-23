@@ -14,9 +14,7 @@ class Scene_Menu extends Scene_Base {
     );
     this.partyWindow = new Window_MainMenuParty($gameParty, this.layout.party);
 
-    const actor = $gameParty.leader();
-
-    this.inventoryWindow = new Window_Inventory(actor);
+    this.inventoryWindow = new Window_Inventory($gameParty);
     this.statusWindow = new Window_Status($gameParty);
     this.valorWindow = new Window_Valor($gameParty);
     this.equipmentWindow = new Window_Equipment($gameParty);

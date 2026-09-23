@@ -296,6 +296,8 @@ Accessories are a distinct data-driven equipment category rather than a special-
 
 Equip Menu Presentation & Stat Preview v1 presents conventional gear through full **Weapon / Armor / Accessory** labels and previews candidate gear using the actor's real derived-stat methods before mutation. The comparison surface includes Attack, Attack %, Defense, Defense %, Magic Attack, Magic Defense, Magic Defense %, and Critical. An **Essence Growth** row is reserved for future gear interaction and currently reads `Normal`; no Resonance multiplier exists until a dedicated equipment-growth contract is implemented.
 
+Item Menu Presentation & Inventory Navigation v1 keeps **Item** as a direct main-menu destination rather than an actor-picked command, but it now adopts the same full-screen presentation family as the other menu surfaces. The screen uses **Use / Arrange / Key Items** tabs, keeps the active party visible while choosing a target for field-item use, and limits Arrange to the inventory sort behaviors the engine actually supports (`Default`, `Name`, `Most`, `Least`). Reference-only categories such as Field/Battle/Throw are intentionally omitted until the runtime can justify them. Key Items presentation is allowed to exist ahead of the first canonical key-item content, but an empty inventory must say so plainly instead of pretending there is hidden progression.
+
 Owned accessories live in party inventory, while the equipped accessory ID belongs to the actor. Equipment changes must continue through actor equip / unequip APIs rather than direct field mutation.
 
 ---
