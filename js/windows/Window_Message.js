@@ -21,10 +21,7 @@ class Window_Message {
 
     this.updateTextReveal(deltaTime);
 
-    if (
-      allowInput &&
-      (Input.isActionTriggered("confirm"))
-    ) {
+    if (allowInput && Input.isActionTriggered("confirm")) {
       if (!this.isFullyRevealed()) {
         this.revealAll();
         return;
@@ -94,33 +91,58 @@ class Window_Message {
     return this.visible;
   }
 
+  drawPanel(context, bounds, role = "menuPanel", options = {}) {
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      return UIAssetManager.drawPanel(
+        context,
+        role,
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height,
+        {
+          fallbackFill: "rgba(11, 16, 28, 0.96)",
+          fallbackStroke: "rgba(150, 176, 220, 0.78)",
+          innerStroke: "rgba(232, 234, 255, 0.14)",
+          lineWidth: 1.5,
+          assetAlpha: role === "accentPanel" ? 0.5 : 0.54,
+          sourceMargin: 12,
+          destMargin: 12,
+          ...options,
+        },
+      );
+    }
+
+    context.fillStyle = options.fallbackFill || "rgba(11, 16, 28, 0.96)";
+    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    context.strokeStyle =
+      options.fallbackStroke || "rgba(150, 176, 220, 0.78)";
+    context.lineWidth = 1.5;
+    context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    return false;
+  }
+
   draw() {
     if (!this.visible) {
       return;
     }
 
     const context = Graphics.context;
+    const messageBounds = {
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+    };
 
     context.save();
+    this.drawPanel(context, messageBounds, "menuPanel", { assetAlpha: 0.5 });
 
-    context.textAlign = "left";
-    context.textBaseline = "top";
-
-    // Window background.
-
-    context.fillStyle = "rgba(0, 0, 0, 0.85)";
-    context.fillRect(this.x, this.y, this.width, this.height);
-
-    // Window border.
-
-    context.strokeStyle = "white";
-    context.lineWidth = 3;
-    context.strokeRect(this.x, this.y, this.width, this.height);
-
-    // Message text.
-
-    context.fillStyle = "white";
-    context.font = "24px Arial";
+    context.fillStyle = "#ffffff";
+    context.font = "24px sans-serif";
     context.textAlign = "left";
     context.textBaseline = "top";
 
@@ -132,33 +154,39 @@ class Window_Message {
       32,
     );
 
-    // Speaker name.
-
     if (this.speaker) {
-      context.fillStyle = "rgba(0, 0, 0, 0.95)";
-      context.fillRect(this.x + 20, this.y - 45, 220, 45);
-      context.strokeStyle = "white";
-      context.lineWidth = 2;
-      context.strokeRect(this.x + 20, this.y - 45, 220, 45);
+      const speakerBounds = {
+        x: this.x + 18,
+        y: this.y - 46,
+        width: 220,
+        height: 48,
+      };
+      this.drawPanel(context, speakerBounds, "accentPanel", {
+        assetAlpha: 0.5,
+        shadow: false,
+      });
 
-      context.fillStyle = "white";
-      context.font = "22px Arial";
+      context.fillStyle = "#ffffff";
+      context.font = "600 20px sans-serif";
       context.textAlign = "left";
       context.textBaseline = "middle";
-      context.fillText(this.speaker, this.x + 35, this.y - 22);
+      context.fillText(
+        this.speaker,
+        speakerBounds.x + 16,
+        speakerBounds.y + speakerBounds.height / 2,
+      );
     }
 
-    // Continue indicator.
-
-    context.font = "18px Arial";
+    context.font = "17px sans-serif";
     context.textAlign = "right";
-
+    context.textBaseline = "middle";
+    context.fillStyle = this.isFullyRevealed() ? "#ffd75a" : "#aebbd0";
     context.fillText(
       this.isFullyRevealed()
-        ? `${Input.actionLabel("confirm")} ▶`
+        ? `${Input.actionLabel("confirm")}  ▶`
         : `${Input.actionLabel("confirm")}: Reveal`,
       this.x + this.width - 20,
-      this.y + this.height - 35,
+      this.y + this.height - 27,
     );
     context.restore();
   }

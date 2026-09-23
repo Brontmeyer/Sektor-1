@@ -20,9 +20,8 @@ class Window_Equipment {
 
   refreshLayout() {
     const layout = CharacterMenuLayout.calculate();
-    const split = CharacterMenuLayout.split(layout.contentBounds, 0.52, {
+    const split = CharacterMenuLayout.split(layout.contentBounds, 0.5, {
       gap: layout.gap,
-      minimumLeft: 480,
     });
 
     this.x = layout.x;
@@ -292,20 +291,18 @@ class Window_Equipment {
     context.restore();
   }
 
-  statAndFooterLayout(bounds, rowCount) {
-    const footerHeight = 38;
-    const footerTop = bounds.y + bounds.height - footerHeight;
+  statLayout(bounds, rowCount) {
     const dividerY = bounds.y + 188;
     const statStartY = dividerY + 24;
-    const usableHeight = Math.max(0, footerTop - statStartY - 8);
-    const rowSpacing = Math.max(20, Math.min(25, Math.floor(usableHeight / Math.max(1, rowCount))));
+    const contentBottom = bounds.y + bounds.height - 16;
+    const usableHeight = Math.max(0, contentBottom - statStartY);
+    const rowSpacing = Math.max(20, Math.min(27, Math.floor(usableHeight / Math.max(1, rowCount))));
 
     return {
       dividerY,
       statStartY,
       rowSpacing,
-      footerTop,
-      footerY: footerTop + footerHeight / 2,
+      contentBottom,
     };
   }
 
@@ -346,7 +343,7 @@ class Window_Equipment {
     context.fillStyle = "#ffffff";
     context.fillText(this.essenceGrowthLabel(), bounds.x + 190, growthY);
 
-    const layout = this.statAndFooterLayout(bounds, rows.length);
+    const layout = this.statLayout(bounds, rows.length);
     context.strokeStyle = "rgba(210, 222, 242, 0.38)";
     context.lineWidth = 1;
     context.beginPath();
@@ -386,21 +383,6 @@ class Window_Equipment {
       y += layout.rowSpacing;
     });
 
-    context.strokeStyle = "rgba(210, 222, 242, 0.28)";
-    context.beginPath();
-    context.moveTo(bounds.x + 20, layout.footerTop);
-    context.lineTo(bounds.x + bounds.width - 20, layout.footerTop);
-    context.stroke();
-
-    context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.textAlign = "left";
-    const help = selecting
-      ? "Preview updates while browsing equipment."
-      : `${Input.actionLabel("left")}/${Input.actionLabel("right")}: Actor   ` +
-        `${Input.actionLabel("up")}/${Input.actionLabel("down")}: Slot   ` +
-        `${Input.actionLabel("confirm")}: Change   ${Input.actionLabel("cancel")}: Back`;
-    context.fillText(help, bounds.x + 18, layout.footerY);
     context.restore();
   }
 
@@ -416,7 +398,7 @@ class Window_Equipment {
     context.fillStyle = "#aebbd0";
     context.font = "16px sans-serif";
     context.fillText(
-      `Press ${Input.actionLabel("confirm")} to choose equipment.`,
+      "Choose equipment for this slot.",
       bounds.x + 24,
       bounds.y + 72,
     );

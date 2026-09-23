@@ -386,15 +386,6 @@ class Window_Skills {
 
     this.drawScrollIndicators(context, totalRows);
 
-    context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.textAlign = "right";
-    context.fillText(
-      `${Input.actionLabel("up")}/${Input.actionLabel("down")}/${Input.actionLabel("left")}/${Input.actionLabel("right")}: Choose   ` +
-        `${Input.actionLabel("cancel")}: Back`,
-      bounds.x + bounds.width - 28,
-      bounds.y + bounds.height - 14,
-    );
   }
 
   draw() {

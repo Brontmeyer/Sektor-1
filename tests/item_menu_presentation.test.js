@@ -279,10 +279,33 @@ function testCancelMovesBackOneInteractionLevel() {
 function testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading() {
   const source = read("js/windows/Window_Inventory.js");
 
-  assert.match(source, /contentColumns\(area\)/);
-  assert.match(source, /drawUsePage\(context, area\)[\s\S]*this\.contentColumns\(area\)/);
-  assert.match(source, /drawArrangePage\(context, area\)[\s\S]*this\.contentColumns\(area\)/);
+  assert.match(source, /contentColumns\(bounds = this\.contentBounds\)/);
+  assert.match(source, /drawUsePage\(context, columns\)/);
+  assert.match(source, /drawArrangePage\(context, columns\)/);
   assert.doesNotMatch(source, /\? "SELECT TARGET"[\s\S]*: "PARTY"/);
+}
+
+
+function testItemTabsLiveOverTheItemPaneAndRosterUsesTheFullLeftHeight() {
+  const harness = createHarness();
+  harness.window.show();
+  const columns = harness.window.contentColumns();
+  const texts = drawText(harness);
+
+  assert.equal(columns.rightX > columns.dividerX, true);
+  assert.equal(columns.tabTop < columns.rightBodyY, true);
+  assert.equal(columns.leftTop < columns.rightBodyY, true);
+  assert.equal(includes(texts, "PARTY"), false);
+
+  const source = read("js/windows/Window_Inventory.js");
+  assert.match(source, /drawTabs\(context, columns\)/);
+  assert.match(source, /context\.moveTo\(columns\.dividerX, columns\.innerY\)/);
+  assert.match(
+    source,
+    /context\.lineTo\(columns\.dividerX, columns\.innerY \+ columns\.innerHeight\)/,
+  );
+  assert.doesNotMatch(source, /footerText\(/);
+  assert.doesNotMatch(source, /Input\.actionLabel/);
 }
 
 function testSceneRoutesItemMenuToPartyBackedInventoryWindow() {
@@ -300,6 +323,7 @@ function run() {
   testKeyItemsKeepReferenceTabFlowAndPartyRowsShowHpAndMp();
   testCancelMovesBackOneInteractionLevel();
   testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading();
+  testItemTabsLiveOverTheItemPaneAndRosterUsesTheFullLeftHeight();
   testSceneRoutesItemMenuToPartyBackedInventoryWindow();
   console.log("Item menu presentation regression tests passed.");
 }

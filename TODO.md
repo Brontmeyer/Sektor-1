@@ -106,6 +106,9 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Continue final UI skin curation after hands-on visual review; keep all art swappable through `UIAssetManager`
 - [x] Add Window Color Customization v1 under Config with four persistent corners, live preview, RGB editing/reset, and centralized shared-panel tinting through Config Runtime v3 / `UIAssetManager`
 - [x] Add Config Menu Presentation v1 with unified framed layout, contextual description header, project-standard focus cues, and preserved Controls / Window Color routing
+- [x] Unify field dialogue / choices with the shared tintable window-panel language and configured Window Color palette
+- [x] Remove permanent key-legend footers from established menu destinations while preserving contextual instructions for specialized editors / interactions
+- [x] Align EQUIP / ESSENCE lower panes to one shared center split and move ITEM tabs above the item-side pane so four actor cards retain full HP/MP presentation
 - [x] Add Magick Menu Presentation & List Navigation v1 with actor summary, selected-Magick details, three-column scrolling grid, conditional arrows, shared held-direction repeat, Config naming, and white RUNES value presentation
 - [x] Add Skill Menu Presentation & List Navigation v1 with ordinary-technique filtering, actor summary/detail hierarchy, three-column scrolling grid, conditional arrows, shared held-direction repeat, and MAGICK/main-menu identity-layout consistency
 - [x] Add Equip Menu Presentation & Stat Preview v1 with shared actor summary, full Weapon/Armor/Accessories labels, description strip, held-repeat equipment browsing, live stat comparison, and square main-menu portrait consistency

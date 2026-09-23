@@ -113,12 +113,6 @@ class Window_Options {
     return false;
   }
 
-  actionLabel(action, fallback) {
-    return typeof Input.actionLabel === "function"
-      ? Input.actionLabel(action)
-      : fallback;
-  }
-
   drawPanel(context, bounds, options = {}) {
     if (
       typeof UIAssetManager !== "undefined" &&
@@ -211,10 +205,8 @@ class Window_Options {
 
   drawContent(context) {
     const bounds = this.contentBounds;
-    const footerHeight = 38;
-    const footerTop = bounds.y + bounds.height - footerHeight;
     const bodyTop = bounds.y + 18;
-    const bodyBottom = footerTop - 10;
+    const bodyBottom = bounds.y + bounds.height - 18;
     const rowHeight = Math.max(
       52,
       Math.min(68, Math.floor((bodyBottom - bodyTop) / this.options.length)),
@@ -252,30 +244,6 @@ class Window_Options {
       context.fillText(this.optionValue(option), valueX, rowY);
     }
 
-    context.strokeStyle = "rgba(210, 222, 242, 0.34)";
-    context.lineWidth = 1;
-    context.beginPath();
-    context.moveTo(bounds.x + 20, footerTop);
-    context.lineTo(bounds.x + bounds.width - 20, footerTop);
-    context.stroke();
-
-    const current = this.currentOption();
-    const changeHint = current?.type === "option"
-      ? `${this.actionLabel("left", "A / ←")}/${this.actionLabel("right", "D / →")}: Change   `
-      : "";
-    const confirmLabel = current?.type === "option" ? "Next" : "Open";
-
-    context.textAlign = "left";
-    context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.fillText(
-      `${this.actionLabel("up", "W / ↑")}/${this.actionLabel("down", "S / ↓")}: Setting   ` +
-        changeHint +
-        `${this.actionLabel("confirm", "E / Enter")}: ${confirmLabel}   ` +
-        `${this.actionLabel("cancel", "Q / Esc")}: Back`,
-      bounds.x + 18,
-      footerTop + footerHeight / 2,
-    );
     context.restore();
   }
 

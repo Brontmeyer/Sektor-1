@@ -12,6 +12,11 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Unified field dialogue and choice presentation with the same tintable framed panel system used by the rest of Sektor 1, including configured window colors and the project-standard dim selection rectangle plus gold `▶` focus cursor
+- Reworked ITEM lower-panel composition so **Use / Arrange / Key Items** live above the item-side pane, the actor/item divider runs the full content height, and four active-party cards gain enough vertical room to keep LV / status / HP / MP and both gauges inside their frames
+- Standardized the EQUIP and ESSENCE lower-content divider on the same 50/50 split so their two-panel layouts meet at one consistent center line
+- Removed permanent key-legend footers from established menu destinations (Magick, Skill, Essence, Equip, Status, Valor, Item, Config, Save/Load) while retaining contextual instructions where controls are genuinely specialized, such as Controls, Window Color, shops, battle results, and dialogue continuation
+
 - Finalized ITEM lower-panel geometry so **Use** and **Arrange** share the same left/right divider, removed the remaining party-side heading, and reclaimed the full target column height so all four actor cards keep HP and MP inside their frames
 - Refined SAVE/LOAD file cards with larger party portraits, a slightly later leader/location start, and an explicit breathing gap between the location box and right-side metadata divider
 
@@ -33,6 +38,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added focused regression coverage for the Guard-style prompt flow and Scene_Map message/choice update ordering
 
 ### Added
+
+- Added Field Dialogue Window Presentation regression coverage for shared semantic panel roles, configured-window-color eligibility, and standard choice focus presentation
+- Added Menu Hint Cleanup regression coverage plus ITEM pane-placement and EQUIP/ESSENCE center-split consistency assertions
 
 - Added canonical persistent play-time tracking on `Game_System`, advanced once per active scene update, saved/restored through optional v11 metadata, shown on MAIN MENU, and displayed as **TIME HH:MM:SS** above RUNES on SAVE/LOAD cards without requiring a save-version bump
 - Added Config Menu Presentation v1 with the same full-screen framed language, compact description/title header split, gold cursor plus dim selection rectangle, spacious setting rows, and preserved Config Runtime / Controls / Window Color ownership

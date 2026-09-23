@@ -21,7 +21,7 @@ class Window_EquipSelect {
     this.padding = 20;
     this.visibleRows = Math.max(
       4,
-      Math.floor((this.height - 92) / this.lineHeight),
+      Math.floor((this.height - 72) / this.lineHeight),
     );
     this.listViewport.maxVisibleRows = this.visibleRows;
   }
@@ -344,15 +344,6 @@ class Window_EquipSelect {
 
     this.drawScrollIndicators(context, entries);
 
-    context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.textAlign = "right";
-    context.fillText(
-      `${Input.actionLabel("up")}/${Input.actionLabel("down")}: Choose   ` +
-        `${Input.actionLabel("confirm")}: Equip   ${Input.actionLabel("cancel")}: Back`,
-      this.x + this.width - 18,
-      this.y + this.height - 14,
-    );
     context.restore();
   }
 }

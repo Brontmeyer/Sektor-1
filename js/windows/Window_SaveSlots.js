@@ -52,12 +52,6 @@ class Window_SaveSlots {
       : this.actionTriggered(action);
   }
 
-  actionLabel(action, fallback) {
-    return typeof Input.actionLabel === "function"
-      ? Input.actionLabel(action)
-      : fallback;
-  }
-
   update() {
     if (!this.visible) {
       return;
@@ -463,10 +457,9 @@ class Window_SaveSlots {
 
   drawSlots(context) {
     const bounds = this.listBounds;
-    const footerHeight = 38;
     const contentTop = bounds.y + 10;
-    const footerTop = bounds.y + bounds.height - footerHeight;
-    const availableHeight = Math.max(0, footerTop - contentTop - 8);
+    const contentBottom = bounds.y + bounds.height - 10;
+    const availableHeight = Math.max(0, contentBottom - contentTop);
     const gap = 8;
     const slotHeight = Math.floor(
       (availableHeight - gap * (this.slots.length - 1)) / this.slots.length,
@@ -488,27 +481,6 @@ class Window_SaveSlots {
       );
     });
 
-    context.save();
-    context.strokeStyle = "rgba(210, 222, 242, 0.34)";
-    context.lineWidth = 1;
-    context.beginPath();
-    context.moveTo(bounds.x + 20, footerTop);
-    context.lineTo(bounds.x + bounds.width - 20, footerTop);
-    context.stroke();
-
-    context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.fillText(
-      `${this.actionLabel("up", "W / ↑")}/${this.actionLabel("down", "S / ↓")}: File   ` +
-        `${this.actionLabel("confirm", "E / Enter")}: ${
-          this.mode === "load" ? "Load" : "Save"
-        }   ${this.actionLabel("cancel", "Q / Esc")}: Back`,
-      bounds.x + 18,
-      footerTop + footerHeight / 2,
-    );
-    context.restore();
   }
 
   draw() {

@@ -287,9 +287,8 @@ class Window_Valor {
 
   drawProgression(context, arts, selectedArt) {
     const bounds = this.progressionBounds;
-    const footerHeight = 38;
     const contentTop = bounds.y + 14;
-    const contentBottom = bounds.y + bounds.height - footerHeight;
+    const contentBottom = bounds.y + bounds.height - 14;
     const contentHeight = Math.max(0, contentBottom - contentTop);
     const gap = 12;
     const columnWidth = (bounds.width - 36 - gap) / 2;
@@ -324,24 +323,6 @@ class Window_Valor {
       );
     }
 
-    context.strokeStyle = "rgba(210, 222, 242, 0.34)";
-    context.lineWidth = 1;
-    context.beginPath();
-    context.moveTo(bounds.x + 20, contentBottom);
-    context.lineTo(bounds.x + bounds.width - 20, contentBottom);
-    context.stroke();
-
-    context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.fillText(
-      `${Input.actionLabel("left")}/${Input.actionLabel("right")}: Actor   ` +
-        `${Input.actionLabel("up")}/${Input.actionLabel("down")}: Art   ` +
-        `${Input.actionLabel("cancel")}: Back`,
-      bounds.x + 18,
-      contentBottom + footerHeight / 2,
-    );
     context.restore();
   }
 

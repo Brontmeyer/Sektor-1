@@ -18,9 +18,8 @@ class Window_Essence {
 
   refreshLayout() {
     const layout = CharacterMenuLayout.calculate();
-    const split = CharacterMenuLayout.split(layout.contentBounds, 0.46, {
+    const split = CharacterMenuLayout.split(layout.contentBounds, 0.5, {
       gap: layout.gap,
-      minimumLeft: 430,
     });
 
     this.x = layout.x;
@@ -467,7 +466,6 @@ class Window_Essence {
       );
     }
 
-    this.drawControls(context, bounds);
   }
 
   drawCatalogScrollIndicators(context, totalRows) {
@@ -560,7 +558,6 @@ class Window_Essence {
     }
 
     this.drawCatalogScrollIndicators(context, totalRows);
-    this.drawControls(context, bounds);
   }
 
   drawResonanceGauge(context, essence, x, y, width) {
@@ -662,24 +659,6 @@ class Window_Essence {
         abilityY += 28;
       }
     }
-  }
-
-  drawControls(context, bounds) {
-    context.textAlign = "left";
-    context.textBaseline = "alphabetic";
-    context.fillStyle = "#c3ccda";
-    context.font = "13px sans-serif";
-
-    const vertical = `${Input.actionLabel("up")} / ${Input.actionLabel("down")}`;
-    const horizontal = `${Input.actionLabel("left")} / ${Input.actionLabel("right")}`;
-    const confirm = Input.actionLabel("confirm");
-    const cancel = Input.actionLabel("cancel");
-    const text =
-      this.mode === "catalog"
-        ? `${vertical} / ${horizontal}: Choose   ${confirm}: Equip   ${cancel}: Back`
-        : `${horizontal}: Actor   ${vertical}: Slot   ${confirm}: Change   ${cancel}: Close`;
-
-    context.fillText(text, bounds.x + 18, bounds.y + bounds.height - 16);
   }
 
   draw() {

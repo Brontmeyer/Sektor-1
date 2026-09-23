@@ -154,7 +154,7 @@ function testSelectionListUsesHeldRepeatAndViewport() {
   assert.match(source, /hasNext\(entries\.length\)/);
 }
 
-function testEquipmentStatsReserveARealFooterStrip() {
+function testEquipmentStatsUseFullPanelWithoutPermanentHintFooter() {
   const globals = {
     Graphics: { width: 1280, height: 720 },
     Window_ActorNavigator: class { constructor() {} actor() { return null; } },
@@ -172,16 +172,15 @@ function testEquipmentStatsReserveARealFooterStrip() {
   );
   const window = new context.__Window(null);
   const bounds = { x: 10, y: 258, width: 640, height: 452 };
-  const layout = window.statAndFooterLayout(bounds, 8);
+  const layout = window.statLayout(bounds, 8);
   const lastRowY = layout.statStartY + layout.rowSpacing * 7;
 
-  assert.equal(lastRowY < layout.footerTop - 4, true);
-  assert.equal(layout.footerY > layout.footerTop, true);
+  assert.equal(lastRowY < layout.contentBottom, true);
 
   const source = read("js/windows/Window_Equipment.js");
-  assert.match(source, /layout\.footerTop/);
-  assert.match(source, /layout\.footerY/);
   assert.match(source, /layout\.rowSpacing/);
+  assert.doesNotMatch(source, /footerTop|footerY/);
+  assert.doesNotMatch(source, /Input\.actionLabel/);
 }
 
 function testEssenceGrowthIsPresentationOnlyDefault() {
@@ -200,7 +199,7 @@ function run() {
   testEquipUsesFullLabelsAndSharedActorSummary();
   testEquipmentPreviewIncludesReferenceStyleStats();
   testSelectionListUsesHeldRepeatAndViewport();
-  testEquipmentStatsReserveARealFooterStrip();
+  testEquipmentStatsUseFullPanelWithoutPermanentHintFooter();
   testEssenceGrowthIsPresentationOnlyDefault();
   console.log("Equip menu presentation regression tests passed.");
 }

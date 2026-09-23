@@ -38,12 +38,6 @@ class Window_Status {
         : false;
   }
 
-  actionLabel(action, fallback) {
-    return typeof Input.actionLabel === "function"
-      ? Input.actionLabel(action)
-      : fallback;
-  }
-
   changePage(offset) {
     const amount = Number(offset);
 
@@ -256,8 +250,7 @@ class Window_Status {
     }
 
     const pad = 22;
-    const footerHeight = 42;
-    const bodyBottom = bounds.y + bounds.height - footerHeight;
+    const bodyBottom = bounds.y + bounds.height - 16;
     const splitX = bounds.x + Math.floor(bounds.width * 0.56);
     const statsWidth = splitX - bounds.x - pad * 2;
     const columnGap = 34;
@@ -357,7 +350,6 @@ class Window_Status {
     }
 
     context.restore();
-    this.drawFooter(context, bounds);
   }
 
   elementKeys() {
@@ -470,7 +462,6 @@ class Window_Status {
     }
 
     context.restore();
-    this.drawFooter(context, bounds);
   }
 
   resistanceDefinitions() {
@@ -553,31 +544,6 @@ class Window_Status {
       context.fillText(this.rateLabel(rate), x + columnWidth - 28, y);
     });
 
-    context.restore();
-    this.drawFooter(context, bounds);
-  }
-
-  drawFooter(context, bounds) {
-    const footerHeight = 40;
-    const footerTop = bounds.y + bounds.height - footerHeight;
-    context.save();
-    context.strokeStyle = "rgba(210, 222, 242, 0.26)";
-    context.beginPath();
-    context.moveTo(bounds.x + 20, footerTop);
-    context.lineTo(bounds.x + bounds.width - 20, footerTop);
-    context.stroke();
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.fillText(
-      `${this.actionLabel("left", "←")}/${this.actionLabel("right", "→")}: Actor   ` +
-        `${this.actionLabel("up", "↑")}/${this.actionLabel("down", "↓")}: Page   ` +
-        `${this.actionLabel("confirm", "E")}: Next Page   ` +
-        `${this.actionLabel("cancel", "Q")}: Close`,
-      bounds.x + 18,
-      footerTop + footerHeight / 2,
-    );
     context.restore();
   }
 

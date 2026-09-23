@@ -69,10 +69,26 @@ function testSharedLayoutLoadsBeforeConsumers() {
   }
 }
 
+
+function testEquipAndEssenceShareTheSameCenterSplit() {
+  const equipment = read("js/windows/Window_Equipment.js");
+  const essence = read("js/windows/Window_Essence.js");
+
+  assert.match(
+    equipment,
+    /CharacterMenuLayout\.split\(layout\.contentBounds, 0\.5/,
+  );
+  assert.match(
+    essence,
+    /CharacterMenuLayout\.split\(layout\.contentBounds, 0\.5/,
+  );
+}
+
 function run() {
   testSharedGeometryProducesOneHeaderContract();
   testCharacterScreensConsumeSharedGeometryHelper();
   testSharedLayoutLoadsBeforeConsumers();
+  testEquipAndEssenceShareTheSameCenterSplit();
   console.log("Character menu layout consistency regression tests passed.");
 }
 

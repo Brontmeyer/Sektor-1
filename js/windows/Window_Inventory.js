@@ -89,12 +89,6 @@ class Window_Inventory {
       : this.actionTriggered(action);
   }
 
-  actionLabel(action, fallback) {
-    return typeof Input.actionLabel === "function"
-      ? Input.actionLabel(action)
-      : fallback;
-  }
-
   resourceText(resource) {
     return typeof UIResourcePalette !== "undefined"
       ? UIResourcePalette.text(resource)
@@ -748,51 +742,81 @@ class Window_Inventory {
     context.restore();
   }
 
-  tabContentBounds(bounds) {
-    const footerHeight = 38;
-    const tabsBottom = bounds.y + 50;
-    const footerTop = bounds.y + bounds.height - footerHeight;
+  contentColumns(bounds = this.contentBounds) {
+    const inset = 16;
+    const innerX = bounds.x + inset;
+    const innerY = bounds.y + 12;
+    const innerWidth = bounds.width - inset * 2;
+    const innerHeight = bounds.height - 24;
+    const leftWidth = Math.max(320, Math.floor(innerWidth * 0.37));
+    const dividerX = innerX + leftWidth + 8;
+    const rightX = dividerX + 18;
+    const rightWidth = innerX + innerWidth - rightX;
+    const tabHeight = 34;
+    const tabTop = innerY + 2;
+    const tabBottom = tabTop + tabHeight + 8;
 
     return {
-      bodyX: bounds.x + 16,
-      bodyY: tabsBottom + 12,
-      bodyWidth: bounds.width - 32,
-      bodyHeight: Math.max(0, footerTop - (tabsBottom + 12) - 8),
-      footerTop,
-      footerY: footerTop + footerHeight / 2,
+      innerX,
+      innerY,
+      innerWidth,
+      innerHeight,
+      leftX: innerX,
+      leftWidth,
+      leftTop: innerY + 2,
+      leftHeight: innerHeight - 4,
+      dividerX,
+      rightX,
+      rightWidth,
+      tabTop,
+      tabHeight,
+      tabBottom,
+      rightBodyY: tabBottom + 10,
+      rightBodyHeight: Math.max(0, innerY + innerHeight - (tabBottom + 10) - 2),
     };
   }
 
   useVisibleRows() {
-    const area = this.tabContentBounds(this.contentBounds);
-    return Math.max(5, Math.min(11, Math.floor((area.bodyHeight - 28) / 32)));
+    const columns = this.contentColumns();
+    return Math.max(
+      5,
+      Math.min(11, Math.floor((columns.rightBodyHeight - 38) / 32)),
+    );
   }
 
   keyVisibleRows() {
-    const area = this.tabContentBounds(this.contentBounds);
-    return Math.max(4, Math.min(8, Math.floor((area.bodyHeight - 30) / 34)));
+    const columns = this.contentColumns();
+    return Math.max(
+      4,
+      Math.min(8, Math.floor((columns.rightBodyHeight - 38) / 34)),
+    );
   }
 
-  drawTabs(context, bounds) {
+  drawTabs(context, columns) {
     const labels = ["Use", "Arrange", "Key Items"];
-    const tabTop = bounds.y + 10;
-    const tabHeight = 30;
-    const totalTabWidth = Math.min(bounds.width - 40, 470);
-    const tabWidth = Math.floor(totalTabWidth / labels.length);
-    const startX = bounds.x + 18;
+    const gap = 8;
+    const tabWidth = Math.floor(
+      (columns.rightWidth - gap * (labels.length - 1)) / labels.length,
+    );
 
     context.save();
     context.textBaseline = "middle";
     context.textAlign = "left";
 
     labels.forEach((label, index) => {
-      const x = startX + index * tabWidth;
+      const x = columns.rightX + index * (tabWidth + gap);
       const activePage = this.pageIndex === index;
       const focused =
         activePage && this.focusArea === Window_Inventory.FOCUS.TABS;
 
       if (focused) {
-        this.drawSelection(context, x, tabTop - 2, tabWidth - 8, tabHeight);
+        this.drawSelection(
+          context,
+          x,
+          columns.tabTop,
+          tabWidth,
+          columns.tabHeight,
+        );
       }
 
       context.fillStyle = focused
@@ -804,15 +828,15 @@ class Window_Inventory {
       context.fillText(
         `${focused ? "▶ " : "  "}${label}`,
         x + 10,
-        tabTop + tabHeight / 2 - 1,
+        columns.tabTop + columns.tabHeight / 2,
       );
 
       if (activePage && !focused) {
         context.strokeStyle = "rgba(127, 240, 213, 0.72)";
         context.lineWidth = 2;
         context.beginPath();
-        context.moveTo(x + 10, tabTop + tabHeight - 1);
-        context.lineTo(x + tabWidth - 18, tabTop + tabHeight - 1);
+        context.moveTo(x + 10, columns.tabTop + columns.tabHeight - 1);
+        context.lineTo(x + tabWidth - 10, columns.tabTop + columns.tabHeight - 1);
         context.stroke();
       }
     });
@@ -820,8 +844,8 @@ class Window_Inventory {
     context.strokeStyle = "rgba(210, 222, 242, 0.28)";
     context.lineWidth = 1;
     context.beginPath();
-    context.moveTo(bounds.x + 18, bounds.y + 50);
-    context.lineTo(bounds.x + bounds.width - 18, bounds.y + 50);
+    context.moveTo(columns.rightX, columns.tabBottom);
+    context.lineTo(columns.rightX + columns.rightWidth, columns.tabBottom);
     context.stroke();
     context.restore();
   }
@@ -866,37 +890,37 @@ class Window_Inventory {
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
     context.fillStyle = focused ? "#ffd75a" : "#ffffff";
-    context.font = "600 16px sans-serif";
+    context.font = "600 17px sans-serif";
     context.fillText(
       `${focused ? "▶ " : "  "}${actor?.name || "Unknown"}`,
-      bounds.x + 10,
-      bounds.y + 18,
+      bounds.x + 12,
+      bounds.y + 23,
     );
 
     context.fillStyle = "#ffd75a";
     context.font = "600 13px sans-serif";
-    context.fillText(`LV ${actor?.level ?? "?"}`, bounds.x + 12, bounds.y + 34);
+    context.fillText(`LV ${actor?.level ?? "?"}`, bounds.x + 14, bounds.y + 43);
 
     context.fillStyle = "#aebbd0";
     context.font = "12px sans-serif";
-    context.fillText(this.statusText(actor), bounds.x + 88, bounds.y + 34);
+    context.fillText(this.statusText(actor), bounds.x + 92, bounds.y + 43);
 
-    const gaugeX = bounds.x + 12;
-    const gaugeWidth = Math.max(80, bounds.width - 24);
+    const gaugeX = bounds.x + 14;
+    const gaugeWidth = Math.max(80, bounds.width - 28);
 
     context.fillStyle = this.resourceText("hp");
     context.font = "600 12px sans-serif";
     context.fillText(
       `HP ${Math.floor(actor?.hp ?? 0)}/${Math.floor(actor?.maxHp ?? 0)}`,
       gaugeX,
-      bounds.y + 51,
+      bounds.y + 59,
     );
     Window_ActorSummary.drawGauge(
       context,
       actor?.hp ?? 0,
       actor?.maxHp ?? 0,
       gaugeX,
-      bounds.y + 55,
+      bounds.y + 64,
       gaugeWidth,
       "hp",
     );
@@ -905,14 +929,14 @@ class Window_Inventory {
     context.fillText(
       `MP ${Math.floor(actor?.mp ?? 0)}/${Math.floor(actor?.maxMp ?? 0)}`,
       gaugeX,
-      bounds.y + 68,
+      bounds.y + 81,
     );
     Window_ActorSummary.drawGauge(
       context,
       actor?.mp ?? 0,
       actor?.maxMp ?? 0,
       gaugeX,
-      bounds.y + 70,
+      bounds.y + 86,
       gaugeWidth,
       "mp",
     );
@@ -938,66 +962,58 @@ class Window_Inventory {
     context.restore();
   }
 
-  contentColumns(area) {
-    const leftWidth = Math.max(280, Math.floor(area.bodyWidth * 0.36));
-    const dividerX = area.bodyX + leftWidth + 8;
-    const rightX = dividerX + 18;
-
-    return {
-      leftWidth,
-      dividerX,
-      rightX,
-      rightWidth: area.bodyX + area.bodyWidth - rightX,
-    };
+  drawContentDivider(context, columns) {
+    context.save();
+    context.strokeStyle = "rgba(210, 222, 242, 0.3)";
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(columns.dividerX, columns.innerY);
+    context.lineTo(columns.dividerX, columns.innerY + columns.innerHeight);
+    context.stroke();
+    context.restore();
   }
 
-  drawUsePage(context, area) {
-    const { leftWidth, dividerX, rightX, rightWidth } =
-      this.contentColumns(area);
+  drawUsePage(context, columns) {
     const members = this.members();
     const items = this.usableItemIds();
+    const rightHeadingY = columns.rightBodyY + 10;
 
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
-
-    context.strokeStyle = "rgba(210, 222, 242, 0.28)";
-    context.lineWidth = 1;
-    context.beginPath();
-    context.moveTo(dividerX, area.bodyY + 2);
-    context.lineTo(dividerX, area.bodyY + area.bodyHeight - 4);
-    context.stroke();
-
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
     context.fillText(
       this.focusArea === Window_Inventory.FOCUS.ITEMS
         ? "SELECT ITEM"
         : "ITEMS",
-      rightX + 6,
-      area.bodyY + 12,
+      columns.rightX + 6,
+      rightHeadingY,
     );
 
     if (members.length === 0) {
       context.fillStyle = "#8897ac";
       context.font = "16px sans-serif";
-      context.fillText("No active party members.", area.bodyX + 10, area.bodyY + 46);
-    } else {
-      const rosterTop = area.bodyY + 4;
-      const rowHeight = Math.max(
-        78,
-        Math.floor((area.bodyHeight - 4) / Math.max(1, members.length)),
+      context.fillText(
+        "No active party members.",
+        columns.leftX + 10,
+        columns.leftTop + 28,
       );
-      const cardHeight = Math.max(76, rowHeight - 4);
+    } else {
+      const gap = 6;
+      const availableCardHeight = Math.floor(
+        (columns.leftHeight - gap * (members.length - 1)) / members.length,
+      );
+      const cardHeight = Math.max(96, Math.min(108, availableCardHeight));
 
       members.forEach((member, index) => {
         this.drawPartyMemberRow(
           context,
           member,
           {
-            x: area.bodyX,
-            y: rosterTop + index * rowHeight,
-            width: leftWidth,
+            x: columns.leftX,
+            y: columns.leftTop + index * (cardHeight + gap),
+            width: columns.leftWidth,
             height: cardHeight,
           },
           index,
@@ -1008,13 +1024,17 @@ class Window_Inventory {
     if (items.length === 0) {
       context.fillStyle = "#8897ac";
       context.font = "16px sans-serif";
-      context.fillText("No usable items owned.", rightX + 12, area.bodyY + 48);
+      context.fillText(
+        "No usable items owned.",
+        columns.rightX + 12,
+        columns.rightBodyY + 46,
+      );
       context.restore();
       return;
     }
 
     const rowHeight = 32;
-    const listTop = area.bodyY + 46;
+    const listTop = columns.rightBodyY + 46;
     const range = this.itemViewport.visibleRange(this.itemIndex, items.length);
 
     for (let i = range.start; i < range.end; i++) {
@@ -1030,9 +1050,9 @@ class Window_Inventory {
       if (itemFocus || pending) {
         this.drawSelection(
           context,
-          rightX + 6,
+          columns.rightX + 6,
           y - 15,
-          rightWidth - 16,
+          columns.rightWidth - 16,
           29,
           pending
             ? { fallbackFill: "rgba(127, 240, 213, 0.11)" }
@@ -1050,22 +1070,26 @@ class Window_Inventory {
         `${itemFocus ? "▶ " : pending ? "◆ " : "  "}${
           item?.name || `Item ${itemId}`
         }`,
-        rightX + 12,
+        columns.rightX + 12,
         y,
       );
 
       context.textAlign = "right";
       context.fillStyle = "#ffffff";
       context.font = "16px sans-serif";
-      context.fillText(`x${this.itemCount(itemId)}`, rightX + rightWidth - 8, y);
+      context.fillText(
+        `x${this.itemCount(itemId)}`,
+        columns.rightX + columns.rightWidth - 8,
+        y,
+      );
       context.textAlign = "left";
     }
 
     this.drawScrollIndicators(
       context,
-      rightX + rightWidth - 2,
-      area.bodyY + 42,
-      area.bodyY + area.bodyHeight - 28,
+      columns.rightX + columns.rightWidth - 2,
+      columns.rightBodyY + 42,
+      columns.rightBodyY + columns.rightBodyHeight - 18,
       this.itemViewport.hasPrevious(),
       this.itemViewport.hasNext(items.length),
     );
@@ -1073,34 +1097,25 @@ class Window_Inventory {
     context.restore();
   }
 
-  drawArrangePage(context, area) {
+  drawArrangePage(context, columns) {
     const options = this.arrangeOptions();
     const previewMode = this.currentArrangeOption()?.mode || this.sortMode;
     const previewIds = this.usableItemIds(previewMode);
-    const { leftWidth, dividerX, rightX, rightWidth } =
-      this.contentColumns(area);
 
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
-    context.fillText("SORT", area.bodyX + 6, area.bodyY + 10);
-    context.fillText("PREVIEW", rightX + 6, area.bodyY + 10);
-
-    context.strokeStyle = "rgba(210, 222, 242, 0.28)";
-    context.lineWidth = 1;
-    context.beginPath();
-    context.moveTo(dividerX, area.bodyY + 4);
-    context.lineTo(dividerX, area.bodyY + area.bodyHeight - 4);
-    context.stroke();
+    context.fillText("SORT", columns.leftX + 6, columns.leftTop + 12);
+    context.fillText("PREVIEW", columns.rightX + 6, columns.rightBodyY + 10);
 
     const range = this.arrangeViewport.visibleRange(
       this.arrangeIndex,
       options.length,
     );
-    const optionTop = area.bodyY + 42;
-    const optionRowHeight = 34;
+    const optionTop = columns.leftTop + 48;
+    const optionRowHeight = 38;
 
     for (let i = range.start; i < range.end; i++) {
       const option = options[i];
@@ -1113,10 +1128,10 @@ class Window_Inventory {
       if (focused) {
         this.drawSelection(
           context,
-          area.bodyX + 6,
-          y - 16,
-          leftWidth - 20,
-          30,
+          columns.leftX + 6,
+          y - 17,
+          columns.leftWidth - 20,
+          32,
         );
       }
 
@@ -1128,7 +1143,7 @@ class Window_Inventory {
       context.font = focused ? "600 17px sans-serif" : "17px sans-serif";
       context.fillText(
         `${focused ? "▶ " : "  "}${option.label}${applied ? "  ✓" : ""}`,
-        area.bodyX + 12,
+        columns.leftX + 12,
         y,
       );
     }
@@ -1136,25 +1151,36 @@ class Window_Inventory {
     if (previewIds.length === 0) {
       context.fillStyle = "#8897ac";
       context.font = "16px sans-serif";
-      context.fillText("No usable items owned.", rightX + 12, area.bodyY + 48);
+      context.fillText(
+        "No usable items owned.",
+        columns.rightX + 12,
+        columns.rightBodyY + 46,
+      );
       context.restore();
       return;
     }
 
-    const previewRowHeight = 30;
+    const previewRowHeight = 32;
     const previewVisible = Math.max(
       5,
-      Math.min(10, Math.floor((area.bodyHeight - 24) / previewRowHeight)),
+      Math.min(
+        11,
+        Math.floor((columns.rightBodyHeight - 34) / previewRowHeight),
+      ),
     );
 
     previewIds.slice(0, previewVisible).forEach((itemId, index) => {
       const item = this.itemRecord(itemId);
-      const y = area.bodyY + 42 + index * previewRowHeight;
+      const y = columns.rightBodyY + 46 + index * previewRowHeight;
       context.fillStyle = "#ffffff";
       context.font = "16px sans-serif";
-      context.fillText(item?.name || `Item ${itemId}`, rightX + 12, y);
+      context.fillText(item?.name || `Item ${itemId}`, columns.rightX + 12, y);
       context.textAlign = "right";
-      context.fillText(`x${this.itemCount(itemId)}`, rightX + rightWidth - 8, y);
+      context.fillText(
+        `x${this.itemCount(itemId)}`,
+        columns.rightX + columns.rightWidth - 8,
+        y,
+      );
       context.textAlign = "left";
     });
 
@@ -1162,13 +1188,13 @@ class Window_Inventory {
     context.font = "14px sans-serif";
     context.fillText(
       `Current: ${this.sortLabel()}`,
-      rightX + 12,
-      area.bodyY + area.bodyHeight - 16,
+      columns.rightX + 12,
+      columns.rightBodyY + columns.rightBodyHeight - 12,
     );
     context.restore();
   }
 
-  drawKeyItemsPage(context, area) {
+  drawKeyItemsPage(context, columns) {
     const itemIds = this.keyItemIds();
 
     context.save();
@@ -1176,19 +1202,23 @@ class Window_Inventory {
     context.textBaseline = "middle";
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
-    context.fillText("KEY ITEMS", area.bodyX + 6, area.bodyY + 10);
+    context.fillText("KEY ITEMS", columns.rightX + 6, columns.rightBodyY + 10);
 
     if (itemIds.length === 0) {
       context.fillStyle = "#8897ac";
       context.font = "16px sans-serif";
-      context.fillText("No key items owned.", area.bodyX + 14, area.bodyY + 52);
+      context.fillText(
+        "No key items owned.",
+        columns.rightX + 14,
+        columns.rightBodyY + 52,
+      );
       context.restore();
       return;
     }
 
     const rowsPerColumn = this.keyVisibleRows();
     const columnGap = 20;
-    const columnWidth = Math.floor((area.bodyWidth - columnGap) / 2);
+    const columnWidth = Math.floor((columns.rightWidth - columnGap) / 2);
     const start = this.keyItemViewport.offset;
     const visible = itemIds.slice(start, start + rowsPerColumn * 2);
     const rowHeight = 34;
@@ -1198,8 +1228,8 @@ class Window_Inventory {
       const absoluteIndex = start + visibleIndex;
       const column = Math.floor(visibleIndex / rowsPerColumn);
       const row = visibleIndex % rowsPerColumn;
-      const x = area.bodyX + column * (columnWidth + columnGap);
-      const y = area.bodyY + 44 + row * rowHeight;
+      const x = columns.rightX + column * (columnWidth + columnGap);
+      const y = columns.rightBodyY + 46 + row * rowHeight;
       const focused =
         this.focusArea === Window_Inventory.FOCUS.KEY_ITEMS &&
         absoluteIndex === this.keyItemIndex;
@@ -1219,72 +1249,29 @@ class Window_Inventory {
 
     this.drawScrollIndicators(
       context,
-      area.bodyX + area.bodyWidth - 8,
-      area.bodyY + 42,
-      area.bodyY + area.bodyHeight - 28,
+      columns.rightX + columns.rightWidth - 8,
+      columns.rightBodyY + 42,
+      columns.rightBodyY + columns.rightBodyHeight - 18,
       this.keyItemViewport.hasPrevious(),
       this.keyItemViewport.hasNext(itemIds.length),
     );
     context.restore();
   }
 
-  footerText() {
-    const leftRight = `${this.actionLabel("left", "A / ←")}/${this.actionLabel(
-      "right",
-      "D / →",
-    )}`;
-    const upDown = `${this.actionLabel("up", "W / ↑")}/${this.actionLabel(
-      "down",
-      "S / ↓",
-    )}`;
-    const confirm = this.actionLabel("confirm", "E / Enter");
-    const cancel = this.actionLabel("cancel", "Q / Esc");
-
-    switch (this.focusArea) {
-      case Window_Inventory.FOCUS.TABS:
-        return `${leftRight}: Tab   ${confirm}: Open   ${cancel}: Close`;
-      case Window_Inventory.FOCUS.ITEMS:
-        return `${upDown}: Item   ${confirm}: Choose Target   ${cancel}: Tabs`;
-      case Window_Inventory.FOCUS.TARGETS:
-        return `${upDown}: Target   ${confirm}: Use Item   ${cancel}: Items`;
-      case Window_Inventory.FOCUS.ARRANGE:
-        return `${upDown}: Order   ${confirm}: Apply   ${cancel}: Tabs`;
-      case Window_Inventory.FOCUS.KEY_ITEMS:
-        return `${upDown}: Key Item   ${cancel}: Tabs`;
-      default:
-        return `${cancel}: Close`;
-    }
-  }
-
   drawContent(context) {
     const bounds = this.contentBounds;
+    const columns = this.contentColumns(bounds);
     this.drawPanel(context, bounds);
-    this.drawTabs(context, bounds);
-
-    const area = this.tabContentBounds(bounds);
+    this.drawContentDivider(context, columns);
+    this.drawTabs(context, columns);
 
     if (this.pageIndex === 0) {
-      this.drawUsePage(context, area);
+      this.drawUsePage(context, columns);
     } else if (this.pageIndex === 1) {
-      this.drawArrangePage(context, area);
+      this.drawArrangePage(context, columns);
     } else {
-      this.drawKeyItemsPage(context, area);
+      this.drawKeyItemsPage(context, columns);
     }
-
-    context.save();
-    context.strokeStyle = "rgba(210, 222, 242, 0.34)";
-    context.lineWidth = 1;
-    context.beginPath();
-    context.moveTo(bounds.x + 20, area.footerTop);
-    context.lineTo(bounds.x + bounds.width - 20, area.footerTop);
-    context.stroke();
-
-    context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.fillText(this.footerText(), bounds.x + 18, area.footerY);
-    context.restore();
   }
 
   draw() {
