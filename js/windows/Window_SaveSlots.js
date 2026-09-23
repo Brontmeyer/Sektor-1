@@ -11,12 +11,11 @@ class Window_SaveSlots {
   }
 
   refreshLayout() {
-    const margin = Math.max(12, Math.min(22, Math.floor(Graphics.width * 0.014)));
+    const margin = Math.max(10, Math.min(18, Math.floor(Graphics.width * 0.012)));
     const gap = 8;
     const width = Graphics.width - margin * 2;
     const height = Graphics.height - margin * 2;
-    const headerHeight = 82;
-    const descriptionHeight = 56;
+    const headerHeight = 58;
 
     this.x = margin;
     this.y = margin;
@@ -30,18 +29,12 @@ class Window_SaveSlots {
       width,
       height: headerHeight,
     };
-    this.descriptionBounds = {
+
+    this.listBounds = {
       x: margin,
       y: margin + headerHeight + gap,
       width,
-      height: descriptionHeight,
-    };
-    const listY = this.descriptionBounds.y + descriptionHeight + gap;
-    this.listBounds = {
-      x: margin,
-      y: listY,
-      width,
-      height: margin + height - listY,
+      height: height - headerHeight - gap,
     };
   }
 
@@ -127,7 +120,8 @@ class Window_SaveSlots {
 
     context.fillStyle = options.fallbackFill || "rgba(11, 16, 28, 0.96)";
     context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    context.strokeStyle = options.fallbackStroke || "rgba(150, 176, 220, 0.78)";
+    context.strokeStyle =
+      options.fallbackStroke || "rgba(150, 176, 220, 0.78)";
     context.lineWidth = 1.5;
     context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
     return false;
@@ -138,7 +132,7 @@ class Window_SaveSlots {
       typeof UIAssetManager !== "undefined" &&
       typeof UIAssetManager.drawSelectionPanel === "function" &&
       UIAssetManager.drawSelectionPanel(context, x, y, width, height, {
-        alpha: 0.22,
+        alpha: 0.2,
       });
 
     if (!drawn) {
@@ -185,7 +179,9 @@ class Window_SaveSlots {
     const metadata = saveData.metadata || {};
     const mapName =
       metadata.mapName ||
-      (saveData.location?.mapId ? `Map ${saveData.location.mapId}` : "Unknown Location");
+      (saveData.location?.mapId
+        ? `Map ${saveData.location.mapId}`
+        : "Unknown Location");
     const runes = Number(saveData.party?.gil);
 
     return {
@@ -200,180 +196,249 @@ class Window_SaveSlots {
     };
   }
 
-  formatTimestamp(timestamp) {
+  formatDate(timestamp) {
     if (!timestamp) {
-      return "Date unavailable";
+      return "Unavailable";
     }
 
     const date = new Date(timestamp);
 
     if (Number.isNaN(date.getTime())) {
-      return "Date unavailable";
+      return "Unavailable";
     }
 
-    return date.toLocaleString();
+    return date.toLocaleDateString();
+  }
+
+  formatClock(timestamp) {
+    if (!timestamp) {
+      return "--:--";
+    }
+
+    const date = new Date(timestamp);
+
+    if (Number.isNaN(date.getTime())) {
+      return "--:--";
+    }
+
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   screenTitle() {
     return this.mode === "load" ? "LOAD" : "SAVE";
   }
 
-  screenDescription() {
-    return this.mode === "load"
-      ? "Choose a slot to load saved progress."
-      : "Choose a slot to save current progress.";
-  }
-
   drawHeader(context) {
     const bounds = this.headerBounds;
+    const selectedSlot = String(this.currentSlotId()).padStart(2, "0");
+    const modeWidth = Math.max(150, Math.floor(bounds.width * 0.16));
+    const fileWidth = Math.max(150, Math.floor(bounds.width * 0.18));
+    const modeX = bounds.x + bounds.width - modeWidth;
+    const fileX = modeX - fileWidth;
+
     this.drawPanel(context, bounds);
 
     context.save();
     context.textBaseline = "middle";
-    context.fillStyle = "#ffffff";
-    context.textAlign = "left";
-    context.font = "600 24px sans-serif";
-    context.fillText(this.screenTitle(), bounds.x + 22, bounds.y + 31);
+    context.strokeStyle = "rgba(210, 222, 242, 0.34)";
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(fileX, bounds.y + 6);
+    context.lineTo(fileX, bounds.y + bounds.height - 6);
+    context.moveTo(modeX, bounds.y + 6);
+    context.lineTo(modeX, bounds.y + bounds.height - 6);
+    context.stroke();
 
-    context.fillStyle = "#aebbd0";
-    context.font = "14px sans-serif";
-    context.fillText(
-      this.mode === "load" ? "SAVED PROGRESS" : "SAVE PROGRESS",
-      bounds.x + 22,
-      bounds.y + 57,
-    );
-
-    context.textAlign = "right";
-    context.fillStyle = "#7ff0d5";
-    context.font = "600 15px sans-serif";
-    context.fillText(
-      `${this.slots.length} SLOTS`,
-      bounds.x + bounds.width - 22,
-      bounds.y + 42,
-    );
-    context.restore();
-  }
-
-  drawDescription(context) {
-    const bounds = this.descriptionBounds;
-    this.drawPanel(context, bounds, { assetAlpha: 0.46 });
-
-    context.save();
-    context.textBaseline = "middle";
     context.textAlign = "left";
     context.fillStyle = "#ffffff";
-    context.font = "16px sans-serif";
+    context.font = "600 20px sans-serif";
+    context.fillText("Select a file.", bounds.x + 20, bounds.y + bounds.height / 2);
+
+    context.textAlign = "center";
+    context.fillStyle = "#ffd75a";
+    context.font = "600 19px sans-serif";
     context.fillText(
-      this.screenDescription(),
-      bounds.x + 18,
+      `FILE ${selectedSlot}`,
+      fileX + fileWidth / 2,
+      bounds.y + bounds.height / 2,
+    );
+
+    context.fillStyle = "#ffffff";
+    context.font = "600 21px sans-serif";
+    context.fillText(
+      this.screenTitle(),
+      modeX + modeWidth / 2,
       bounds.y + bounds.height / 2,
     );
     context.restore();
   }
 
-  partyText(summary) {
-    if (!summary.exists || summary.party.length === 0) {
-      return "";
+  drawPortrait(context, actor, x, y, size) {
+    if (
+      typeof Window_ActorSummary !== "undefined" &&
+      typeof Window_ActorSummary.drawPortraitPlaceholder === "function"
+    ) {
+      Window_ActorSummary.drawPortraitPlaceholder(context, actor, x, y, size);
+      return;
     }
 
-    return summary.party
-      .map((actor) => `${actor?.name || "Unknown"} Lv ${actor?.level ?? "?"}`)
-      .join("  •  ");
+    context.fillStyle = "rgba(12, 23, 45, 0.94)";
+    context.fillRect(x, y, size, size);
+    context.strokeStyle = "rgba(137, 182, 235, 0.85)";
+    context.strokeRect(x, y, size, size);
   }
 
-  drawSlot(context, summary, bounds, selected) {
-    this.drawPanel(context, bounds, {
-      assetAlpha: selected ? 0.48 : 0.36,
-      fallbackStroke: selected
-        ? "rgba(255, 215, 90, 0.9)"
-        : "rgba(150, 176, 220, 0.56)",
-    });
-
+  drawEmptySlot(context, summary, bounds, selected) {
     if (selected) {
       this.drawSelection(
         context,
-        bounds.x + 8,
-        bounds.y + 7,
-        bounds.width - 16,
-        bounds.height - 14,
+        bounds.x + 7,
+        bounds.y + 6,
+        bounds.width - 14,
+        bounds.height - 12,
       );
     }
 
     context.save();
     context.textBaseline = "middle";
     context.textAlign = "left";
-    context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+    context.fillStyle = selected ? "#ffd75a" : "#8897ac";
     context.font = selected ? "600 19px sans-serif" : "19px sans-serif";
     context.fillText(
-      `${selected ? "▶ " : "  "}SLOT ${summary.slotId}`,
-      bounds.x + 20,
+      `${selected ? "▶ " : "  "}FILE ${String(summary.slotId).padStart(2, "0")}`,
+      bounds.x + 18,
       bounds.y + 28,
     );
 
-    if (!summary.exists) {
-      context.fillStyle = "#8897ac";
-      context.font = "17px sans-serif";
-      context.fillText("Empty Slot", bounds.x + 42, bounds.y + 67);
+    context.textAlign = "center";
+    context.fillStyle = "#ffd75a";
+    context.font = "600 22px sans-serif";
+    context.fillText("EMPTY", bounds.x + bounds.width / 2, bounds.y + bounds.height / 2 + 10);
+    context.restore();
+  }
 
-      if (this.mode === "save") {
-        context.fillStyle = "#aebbd0";
-        context.font = "14px sans-serif";
-        context.fillText("New save data will be written here.", bounds.x + 42, bounds.y + 96);
-      }
-
-      context.restore();
-      return;
-    }
-
-    const valueX = bounds.x + 170;
-    const rightX = bounds.x + bounds.width - 24;
-
-    context.fillStyle = "#aebbd0";
-    context.font = "14px sans-serif";
-    context.fillText("Leader", bounds.x + 42, bounds.y + 60);
-    context.fillText("Location", bounds.x + 42, bounds.y + 87);
-    context.fillText("Saved", bounds.x + 42, bounds.y + 114);
-
-    context.fillStyle = "#ffffff";
-    context.font = "16px sans-serif";
-    context.fillText(
-      `${summary.actorName}   LV ${summary.level}`,
-      valueX,
-      bounds.y + 60,
-    );
-    context.fillText(summary.location, valueX, bounds.y + 87);
-    context.fillText(this.formatTimestamp(summary.timestamp), valueX, bounds.y + 114);
-
-    context.textAlign = "right";
-    context.fillStyle = "#aebbd0";
-    context.font = "14px sans-serif";
-    if (summary.runes !== null) {
-      context.fillText(
-        `RUNES ${Math.max(0, summary.runes).toLocaleString()}`,
-        rightX,
-        bounds.y + 28,
+  drawFilledSlot(context, summary, bounds, selected) {
+    if (selected) {
+      this.drawSelection(
+        context,
+        bounds.x + 7,
+        bounds.y + 6,
+        bounds.width - 14,
+        bounds.height - 12,
       );
     }
 
-    context.textAlign = "left";
-    const partyText = this.partyText(summary);
+    const innerX = bounds.x + 18;
+    const innerY = bounds.y + 14;
+    const innerHeight = bounds.height - 28;
+    const portraitSize = Math.max(56, Math.min(72, Math.floor(innerHeight * 0.47)));
+    const portraitGap = 8;
+    const partyWidth = portraitSize * 4 + portraitGap * 3;
+    const infoX = innerX + partyWidth + 28;
+    const rightWidth = Math.max(210, Math.floor(bounds.width * 0.2));
+    const rightX = bounds.x + bounds.width - rightWidth - 18;
+    const centerWidth = Math.max(180, rightX - infoX - 18);
 
-    if (partyText) {
-      context.fillStyle = "#cbd8e7";
-      context.font = "14px sans-serif";
-      context.fillText(partyText, bounds.x + 42, bounds.y + bounds.height - 20);
+    context.save();
+    context.textBaseline = "middle";
+
+    const slotLabelY = innerY + 12;
+    context.textAlign = "left";
+    context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+    context.font = selected ? "600 18px sans-serif" : "18px sans-serif";
+    context.fillText(
+      `${selected ? "▶ " : "  "}FILE ${String(summary.slotId).padStart(2, "0")}`,
+      innerX,
+      slotLabelY,
+    );
+
+    const portraitY = innerY + 30;
+    for (let index = 0; index < 4; index++) {
+      const actor = summary.party[index];
+      const x = innerX + index * (portraitSize + portraitGap);
+
+      if (actor) {
+        this.drawPortrait(context, actor, x, portraitY, portraitSize);
+      } else {
+        context.fillStyle = "rgba(12, 23, 45, 0.48)";
+        context.fillRect(x, portraitY, portraitSize, portraitSize);
+        context.strokeStyle = "rgba(137, 182, 235, 0.28)";
+        context.strokeRect(x, portraitY, portraitSize, portraitSize);
+      }
     }
 
+    context.textAlign = "left";
+    context.fillStyle = "#ffffff";
+    context.font = "600 20px sans-serif";
+    context.fillText(summary.actorName, infoX, portraitY + 18);
+
+    context.fillStyle = "#7ff0d5";
+    context.font = "600 16px sans-serif";
+    context.fillText(`LV ${summary.level}`, infoX, portraitY + 45);
+
+    const locationY = portraitY + portraitSize + 18;
+    context.fillStyle = "rgba(9, 18, 42, 0.54)";
+    context.fillRect(infoX, locationY - 16, centerWidth, 32);
+    context.strokeStyle = "rgba(150, 176, 220, 0.45)";
+    context.strokeRect(infoX, locationY - 16, centerWidth, 32);
+    context.fillStyle = "#ffffff";
+    context.font = "16px sans-serif";
+    context.fillText(summary.location, infoX + 12, locationY);
+
+    context.strokeStyle = "rgba(210, 222, 242, 0.3)";
+    context.beginPath();
+    context.moveTo(rightX - 14, innerY + 4);
+    context.lineTo(rightX - 14, bounds.y + bounds.height - 14);
+    context.stroke();
+
+    const valueX = bounds.x + bounds.width - 26;
+    context.font = "14px sans-serif";
+    context.fillStyle = "#aebbd0";
+    context.fillText("Saved", rightX, portraitY + 12);
+    context.fillText("At", rightX, portraitY + 42);
+    context.fillText("RUNES", rightX, portraitY + 72);
+
+    context.textAlign = "right";
+    context.fillStyle = "#ffffff";
+    context.fillText(this.formatDate(summary.timestamp), valueX, portraitY + 12);
+    context.fillText(this.formatClock(summary.timestamp), valueX, portraitY + 42);
+    context.fillText(
+      summary.runes === null
+        ? "—"
+        : Math.max(0, summary.runes).toLocaleString(),
+      valueX,
+      portraitY + 72,
+    );
+
     context.restore();
+  }
+
+  drawSlot(context, summary, bounds, selected) {
+    this.drawPanel(context, bounds, {
+      assetAlpha: selected ? 0.46 : 0.34,
+      fallbackStroke: selected
+        ? "rgba(255, 215, 90, 0.9)"
+        : "rgba(150, 176, 220, 0.5)",
+    });
+
+    if (!summary.exists) {
+      this.drawEmptySlot(context, summary, bounds, selected);
+      return;
+    }
+
+    this.drawFilledSlot(context, summary, bounds, selected);
   }
 
   drawSlots(context) {
     const bounds = this.listBounds;
     const footerHeight = 38;
-    const contentTop = bounds.y + 12;
+    const contentTop = bounds.y + 10;
     const footerTop = bounds.y + bounds.height - footerHeight;
-    const availableHeight = Math.max(0, footerTop - contentTop - 10);
-    const gap = 10;
+    const availableHeight = Math.max(0, footerTop - contentTop - 8);
+    const gap = 8;
     const slotHeight = Math.floor(
       (availableHeight - gap * (this.slots.length - 1)) / this.slots.length,
     );
@@ -385,9 +450,9 @@ class Window_SaveSlots {
         context,
         this.slotSummary(slotId),
         {
-          x: bounds.x + 16,
+          x: bounds.x + 10,
           y: contentTop + index * (slotHeight + gap),
-          width: bounds.width - 32,
+          width: bounds.width - 20,
           height: slotHeight,
         },
         index === this.index,
@@ -407,9 +472,10 @@ class Window_SaveSlots {
     context.textAlign = "left";
     context.textBaseline = "middle";
     context.fillText(
-      `${this.actionLabel("up", "W / ↑")}/${this.actionLabel("down", "S / ↓")}: Slot   ` +
-        `${this.actionLabel("confirm", "E / Enter")}: ${this.mode === "load" ? "Load" : "Save"}   ` +
-        `${this.actionLabel("cancel", "Q / Esc")}: Back`,
+      `${this.actionLabel("up", "W / ↑")}/${this.actionLabel("down", "S / ↓")}: File   ` +
+        `${this.actionLabel("confirm", "E / Enter")}: ${
+          this.mode === "load" ? "Load" : "Save"
+        }   ${this.actionLabel("cancel", "Q / Esc")}: Back`,
       bounds.x + 18,
       footerTop + footerHeight / 2,
     );
@@ -426,7 +492,6 @@ class Window_SaveSlots {
     context.fillStyle = "#0b0e13";
     context.fillRect(0, 0, Graphics.width, Graphics.height);
     this.drawHeader(context);
-    this.drawDescription(context);
     this.drawSlots(context);
     context.restore();
   }

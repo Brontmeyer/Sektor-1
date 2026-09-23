@@ -3,19 +3,27 @@
 class Window_Inventory {
   static PAGE_COUNT = 3;
 
+  static FOCUS = Object.freeze({
+    TABS: "tabs",
+    ITEMS: "items",
+    TARGETS: "targets",
+    ARRANGE: "arrange",
+    KEY_ITEMS: "keyItems",
+  });
+
   constructor(source) {
     this.party = typeof source?.members === "function" ? source : null;
     this.fallbackActor = this.party ? null : source || null;
 
     this.visible = false;
     this.pageIndex = 0;
-    this.focusArea = "content";
-    this.useFocus = "items";
+    this.focusArea = Window_Inventory.FOCUS.TABS;
     this.targetIndex = 0;
     this.itemIndex = 0;
     this.arrangeIndex = 0;
     this.keyItemIndex = 0;
     this.sortMode = "default";
+    this.pendingItemId = null;
 
     this.itemViewport = new Window_ListViewport(10);
     this.arrangeViewport = new Window_ListViewport(6);
@@ -60,9 +68,11 @@ class Window_Inventory {
       return this.fallbackActor || null;
     }
 
-    const clampedIndex = Math.max(0, Math.min(this.targetIndex, members.length - 1));
-    this.targetIndex = clampedIndex;
-    return members[clampedIndex] || null;
+    this.targetIndex = Math.max(
+      0,
+      Math.min(this.targetIndex, members.length - 1),
+    );
+    return members[this.targetIndex] || null;
   }
 
   actionTriggered(action) {
@@ -85,37 +95,16 @@ class Window_Inventory {
       : fallback;
   }
 
-  changePage(offset) {
-    const amount = Number(offset);
-
-    if (!Number.isInteger(amount) || amount === 0) {
-      return false;
-    }
-
-    this.pageIndex =
-      ((this.pageIndex + amount) % Window_Inventory.PAGE_COUNT +
-        Window_Inventory.PAGE_COUNT) %
-      Window_Inventory.PAGE_COUNT;
-    this.focusArea = "tabs";
-    this.syncSelectionState();
-    return true;
+  resourceText(resource) {
+    return typeof UIResourcePalette !== "undefined"
+      ? UIResourcePalette.text(resource)
+      : Window_ActorSummary.resourceText(resource);
   }
 
-  show() {
-    this.visible = true;
-    this.pageIndex = 0;
-    this.focusArea = "content";
-    this.useFocus = "items";
-    this.refreshLayout();
-    this.syncSelectionState();
-  }
-
-  hide() {
-    this.visible = false;
-  }
-
-  isOpen() {
-    return this.visible;
+  valueText() {
+    return typeof UIResourcePalette !== "undefined"
+      ? UIResourcePalette.valueText()
+      : "#ffffff";
   }
 
   inventoryItemIds() {
@@ -139,7 +128,11 @@ class Window_Inventory {
   }
 
   isKeyItem(item) {
-    return item?.keyItem === true || item?.category === "keyItem" || item?.type === "keyItem";
+    return (
+      item?.keyItem === true ||
+      item?.category === "keyItem" ||
+      item?.type === "keyItem"
+    );
   }
 
   sortedIds(itemIds, mode = this.sortMode) {
@@ -153,11 +146,21 @@ class Window_Inventory {
         break;
 
       case "most":
-        ids.sort((a, b) => countOf(b) - countOf(a) || nameOf(a).localeCompare(nameOf(b)) || a - b);
+        ids.sort(
+          (a, b) =>
+            countOf(b) - countOf(a) ||
+            nameOf(a).localeCompare(nameOf(b)) ||
+            a - b,
+        );
         break;
 
       case "least":
-        ids.sort((a, b) => countOf(a) - countOf(b) || nameOf(a).localeCompare(nameOf(b)) || a - b);
+        ids.sort(
+          (a, b) =>
+            countOf(a) - countOf(b) ||
+            nameOf(a).localeCompare(nameOf(b)) ||
+            a - b,
+        );
         break;
 
       default:
@@ -170,14 +173,18 @@ class Window_Inventory {
 
   usableItemIds(mode = this.sortMode) {
     return this.sortedIds(
-      this.inventoryItemIds().filter((itemId) => !this.isKeyItem(this.itemRecord(itemId))),
+      this.inventoryItemIds().filter(
+        (itemId) => !this.isKeyItem(this.itemRecord(itemId)),
+      ),
       mode,
     );
   }
 
   keyItemIds() {
     return this.sortedIds(
-      this.inventoryItemIds().filter((itemId) => this.isKeyItem(this.itemRecord(itemId))),
+      this.inventoryItemIds().filter((itemId) =>
+        this.isKeyItem(this.itemRecord(itemId)),
+      ),
       "name",
     );
   }
@@ -209,23 +216,33 @@ class Window_Inventory {
 
   currentArrangeOption() {
     const options = this.arrangeOptions();
-    const index = Math.max(0, Math.min(this.arrangeIndex, options.length - 1));
-    this.arrangeIndex = index;
-    return options[index] || options[0] || null;
+    this.arrangeIndex = Math.max(
+      0,
+      Math.min(this.arrangeIndex, options.length - 1),
+    );
+    return options[this.arrangeIndex] || options[0] || null;
   }
 
   selectedItemId() {
+    if (this.focusArea === Window_Inventory.FOCUS.TARGETS && this.pendingItemId) {
+      return this.pendingItemId;
+    }
+
     if (this.pageIndex === 2) {
       const ids = this.keyItemIds();
-      const clampedIndex = Math.max(0, Math.min(this.keyItemIndex, Math.max(0, ids.length - 1)));
-      this.keyItemIndex = clampedIndex;
-      return ids[clampedIndex] || null;
+      this.keyItemIndex = Math.max(
+        0,
+        Math.min(this.keyItemIndex, Math.max(0, ids.length - 1)),
+      );
+      return ids[this.keyItemIndex] || null;
     }
 
     const ids = this.usableItemIds();
-    const clampedIndex = Math.max(0, Math.min(this.itemIndex, Math.max(0, ids.length - 1)));
-    this.itemIndex = clampedIndex;
-    return ids[clampedIndex] || null;
+    this.itemIndex = Math.max(
+      0,
+      Math.min(this.itemIndex, Math.max(0, ids.length - 1)),
+    );
+    return ids[this.itemIndex] || null;
   }
 
   selectedItem() {
@@ -233,58 +250,119 @@ class Window_Inventory {
     return itemId ? this.itemRecord(itemId) : null;
   }
 
-  pageTitle() {
-    return ["USE", "ARRANGE", "KEY ITEMS"][this.pageIndex] || "USE";
-  }
-
-  tabLabel(index) {
-    return ["Use", "Arrange", "Key Items"][index] || "Use";
-  }
-
   sortLabel(mode = this.sortMode) {
     const option = this.arrangeOptions().find((entry) => entry.mode === mode);
     return option?.label || "Default";
   }
 
-  pageDescription() {
+  pageTitle() {
+    return ["USE", "ARRANGE", "KEY ITEMS"][this.pageIndex] || "USE";
+  }
+
+  show() {
+    this.visible = true;
+    this.pageIndex = 0;
+    this.focusArea = Window_Inventory.FOCUS.TABS;
+    this.pendingItemId = null;
+    this.refreshLayout();
+    this.syncSelectionState();
+  }
+
+  hide() {
+    this.visible = false;
+    this.pendingItemId = null;
+  }
+
+  isOpen() {
+    return this.visible;
+  }
+
+  changePage(offset) {
+    const amount = Number(offset);
+
+    if (!Number.isInteger(amount) || amount === 0) {
+      return false;
+    }
+
+    this.pageIndex =
+      ((this.pageIndex + amount) % Window_Inventory.PAGE_COUNT +
+        Window_Inventory.PAGE_COUNT) %
+      Window_Inventory.PAGE_COUNT;
+    this.focusArea = Window_Inventory.FOCUS.TABS;
+    this.pendingItemId = null;
+    this.syncSelectionState();
+    return true;
+  }
+
+  focusForCurrentPage() {
     if (this.pageIndex === 0) {
-      return this.selectedItem()?.description || "No usable items owned.";
+      return Window_Inventory.FOCUS.ITEMS;
     }
 
     if (this.pageIndex === 1) {
-      const option = this.currentArrangeOption();
-      const suffix = option?.mode === this.sortMode ? " Current sort order." : " Press Enter to apply.";
-      return `${option?.description || "Choose how the inventory should be sorted."}${suffix}`;
+      return Window_Inventory.FOCUS.ARRANGE;
     }
 
-    return this.selectedItem()?.description || "No key items owned.";
+    return Window_Inventory.FOCUS.KEY_ITEMS;
+  }
+
+  enterCurrentPage() {
+    const nextFocus = this.focusForCurrentPage();
+
+    if (
+      nextFocus === Window_Inventory.FOCUS.ITEMS &&
+      this.usableItemIds().length === 0
+    ) {
+      return false;
+    }
+
+    this.focusArea = nextFocus;
+    this.pendingItemId = null;
+    this.syncSelectionState();
+    return true;
+  }
+
+  returnToTabs() {
+    this.focusArea = Window_Inventory.FOCUS.TABS;
+    this.pendingItemId = null;
   }
 
   syncSelectionState() {
     const members = this.members();
-    this.targetIndex = Math.max(0, Math.min(this.targetIndex, Math.max(0, members.length - 1)));
-
     const usable = this.usableItemIds();
     const keyItems = this.keyItemIds();
     const options = this.arrangeOptions();
 
-    this.itemIndex = Math.max(0, Math.min(this.itemIndex, Math.max(0, usable.length - 1)));
-    this.arrangeIndex = Math.max(0, Math.min(this.arrangeIndex, Math.max(0, options.length - 1)));
-    this.keyItemIndex = Math.max(0, Math.min(this.keyItemIndex, Math.max(0, keyItems.length - 1)));
+    this.targetIndex = Math.max(
+      0,
+      Math.min(this.targetIndex, Math.max(0, members.length - 1)),
+    );
+    this.itemIndex = Math.max(
+      0,
+      Math.min(this.itemIndex, Math.max(0, usable.length - 1)),
+    );
+    this.arrangeIndex = Math.max(
+      0,
+      Math.min(this.arrangeIndex, Math.max(0, options.length - 1)),
+    );
+    this.keyItemIndex = Math.max(
+      0,
+      Math.min(this.keyItemIndex, Math.max(0, keyItems.length - 1)),
+    );
+
+    if (this.pendingItemId && this.itemCount(this.pendingItemId) <= 0) {
+      this.pendingItemId = null;
+
+      if (this.focusArea === Window_Inventory.FOCUS.TARGETS) {
+        this.focusArea = Window_Inventory.FOCUS.ITEMS;
+      }
+    }
 
     this.itemViewport.maxVisibleRows = this.useVisibleRows();
     this.itemViewport.ensureVisible(this.itemIndex, usable.length);
     this.arrangeViewport.ensureVisible(this.arrangeIndex, options.length);
     this.keyItemViewport.maxVisibleRows = this.keyVisibleRows() * 2;
     this.keyItemViewport.ensureVisible(this.keyItemIndex, keyItems.length);
-
-    if (this.pageIndex === 0) {
-      if (usable.length === 0 && members.length > 0) {
-        this.useFocus = "targets";
-      } else if (members.length === 0) {
-        this.useFocus = "items";
-      }
-    }
   }
 
   update() {
@@ -292,29 +370,48 @@ class Window_Inventory {
       return;
     }
 
+    this.syncSelectionState();
+
     if (this.actionTriggered("cancel")) {
+      this.updateCancel();
+      return;
+    }
+
+    switch (this.focusArea) {
+      case Window_Inventory.FOCUS.TABS:
+        this.updateTabs();
+        break;
+      case Window_Inventory.FOCUS.ITEMS:
+        this.updateItemList();
+        break;
+      case Window_Inventory.FOCUS.TARGETS:
+        this.updateTargetList();
+        break;
+      case Window_Inventory.FOCUS.ARRANGE:
+        this.updateArrangePage();
+        break;
+      case Window_Inventory.FOCUS.KEY_ITEMS:
+        this.updateKeyItemsPage();
+        break;
+      default:
+        this.returnToTabs();
+        break;
+    }
+  }
+
+  updateCancel() {
+    if (this.focusArea === Window_Inventory.FOCUS.TABS) {
       this.hide();
       return;
     }
 
-    this.syncSelectionState();
-
-    if (this.focusArea === "tabs") {
-      this.updateTabs();
+    if (this.focusArea === Window_Inventory.FOCUS.TARGETS) {
+      this.focusArea = Window_Inventory.FOCUS.ITEMS;
+      this.pendingItemId = null;
       return;
     }
 
-    if (this.pageIndex === 0) {
-      this.updateUsePage();
-      return;
-    }
-
-    if (this.pageIndex === 1) {
-      this.updateArrangePage();
-      return;
-    }
-
-    this.updateKeyItemsPage();
+    this.returnToTabs();
   }
 
   updateTabs() {
@@ -328,153 +425,232 @@ class Window_Inventory {
       return;
     }
 
-    if (this.actionTriggered("down") || this.actionTriggered("confirm")) {
-      this.focusArea = "content";
-      this.syncSelectionState();
+    if (this.actionTriggered("confirm")) {
+      this.enterCurrentPage();
     }
   }
 
-  toggleUseFocus(direction = 1) {
-    const members = this.members();
-    const hasTargets = members.length > 0;
-    const hasItems = this.usableItemIds().length > 0;
+  updateItemList() {
+    const itemIds = this.usableItemIds();
 
-    if (!hasTargets || !hasItems) {
-      return false;
-    }
-
-    this.useFocus = direction < 0
-      ? this.useFocus === "targets" ? "items" : "targets"
-      : this.useFocus === "items" ? "targets" : "items";
-    return true;
-  }
-
-  updateUsePage() {
-    const members = this.members();
-    const usable = this.usableItemIds();
-
-    if (this.actionTriggered("left")) {
-      this.toggleUseFocus(-1);
-      return;
-    }
-
-    if (this.actionTriggered("right")) {
-      this.toggleUseFocus(1);
+    if (itemIds.length === 0) {
+      this.returnToTabs();
       return;
     }
 
     if (this.directionRepeated("up")) {
-      if (this.useFocus === "targets") {
-        if (this.targetIndex > 0) {
-          this.targetIndex -= 1;
-        } else {
-          this.focusArea = "tabs";
-        }
-      } else if (this.itemIndex > 0) {
-        this.itemIndex -= 1;
-        this.itemViewport.ensureVisible(this.itemIndex, usable.length);
-      } else {
-        this.focusArea = "tabs";
-      }
-
+      this.itemIndex =
+        (this.itemIndex - 1 + itemIds.length) % itemIds.length;
+      this.itemViewport.ensureVisible(this.itemIndex, itemIds.length);
       return;
     }
 
     if (this.directionRepeated("down")) {
-      if (this.useFocus === "targets") {
-        if (this.targetIndex < members.length - 1) {
-          this.targetIndex += 1;
-        }
-      } else if (this.itemIndex < usable.length - 1) {
-        this.itemIndex += 1;
-        this.itemViewport.ensureVisible(this.itemIndex, usable.length);
-      }
-
+      this.itemIndex = (this.itemIndex + 1) % itemIds.length;
+      this.itemViewport.ensureVisible(this.itemIndex, itemIds.length);
       return;
     }
 
     if (this.actionTriggered("confirm")) {
-      const itemId = usable[this.itemIndex];
-      const target = this.actor();
+      const itemId = itemIds[this.itemIndex];
 
-      if (itemId && target) {
-        const used = $gameParty?.useItem?.(itemId, target) === true;
-
-        if (used) {
-          const updated = this.usableItemIds();
-          this.itemIndex = Math.max(0, Math.min(this.itemIndex, Math.max(0, updated.length - 1)));
-          this.itemViewport.ensureVisible(this.itemIndex, updated.length);
-        }
+      if (!itemId || this.members().length === 0) {
+        return;
       }
+
+      this.pendingItemId = itemId;
+      this.targetIndex = Math.max(
+        0,
+        Math.min(this.targetIndex, this.members().length - 1),
+      );
+      this.focusArea = Window_Inventory.FOCUS.TARGETS;
     }
+  }
+
+  updateTargetList() {
+    const members = this.members();
+
+    if (members.length === 0 || !this.pendingItemId) {
+      this.focusArea = Window_Inventory.FOCUS.ITEMS;
+      this.pendingItemId = null;
+      return;
+    }
+
+    if (this.directionRepeated("up")) {
+      this.targetIndex =
+        (this.targetIndex - 1 + members.length) % members.length;
+      return;
+    }
+
+    if (this.directionRepeated("down")) {
+      this.targetIndex = (this.targetIndex + 1) % members.length;
+      return;
+    }
+
+    if (!this.actionTriggered("confirm")) {
+      return;
+    }
+
+    const itemId = this.pendingItemId;
+    const target = this.actor();
+
+    if (!itemId || !target) {
+      return;
+    }
+
+    const used = $gameParty?.useItem?.(itemId, target) === true;
+
+    if (!used) {
+      return;
+    }
+
+    const updated = this.usableItemIds();
+    this.itemIndex = Math.max(
+      0,
+      Math.min(this.itemIndex, Math.max(0, updated.length - 1)),
+    );
+    this.itemViewport.ensureVisible(this.itemIndex, updated.length);
+    this.pendingItemId = null;
+    this.focusArea = Window_Inventory.FOCUS.ITEMS;
   }
 
   updateArrangePage() {
     const options = this.arrangeOptions();
 
     if (this.directionRepeated("up")) {
-      if (this.arrangeIndex > 0) {
-        this.arrangeIndex -= 1;
-        this.arrangeViewport.ensureVisible(this.arrangeIndex, options.length);
-      } else {
-        this.focusArea = "tabs";
-      }
-
+      this.arrangeIndex =
+        (this.arrangeIndex - 1 + options.length) % options.length;
+      this.arrangeViewport.ensureVisible(this.arrangeIndex, options.length);
       return;
     }
 
     if (this.directionRepeated("down")) {
-      if (this.arrangeIndex < options.length - 1) {
-        this.arrangeIndex += 1;
-        this.arrangeViewport.ensureVisible(this.arrangeIndex, options.length);
-      }
-
+      this.arrangeIndex = (this.arrangeIndex + 1) % options.length;
+      this.arrangeViewport.ensureVisible(this.arrangeIndex, options.length);
       return;
     }
 
-    if (this.actionTriggered("confirm")) {
-      const option = this.currentArrangeOption();
-
-      if (option) {
-        this.sortMode = option.mode;
-        this.itemViewport.reset(this.itemIndex, this.usableItemIds().length);
-      }
+    if (!this.actionTriggered("confirm")) {
+      return;
     }
+
+    const option = this.currentArrangeOption();
+
+    if (!option) {
+      return;
+    }
+
+    this.sortMode = option.mode;
+    this.itemViewport.reset(this.itemIndex, this.usableItemIds().length);
+    this.returnToTabs();
   }
 
   updateKeyItemsPage() {
-    const keyItems = this.keyItemIds();
+    const itemIds = this.keyItemIds();
+
+    if (itemIds.length === 0) {
+      this.returnToTabs();
+      return;
+    }
 
     if (this.directionRepeated("up")) {
-      if (this.keyItemIndex > 0) {
-        this.keyItemIndex -= 1;
-        this.keyItemViewport.ensureVisible(this.keyItemIndex, keyItems.length);
-      } else {
-        this.focusArea = "tabs";
-      }
-
+      this.keyItemIndex =
+        (this.keyItemIndex - 1 + itemIds.length) % itemIds.length;
+      this.keyItemViewport.ensureVisible(this.keyItemIndex, itemIds.length);
       return;
     }
 
     if (this.directionRepeated("down")) {
-      if (this.keyItemIndex < keyItems.length - 1) {
-        this.keyItemIndex += 1;
-        this.keyItemViewport.ensureVisible(this.keyItemIndex, keyItems.length);
-      }
+      this.keyItemIndex = (this.keyItemIndex + 1) % itemIds.length;
+      this.keyItemViewport.ensureVisible(this.keyItemIndex, itemIds.length);
     }
   }
 
+  pageDescription() {
+    if (this.pageIndex === 0) {
+      if (this.focusArea === Window_Inventory.FOCUS.TABS) {
+        return "Choose an item to use.";
+      }
 
-  resourceText(resource) {
-    return typeof UIResourcePalette !== "undefined"
-      ? UIResourcePalette.text(resource)
-      : Window_ActorSummary.resourceText(resource);
+      const item = this.selectedItem();
+
+      if (!item) {
+        return "No usable items owned.";
+      }
+
+      if (this.focusArea === Window_Inventory.FOCUS.TARGETS) {
+        return `Use ${item.name} on ${this.actor()?.name || "a party member"}. ${
+          item.description || ""
+        }`.trim();
+      }
+
+      return item.description || "No description available.";
+    }
+
+    if (this.pageIndex === 1) {
+      if (this.focusArea === Window_Inventory.FOCUS.TABS) {
+        return `Current sort order: ${this.sortLabel()}.`;
+      }
+
+      const option = this.currentArrangeOption();
+      const suffix =
+        option?.mode === this.sortMode
+          ? " This order is currently active."
+          : " Press Enter to apply.";
+      return `${
+        option?.description || "Choose how the inventory should be sorted."
+      }${suffix}`;
+    }
+
+    if (this.focusArea === Window_Inventory.FOCUS.TABS) {
+      return "Review important story and progression items.";
+    }
+
+    return this.selectedItem()?.description || "No key items owned.";
   }
 
-  valueText() {
-    return typeof UIResourcePalette !== "undefined"
-      ? UIResourcePalette.valueText()
-      : "#ffffff";
+  infoRows() {
+    const item = this.selectedItem();
+
+    if (this.pageIndex === 0) {
+      if (this.focusArea === Window_Inventory.FOCUS.TABS) {
+        return [
+          ["Action", "Use"],
+          ["Item", "—"],
+          ["Target", "—"],
+        ];
+      }
+
+      return [
+        ["Item", item?.name || "—"],
+        ["Quantity", item ? `x${this.itemCount(item.id)}` : "—"],
+        [
+          "Target",
+          this.focusArea === Window_Inventory.FOCUS.TARGETS
+            ? this.actor()?.name || "—"
+            : "—",
+        ],
+      ];
+    }
+
+    if (this.pageIndex === 1) {
+      return [
+        ["Current", this.sortLabel()],
+        [
+          "Selected",
+          this.focusArea === Window_Inventory.FOCUS.ARRANGE
+            ? this.currentArrangeOption()?.label || "—"
+            : "—",
+        ],
+        ["Confirm", "Apply Order"],
+      ];
+    }
+
+    return [
+      ["Item", item?.name || "—"],
+      ["Quantity", item ? `x${this.itemCount(item.id)}` : "—"],
+      ["Type", "Key Item"],
+    ];
   }
 
   drawPanel(context, bounds, options = {}) {
@@ -491,7 +667,8 @@ class Window_Inventory {
       });
 
     if (!drawn) {
-      context.fillStyle = options.fallbackFill || "rgba(255, 215, 90, 0.12)";
+      context.fillStyle =
+        options.fallbackFill || "rgba(255, 215, 90, 0.12)";
       context.fillRect(x, y, width, height);
     }
   }
@@ -502,8 +679,7 @@ class Window_Inventory {
 
   drawInfoPanel(context) {
     const bounds = this.infoBounds;
-    const members = this.members();
-    const actor = this.actor();
+    const rows = this.infoRows();
     this.drawPanel(context, bounds);
 
     context.save();
@@ -521,34 +697,17 @@ class Window_Inventory {
       bounds.y + 50,
     );
 
-    const rows = this.pageIndex === 1
-      ? [
-        ["Sort", this.sortLabel()],
-        ["Options", String(this.arrangeOptions().length)],
-        ["Owned", String(this.inventoryItemIds().length)],
-      ]
-      : this.pageIndex === 2
-        ? [
-          ["Sort", "Name"],
-          ["Owned", String(this.keyItemIds().length)],
-          ["Target", actor?.name || "None"],
-        ]
-        : [
-          ["Sort", this.sortLabel()],
-          ["Owned", String(this.inventoryItemIds().length)],
-          ["Target", members.length > 0 ? actor?.name || "None" : "None"],
-        ];
-
     const labelX = bounds.x + 18;
     const valueX = bounds.x + bounds.width - 18;
+
     rows.forEach(([label, value], index) => {
       const y = bounds.y + 82 + index * 30;
       context.textAlign = "left";
-      context.font = "14px sans-serif";
       context.fillStyle = label === "Target" ? "#7ff0d5" : "#aebbd0";
-      context.fillText(`${label}`, labelX, y);
+      context.font = "14px sans-serif";
+      context.fillText(label, labelX, y);
       context.textAlign = "right";
-      context.fillStyle = "#ffffff";
+      context.fillStyle = this.valueText();
       context.fillText(String(value), valueX, y);
     });
 
@@ -579,7 +738,11 @@ class Window_Inventory {
         2,
       );
     } else {
-      context.fillText(this.pageDescription(), bounds.x + 18, bounds.y + bounds.height / 2);
+      context.fillText(
+        this.pageDescription(),
+        bounds.x + 18,
+        bounds.y + bounds.height / 2,
+      );
     }
 
     context.restore();
@@ -589,6 +752,7 @@ class Window_Inventory {
     const footerHeight = 38;
     const tabsBottom = bounds.y + 50;
     const footerTop = bounds.y + bounds.height - footerHeight;
+
     return {
       bodyX: bounds.x + 16,
       bodyY: tabsBottom + 12,
@@ -596,13 +760,12 @@ class Window_Inventory {
       bodyHeight: Math.max(0, footerTop - (tabsBottom + 12) - 8),
       footerTop,
       footerY: footerTop + footerHeight / 2,
-      tabsBottom,
     };
   }
 
   useVisibleRows() {
     const area = this.tabContentBounds(this.contentBounds);
-    return Math.max(5, Math.min(11, Math.floor((area.bodyHeight - 32) / 32)));
+    return Math.max(5, Math.min(11, Math.floor((area.bodyHeight - 28) / 32)));
   }
 
   keyVisibleRows() {
@@ -611,21 +774,22 @@ class Window_Inventory {
   }
 
   drawTabs(context, bounds) {
-    const tabLabels = ["Use", "Arrange", "Key Items"];
+    const labels = ["Use", "Arrange", "Key Items"];
     const tabTop = bounds.y + 10;
     const tabHeight = 30;
     const totalTabWidth = Math.min(bounds.width - 40, 470);
-    const tabWidth = Math.floor(totalTabWidth / tabLabels.length);
+    const tabWidth = Math.floor(totalTabWidth / labels.length);
     const startX = bounds.x + 18;
 
     context.save();
     context.textBaseline = "middle";
     context.textAlign = "left";
 
-    tabLabels.forEach((label, index) => {
+    labels.forEach((label, index) => {
       const x = startX + index * tabWidth;
       const activePage = this.pageIndex === index;
-      const focused = activePage && this.focusArea === "tabs";
+      const focused =
+        activePage && this.focusArea === Window_Inventory.FOCUS.TABS;
 
       if (focused) {
         this.drawSelection(context, x, tabTop - 2, tabWidth - 8, tabHeight);
@@ -673,20 +837,18 @@ class Window_Inventory {
     return summary || "Normal";
   }
 
-  drawPartyMemberRow(context, actor, bounds, selected) {
+  drawPartyMemberRow(context, actor, bounds, index) {
     const focused =
-      selected &&
-      this.useFocus === "targets" &&
-      this.pageIndex === 0 &&
-      this.focusArea === "content";
+      this.focusArea === Window_Inventory.FOCUS.TARGETS &&
+      index === this.targetIndex;
 
     this.drawPanel(context, bounds, {
       assetAlpha: 0.34,
-      fallbackStroke: selected
-        ? "rgba(127, 240, 213, 0.66)"
+      fallbackStroke: focused
+        ? "rgba(255, 215, 90, 0.9)"
         : "rgba(150, 176, 220, 0.46)",
-      innerStroke: selected
-        ? "rgba(127, 240, 213, 0.16)"
+      innerStroke: focused
+        ? "rgba(255, 230, 140, 0.24)"
         : "rgba(232, 234, 255, 0.1)",
     });
 
@@ -704,7 +866,7 @@ class Window_Inventory {
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
     context.fillStyle = focused ? "#ffd75a" : "#ffffff";
-    context.font = focused ? "600 16px sans-serif" : "600 16px sans-serif";
+    context.font = "600 16px sans-serif";
     context.fillText(
       `${focused ? "▶ " : "  "}${actor?.name || "Unknown"}`,
       bounds.x + 10,
@@ -777,9 +939,10 @@ class Window_Inventory {
   }
 
   drawUsePage(context, area) {
-    const leftWidth = Math.max(270, Math.floor(area.bodyWidth * 0.34));
-    const rightX = area.bodyX + leftWidth + 18;
-    const rightWidth = area.bodyWidth - leftWidth - 18;
+    const leftWidth = Math.max(280, Math.floor(area.bodyWidth * 0.36));
+    const dividerX = area.bodyX + leftWidth + 8;
+    const rightX = dividerX + 18;
+    const rightWidth = area.bodyX + area.bodyWidth - rightX;
     const members = this.members();
     const items = this.usableItemIds();
 
@@ -790,30 +953,38 @@ class Window_Inventory {
     context.strokeStyle = "rgba(210, 222, 242, 0.28)";
     context.lineWidth = 1;
     context.beginPath();
-    context.moveTo(area.bodyX + leftWidth + 8, area.bodyY + 2);
-    context.lineTo(area.bodyX + leftWidth + 8, area.bodyY + area.bodyHeight - 4);
+    context.moveTo(dividerX, area.bodyY + 2);
+    context.lineTo(dividerX, area.bodyY + area.bodyHeight - 4);
     context.stroke();
 
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
-    context.fillText("ITEMS", rightX + 8, area.bodyY + 12);
-    context.textAlign = "right";
-    context.fillStyle = "#aebbd0";
-    context.font = "14px sans-serif";
     context.fillText(
-      `Sort: ${this.sortLabel()}`,
-      rightX + rightWidth - 12,
+      this.focusArea === Window_Inventory.FOCUS.TARGETS
+        ? "SELECT TARGET"
+        : "PARTY",
+      area.bodyX + 6,
       area.bodyY + 12,
     );
-    context.textAlign = "left";
+    context.fillText(
+      this.focusArea === Window_Inventory.FOCUS.ITEMS
+        ? "SELECT ITEM"
+        : "ITEMS",
+      rightX + 6,
+      area.bodyY + 12,
+    );
 
     if (members.length === 0) {
       context.fillStyle = "#8897ac";
       context.font = "16px sans-serif";
-      context.fillText("No active party members.", area.bodyX + 10, area.bodyY + 34);
+      context.fillText("No active party members.", area.bodyX + 10, area.bodyY + 46);
     } else {
-      const rowHeight = Math.max(76, Math.floor(area.bodyHeight / Math.max(1, members.length)));
-      const cardHeight = Math.max(76, rowHeight - 4);
+      const rosterTop = area.bodyY + 28;
+      const rowHeight = Math.max(
+        75,
+        Math.floor((area.bodyHeight - 30) / Math.max(1, members.length)),
+      );
+      const cardHeight = Math.max(72, rowHeight - 5);
 
       members.forEach((member, index) => {
         this.drawPartyMemberRow(
@@ -821,11 +992,11 @@ class Window_Inventory {
           member,
           {
             x: area.bodyX,
-            y: area.bodyY + index * rowHeight,
+            y: rosterTop + index * rowHeight,
             width: leftWidth,
             height: cardHeight,
           },
-          index === this.targetIndex,
+          index,
         );
       });
     }
@@ -838,26 +1009,43 @@ class Window_Inventory {
       return;
     }
 
-    const rowHeight = 30;
-    const listTop = area.bodyY + 44;
+    const rowHeight = 32;
+    const listTop = area.bodyY + 46;
     const range = this.itemViewport.visibleRange(this.itemIndex, items.length);
 
     for (let i = range.start; i < range.end; i++) {
       const itemId = items[i];
       const item = this.itemRecord(itemId);
       const y = listTop + (i - range.start) * rowHeight;
-      const selected = i === this.itemIndex;
-      const focused =
-        selected && this.useFocus === "items" && this.focusArea === "content";
+      const itemFocus =
+        this.focusArea === Window_Inventory.FOCUS.ITEMS && i === this.itemIndex;
+      const pending =
+        this.focusArea === Window_Inventory.FOCUS.TARGETS &&
+        itemId === this.pendingItemId;
 
-      if (focused) {
-        this.drawSelection(context, rightX + 6, y - 15, rightWidth - 20, 28);
+      if (itemFocus || pending) {
+        this.drawSelection(
+          context,
+          rightX + 6,
+          y - 15,
+          rightWidth - 16,
+          29,
+          pending
+            ? { fallbackFill: "rgba(127, 240, 213, 0.11)" }
+            : {},
+        );
       }
 
-      context.fillStyle = focused ? "#ffd75a" : selected ? "#ffffff" : "#f0f3f7";
-      context.font = focused ? "600 17px sans-serif" : "17px sans-serif";
+      context.fillStyle = itemFocus
+        ? "#ffd75a"
+        : pending
+          ? "#7ff0d5"
+          : "#ffffff";
+      context.font = itemFocus ? "600 17px sans-serif" : "17px sans-serif";
       context.fillText(
-        `${focused ? "▶ " : "  "}${item?.name || `Item ${itemId}`}`,
+        `${itemFocus ? "▶ " : pending ? "◆ " : "  "}${
+          item?.name || `Item ${itemId}`
+        }`,
         rightX + 12,
         y,
       );
@@ -865,13 +1053,13 @@ class Window_Inventory {
       context.textAlign = "right";
       context.fillStyle = "#ffffff";
       context.font = "16px sans-serif";
-      context.fillText(`x${this.itemCount(itemId)}`, rightX + rightWidth - 12, y);
+      context.fillText(`x${this.itemCount(itemId)}`, rightX + rightWidth - 8, y);
       context.textAlign = "left";
     }
 
     this.drawScrollIndicators(
       context,
-      rightX + rightWidth - 6,
+      rightX + rightWidth - 2,
       area.bodyY + 42,
       area.bodyY + area.bodyHeight - 28,
       this.itemViewport.hasPrevious(),
@@ -886,8 +1074,9 @@ class Window_Inventory {
     const previewMode = this.currentArrangeOption()?.mode || this.sortMode;
     const previewIds = this.usableItemIds(previewMode);
     const leftWidth = Math.max(260, Math.floor(area.bodyWidth * 0.31));
-    const rightX = area.bodyX + leftWidth + 18;
-    const rightWidth = area.bodyWidth - leftWidth - 18;
+    const dividerX = area.bodyX + leftWidth + 8;
+    const rightX = dividerX + 18;
+    const rightWidth = area.bodyX + area.bodyWidth - rightX;
 
     context.save();
     context.textAlign = "left";
@@ -900,28 +1089,46 @@ class Window_Inventory {
     context.strokeStyle = "rgba(210, 222, 242, 0.28)";
     context.lineWidth = 1;
     context.beginPath();
-    context.moveTo(area.bodyX + leftWidth + 8, area.bodyY + 4);
-    context.lineTo(area.bodyX + leftWidth + 8, area.bodyY + area.bodyHeight - 4);
+    context.moveTo(dividerX, area.bodyY + 4);
+    context.lineTo(dividerX, area.bodyY + area.bodyHeight - 4);
     context.stroke();
 
-    const optionRange = this.arrangeViewport.visibleRange(this.arrangeIndex, options.length);
+    const range = this.arrangeViewport.visibleRange(
+      this.arrangeIndex,
+      options.length,
+    );
     const optionTop = area.bodyY + 42;
     const optionRowHeight = 34;
 
-    for (let i = optionRange.start; i < optionRange.end; i++) {
+    for (let i = range.start; i < range.end; i++) {
       const option = options[i];
-      const y = optionTop + (i - optionRange.start) * optionRowHeight;
-      const selected = i === this.arrangeIndex;
+      const y = optionTop + (i - range.start) * optionRowHeight;
+      const focused =
+        this.focusArea === Window_Inventory.FOCUS.ARRANGE &&
+        i === this.arrangeIndex;
       const applied = option.mode === this.sortMode;
 
-      if (selected) {
-        this.drawSelection(context, area.bodyX + 6, y - 16, leftWidth - 20, 30);
+      if (focused) {
+        this.drawSelection(
+          context,
+          area.bodyX + 6,
+          y - 16,
+          leftWidth - 20,
+          30,
+        );
       }
 
-      context.fillStyle = selected ? "#ffd75a" : applied ? "#7ff0d5" : "#ffffff";
-      context.font = selected ? "600 17px sans-serif" : "17px sans-serif";
-      const appliedTag = applied ? " *" : "";
-      context.fillText(`${selected && this.focusArea === "content" ? "▶ " : "  "}${option.label}${appliedTag}`, area.bodyX + 12, y);
+      context.fillStyle = focused
+        ? "#ffd75a"
+        : applied
+          ? "#7ff0d5"
+          : "#ffffff";
+      context.font = focused ? "600 17px sans-serif" : "17px sans-serif";
+      context.fillText(
+        `${focused ? "▶ " : "  "}${option.label}${applied ? "  ✓" : ""}`,
+        area.bodyX + 12,
+        y,
+      );
     }
 
     if (previewIds.length === 0) {
@@ -933,7 +1140,11 @@ class Window_Inventory {
     }
 
     const previewRowHeight = 30;
-    const previewVisible = Math.max(5, Math.min(10, Math.floor((area.bodyHeight - 24) / previewRowHeight)));
+    const previewVisible = Math.max(
+      5,
+      Math.min(10, Math.floor((area.bodyHeight - 24) / previewRowHeight)),
+    );
+
     previewIds.slice(0, previewVisible).forEach((itemId, index) => {
       const item = this.itemRecord(itemId);
       const y = area.bodyY + 42 + index * previewRowHeight;
@@ -941,13 +1152,17 @@ class Window_Inventory {
       context.font = "16px sans-serif";
       context.fillText(item?.name || `Item ${itemId}`, rightX + 12, y);
       context.textAlign = "right";
-      context.fillText(`x${this.itemCount(itemId)}`, rightX + rightWidth - 12, y);
+      context.fillText(`x${this.itemCount(itemId)}`, rightX + rightWidth - 8, y);
       context.textAlign = "left";
     });
 
     context.fillStyle = "#aebbd0";
     context.font = "14px sans-serif";
-    context.fillText(`Applied Sort: ${this.sortLabel()}`, rightX + 12, area.bodyY + area.bodyHeight - 16);
+    context.fillText(
+      `Current: ${this.sortLabel()}`,
+      rightX + 12,
+      area.bodyY + area.bodyHeight - 16,
+    );
     context.restore();
   }
 
@@ -983,15 +1198,21 @@ class Window_Inventory {
       const row = visibleIndex % rowsPerColumn;
       const x = area.bodyX + column * (columnWidth + columnGap);
       const y = area.bodyY + 44 + row * rowHeight;
-      const selected = absoluteIndex === this.keyItemIndex;
+      const focused =
+        this.focusArea === Window_Inventory.FOCUS.KEY_ITEMS &&
+        absoluteIndex === this.keyItemIndex;
 
-      if (selected) {
+      if (focused) {
         this.drawSelection(context, x + 4, y - 16, columnWidth - 8, 30);
       }
 
-      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
-      context.font = selected ? "600 17px sans-serif" : "17px sans-serif";
-      context.fillText(`${selected && this.focusArea === "content" ? "▶ " : "  "}${item?.name || `Item ${itemId}`}`, x + 10, y);
+      context.fillStyle = focused ? "#ffd75a" : "#ffffff";
+      context.font = focused ? "600 17px sans-serif" : "17px sans-serif";
+      context.fillText(
+        `${focused ? "▶ " : "  "}${item?.name || `Item ${itemId}`}`,
+        x + 10,
+        y,
+      );
     });
 
     this.drawScrollIndicators(
@@ -1003,6 +1224,34 @@ class Window_Inventory {
       this.keyItemViewport.hasNext(itemIds.length),
     );
     context.restore();
+  }
+
+  footerText() {
+    const leftRight = `${this.actionLabel("left", "A / ←")}/${this.actionLabel(
+      "right",
+      "D / →",
+    )}`;
+    const upDown = `${this.actionLabel("up", "W / ↑")}/${this.actionLabel(
+      "down",
+      "S / ↓",
+    )}`;
+    const confirm = this.actionLabel("confirm", "E / Enter");
+    const cancel = this.actionLabel("cancel", "Q / Esc");
+
+    switch (this.focusArea) {
+      case Window_Inventory.FOCUS.TABS:
+        return `${leftRight}: Tab   ${confirm}: Open   ${cancel}: Close`;
+      case Window_Inventory.FOCUS.ITEMS:
+        return `${upDown}: Item   ${confirm}: Choose Target   ${cancel}: Tabs`;
+      case Window_Inventory.FOCUS.TARGETS:
+        return `${upDown}: Target   ${confirm}: Use Item   ${cancel}: Items`;
+      case Window_Inventory.FOCUS.ARRANGE:
+        return `${upDown}: Order   ${confirm}: Apply   ${cancel}: Tabs`;
+      case Window_Inventory.FOCUS.KEY_ITEMS:
+        return `${upDown}: Key Item   ${cancel}: Tabs`;
+      default:
+        return `${cancel}: Close`;
+    }
   }
 
   drawContent(context) {
@@ -1032,22 +1281,7 @@ class Window_Inventory {
     context.font = "13px sans-serif";
     context.textAlign = "left";
     context.textBaseline = "middle";
-
-    const focusHint = this.pageIndex === 0
-      ? `${this.actionLabel("left", "A / ←")}/${this.actionLabel("right", "D / →")}: Tabs/Target/Items   `
-      : `${this.actionLabel("left", "A / ←")}/${this.actionLabel("right", "D / →")}: Tabs   `;
-    const navHint = `${this.actionLabel("up", "W / ↑")}/${this.actionLabel("down", "S / ↓")}: Navigate   `;
-    const actionHint = this.pageIndex === 1
-      ? `${this.actionLabel("confirm", "E / Enter")}: Apply   `
-      : this.pageIndex === 2
-        ? ""
-        : `${this.actionLabel("confirm", "E / Enter")}: Use   `;
-
-    context.fillText(
-      `${focusHint}${navHint}${actionHint}${this.actionLabel("cancel", "Q / Esc")}: Close`,
-      bounds.x + 18,
-      area.footerY,
-    );
+    context.fillText(this.footerText(), bounds.x + 18, area.footerY);
     context.restore();
   }
 

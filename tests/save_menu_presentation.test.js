@@ -41,6 +41,7 @@ function createHarness() {
     actors: [
       { actorId: 1, name: "Tyler", level: 12 },
       { actorId: 2, name: "Sarah", level: 11 },
+      { actorId: 3, name: "Aboo", level: 10 },
     ],
     party: { gil: 2345 },
     location: { mapId: 2, x: 4, y: 8 },
@@ -95,21 +96,34 @@ function includes(texts, expected) {
   return texts.some((text) => text === expected || text.includes(expected));
 }
 
-function testSaveUsesFullScreenSharedMenuPresentation() {
+function testSaveUsesReferenceInspiredFileCardsWithoutCrampedDescriptionStrip() {
   const harness = createHarness();
   harness.window.show("save");
   const texts = drawText(harness);
 
+  assert.equal(includes(texts, "Select a file."), true);
+  assert.equal(includes(texts, "FILE 01"), true);
   assert.equal(includes(texts, "SAVE"), true);
-  assert.equal(includes(texts, "SAVE PROGRESS"), true);
-  assert.equal(includes(texts, "3 SLOTS"), true);
-  assert.equal(includes(texts, "▶ SLOT 1"), true);
-  assert.equal(includes(texts, "Tyler   LV 12"), true);
+  assert.equal(includes(texts, "▶ FILE 01"), true);
+  assert.equal(includes(texts, "Tyler"), true);
+  assert.equal(includes(texts, "LV 12"), true);
   assert.equal(includes(texts, "Sector Gate"), true);
-  assert.equal(includes(texts, "Tyler Lv 12"), true);
-  assert.equal(includes(texts, "Sarah Lv 11"), true);
-  assert.equal(includes(texts, "RUNES 2,345"), true);
-  assert.equal(includes(texts, "Empty Slot"), true);
+  assert.equal(includes(texts, "Saved"), true);
+  assert.equal(includes(texts, "RUNES"), true);
+  assert.equal(includes(texts, "2,345"), true);
+  assert.equal(includes(texts, "EMPTY"), true);
+  assert.equal(includes(texts, "Choose a slot to save current progress."), false);
+}
+
+function testHeaderTracksCurrentlySelectedFile() {
+  const harness = createHarness();
+  harness.window.show("save");
+  press(harness, "down");
+  const texts = drawText(harness);
+
+  assert.equal(harness.window.currentSlotId(), 2);
+  assert.equal(includes(texts, "FILE 02"), true);
+  assert.equal(includes(texts, "▶ FILE 02"), true);
 }
 
 function testSaveSlotNavigationAndResultRemainRuntimeCompatible() {
@@ -125,23 +139,25 @@ function testSaveSlotNavigationAndResultRemainRuntimeCompatible() {
   assert.equal(harness.window.hasResult(), false);
 }
 
-function testLoadReusesPresentationWithoutInventingPlayTime() {
+function testLoadUsesSameFileCardLanguageWithoutInventingPlayTime() {
   const harness = createHarness();
   harness.window.show("load");
   const texts = drawText(harness);
 
+  assert.equal(includes(texts, "Select a file."), true);
   assert.equal(includes(texts, "LOAD"), true);
-  assert.equal(includes(texts, "SAVED PROGRESS"), true);
-  assert.equal(includes(texts, "Choose a slot to load saved progress."), true);
+  assert.equal(includes(texts, "FILE 01"), true);
+  assert.equal(includes(texts, "Sector Gate"), true);
 
   const source = read("js/windows/Window_SaveSlots.js");
   assert.doesNotMatch(source, /playTime|PLAY TIME|session time/i);
 }
 
 function run() {
-  testSaveUsesFullScreenSharedMenuPresentation();
+  testSaveUsesReferenceInspiredFileCardsWithoutCrampedDescriptionStrip();
+  testHeaderTracksCurrentlySelectedFile();
   testSaveSlotNavigationAndResultRemainRuntimeCompatible();
-  testLoadReusesPresentationWithoutInventingPlayTime();
+  testLoadUsesSameFileCardLanguageWithoutInventingPlayTime();
   console.log("Save menu presentation regression tests passed.");
 }
 

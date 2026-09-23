@@ -12,6 +12,11 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Refined ITEM navigation into an explicit three-step state machine inspired by the supplied reference flow: **Use tab → item list → party target**. Enter now advances one level, Q/Esc backs out one level, and successful use returns to the item list instead of leaving focus ambiguity behind.
+- ITEM target selection now keeps the pending item visibly marked, mirrors its name/quantity/target in the metadata panel, and spells out the pending action in the description strip so the player always knows which item is about to be used.
+- Applying an ITEM Arrange order now returns focus directly to the **Arrange** heading, removing the extra Up press that hands-on testing exposed.
+- Reworked SAVE/LOAD slot presentation around the supplied file-card reference: removed the extra description band, enlarged all three file rows, separated party portraits / leader-location / saved-time-RUNES regions, and kept truthful timestamp data instead of inventing play time.
+
 - Refined ITEM Use-page presentation after hands-on review: removed the redundant PARTY heading, restored MP alongside HP for every active target card, separated the ITEMS heading from the sort label, and tightened four-member card geometry so footer/help text no longer competes with party vitals
 - Made ITEM focus ownership unmistakable with the project's established dim selection panel plus gold `▶` cursor for focused tabs, party targets, and item rows; the active page remains visible without masquerading as keyboard focus
 - Standardized MAGICK / SKILL / ESSENCE / EQUIP / STATUS / VALOR / ITEM top-header geometry through one shared `CharacterMenuLayout` contract so actor-summary and metadata panels align consistently across character-menu destinations
@@ -25,6 +30,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added focused regression coverage for the Guard-style prompt flow and Scene_Map message/choice update ordering
 
 ### Added
+
+- Completed Load Menu Presentation v1 through the shared `Window_SaveSlots` file-card browser, giving SAVE and LOAD the same reference-inspired layout while preserving their separate `Scene_Menu` actions and Save Runtime v11 authority.
+- Extended ITEM presentation regression coverage for initial tab focus, hierarchical Use flow, pending-item visibility, one-level cancel behavior, Arrange focus return, and retained HP/MP party vitals.
 
 - Added Save Menu Presentation & Slot Summary v1 with a full-screen SAVE destination, shared menu-panel styling, three large save-slot cards, clear gold cursor focus, existing-save leader / level / location / timestamp / party / RUNES summaries, and truthful empty-slot presentation
 - Preserved Save Runtime v11 as the authority for persistence: the new SAVE screen only reads existing slot metadata and returns the chosen slot ID to `Scene_Menu`, avoiding a save-format bump or a second persistence path

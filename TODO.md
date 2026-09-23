@@ -111,6 +111,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add Item Menu Presentation & Inventory Navigation v1 with shared actor summary, Use/Arrange/Key Items tabs, target-aware field item use, supported sort previews, and key-item empty-state handling
 - [x] Refine ITEM focus/vitals/layout after hands-on review and standardize character-menu header geometry through shared `CharacterMenuLayout` ownership
 - [x] Add Save Menu Presentation & Slot Summary v1 with full-screen slot cards, existing-save summaries, empty-slot states, and preserved Save Runtime v11 authority
+- [x] Refine SAVE/LOAD into reference-inspired file-card presentation and complete Load Menu Presentation v1 without changing Save Runtime v11
+- [x] Refine ITEM interaction to Use → Item → Target focus, persistent pending-item identity, hierarchical cancel, and automatic Arrange-heading return after sort apply
 - [x] Add Status Menu Presentation v1 with shared actor summary, Main / Element / Effect pages, actor-safe page switching, live elemental/status runtime presentation, and Equip footer-overlap cleanup
 - [x] Add Essence Menu Presentation & List Navigation v1 with shared stacked-vitals actor summary, slot/catalog equipment flow, two-column held-repeat catalog navigation, progression/Mastery Ready preview, and Magick Awakening presentation
 - [x] Implement Main Menu Information & Command Layout v1 with four active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels

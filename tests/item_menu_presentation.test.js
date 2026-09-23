@@ -42,11 +42,11 @@ function createHarness() {
     },
     2: {
       id: 2,
-      name: "Ether",
-      description: "Restores a modest amount of MP.",
+      name: "Hi-Potion",
+      description: "Restores a moderate amount of HP.",
       type: "item",
       consumable: true,
-      effect: { type: "healMp", value: 20 },
+      effect: { type: "healHp", value: 200 },
     },
     3: {
       id: 3,
@@ -146,7 +146,6 @@ function createHarness() {
     window: new context.__Window(party),
     actions,
     drawCalls,
-    party,
     firstActor,
     secondActor,
   };
@@ -169,89 +168,111 @@ function includes(texts, expected) {
   return texts.some((text) => text === expected || text.includes(expected));
 }
 
-function testItemMenuUsesSharedCharacterLanguageAndReferenceTabs() {
+function testItemStartsOnUseTabOnly() {
   const harness = createHarness();
   harness.window.show();
   const texts = drawText(harness);
 
-  assert.equal(includes(texts, "ITEM"), true);
-  assert.equal(includes(texts, "USE  1/3"), true);
-  assert.equal(includes(texts, "Use"), true);
-  assert.equal(includes(texts, "Arrange"), true);
-  assert.equal(includes(texts, "Key Items"), true);
-  assert.equal(includes(texts, "Tyler"), true);
-  assert.equal(includes(texts, "Potion"), true);
-  assert.equal(includes(texts, "Restores a small amount of HP."), true);
-  assert.equal(includes(texts, "PARTY"), false);
-  assert.equal(includes(texts, "ITEMS"), true);
-  assert.equal(includes(texts, "MP 25/40"), true);
-
-  press(harness, "up");
-  const tabTexts = drawText(harness);
-  assert.equal(includes(tabTexts, "▶ Use"), true);
-
-  press(harness, "down");
-  press(harness, "left");
-  const targetTexts = drawText(harness);
-  assert.equal(includes(targetTexts, "▶ Tyler"), true);
+  assert.equal(harness.window.focusArea, "tabs");
+  assert.equal(harness.window.pageIndex, 0);
+  assert.equal(includes(texts, "▶ Use"), true);
+  assert.equal(includes(texts, "▶ Potion"), false);
+  assert.equal(includes(texts, "▶ Tyler"), false);
+  assert.equal(includes(texts, "Choose an item to use."), true);
+  assert.equal(includes(texts, "Owned"), false);
 }
 
-function testItemMenuSupportsArrangePageAndAvoidsUnsupportedReferenceOptions() {
+function testUseFlowIsTabThenItemThenTargetThenBackToItem() {
   const harness = createHarness();
   harness.window.show();
 
-  press(harness, "up");
-  assert.equal(harness.window.focusArea, "tabs");
+  press(harness, "confirm");
+  assert.equal(harness.window.focusArea, "items");
+  let texts = drawText(harness);
+  assert.equal(includes(texts, "▶ Potion"), true);
+  assert.equal(includes(texts, "SELECT ITEM"), true);
+  assert.equal(includes(texts, "Restores a small amount of HP."), true);
+
+  press(harness, "confirm");
+  assert.equal(harness.window.focusArea, "targets");
+  assert.equal(harness.window.pendingItemId, 1);
+  texts = drawText(harness);
+  assert.equal(includes(texts, "◆ Potion"), true);
+  assert.equal(includes(texts, "▶ Tyler"), true);
+  assert.equal(includes(texts, "Use Potion on Tyler."), true);
+  assert.equal(includes(texts, "Quantity"), true);
+  assert.equal(includes(texts, "x3"), true);
+
+  press(harness, "down");
+  assert.equal(harness.window.targetIndex, 1);
+  press(harness, "confirm");
+  assert.equal(harness.secondActor.hp, 90);
+  assert.equal(harness.window.itemCount(1), 2);
+  assert.equal(harness.window.focusArea, "items");
+  assert.equal(harness.window.pendingItemId, null);
+}
+
+function testArrangeApplyReturnsFocusToArrangeHeading() {
+  const harness = createHarness();
+  harness.window.show();
+
   press(harness, "right");
   assert.equal(harness.window.pageIndex, 1);
-  press(harness, "down");
-  assert.equal(harness.window.focusArea, "content");
-
-  const texts = drawText(harness);
-  assert.equal(includes(texts, "ARRANGE  2/3"), true);
-  assert.equal(includes(texts, "SORT"), true);
-  assert.equal(includes(texts, "PREVIEW"), true);
-  assert.equal(includes(texts, "Default"), true);
-  assert.equal(includes(texts, "Name"), true);
-  assert.equal(includes(texts, "Most"), true);
-  assert.equal(includes(texts, "Least"), true);
+  assert.equal(harness.window.focusArea, "tabs");
+  press(harness, "confirm");
+  assert.equal(harness.window.focusArea, "arrange");
 
   press(harness, "down");
   press(harness, "down");
   assert.equal(harness.window.currentArrangeOption().mode, "most");
   press(harness, "confirm");
+
   assert.equal(harness.window.sortMode, "most");
+  assert.equal(harness.window.pageIndex, 1);
+  assert.equal(harness.window.focusArea, "tabs");
+  const texts = drawText(harness);
+  assert.equal(includes(texts, "▶ Arrange"), true);
+  assert.equal(includes(texts, "Current"), true);
+  assert.equal(includes(texts, "Most"), true);
 
   const source = read("js/windows/Window_Inventory.js");
   assert.doesNotMatch(source, /Customize|Field|Battle|Throw/);
 }
 
-function testItemMenuUsesSelectedTargetAndShowsKeyItemPage() {
+function testKeyItemsKeepReferenceTabFlowAndPartyRowsShowHpAndMp() {
   const harness = createHarness();
   harness.window.show();
-
-  assert.equal(harness.secondActor.hp, 40);
-  press(harness, "left");
-  assert.equal(harness.window.useFocus, "targets");
-  press(harness, "down");
-  assert.equal(harness.window.targetIndex, 1);
-  press(harness, "right");
-  assert.equal(harness.window.useFocus, "items");
-  press(harness, "confirm");
-  assert.equal(harness.secondActor.hp, 90);
-  assert.equal(harness.window.itemCount(1), 2);
-
-  press(harness, "up");
-  assert.equal(harness.window.focusArea, "tabs");
   press(harness, "right");
   press(harness, "right");
   assert.equal(harness.window.pageIndex, 2);
-  press(harness, "down");
+  assert.equal(harness.window.focusArea, "tabs");
+  press(harness, "confirm");
+  assert.equal(harness.window.focusArea, "keyItems");
 
   const texts = drawText(harness);
-  assert.equal(includes(texts, "KEY ITEMS  3/3"), true);
   assert.equal(includes(texts, "Bronze Pass"), true);
   assert.equal(includes(texts, "A stamped transit key item."), true);
+
+  harness.window.changePage(-2);
+  press(harness, "confirm");
+  const useTexts = drawText(harness);
+  assert.equal(includes(useTexts, "HP 100/150"), true);
+  assert.equal(includes(useTexts, "MP 25/40"), true);
+}
+
+function testCancelMovesBackOneInteractionLevel() {
+  const harness = createHarness();
+  harness.window.show();
+  press(harness, "confirm");
+  press(harness, "confirm");
+  assert.equal(harness.window.focusArea, "targets");
+
+  press(harness, "cancel");
+  assert.equal(harness.window.focusArea, "items");
+  press(harness, "cancel");
+  assert.equal(harness.window.focusArea, "tabs");
+  press(harness, "cancel");
+  assert.equal(harness.window.isOpen(), false);
 }
 
 function testSceneRoutesItemMenuToPartyBackedInventoryWindow() {
@@ -263,9 +284,11 @@ function testSceneRoutesItemMenuToPartyBackedInventoryWindow() {
 }
 
 function run() {
-  testItemMenuUsesSharedCharacterLanguageAndReferenceTabs();
-  testItemMenuSupportsArrangePageAndAvoidsUnsupportedReferenceOptions();
-  testItemMenuUsesSelectedTargetAndShowsKeyItemPage();
+  testItemStartsOnUseTabOnly();
+  testUseFlowIsTabThenItemThenTargetThenBackToItem();
+  testArrangeApplyReturnsFocusToArrangeHeading();
+  testKeyItemsKeepReferenceTabFlowAndPartyRowsShowHpAndMp();
+  testCancelMovesBackOneInteractionLevel();
   testSceneRoutesItemMenuToPartyBackedInventoryWindow();
   console.log("Item menu presentation regression tests passed.");
 }
