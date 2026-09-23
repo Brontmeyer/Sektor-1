@@ -131,6 +131,7 @@ function createHarness() {
     "js/windows/Window_ListViewport.js",
     "js/windows/Window_TextLayout.js",
     "js/windows/Window_ActorSummary.js",
+    "js/windows/CharacterMenuLayout.js",
     "js/windows/Window_Inventory.js",
   ]
     .map(read)
@@ -181,8 +182,18 @@ function testItemMenuUsesSharedCharacterLanguageAndReferenceTabs() {
   assert.equal(includes(texts, "Tyler"), true);
   assert.equal(includes(texts, "Potion"), true);
   assert.equal(includes(texts, "Restores a small amount of HP."), true);
-  assert.equal(includes(texts, "PARTY"), true);
+  assert.equal(includes(texts, "PARTY"), false);
   assert.equal(includes(texts, "ITEMS"), true);
+  assert.equal(includes(texts, "MP 25/40"), true);
+
+  press(harness, "up");
+  const tabTexts = drawText(harness);
+  assert.equal(includes(tabTexts, "▶ Use"), true);
+
+  press(harness, "down");
+  press(harness, "left");
+  const targetTexts = drawText(harness);
+  assert.equal(includes(targetTexts, "▶ Tyler"), true);
 }
 
 function testItemMenuSupportsArrangePageAndAvoidsUnsupportedReferenceOptions() {

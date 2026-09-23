@@ -19,54 +19,21 @@ class Window_Equipment {
   }
 
   refreshLayout() {
-    const margin = Math.max(10, Math.min(18, Math.floor(Graphics.width * 0.012)));
-    const gap = 8;
-    const totalWidth = Graphics.width - margin * 2;
-    const totalHeight = Graphics.height - margin * 2;
-    const headerHeight = Math.max(150, Math.min(176, Math.floor(totalHeight * 0.25)));
-    const summaryWidth = Math.max(360, Math.floor(totalWidth * 0.72));
-    const descriptionHeight = 56;
+    const layout = CharacterMenuLayout.calculate();
+    const split = CharacterMenuLayout.split(layout.contentBounds, 0.52, {
+      gap: layout.gap,
+      minimumLeft: 480,
+    });
 
-    this.x = margin;
-    this.y = margin;
-    this.width = totalWidth;
-    this.height = totalHeight;
-
-    this.actorBounds = {
-      x: this.x,
-      y: this.y,
-      width: summaryWidth - gap,
-      height: headerHeight,
-    };
-    this.equippedBounds = {
-      x: this.x + summaryWidth,
-      y: this.y,
-      width: this.width - summaryWidth,
-      height: headerHeight,
-    };
-    this.descriptionBounds = {
-      x: this.x,
-      y: this.y + headerHeight + gap,
-      width: this.width,
-      height: descriptionHeight,
-    };
-
-    const contentY = this.descriptionBounds.y + descriptionHeight + gap;
-    const contentHeight = this.y + this.height - contentY;
-    const statWidth = Math.max(480, Math.floor((this.width - gap) * 0.52));
-
-    this.detailBounds = {
-      x: this.x,
-      y: contentY,
-      width: statWidth,
-      height: contentHeight,
-    };
-    this.listBounds = {
-      x: this.x + statWidth + gap,
-      y: contentY,
-      width: this.width - statWidth - gap,
-      height: contentHeight,
-    };
+    this.x = layout.x;
+    this.y = layout.y;
+    this.width = layout.width;
+    this.height = layout.height;
+    this.actorBounds = layout.actorBounds;
+    this.equippedBounds = layout.infoBounds;
+    this.descriptionBounds = layout.descriptionBounds;
+    this.detailBounds = split.left;
+    this.listBounds = split.right;
     this.selectWindow.setBounds(this.listBounds);
   }
 

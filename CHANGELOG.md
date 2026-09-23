@@ -12,6 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Refined ITEM Use-page presentation after hands-on review: removed the redundant PARTY heading, restored MP alongside HP for every active target card, separated the ITEMS heading from the sort label, and tightened four-member card geometry so footer/help text no longer competes with party vitals
+- Made ITEM focus ownership unmistakable with the project's established dim selection panel plus gold `▶` cursor for focused tabs, party targets, and item rows; the active page remains visible without masquerading as keyboard focus
+- Standardized MAGICK / SKILL / ESSENCE / EQUIP / STATUS / VALOR / ITEM top-header geometry through one shared `CharacterMenuLayout` contract so actor-summary and metadata panels align consistently across character-menu destinations
+
 - Renamed the player-facing Equip slot label from **Accessories** to singular **Accessory** to match the one-slot actor equipment contract
 
 - Fixed Equip stat-preview compression by reserving a dedicated footer strip and deriving stat-row spacing from the remaining detail height, preventing Magic Defense % / Critical rows from colliding with help text
@@ -21,6 +25,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added focused regression coverage for the Guard-style prompt flow and Scene_Map message/choice update ordering
 
 ### Added
+
+- Added Save Menu Presentation & Slot Summary v1 with a full-screen SAVE destination, shared menu-panel styling, three large save-slot cards, clear gold cursor focus, existing-save leader / level / location / timestamp / party / RUNES summaries, and truthful empty-slot presentation
+- Preserved Save Runtime v11 as the authority for persistence: the new SAVE screen only reads existing slot metadata and returns the chosen slot ID to `Scene_Menu`, avoiding a save-format bump or a second persistence path
+- Added shared Character Menu Layout Consistency and Save Menu Presentation regression coverage; LOAD temporarily inherits the shared slot-card renderer while its dedicated pass remains separate
 
 - Added Item Menu Presentation & Inventory Navigation v1 with the shared actor-summary header, ITEM metadata panel, description strip, and reference-inspired **Use / Arrange / Key Items** tabs
 - Added a party-targeted Use page that keeps the active roster visible while the player browses owned items, selects a target, and uses the existing `Game_Party.useItem()` runtime without inventing new item mechanics

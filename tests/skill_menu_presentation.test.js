@@ -93,6 +93,7 @@ function createHarness() {
       `${read("js/windows/Window_TextLayout.js")}\n` +
       `${read("js/windows/Window_ActorNavigator.js")}\n` +
       `${read("js/windows/Window_ActorSummary.js")}\n` +
+      `${read("js/windows/CharacterMenuLayout.js")}\n` +
       `${read("js/windows/Window_Skills.js")}\n` +
       `globalThis.__Window = Window_Skills;`,
     context,

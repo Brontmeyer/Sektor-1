@@ -17,54 +17,21 @@ class Window_Essence {
   }
 
   refreshLayout() {
-    const margin = Math.max(12, Math.min(22, Math.floor(Graphics.width * 0.014)));
-    const gap = 8;
-    const totalWidth = Graphics.width - margin * 2;
-    const totalHeight = Graphics.height - margin * 2;
-    const headerHeight = Math.max(150, Math.min(174, Math.floor(totalHeight * 0.245)));
-    const descriptionHeight = 56;
-    const infoWidth = Math.max(250, Math.min(320, Math.floor(totalWidth * 0.25)));
+    const layout = CharacterMenuLayout.calculate();
+    const split = CharacterMenuLayout.split(layout.contentBounds, 0.46, {
+      gap: layout.gap,
+      minimumLeft: 430,
+    });
 
-    this.x = margin;
-    this.y = margin;
-    this.width = totalWidth;
-    this.height = totalHeight;
-
-    this.actorBounds = {
-      x: this.x,
-      y: this.y,
-      width: this.width - infoWidth - gap,
-      height: headerHeight,
-    };
-    this.infoBounds = {
-      x: this.actorBounds.x + this.actorBounds.width + gap,
-      y: this.y,
-      width: infoWidth,
-      height: headerHeight,
-    };
-    this.descriptionBounds = {
-      x: this.x,
-      y: this.y + headerHeight + gap,
-      width: this.width,
-      height: descriptionHeight,
-    };
-
-    const contentY = this.descriptionBounds.y + descriptionHeight + gap;
-    const contentHeight = this.y + this.height - contentY;
-    const leftWidth = Math.max(430, Math.floor((this.width - gap) * 0.46));
-
-    this.listBounds = {
-      x: this.x,
-      y: contentY,
-      width: leftWidth,
-      height: contentHeight,
-    };
-    this.detailBounds = {
-      x: this.x + leftWidth + gap,
-      y: contentY,
-      width: this.width - leftWidth - gap,
-      height: contentHeight,
-    };
+    this.x = layout.x;
+    this.y = layout.y;
+    this.width = layout.width;
+    this.height = layout.height;
+    this.actorBounds = layout.actorBounds;
+    this.infoBounds = layout.infoBounds;
+    this.descriptionBounds = layout.descriptionBounds;
+    this.listBounds = split.left;
+    this.detailBounds = split.right;
   }
 
   members() {

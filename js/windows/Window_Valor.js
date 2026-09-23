@@ -13,45 +13,16 @@ class Window_Valor {
   }
 
   refreshLayout() {
-    const margin = Math.max(12, Math.min(22, Math.floor(Graphics.width * 0.014)));
-    const gap = 8;
-    const totalWidth = Graphics.width - margin * 2;
-    const totalHeight = Graphics.height - margin * 2;
-    const headerHeight = Math.max(150, Math.min(174, Math.floor(totalHeight * 0.245)));
-    const descriptionHeight = 56;
-    const infoWidth = Math.max(260, Math.min(326, Math.floor(totalWidth * 0.255)));
+    const layout = CharacterMenuLayout.calculate();
 
-    this.x = margin;
-    this.y = margin;
-    this.width = totalWidth;
-    this.height = totalHeight;
-
-    this.actorBounds = {
-      x: this.x,
-      y: this.y,
-      width: this.width - infoWidth - gap,
-      height: headerHeight,
-    };
-    this.infoBounds = {
-      x: this.actorBounds.x + this.actorBounds.width + gap,
-      y: this.y,
-      width: infoWidth,
-      height: headerHeight,
-    };
-    this.descriptionBounds = {
-      x: this.x,
-      y: this.y + headerHeight + gap,
-      width: this.width,
-      height: descriptionHeight,
-    };
-    this.progressionBounds = {
-      x: this.x,
-      y: this.descriptionBounds.y + descriptionHeight + gap,
-      width: this.width,
-      height:
-        this.y + this.height -
-        (this.descriptionBounds.y + descriptionHeight + gap),
-    };
+    this.x = layout.x;
+    this.y = layout.y;
+    this.width = layout.width;
+    this.height = layout.height;
+    this.actorBounds = layout.actorBounds;
+    this.infoBounds = layout.infoBounds;
+    this.descriptionBounds = layout.descriptionBounds;
+    this.progressionBounds = layout.contentBounds;
   }
 
   onActorChanged() {

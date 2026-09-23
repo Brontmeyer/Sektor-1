@@ -25,45 +25,16 @@ class Window_Inventory {
   }
 
   refreshLayout() {
-    const margin = Math.max(12, Math.min(22, Math.floor(Graphics.width * 0.014)));
-    const gap = 8;
-    const totalWidth = Graphics.width - margin * 2;
-    const totalHeight = Graphics.height - margin * 2;
-    const headerHeight = Math.max(150, Math.min(174, Math.floor(totalHeight * 0.245)));
-    const descriptionHeight = 56;
-    const infoWidth = Math.max(260, Math.min(320, Math.floor(totalWidth * 0.255)));
+    const layout = CharacterMenuLayout.calculate();
 
-    this.x = margin;
-    this.y = margin;
-    this.width = totalWidth;
-    this.height = totalHeight;
-
-    this.actorBounds = {
-      x: this.x,
-      y: this.y,
-      width: this.width - infoWidth - gap,
-      height: headerHeight,
-    };
-    this.infoBounds = {
-      x: this.actorBounds.x + this.actorBounds.width + gap,
-      y: this.y,
-      width: infoWidth,
-      height: headerHeight,
-    };
-    this.descriptionBounds = {
-      x: this.x,
-      y: this.y + headerHeight + gap,
-      width: this.width,
-      height: descriptionHeight,
-    };
-    this.contentBounds = {
-      x: this.x,
-      y: this.descriptionBounds.y + descriptionHeight + gap,
-      width: this.width,
-      height:
-        this.y + this.height -
-        (this.descriptionBounds.y + descriptionHeight + gap),
-    };
+    this.x = layout.x;
+    this.y = layout.y;
+    this.width = layout.width;
+    this.height = layout.height;
+    this.actorBounds = layout.actorBounds;
+    this.infoBounds = layout.infoBounds;
+    this.descriptionBounds = layout.descriptionBounds;
+    this.contentBounds = layout.contentBounds;
   }
 
   members() {
@@ -642,29 +613,44 @@ class Window_Inventory {
   drawTabs(context, bounds) {
     const tabLabels = ["Use", "Arrange", "Key Items"];
     const tabTop = bounds.y + 10;
-    const tabHeight = 28;
-    const totalTabWidth = Math.min(bounds.width - 40, 440);
+    const tabHeight = 30;
+    const totalTabWidth = Math.min(bounds.width - 40, 470);
     const tabWidth = Math.floor(totalTabWidth / tabLabels.length);
     const startX = bounds.x + 18;
 
     context.save();
     context.textBaseline = "middle";
-    context.textAlign = "center";
+    context.textAlign = "left";
 
     tabLabels.forEach((label, index) => {
       const x = startX + index * tabWidth;
-      const selected = this.pageIndex === index;
-      const focused = selected && this.focusArea === "tabs";
+      const activePage = this.pageIndex === index;
+      const focused = activePage && this.focusArea === "tabs";
 
-      if (selected) {
-        this.drawSelection(context, x, tabTop - 2, tabWidth - 8, tabHeight, {
-          fallbackFill: focused ? "rgba(127, 240, 213, 0.18)" : "rgba(255, 215, 90, 0.12)",
-        });
+      if (focused) {
+        this.drawSelection(context, x, tabTop - 2, tabWidth - 8, tabHeight);
       }
 
-      context.fillStyle = selected ? "#ffffff" : "#aebbd0";
-      context.font = selected ? "600 17px sans-serif" : "16px sans-serif";
-      context.fillText(label, x + (tabWidth - 8) / 2, tabTop + tabHeight / 2 - 1);
+      context.fillStyle = focused
+        ? "#ffd75a"
+        : activePage
+          ? "#ffffff"
+          : "#aebbd0";
+      context.font = focused ? "600 17px sans-serif" : "16px sans-serif";
+      context.fillText(
+        `${focused ? "▶ " : "  "}${label}`,
+        x + 10,
+        tabTop + tabHeight / 2 - 1,
+      );
+
+      if (activePage && !focused) {
+        context.strokeStyle = "rgba(127, 240, 213, 0.72)";
+        context.lineWidth = 2;
+        context.beginPath();
+        context.moveTo(x + 10, tabTop + tabHeight - 1);
+        context.lineTo(x + tabWidth - 18, tabTop + tabHeight - 1);
+        context.stroke();
+      }
     });
 
     context.strokeStyle = "rgba(210, 222, 242, 0.28)";
@@ -688,59 +674,83 @@ class Window_Inventory {
   }
 
   drawPartyMemberRow(context, actor, bounds, selected) {
+    const focused =
+      selected &&
+      this.useFocus === "targets" &&
+      this.pageIndex === 0 &&
+      this.focusArea === "content";
+
     this.drawPanel(context, bounds, {
-      assetAlpha: 0.36,
+      assetAlpha: 0.34,
       fallbackStroke: selected
-        ? "rgba(255, 215, 90, 0.92)"
+        ? "rgba(127, 240, 213, 0.66)"
         : "rgba(150, 176, 220, 0.46)",
       innerStroke: selected
-        ? "rgba(255, 230, 140, 0.25)"
+        ? "rgba(127, 240, 213, 0.16)"
         : "rgba(232, 234, 255, 0.1)",
     });
 
-    if (selected && this.useFocus === "targets" && this.pageIndex === 0 && this.focusArea === "content") {
-      this.drawSelection(context, bounds.x + 8, bounds.y + 8, bounds.width - 16, bounds.height - 16);
+    if (focused) {
+      this.drawSelection(
+        context,
+        bounds.x + 7,
+        bounds.y + 6,
+        bounds.width - 14,
+        bounds.height - 12,
+      );
     }
 
     context.save();
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
-    context.fillStyle = "#ffffff";
-    context.font = "600 17px sans-serif";
-    context.fillText(actor?.name || "Unknown", bounds.x + 12, bounds.y + 24);
+    context.fillStyle = focused ? "#ffd75a" : "#ffffff";
+    context.font = focused ? "600 16px sans-serif" : "600 16px sans-serif";
+    context.fillText(
+      `${focused ? "▶ " : "  "}${actor?.name || "Unknown"}`,
+      bounds.x + 10,
+      bounds.y + 18,
+    );
 
     context.fillStyle = "#ffd75a";
-    context.font = "600 14px sans-serif";
-    context.fillText(`LV ${actor?.level ?? "?"}`, bounds.x + 12, bounds.y + 45);
+    context.font = "600 13px sans-serif";
+    context.fillText(`LV ${actor?.level ?? "?"}`, bounds.x + 12, bounds.y + 34);
 
     context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.fillText(this.statusText(actor), bounds.x + 90, bounds.y + 45);
+    context.font = "12px sans-serif";
+    context.fillText(this.statusText(actor), bounds.x + 88, bounds.y + 34);
 
     const gaugeX = bounds.x + 12;
     const gaugeWidth = Math.max(80, bounds.width - 24);
 
     context.fillStyle = this.resourceText("hp");
-    context.font = "600 13px sans-serif";
-    context.fillText(`HP ${Math.floor(actor?.hp ?? 0)}/${Math.floor(actor?.maxHp ?? 0)}`, gaugeX, bounds.y + 65);
+    context.font = "600 12px sans-serif";
+    context.fillText(
+      `HP ${Math.floor(actor?.hp ?? 0)}/${Math.floor(actor?.maxHp ?? 0)}`,
+      gaugeX,
+      bounds.y + 51,
+    );
     Window_ActorSummary.drawGauge(
       context,
       actor?.hp ?? 0,
       actor?.maxHp ?? 0,
       gaugeX,
-      bounds.y + 70,
+      bounds.y + 55,
       gaugeWidth,
       "hp",
     );
 
     context.fillStyle = this.resourceText("mp");
-    context.fillText(`MP ${Math.floor(actor?.mp ?? 0)}/${Math.floor(actor?.maxMp ?? 0)}`, gaugeX, bounds.y + 88);
+    context.fillText(
+      `MP ${Math.floor(actor?.mp ?? 0)}/${Math.floor(actor?.maxMp ?? 0)}`,
+      gaugeX,
+      bounds.y + 68,
+    );
     Window_ActorSummary.drawGauge(
       context,
       actor?.mp ?? 0,
       actor?.maxMp ?? 0,
       gaugeX,
-      bounds.y + 93,
+      bounds.y + 72,
       gaugeWidth,
       "mp",
     );
@@ -776,42 +786,49 @@ class Window_Inventory {
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.fillStyle = "#7ff0d5";
-    context.font = "600 18px sans-serif";
-    context.fillText("PARTY", area.bodyX + 6, area.bodyY + 10);
-    context.fillText("ITEMS", rightX + 6, area.bodyY + 10);
 
     context.strokeStyle = "rgba(210, 222, 242, 0.28)";
     context.lineWidth = 1;
     context.beginPath();
-    context.moveTo(area.bodyX + leftWidth + 8, area.bodyY + 4);
+    context.moveTo(area.bodyX + leftWidth + 8, area.bodyY + 2);
     context.lineTo(area.bodyX + leftWidth + 8, area.bodyY + area.bodyHeight - 4);
     context.stroke();
+
+    context.fillStyle = "#7ff0d5";
+    context.font = "600 18px sans-serif";
+    context.fillText("ITEMS", rightX + 8, area.bodyY + 12);
+    context.textAlign = "right";
+    context.fillStyle = "#aebbd0";
+    context.font = "14px sans-serif";
+    context.fillText(
+      `Sort: ${this.sortLabel()}`,
+      rightX + rightWidth - 12,
+      area.bodyY + 12,
+    );
+    context.textAlign = "left";
 
     if (members.length === 0) {
       context.fillStyle = "#8897ac";
       context.font = "16px sans-serif";
-      context.fillText("No active party members.", area.bodyX + 14, area.bodyY + 48);
+      context.fillText("No active party members.", area.bodyX + 10, area.bodyY + 34);
     } else {
-      const rowHeight = Math.max(78, Math.min(98, Math.floor((area.bodyHeight - 30) / Math.max(1, members.length))));
+      const rowHeight = Math.max(76, Math.floor(area.bodyHeight / Math.max(1, members.length)));
+      const cardHeight = Math.max(76, rowHeight - 4);
+
       members.forEach((member, index) => {
         this.drawPartyMemberRow(
           context,
           member,
           {
             x: area.bodyX,
-            y: area.bodyY + 24 + index * rowHeight,
+            y: area.bodyY + index * rowHeight,
             width: leftWidth,
-            height: rowHeight - 8,
+            height: cardHeight,
           },
           index === this.targetIndex,
         );
       });
     }
-
-    context.fillStyle = "#aebbd0";
-    context.font = "14px sans-serif";
-    context.fillText(`Sort: ${this.sortLabel()}`, rightX + 8, area.bodyY + 10);
 
     if (items.length === 0) {
       context.fillStyle = "#8897ac";
@@ -822,7 +839,7 @@ class Window_Inventory {
     }
 
     const rowHeight = 30;
-    const listTop = area.bodyY + 42;
+    const listTop = area.bodyY + 44;
     const range = this.itemViewport.visibleRange(this.itemIndex, items.length);
 
     for (let i = range.start; i < range.end; i++) {
@@ -830,14 +847,20 @@ class Window_Inventory {
       const item = this.itemRecord(itemId);
       const y = listTop + (i - range.start) * rowHeight;
       const selected = i === this.itemIndex;
+      const focused =
+        selected && this.useFocus === "items" && this.focusArea === "content";
 
-      if (selected) {
+      if (focused) {
         this.drawSelection(context, rightX + 6, y - 15, rightWidth - 20, 28);
       }
 
-      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
-      context.font = selected ? "600 17px sans-serif" : "17px sans-serif";
-      context.fillText(`${selected && this.useFocus === "items" && this.focusArea === "content" ? "▶ " : "  "}${item?.name || `Item ${itemId}`}`, rightX + 12, y);
+      context.fillStyle = focused ? "#ffd75a" : selected ? "#ffffff" : "#f0f3f7";
+      context.font = focused ? "600 17px sans-serif" : "17px sans-serif";
+      context.fillText(
+        `${focused ? "▶ " : "  "}${item?.name || `Item ${itemId}`}`,
+        rightX + 12,
+        y,
+      );
 
       context.textAlign = "right";
       context.fillStyle = "#ffffff";

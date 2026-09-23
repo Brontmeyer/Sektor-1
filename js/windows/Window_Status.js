@@ -15,36 +15,15 @@ class Window_Status {
   }
 
   refreshLayout() {
-    const margin = Math.max(8, Math.min(16, Math.floor(Graphics.width * 0.01)));
-    const gap = 8;
-    const totalWidth = Graphics.width - margin * 2;
-    const totalHeight = Graphics.height - margin * 2;
-    const headerHeight = Math.max(150, Math.min(176, Math.floor(totalHeight * 0.24)));
-    const actorWidth = Math.max(620, Math.floor(totalWidth * 0.74));
+    const layout = CharacterMenuLayout.calculate({ description: false });
 
-    this.x = margin;
-    this.y = margin;
-    this.width = totalWidth;
-    this.height = totalHeight;
-
-    this.actorBounds = {
-      x: this.x,
-      y: this.y,
-      width: actorWidth - gap,
-      height: headerHeight,
-    };
-    this.metaBounds = {
-      x: this.x + actorWidth,
-      y: this.y,
-      width: this.width - actorWidth,
-      height: headerHeight,
-    };
-    this.contentBounds = {
-      x: this.x,
-      y: this.y + headerHeight + gap,
-      width: this.width,
-      height: this.height - headerHeight - gap,
-    };
+    this.x = layout.x;
+    this.y = layout.y;
+    this.width = layout.width;
+    this.height = layout.height;
+    this.actorBounds = layout.actorBounds;
+    this.metaBounds = layout.infoBounds;
+    this.contentBounds = layout.contentBounds;
   }
 
   changeActor(offset) {
