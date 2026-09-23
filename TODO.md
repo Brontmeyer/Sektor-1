@@ -106,6 +106,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Continue final UI skin curation after hands-on visual review; keep all art swappable through `UIAssetManager`
 - [x] Add Window Color Customization v1 under Config with four persistent corners, live preview, RGB editing/reset, and centralized shared-panel tinting through Config Runtime v3 / `UIAssetManager`
 - [x] Add Config Menu Presentation v1 with unified framed layout, contextual description header, project-standard focus cues, and preserved Controls / Window Color routing
+- [x] Add Config Submenu Presentation Consistency v1 with shared CONFIG / CONTROLS / WINDOW COLOR geometry, contextual editor guidance, and no duplicate config ownership
+- [x] Vertically center shared character-menu description strips while preserving left alignment and consistent wrapped-text bounds
 - [x] Unify field dialogue / choices with the shared tintable window-panel language and configured Window Color palette
 - [x] Remove permanent key-legend footers from established menu destinations while preserving contextual instructions for specialized editors / interactions
 - [x] Align EQUIP / ESSENCE lower panes to one shared center split and move ITEM tabs above the item-side pane so four actor cards retain full HP/MP presentation

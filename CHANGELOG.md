@@ -12,6 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Standardized the ITEM Arrange / Key Items empty-state vertical rhythm so the heading-to-message gap no longer jumps when switching pages
+- Vertically centered the shared character-menu description strips while preserving left alignment, using one `Window_TextLayout` helper across Magick / Skill / Essence / Equip / Valor / Item
+- Reworked Controls and Window Color into the same CONFIG-family header/content geometry as the main Config screen, moving specialized instructions into the contextual header instead of permanent footer legends
+
 - Unified field dialogue and choice presentation with the same tintable framed panel system used by the rest of Sektor 1, including configured window colors and the project-standard dim selection rectangle plus gold `▶` focus cursor
 - Reworked ITEM lower-panel composition so **Use / Arrange / Key Items** live above the item-side pane, the actor/item divider runs the full content height, and four active-party cards gain enough vertical room to keep LV / status / HP / MP and both gauges inside their frames
 - Standardized the EQUIP and ESSENCE lower-content divider on the same 50/50 split so their two-panel layouts meet at one consistent center line
@@ -38,6 +42,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added focused regression coverage for the Guard-style prompt flow and Scene_Map message/choice update ordering
 
 ### Added
+
+- Added shared `ConfigMenuLayout` ownership for CONFIG / CONTROLS / WINDOW COLOR outer geometry, semantic panels, header composition, and focus selection styling
+- Added Config Submenu Presentation and Description Strip Vertical Alignment regression suites to protect shared Config-family geometry, centered description text, and ITEM heading spacing
 
 - Added Field Dialogue Window Presentation regression coverage for shared semantic panel roles, configured-window-color eligibility, and standard choice focus presentation
 - Added Menu Hint Cleanup regression coverage plus ITEM pane-placement and EQUIP/ESSENCE center-split consistency assertions

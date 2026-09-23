@@ -155,6 +155,7 @@ function testPrimaryConsumersRequestSemanticRoles() {
   const battleItem = read("js/windows/Window_BattleItem.js");
   const options = read("js/windows/Window_Options.js");
   const controls = read("js/windows/Window_Controls.js");
+  const configLayout = read("js/windows/ConfigMenuLayout.js");
   const menu = read("js/windows/Window_MenuCommand.js");
 
   assert.match(battleRenderer, /"battlePanel"/);
@@ -167,10 +168,11 @@ function testPrimaryConsumersRequestSemanticRoles() {
     assert.match(selector, /drawSelectionPanel/);
   }
 
-  assert.match(options, /"menuPanel"/);
-  assert.match(options, /drawSelectionPanel/);
-  assert.match(controls, /"menuPanel"/);
-  assert.match(controls, /drawSelectionPanel/);
+  assert.match(options, /ConfigMenuLayout\.drawPanel/);
+  assert.match(options, /ConfigMenuLayout\.drawSelection/);
+  assert.match(controls, /ConfigMenuLayout\.drawPanel|ConfigMenuLayout\.drawSelection/);
+  assert.match(configLayout, /"menuPanel"/);
+  assert.match(configLayout, /drawSelectionPanel/);
   assert.match(menu, /"menuPanel"/);
   assert.match(menu, /drawSelectionPanel/);
 
@@ -182,6 +184,7 @@ function testPrimaryConsumersRequestSemanticRoles() {
     battleItem,
     options,
     controls,
+    configLayout,
     menu,
   ]) {
     assert.equal(

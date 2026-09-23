@@ -722,11 +722,11 @@ class Window_Inventory {
       typeof Window_TextLayout !== "undefined" &&
       Window_TextLayout.drawWrappedText
     ) {
-      Window_TextLayout.drawWrappedText(
+      Window_TextLayout.drawWrappedTextCentered(
         context,
         this.pageDescription(),
         bounds.x + 18,
-        bounds.y + 21,
+        bounds.y + bounds.height / 2,
         bounds.width - 36,
         18,
         2,
@@ -1209,8 +1209,8 @@ class Window_Inventory {
       context.font = "16px sans-serif";
       context.fillText(
         "No key items owned.",
-        columns.rightX + 14,
-        columns.rightBodyY + 52,
+        columns.rightX + 12,
+        columns.rightBodyY + 46,
       );
       context.restore();
       return;

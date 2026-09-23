@@ -32,17 +32,21 @@ function testEstablishedMenuDestinationsDoNotCarryPermanentKeyHintFooters() {
   }
 }
 
-function testContextHeavyEditorsMayKeepTheirOwnInstructions() {
+function testContextHeavyEditorsPutInstructionsInTheSharedHeader() {
   const controls = read("js/windows/Window_Controls.js");
   const windowColor = read("js/windows/Window_WindowColor.js");
 
-  assert.match(controls, /actionLabel/);
-  assert.match(windowColor, /actionLabel/);
+  assert.match(controls, /currentDescription\(\)/);
+  assert.match(controls, /ConfigMenuLayout\.drawHeader/);
+  assert.match(windowColor, /currentDescription\(\)/);
+  assert.match(windowColor, /ConfigMenuLayout\.drawHeader/);
+  assert.doesNotMatch(controls, /actionLabel/);
+  assert.doesNotMatch(windowColor, /actionLabel/);
 }
 
 function run() {
   testEstablishedMenuDestinationsDoNotCarryPermanentKeyHintFooters();
-  testContextHeavyEditorsMayKeepTheirOwnInstructions();
+  testContextHeavyEditorsPutInstructionsInTheSharedHeader();
   console.log("Menu hint cleanup regression tests passed.");
 }
 

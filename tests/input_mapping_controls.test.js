@@ -126,6 +126,7 @@ function loadControlsHarness() {
     fillStyle: "", strokeStyle: "", lineWidth: 0, font: "",
     textAlign: "", textBaseline: "",
     save() {}, restore() {}, fillRect() {}, strokeRect() {},
+    beginPath() {}, moveTo() {}, lineTo() {}, stroke() {},
     fillText(...args) { drawCalls.push(args); },
   };
   const context = vm.createContext({
@@ -138,6 +139,7 @@ function loadControlsHarness() {
 
   vm.runInContext(
     `${read("js/core/ConfigManager.js")}\n${read("js/core/Input.js")}\n` +
+      `${read("js/windows/ConfigMenuLayout.js")}\n` +
       `${read("js/windows/Window_Controls.js")}\n` +
       `globalThis.__classes = { ConfigManager, Input, Window_Controls };`,
     context,

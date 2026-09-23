@@ -20,12 +20,16 @@ class Window_Controls {
       },
     ];
 
-    this.x = 120;
-    this.y = 110;
-    this.width = Graphics.width - 240;
-    this.height = Graphics.height - 180;
-    this.padding = 28;
-    this.lineHeight = 38;
+    this.refreshLayout();
+  }
+
+  refreshLayout() {
+    this.layout = ConfigMenuLayout.calculate();
+    this.x = this.layout.x;
+    this.y = this.layout.y;
+    this.width = this.layout.width;
+    this.height = this.layout.height;
+    this.contentBounds = this.layout.contentBounds;
   }
 
   currentEntry() {
@@ -40,6 +44,29 @@ class Window_Controls {
     }
 
     return ConfigManager.bindingSlots(entry.action)[this.slotIndex] || null;
+  }
+
+  currentDescription() {
+    if (this.message) {
+      return this.message;
+    }
+
+    const entry = this.currentEntry();
+
+    if (!entry) {
+      return "Configure keyboard controls.";
+    }
+
+    if (this.capturing && entry.type === "binding") {
+      const slot = this.slotIndex === 0 ? "Primary" : "Secondary";
+      return `Press a key for ${entry.label} (${slot}). Backspace cancels; Delete clears this slot.`;
+    }
+
+    if (entry.type === "reset") {
+      return "Restore every keyboard binding to the Sektor 1 defaults.";
+    }
+
+    return `Choose Primary or Secondary with Left/Right, then press Enter to rebind ${entry.label}.`;
   }
 
   update() {
@@ -69,11 +96,13 @@ class Window_Controls {
     if (entry?.type === "binding") {
       if (Input.isActionTriggered("left")) {
         this.slotIndex = 0;
+        this.message = "";
         return true;
       }
 
       if (Input.isActionTriggered("right")) {
         this.slotIndex = 1;
+        this.message = "";
         return true;
       }
     }
@@ -87,7 +116,7 @@ class Window_Controls {
 
       if (entry?.type === "binding") {
         this.capturing = true;
-        this.message = "Press a key. Backspace cancels; Delete clears this slot.";
+        this.message = "";
         return true;
       }
     }
@@ -135,85 +164,64 @@ class Window_Controls {
     return true;
   }
 
-  draw() {
-    const context = Graphics.context;
-    const contentX = this.x + this.padding;
-    const primaryX = this.x + this.width - 300;
-    const secondaryX = this.x + this.width - 120;
+  drawHeader(context) {
+    ConfigMenuLayout.drawHeader(context, this.layout, {
+      title: "CONTROLS",
+      subtitle: "INPUT",
+      description: this.currentDescription(),
+    });
+  }
+
+  drawContent(context) {
+    const bounds = this.contentBounds;
+    const headingY = bounds.y + 30;
+    const rowStartY = bounds.y + 70;
+    const rowHeight = Math.max(
+      38,
+      Math.min(46, Math.floor((bounds.height - 88) / this.entries.length)),
+    );
+    const labelX = bounds.x + 30;
+    const primaryX = bounds.x + bounds.width - 310;
+    const secondaryX = bounds.x + bounds.width - 120;
+
+    ConfigMenuLayout.drawPanel(context, bounds);
 
     context.save();
-    if (
-      typeof UIAssetManager !== "undefined" &&
-      typeof UIAssetManager.drawPanel === "function"
-    ) {
-      UIAssetManager.drawPanel(
-        context,
-        "menuPanel",
-        this.x,
-        this.y,
-        this.width,
-        this.height,
-        {
-          fallbackFill: "rgba(15, 18, 22, 0.95)",
-          fallbackStroke: "rgba(154, 183, 204, 0.66)",
-          lineWidth: 1.5,
-          assetAlpha: 0.58,
-          sourceMargin: 12,
-          destMargin: 13,
-        },
-      );
-    } else {
-      context.fillStyle = "rgba(15, 18, 22, 0.95)";
-      context.fillRect(this.x, this.y, this.width, this.height);
-      context.strokeStyle = "rgba(154, 183, 204, 0.66)";
-      context.lineWidth = 1.5;
-      context.strokeRect(this.x, this.y, this.width, this.height);
-    }
-
     context.textBaseline = "middle";
-    context.font = "16px Arial";
-    context.fillStyle = "#8392a4";
+    context.font = "15px sans-serif";
+    context.fillStyle = "#aebbd0";
+    context.textAlign = "left";
+    context.fillText("ACTION", labelX, headingY);
     context.textAlign = "center";
-    context.fillText("Primary", primaryX, this.y + 30);
-    context.fillText("Secondary", secondaryX, this.y + 30);
+    context.fillText("PRIMARY", primaryX, headingY);
+    context.fillText("SECONDARY", secondaryX, headingY);
+
+    context.strokeStyle = "rgba(210, 222, 242, 0.24)";
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(bounds.x + 18, bounds.y + 50);
+    context.lineTo(bounds.x + bounds.width - 18, bounds.y + 50);
+    context.stroke();
 
     for (let i = 0; i < this.entries.length; i++) {
       const entry = this.entries[i];
       const selected = i === this.index;
-      const rowY = this.y + 60 + i * this.lineHeight;
+      const rowY = rowStartY + i * rowHeight;
 
       if (selected) {
-        const selectionX = this.x + 12;
-        const selectionY = rowY - this.lineHeight / 2 + 4;
-        const selectionWidth = this.width - 24;
-        const selectionHeight = this.lineHeight - 8;
-        const assetSelectionDrawn =
-          typeof UIAssetManager !== "undefined" &&
-          typeof UIAssetManager.drawSelectionPanel === "function" &&
-          UIAssetManager.drawSelectionPanel(
-            context,
-            selectionX,
-            selectionY,
-            selectionWidth,
-            selectionHeight,
-            { alpha: 0.18 },
-          );
-
-        if (!assetSelectionDrawn) {
-          context.fillStyle = "rgba(255, 215, 90, 0.09)";
-          context.fillRect(
-            selectionX,
-            selectionY,
-            selectionWidth,
-            selectionHeight,
-          );
-        }
+        ConfigMenuLayout.drawSelection(
+          context,
+          bounds.x + 16,
+          rowY - rowHeight / 2 + 4,
+          bounds.width - 32,
+          rowHeight - 8,
+        );
       }
 
       context.textAlign = "left";
-      context.font = "19px Arial";
+      context.font = selected ? "600 18px sans-serif" : "18px sans-serif";
       context.fillStyle = selected ? "#ffd75a" : "#ffffff";
-      context.fillText(`${selected ? "▶ " : "  "}${entry.label}`, contentX, rowY);
+      context.fillText(`${selected ? "▶ " : "  "}${entry.label}`, labelX, rowY);
 
       if (entry.type !== "binding") {
         continue;
@@ -223,7 +231,9 @@ class Window_Controls {
       const drawSlot = (slot, x) => {
         const slotSelected = selected && this.slotIndex === slot;
         const capturing = slotSelected && this.capturing;
+
         context.textAlign = "center";
+        context.font = slotSelected ? "600 17px sans-serif" : "17px sans-serif";
         context.fillStyle = capturing
           ? "#7fe7ff"
           : slotSelected
@@ -240,17 +250,15 @@ class Window_Controls {
       drawSlot(1, secondaryX);
     }
 
-    const footerY = this.y + this.height - 44;
-    context.textAlign = "left";
-    context.font = "15px Arial";
-    context.fillStyle = this.message ? "#d8e9f7" : "#8fa1b5";
-    context.fillText(
-      this.message ||
-        `${Input.actionLabel("confirm")}: Rebind   ${Input.actionLabel("cancel")}: Back`,
-      contentX,
-      footerY,
-    );
+    context.restore();
+  }
 
+  draw() {
+    this.refreshLayout();
+    const context = Graphics.context;
+    context.save();
+    this.drawHeader(context);
+    this.drawContent(context);
     context.restore();
   }
 }

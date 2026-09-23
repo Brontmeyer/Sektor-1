@@ -205,7 +205,7 @@ function testConfigRenameAndWhiteRunesValueArePlayerFacingOnly() {
   assert.doesNotMatch(menu, /"Option"/);
   assert.match(sceneMenu, /case "Config":/);
   assert.doesNotMatch(sceneMenu, /case "Option":/);
-  assert.match(optionsWindow, /fillText\("CONFIG"/);
+  assert.match(optionsWindow, /title: "CONFIG"/);
   assert.match(sceneOptions, /this\.optionsWindow\.draw\(\)/);
   assert.match(
     sceneMenu,

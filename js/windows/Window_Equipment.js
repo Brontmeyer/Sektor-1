@@ -276,11 +276,11 @@ class Window_Equipment {
     context.font = "16px sans-serif";
 
     if (typeof Window_TextLayout !== "undefined" && Window_TextLayout.drawWrappedText) {
-      Window_TextLayout.drawWrappedText(
+      Window_TextLayout.drawWrappedTextCentered(
         context,
         this.descriptionText(),
         bounds.x + 18,
-        bounds.y + 21,
+        bounds.y + bounds.height / 2,
         bounds.width - 36,
         18,
         2,

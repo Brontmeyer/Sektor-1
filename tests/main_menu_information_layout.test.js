@@ -256,7 +256,7 @@ function testSingularHeadingContractAndLoadOrder() {
   assert.match(skills, /"SKILL"/);
   assert.match(essence, /"ESSENCE"/);
   assert.match(equipment, /"EQUIP"/);
-  assert.match(options, /fillText\("CONFIG"/);
+  assert.match(options, /title: "CONFIG"/);
 
   const layoutIndex = index.indexOf("MainMenuLayout.js");
   const partyIndex = index.indexOf("Window_MainMenuParty.js");

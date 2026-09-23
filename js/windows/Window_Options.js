@@ -28,36 +28,17 @@ class Window_Options {
   }
 
   refreshLayout() {
-    const margin = Math.max(12, Math.min(22, Math.floor(Graphics.width * 0.014)));
-    const gap = 8;
-    const width = Graphics.width - margin * 2;
-    const height = Graphics.height - margin * 2;
-    const headerHeight = 70;
-    const titleWidth = Math.max(250, Math.min(320, Math.floor(width * 0.255)));
+    const layout = ConfigMenuLayout.calculate();
 
-    this.x = margin;
-    this.y = margin;
-    this.width = width;
-    this.height = height;
-    this.gap = gap;
-    this.descriptionBounds = {
-      x: margin,
-      y: margin,
-      width: width - titleWidth - gap,
-      height: headerHeight,
-    };
-    this.titleBounds = {
-      x: margin + width - titleWidth,
-      y: margin,
-      width: titleWidth,
-      height: headerHeight,
-    };
-    this.contentBounds = {
-      x: margin,
-      y: margin + headerHeight + gap,
-      width,
-      height: height - headerHeight - gap,
-    };
+    this.x = layout.x;
+    this.y = layout.y;
+    this.width = layout.width;
+    this.height = layout.height;
+    this.gap = layout.gap;
+    this.layout = layout;
+    this.descriptionBounds = layout.descriptionBounds;
+    this.titleBounds = layout.titleBounds;
+    this.contentBounds = layout.contentBounds;
   }
 
   currentOption() {
@@ -114,81 +95,19 @@ class Window_Options {
   }
 
   drawPanel(context, bounds, options = {}) {
-    if (
-      typeof UIAssetManager !== "undefined" &&
-      typeof UIAssetManager.drawPanel === "function"
-    ) {
-      return UIAssetManager.drawPanel(
-        context,
-        "menuPanel",
-        bounds.x,
-        bounds.y,
-        bounds.width,
-        bounds.height,
-        {
-          fallbackFill: "rgba(11, 16, 28, 0.96)",
-          fallbackStroke: "rgba(150, 176, 220, 0.78)",
-          innerStroke: "rgba(232, 234, 255, 0.14)",
-          lineWidth: 1.5,
-          assetAlpha: 0.54,
-          sourceMargin: 12,
-          destMargin: 12,
-          ...options,
-        },
-      );
-    }
-
-    context.fillStyle = options.fallbackFill || "rgba(11, 16, 28, 0.96)";
-    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    context.strokeStyle =
-      options.fallbackStroke || "rgba(150, 176, 220, 0.78)";
-    context.lineWidth = 1.5;
-    context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    return false;
+    return ConfigMenuLayout.drawPanel(context, bounds, options);
   }
 
   drawSelection(context, x, y, width, height) {
-    const drawn =
-      typeof UIAssetManager !== "undefined" &&
-      typeof UIAssetManager.drawSelectionPanel === "function" &&
-      UIAssetManager.drawSelectionPanel(context, x, y, width, height, {
-        alpha: 0.2,
-      });
-
-    if (!drawn) {
-      context.fillStyle = "rgba(255, 215, 90, 0.1)";
-      context.fillRect(x, y, width, height);
-    }
+    return ConfigMenuLayout.drawSelection(context, x, y, width, height);
   }
 
   drawHeader(context) {
-    const option = this.currentOption();
-    const description = this.descriptionBounds;
-    const title = this.titleBounds;
-
-    this.drawPanel(context, description, { assetAlpha: 0.46 });
-    this.drawPanel(context, title, { assetAlpha: 0.54 });
-
-    context.save();
-    context.textBaseline = "middle";
-    context.textAlign = "left";
-    context.fillStyle = "#ffffff";
-    context.font = "17px sans-serif";
-    context.fillText(
-      option?.description || "Configure Sektor 1.",
-      description.x + 20,
-      description.y + description.height / 2,
-      description.width - 40,
-    );
-
-    context.textAlign = "center";
-    context.fillStyle = "#ffffff";
-    context.font = "600 22px sans-serif";
-    context.fillText("CONFIG", title.x + title.width / 2, title.y + 27);
-    context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.fillText("SYSTEM", title.x + title.width / 2, title.y + 50);
-    context.restore();
+    ConfigMenuLayout.drawHeader(context, this.layout, {
+      title: "CONFIG",
+      subtitle: "SYSTEM",
+      description: this.currentOption()?.description || "Configure Sektor 1.",
+    });
   }
 
   optionValue(option) {

@@ -46,7 +46,7 @@ function createHarness() {
   });
 
   vm.runInContext(
-    `${read("js/core/ConfigManager.js")}\n${read("js/windows/Window_Options.js")}\nglobalThis.__classes = { ConfigManager, Window_Options };`,
+    `${read("js/core/ConfigManager.js")}\n${read("js/windows/ConfigMenuLayout.js")}\n${read("js/windows/Window_Options.js")}\nglobalThis.__classes = { ConfigManager, Window_Options };`,
     context,
   );
 

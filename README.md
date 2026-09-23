@@ -55,6 +55,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Game Options / Config Foundation v1
 -   ✅ Field Choice Prompt Reveal hotfix
 -   ✅ Custom Controls / Input Mapping v1
+-   ✅ Config Submenu Presentation Consistency v1
 -   ✅ Battle UI / Presentation Polish v1
 -   ✅ Asset / UI Skinning Foundation v1
 -   ✅ UI Style Integration Prototype v1
@@ -164,6 +165,8 @@ The main menu presents the active four party members through dedicated actor car
 **Save / Load File Menu Presentation v1** uses one shared reference-inspired file browser for both commands. A compact header reads **Select a file. / FILE 01 / SAVE** (or LOAD), while three large horizontal file cards dedicate separate space to larger saved-party portrait placeholders, leader / level / location, and saved date-time / persistent **TIME** / RUNES. The location box deliberately stops short of the right metadata divider so the center and metadata regions do not visually collide. Empty files read **EMPTY** plainly. `Window_SaveSlots` remains presentation/selection only: SAVE still calls `SaveManager.save()` and LOAD still calls `SaveManager.load()` through `Scene_Menu`. Save Runtime remains v11; play time is additive optional metadata, so older v11 files load with a zero clock rather than requiring a format migration.
 
 **Config Menu Presentation v1** replaces the older gray standalone options sheet with Sektor 1's established framed menu language. A compact top split keeps the selected setting description on the left and **CONFIG** identity on the right; the lower panel gives each setting a spacious row with the project-standard dim focus rectangle and gold `▶` cursor. Existing `ConfigManager` values remain authoritative, while **Window Color** and **Controls** continue opening their dedicated editors instead of duplicating configuration state inside the presentation layer.
+
+**Config Submenu Presentation Consistency v1** gives **CONTROLS** and **WINDOW COLOR** the same description/title header split and framed content geometry as CONFIG through shared `ConfigMenuLayout`. Specialized rebinding and RGB-edit instructions now live in the contextual header instead of footer legends, while `ConfigManager` remains the sole authority for bindings and window colors. Character-menu description strips now use shared vertically centered wrapped text so one- and two-line descriptions sit naturally in the middle without losing left alignment.
 
 **Field Dialogue Window Presentation v1** brings `Window_Message` and `Window_Choice` onto the same semantic `menuPanel` / `accentPanel` rendering path used by the rest of the UI, so player-configured Window Color affects dialogue instead of leaving field conversations as separate black-and-white boxes. Choice focus uses the same dim selection surface and gold `▶` cursor language as menus. The existing typewriter timing and one-owner choice input behavior are unchanged; dialogue continuation keeps its contextual prompt because revealing/advancing text is a stateful interaction rather than a permanent menu legend.
 

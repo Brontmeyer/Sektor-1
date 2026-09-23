@@ -133,6 +133,7 @@ function colorEditorHarness() {
     restore() {},
     fillRect(...args) { drawCalls.push(["fillRect", this.fillStyle, ...args]); },
     strokeRect(...args) { drawCalls.push(["strokeRect", this.strokeStyle, ...args]); },
+    beginPath() {}, moveTo() {}, lineTo() {}, stroke() {},
     fillText(...args) { drawCalls.push(["fillText", ...args]); },
   };
   const actionCodes = {
@@ -165,6 +166,7 @@ function colorEditorHarness() {
 
   vm.runInContext(
     `${read("js/core/ConfigManager.js")}\n` +
+      `${read("js/windows/ConfigMenuLayout.js")}\n` +
       `${read("js/windows/Window_WindowColor.js")}\n` +
       `${read("js/scenes/Scene_WindowColor.js")}\n` +
       `globalThis.__classes = { ConfigManager, Window_WindowColor, Scene_WindowColor };`,

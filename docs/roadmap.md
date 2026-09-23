@@ -531,6 +531,7 @@ Battle-presentation directions and current status:
 - ✅ Save Menu Presentation & Slot Summary v1 with full-screen slot cards over unchanged Save Runtime v11 persistence
 - ✅ Persistent Play Time v1 with Game_System HH:MM:SS tracking, MAIN MENU presentation, and additive Save Runtime v11 metadata persistence
 - ✅ Config Menu Presentation v1 with unified framed layout and preserved Config Runtime / Controls / Window Color ownership
+- ✅ Config Submenu Presentation Consistency v1 with shared Config-family geometry, redesigned Controls / Window Color surfaces, and vertically centered character description strips
 - ✅ Field Dialogue Window Presentation v1 with shared tintable semantic panels, configured Window Color support, and project-standard choice focus
 - ✅ Menu Hint Cleanup v1 with permanent key legends removed from mature menu destinations while specialized/contextual prompts remain
 - ✅ ITEM / EQUIP / ESSENCE Layout Refinement v1 with item-side tabs, full-height actor/item divider, complete four-member HP/MP cards, and shared EQUIP/ESSENCE center split

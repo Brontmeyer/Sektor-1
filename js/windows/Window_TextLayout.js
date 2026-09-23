@@ -36,7 +36,6 @@ class Window_TextLayout {
 
   static ellipsize(context, text, maxWidth) {
     let value = String(text || "").trimEnd();
-
     const suffix = "…";
 
     if (context.measureText(`${value}${suffix}`).width <= maxWidth) {
@@ -53,15 +52,7 @@ class Window_TextLayout {
     return value ? `${value}${suffix}` : suffix;
   }
 
-  static drawWrappedText(
-    context,
-    text,
-    x,
-    y,
-    maxWidth,
-    lineHeight,
-    maxLines = Infinity,
-  ) {
+  static preparedLines(context, text, maxWidth, maxLines = Infinity) {
     const lines = this.wrapLines(context, text, maxWidth);
     const lineLimit = Number.isFinite(maxLines)
       ? Math.max(0, Math.floor(maxLines))
@@ -78,15 +69,55 @@ class Window_TextLayout {
       );
     }
 
-    for (let i = 0; i < visibleLines.length; i++) {
-      context.fillText(visibleLines[i], x, y + i * lineHeight);
+    return { lines, visibleLines, truncated };
+  }
+
+  static drawWrappedText(
+    context,
+    text,
+    x,
+    y,
+    maxWidth,
+    lineHeight,
+    maxLines = Infinity,
+  ) {
+    const layout = this.preparedLines(context, text, maxWidth, maxLines);
+
+    for (let i = 0; i < layout.visibleLines.length; i++) {
+      context.fillText(layout.visibleLines[i], x, y + i * lineHeight);
     }
 
     return {
-      lineCount: lines.length,
-      drawnLineCount: visibleLines.length,
-      truncated,
-      nextY: y + visibleLines.length * lineHeight,
+      lineCount: layout.lines.length,
+      drawnLineCount: layout.visibleLines.length,
+      truncated: layout.truncated,
+      nextY: y + layout.visibleLines.length * lineHeight,
+    };
+  }
+
+  static drawWrappedTextCentered(
+    context,
+    text,
+    x,
+    centerY,
+    maxWidth,
+    lineHeight,
+    maxLines = Infinity,
+  ) {
+    const layout = this.preparedLines(context, text, maxWidth, maxLines);
+    const firstY =
+      centerY - ((Math.max(1, layout.visibleLines.length) - 1) * lineHeight) / 2;
+
+    for (let i = 0; i < layout.visibleLines.length; i++) {
+      context.fillText(layout.visibleLines[i], x, firstY + i * lineHeight);
+    }
+
+    return {
+      lineCount: layout.lines.length,
+      drawnLineCount: layout.visibleLines.length,
+      truncated: layout.truncated,
+      firstY,
+      nextY: firstY + layout.visibleLines.length * lineHeight,
     };
   }
 }
