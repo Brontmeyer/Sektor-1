@@ -529,6 +529,7 @@ Battle-presentation directions and current status:
 - ✅ Equip Menu Presentation & Stat Preview v1 with shared actor summary, full gear labels, live derived-stat comparison, held-repeat equipment browsing, and square portrait consistency
 - ✅ Item Menu Presentation & Inventory Navigation v1 with Use / Arrange / Key Items tabs, target-aware field use, HP/MP party cards, and project-standard focus cues
 - ✅ ITEM Presentation Polish v2 with party-owned header, read-only equipment rows, shared content rhythm, and target-card divider breathing room
+- ✅ ITEM Header Simplification + Key Item Contract Polish with quiet party-scoped identity, page-specific metadata only, and safe permanent-key consume requests
 - ✅ Character Menu Layout Consistency v1 with centralized outer geometry across MAGICK / SKILL / ESSENCE / EQUIP / STATUS / VALOR / ITEM
 - ✅ Save Menu Presentation & Slot Summary v1 with full-screen slot cards over unchanged Save Runtime v11 persistence
 - ✅ Persistent Play Time v1 with Game_System HH:MM:SS tracking, MAIN MENU presentation, and additive Save Runtime v11 metadata persistence

@@ -692,50 +692,48 @@ class Window_Inventory {
 
     if (this.pageIndex === 0) {
       if (this.focusArea === Window_Inventory.FOCUS.TABS) {
-        return [
-          ["Action", "Use"],
-          ["Item", "—"],
-          ["Target", "—"],
-        ];
+        return [];
       }
 
       if (inventoryEntry?.kind === "equipment") {
         return [
           ["Item", inventoryEntry.record?.name || "—"],
           ["Quantity", `x${inventoryEntry.quantity}`],
-          ["Action", "Equip Menu"],
         ];
       }
 
-      return [
+      const rows = [
         ["Item", item?.name || "—"],
         ["Quantity", item ? `x${this.itemCount(item.id)}` : "—"],
-        [
-          "Target",
-          this.focusArea === Window_Inventory.FOCUS.TARGETS
-            ? this.actor()?.name || "—"
-            : "—",
-        ],
       ];
+
+      if (this.focusArea === Window_Inventory.FOCUS.TARGETS) {
+        rows.push(["Target", this.actor()?.name || "—"]);
+      }
+
+      return rows;
     }
 
     if (this.pageIndex === 1) {
-      return [
-        ["Current", this.sortLabel()],
-        [
-          "Selected",
-          this.focusArea === Window_Inventory.FOCUS.ARRANGE
-            ? this.currentArrangeOption()?.label || "—"
-            : "—",
-        ],
-        ["Confirm", "Apply Order"],
-      ];
+      const rows = [["Order", this.sortLabel()]];
+
+      if (this.focusArea === Window_Inventory.FOCUS.ARRANGE) {
+        const selected = this.currentArrangeOption()?.label || "—";
+        if (selected !== this.sortLabel()) {
+          rows.push(["Selected", selected]);
+        }
+      }
+
+      return rows;
+    }
+
+    if (!item) {
+      return [];
     }
 
     return [
-      ["Item", item?.name || "—"],
-      ["Quantity", item ? `x${this.itemCount(item.id)}` : "—"],
-      ["Type", "Key Item"],
+      ["Item", item.name || "—"],
+      ["Quantity", `x${this.itemCount(item.id)}`],
     ];
   }
 
@@ -761,16 +759,6 @@ class Window_Inventory {
 
   drawPartyInventoryPanel(context) {
     const bounds = this.actorBounds;
-    const members = this.members();
-    const itemStacks = this.inventoryItemIds().length;
-    const equipmentStacks = this.equipmentInventoryEntries().length;
-    const totalUnits = this.inventoryItemIds().reduce(
-      (sum, id) => sum + this.itemCount(id),
-      0,
-    ) + this.equipmentInventoryEntries().reduce(
-      (sum, entry) => sum + entry.quantity,
-      0,
-    );
 
     this.drawPanel(context, bounds);
     context.save();
@@ -778,34 +766,20 @@ class Window_Inventory {
     context.textBaseline = "middle";
     context.fillStyle = "#ffffff";
     context.font = "600 22px sans-serif";
-    context.fillText("PARTY INVENTORY", bounds.x + 20, bounds.y + 28);
+    context.fillText("PARTY INVENTORY", bounds.x + 20, bounds.y + 34);
 
     context.fillStyle = "#aebbd0";
-    context.font = "14px sans-serif";
+    context.font = "15px sans-serif";
     context.fillText(
-      "Shared inventory • choose an item first, then choose who receives it.",
+      "Shared inventory for the active party.",
       bounds.x + 20,
-      bounds.y + 54,
+      bounds.y + 68,
     );
-
-    const summaryY = bounds.y + 90;
-    const summary = [
-      ["Active Party", String(members.length)],
-      ["Item Stacks", String(itemStacks)],
-      ["Equipment", String(equipmentStacks)],
-      ["Total Units", String(totalUnits)],
-    ];
-    const summaryWidth = Math.max(120, Math.floor((bounds.width - 40) / summary.length));
-
-    summary.forEach(([label, value], index) => {
-      const x = bounds.x + 20 + index * summaryWidth;
-      context.fillStyle = "#7ff0d5";
-      context.font = "600 13px sans-serif";
-      context.fillText(label, x, summaryY);
-      context.fillStyle = "#ffffff";
-      context.font = "600 18px sans-serif";
-      context.fillText(value, x, summaryY + 24);
-    });
+    context.fillText(
+      "Usable items, owned equipment, and key items all live here.",
+      bounds.x + 20,
+      bounds.y + 94,
+    );
 
     context.restore();
   }

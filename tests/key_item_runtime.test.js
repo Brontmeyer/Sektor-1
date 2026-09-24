@@ -103,6 +103,13 @@ function testPartyOwnsAndConsumesOnlyConsumableKeyItems() {
 
   assert.equal(party.consumeKeyItem(1), false);
   assert.equal(party.itemCount(1), 1, "ordinary items are not event key items");
+
+  assert.equal(
+    party.satisfyKeyItemRequirement(4, { consume: true }),
+    true,
+    "permanent key items satisfy consume requests without being removed",
+  );
+  assert.equal(party.itemCount(4), 1);
 }
 
 function testIfKeyItemBranchesAndOptionalConsumption() {
@@ -142,6 +149,7 @@ function testIfKeyItemBranchesAndOptionalConsumption() {
     {
       code: "ifKeyItem",
       itemId: 4,
+      consume: true,
       trueCommands: [{ code: "text", text: "Permanent pass accepted" }],
       falseCommands: [{ code: "text", text: "Missing pass" }],
     },
@@ -149,7 +157,11 @@ function testIfKeyItemBranchesAndOptionalConsumption() {
   interpreter.index = 0;
   assert.equal(interpreter.commandIfKeyItem(interpreter.commands[0]), false);
   assert.equal(interpreter.commands[0].text, "Permanent pass accepted");
-  assert.equal(party.itemCount(4), 1);
+  assert.equal(
+    party.itemCount(4),
+    1,
+    "consume requests must not remove permanent key items",
+  );
 }
 
 function testIfKeyItemValidationProtectsAuthoringContract() {
@@ -169,10 +181,10 @@ function testIfKeyItemValidationProtectsAuthoringContract() {
   const permanentItems = clone(database.items);
   permanentItems[3].consumable = false;
   const permanentDatabase = { ...database, items: permanentItems };
-
-  assert.throws(
-    () => DatabaseValidator.validateMapData(map, permanentDatabase, 1),
-    /cannot consume permanent key item 3/,
+  assert.equal(
+    DatabaseValidator.validateMapData(map, permanentDatabase, 1),
+    true,
+    "consume:true is a request; permanent key items still satisfy the requirement and remain owned",
   );
 
   const wrongTypeMap = clone(map);

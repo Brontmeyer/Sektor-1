@@ -12,6 +12,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Polished Key Item event semantics so `ifKeyItem` treats `consume: true` as a safe request: consumable keys lose one copy, while permanent keys still satisfy the requirement and remain owned; the party remains the single authority for possession / consumption decisions.
+- Simplified ITEM's party-scoped header presentation by removing dashboard-style counts and redundant Action / Confirm / Type rows; PARTY INVENTORY now stays quiet and the compact ITEM metadata panel shows only page-specific information that can affect the player's current decision.
+
 - Added a canonical Key Item data contract: `keyItem: true` records may be permanent or consumable, use `effect: null`, can be protected from selling with `sellable: false`, stay out of battle item selectors, and render with the semantic Key Item palette role in the ITEM menu.
 - Added the development-only **Test Key** (Item ID 3) plus a dedicated Map001 test chest so the populated Key Items page can be verified in-engine instead of relying only on an empty-state fixture.
 - Allowed authoring-only `_comment` metadata throughout Map data at useful structural levels (map, spawn/menu access, obstacle/transfer, event, page/conditions, command, choice, and shop goods) while keeping unknown runtime properties rejected.

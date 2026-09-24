@@ -332,7 +332,7 @@ function testOwnedEquipmentAppearsInItemInventoryButCannotBeUsed() {
 
   const selectedTexts = drawText(harness);
   assert.equal(includes(selectedTexts, "Manage it from EQUIP"), true);
-  assert.equal(includes(selectedTexts, "Equip Menu"), true);
+  assert.equal(includes(selectedTexts, "Equip Menu"), false);
 }
 
 
@@ -370,6 +370,37 @@ function testItemTabsShareEqualGridAndPartyInventoryHeaderReplacesActorHeader() 
   assert.doesNotMatch(source, /Input\.actionLabel/);
 }
 
+
+function testItemHeaderKeepsOnlyDecisionUsefulInformation() {
+  const harness = createHarness();
+  harness.window.show();
+
+  let texts = drawText(harness);
+  assert.equal(includes(texts, "PARTY INVENTORY"), true);
+  assert.equal(includes(texts, "Shared inventory for the active party."), true);
+  assert.equal(includes(texts, "Active Party"), false);
+  assert.equal(includes(texts, "Item Stacks"), false);
+  assert.equal(includes(texts, "Total Units"), false);
+  assert.equal(includes(texts, "Action"), false);
+  assert.equal(includes(texts, "Confirm"), false);
+
+  press(harness, "confirm");
+  texts = drawText(harness);
+  assert.equal(includes(texts, "Item"), true);
+  assert.equal(includes(texts, "Potion"), true);
+  assert.equal(includes(texts, "Quantity"), true);
+
+  harness.window.returnToTabs();
+  harness.window.changePage(1);
+  texts = drawText(harness);
+  assert.equal(includes(texts, "Order"), true);
+  assert.equal(includes(texts, "Default"), true);
+  assert.equal(includes(texts, "Confirm"), false);
+
+  harness.window.changePage(1);
+  texts = drawText(harness);
+  assert.equal(includes(texts, "Type"), false);
+}
 
 function testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter() {
   const harness = createHarness();
@@ -447,6 +478,7 @@ function run() {
   testOwnedEquipmentAppearsInItemInventoryButCannotBeUsed();
   testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading();
   testItemTabsShareEqualGridAndPartyInventoryHeaderReplacesActorHeader();
+  testItemHeaderKeepsOnlyDecisionUsefulInformation();
   testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter();
   testPopulatedItemPagesShareVisibleTextAnchorWithoutWhitespacePadding();
   testSceneRoutesItemMenuToPartyBackedInventoryWindow();

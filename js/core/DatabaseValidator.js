@@ -817,12 +817,6 @@ class DatabaseValidator {
           errors.push(`${label}.consume must be true or false when provided.`);
         }
 
-        if (command.consume === true && item?.keyItem === true && item.consumable !== true) {
-          errors.push(
-            `${label} cannot consume permanent key item ${command.itemId}; set consumable: true on the item or omit consume.`,
-          );
-        }
-
         for (const key of ["trueCommands", "falseCommands"]) {
           if (command[key] !== undefined) {
             this.validateEventCommands(

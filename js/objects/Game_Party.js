@@ -418,6 +418,30 @@ class Game_Party {
     return this.gainItem(itemId, -quantity);
   }
 
+  satisfyKeyItemRequirement(itemId, options = {}) {
+    const item = DatabaseManager.item(itemId);
+    const quantity = Number(options.amount ?? 1);
+    const consumeRequested = options.consume === true;
+
+    if (!item || item.keyItem !== true) {
+      return false;
+    }
+
+    if (!Number.isSafeInteger(quantity) || quantity <= 0) {
+      return false;
+    }
+
+    if (!this.hasKeyItem(itemId, quantity)) {
+      return false;
+    }
+
+    if (!consumeRequested || item.consumable !== true) {
+      return true;
+    }
+
+    return this.consumeKeyItem(itemId, quantity);
+  }
+
   itemIds() {
     return Object.keys(this.items)
       .map(Number)

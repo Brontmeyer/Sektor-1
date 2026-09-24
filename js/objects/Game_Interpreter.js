@@ -265,12 +265,10 @@ class Game_Interpreter {
       return false;
     }
 
-    const ownsKeyItem = $gameParty.hasKeyItem(command.itemId, 1);
-    let conditionMet = ownsKeyItem;
-
-    if (conditionMet && command.consume === true) {
-      conditionMet = $gameParty.consumeKeyItem(command.itemId, 1);
-    }
+    const conditionMet = $gameParty.satisfyKeyItemRequirement(
+      command.itemId,
+      { consume: command.consume === true, amount: 1 },
+    );
 
     const branchCommands = conditionMet
       ? command.trueCommands || []
