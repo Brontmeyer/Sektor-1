@@ -12,6 +12,7 @@ const clone = (value) => JSON.parse(JSON.stringify(value));
 
 function databaseContext() {
   return {
+    actors: readData("Actors.json"),
     mapInfos: readData("MapInfos.json"),
     items: readData("Items.json"),
     weapons: readData("Weapons.json"),
@@ -19,6 +20,27 @@ function databaseContext() {
     accessories: readData("Accessories.json"),
     encounters: readData("Encounters.json"),
   };
+}
+
+function testActorNamingEventCommandIsValidated() {
+  const DatabaseValidator = loadValidator();
+  const database = databaseContext();
+  const map = clone(readData("Map001.json"));
+  const commands = map.events[0].pages[0].commands;
+
+  commands.unshift({
+    code: "nameActor",
+    actorId: 2,
+    prompt: "Choose {actor:2}'s name.",
+  });
+
+  assert.equal(DatabaseValidator.validateMapData(map, database, 1), true);
+
+  commands[0].actorId = 999;
+  assert.throws(
+    () => DatabaseValidator.validateMapData(map, database, 1),
+    /unknown actor ID 999/,
+  );
 }
 
 function loadValidator() {
@@ -366,6 +388,7 @@ function testItemGainNormalizesQuantitiesAndRejectsInvalidInput() {
 
 async function run() {
   testCurrentMapsPassValidation();
+  testActorNamingEventCommandIsValidated();
   testMapIdentityGeometryAndTransferContracts();
   testOptionalMenuAccessContractIsValidated();
   testNestedEventContractsRejectMalformedCommands();

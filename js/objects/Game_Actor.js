@@ -1,6 +1,18 @@
 "use strict";
 
 class Game_Actor extends Game_Battler {
+  static NAME_MAX_LENGTH = 16;
+
+  static normalizeName(value) {
+    const text = String(value ?? "")
+      .normalize("NFKC")
+      .replace(/[\u0000-\u001f\u007f]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return Array.from(text).slice(0, Game_Actor.NAME_MAX_LENGTH).join("");
+  }
+
   constructor(actorId = 1) {
     const actorData = DatabaseManager.actor(actorId);
 
@@ -11,6 +23,8 @@ class Game_Actor extends Game_Battler {
     super(actorData);
 
     this.actorId = actorId;
+    this._defaultName = Game_Actor.normalizeName(actorData.name) || `Actor ${actorId}`;
+    this.name = this._defaultName;
     this.sideBattleSprite = actorData.sideBattleSprite || null;
     this.battleSpriteWidth = actorData.battleSpriteWidth || 96;
     this.battleSpriteHeight = actorData.battleSpriteHeight || 128;
@@ -40,6 +54,34 @@ class Game_Actor extends Game_Battler {
     this._essenceSlotCount = actorData.essenceSlots;
     this._essenceProgress = new Map();
     this._equippedEssenceIds = Array(this._essenceSlotCount).fill(null);
+  }
+
+  // =====================================
+  // Identity
+  // =====================================
+
+  defaultName() {
+    return this._defaultName;
+  }
+
+  nameMaxLength() {
+    return Game_Actor.NAME_MAX_LENGTH;
+  }
+
+  rename(value) {
+    const name = Game_Actor.normalizeName(value);
+
+    if (!name) {
+      return false;
+    }
+
+    this.name = name;
+    return true;
+  }
+
+  resetName() {
+    this.name = this._defaultName;
+    return this.name;
   }
 
   // =====================================

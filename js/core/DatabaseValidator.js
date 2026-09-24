@@ -701,6 +701,7 @@ class DatabaseValidator {
     const commandKeys = {
       text: ["code", "text", "speaker"],
       choice: ["code", "speaker", "prompt", "choices"],
+      nameActor: ["code", "actorId", "prompt"],
       ifSwitch: ["code", "id", "value", "trueCommands", "falseCommands"],
       ifKeyItem: ["code", "itemId", "consume", "trueCommands", "falseCommands"],
       setSwitch: ["code", "id", "value"],
@@ -779,6 +780,17 @@ class DatabaseValidator {
             depth + 1,
           );
         }
+        break;
+
+      case "nameActor":
+        this.validateDatabaseReference(
+          `${label}.actorId`,
+          command.actorId,
+          database?.actors,
+          "actor",
+          errors,
+        );
+        validateOptionalString("prompt");
         break;
 
       case "ifSwitch":

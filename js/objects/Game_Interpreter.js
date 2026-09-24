@@ -71,6 +71,8 @@ class Game_Interpreter {
         return this.commandText(command);
       case "choice":
         return this.commandChoice(command);
+      case "nameActor":
+        return this.commandNameActor(command);
 
       case "ifSwitch":
         return this.commandIfSwitch(command);
@@ -125,6 +127,7 @@ class Game_Interpreter {
   dialogueContinuationBarrier(code) {
     return [
       "choice",
+      "nameActor",
       "shop",
       "battle",
       "gainItemMessage",
@@ -155,14 +158,32 @@ class Game_Interpreter {
     return this.hasFollowingDialogueText(commandIndex) ? "continue" : "hidden";
   }
 
+  resolveActorReferences(value) {
+    return String(value ?? "").replace(/\{actor:(\d+)\}/gi, (token, rawId) => {
+      const actorId = Number(rawId);
+      const runtimeName = globalThis.$gameSystem?.actorName?.(actorId);
+
+      if (runtimeName) {
+        return runtimeName;
+      }
+
+      const fallback = DatabaseManager.actor?.(actorId)?.name;
+      return fallback || token;
+    });
+  }
+
   commandText(command) {
     if (this.messageWindow.isOpen()) {
       return;
     }
 
-    this.messageWindow.show(command.text, command.speaker || "", {
+    this.messageWindow.show(
+      this.resolveActorReferences(command.text),
+      this.resolveActorReferences(command.speaker || ""),
+      {
       indicatorMode: this.dialogueIndicatorMode(this.index),
-    });
+      },
+    );
 
     this.index++;
 
@@ -219,18 +240,49 @@ class Game_Interpreter {
           return false;
         }
 
-        const choiceNames = command.choices.map((choice) => choice.text);
+        const choiceNames = command.choices.map((choice) =>
+          this.resolveActorReferences(choice.text),
+        );
         this.choiceWindow.show(choiceNames);
         return false;
       }
 
-      this.messageWindow.show(command.prompt || "", command.speaker || "", {
-        indicatorMode: "hidden",
-        holdOpenAtEnd: true,
-      });
+      this.messageWindow.show(
+        this.resolveActorReferences(command.prompt || ""),
+        this.resolveActorReferences(command.speaker || ""),
+        {
+          indicatorMode: "hidden",
+          holdOpenAtEnd: true,
+        },
+      );
     }
 
     // Pause interpreter while waiting for the prompt or the player's choice.
+    return false;
+  }
+
+  commandNameActor(command) {
+    const actorId = Number(command.actorId);
+    const actor = globalThis.$gameSystem?.actor?.(actorId);
+
+    if (!actor) {
+      console.error(`Cannot name unknown actor ${command.actorId}.`);
+      return true;
+    }
+
+    if (typeof Scene_NameEntry === "undefined") {
+      console.error("Scene_NameEntry is unavailable.");
+      return true;
+    }
+
+    // Advance before pushing the scene. Scene_Map is paused while naming is
+    // active; when it returns, the interpreter resumes at the next command.
+    this.index++;
+    SceneManager.push(Scene_NameEntry, actorId, {
+      title: "NAME CHARACTER",
+      prompt:
+        this.resolveActorReferences(command.prompt || "Choose this character's name."),
+    });
     return false;
   }
 

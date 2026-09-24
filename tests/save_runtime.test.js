@@ -200,6 +200,7 @@ function testV11SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesRo
 
   second.exp = 321;
   second.level = 4;
+  assert.equal(second.rename("Mira"), true);
   second.setHp(222);
   second.learnMagick(2);
   assert.equal(second.learnSkill(1), true);
@@ -228,6 +229,7 @@ function testV11SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesRo
   assert.equal(saveData.actors.length, 4);
   assert.equal(Object.hasOwn(saveData, "actor"), false);
   assert.equal(savedSecond.exp, 321);
+  assert.equal(savedSecond.name, "Mira");
   assert.equal(savedSecond.level, 4);
   assert.equal(savedSecond.hp, 222);
   assert.equal(savedSecond.valor, 67.5);
@@ -261,6 +263,7 @@ async function testV11LoadRestoresSkillStateValorAccessoryRowsFormationAndNormal
 
   second.exp = 450;
   second.level = 5;
+  assert.equal(second.rename("Rhea"), true);
   second.maxHp = 900;
   second.setHp(300);
   second.addStatus("sadness");
@@ -284,6 +287,7 @@ async function testV11LoadRestoresSkillStateValorAccessoryRowsFormationAndNormal
 
   second.exp = 0;
   second.level = 1;
+  assert.equal(second.rename("Sarah"), true);
   second.maxHp = 100;
   second.setHp(100);
   second.statuses = [];
@@ -301,6 +305,7 @@ async function testV11LoadRestoresSkillStateValorAccessoryRowsFormationAndNormal
   assert.equal(await SaveManager.load(1), true);
   assert.deepEqual(Array.from(second.skillIds), [2, 1]);
   assert.equal(second.exp, 450);
+  assert.equal(second.name, "Rhea");
   assert.equal(second.level, 5);
   assert.equal(second.maxHp, 900);
   assert.equal(second.hp, 300);

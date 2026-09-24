@@ -6,6 +6,7 @@ class Input {
     this.triggeredKeys = {};
     this.repeatStates = {};
     this.repeatedActions = {};
+    this.textCharacters = [];
     window.addEventListener("keydown", this.onKeyDown.bind(this));
     window.addEventListener("keyup", this.onKeyUp.bind(this));
     DebugManager.log("Input initialized.");
@@ -124,12 +125,46 @@ class Input {
     );
   }
 
+  static consumeTextCharacters() {
+    const characters = Array.isArray(this.textCharacters)
+      ? [...this.textCharacters]
+      : [];
+    this.textCharacters = [];
+    return characters;
+  }
+
+  static isTextConfirmTriggered() {
+    return this.isTriggered("Enter") || this.isTriggered("NumpadEnter");
+  }
+
+  static isTextBackspaceTriggered() {
+    return this.isTriggered("Backspace");
+  }
+
+  static isTextResetTriggered() {
+    return this.isTriggered("Escape");
+  }
+
   static onKeyDown(event) {
     if (!this.keys[event.code]) {
       this.triggeredKeys[event.code] = true;
     }
 
     this.keys[event.code] = true;
+
+    if (
+      typeof event.key === "string" &&
+      event.key.length === 1 &&
+      event.ctrlKey !== true &&
+      event.metaKey !== true &&
+      event.altKey !== true
+    ) {
+      if (!Array.isArray(this.textCharacters)) {
+        this.textCharacters = [];
+      }
+
+      this.textCharacters.push(event.key);
+    }
   }
 
   static onKeyUp(event) {
@@ -138,5 +173,6 @@ class Input {
 
   static endFrame() {
     this.triggeredKeys = {};
+    this.textCharacters = [];
   }
 }

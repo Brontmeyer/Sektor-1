@@ -98,6 +98,36 @@ function testNamedActionsReadRemappedPrimaryAndSecondaryBindings() {
   assert.equal(Input.isActionTriggered("menu"), true);
 }
 
+function testPrintableTextCaptureStaysSeparateFromNamedActions() {
+  const { Input } = loadCore();
+  Input.textCharacters = [];
+
+  Input.onKeyDown({
+    code: "KeyE",
+    key: "e",
+    ctrlKey: false,
+    metaKey: false,
+    altKey: false,
+  });
+
+  assert.deepEqual(Array.from(Input.consumeTextCharacters()), ["e"]);
+  assert.equal(Input.isTriggered("KeyE"), true);
+  assert.deepEqual(Array.from(Input.consumeTextCharacters()), []);
+
+  Input.onKeyDown({
+    code: "KeyC",
+    key: "c",
+    ctrlKey: true,
+    metaKey: false,
+    altKey: false,
+  });
+  assert.deepEqual(Array.from(Input.consumeTextCharacters()), []);
+
+  Input.textCharacters = ["x"];
+  Input.endFrame();
+  assert.deepEqual(Array.from(Input.consumeTextCharacters()), []);
+}
+
 function testBindingRulesProtectRequiredActionsAndPermitContextSharing() {
   const { ConfigManager } = loadCore();
 
@@ -254,6 +284,7 @@ function testOptionsExposeControlsSceneAndRuntimeHasNoRawGameplayKeys() {
 function run() {
   testLegacyConfigMigratesWithoutLosingOptions();
   testNamedActionsReadRemappedPrimaryAndSecondaryBindings();
+  testPrintableTextCaptureStaysSeparateFromNamedActions();
   testBindingRulesProtectRequiredActionsAndPermitContextSharing();
   testControlsWindowCapturesClearsCancelsAndResetsBindings();
   testOptionsExposeControlsSceneAndRuntimeHasNoRawGameplayKeys();

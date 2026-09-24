@@ -19,6 +19,19 @@ class Game_System {
     this._playTimeSeconds = 0;
   }
 
+  actor(actorId) {
+    const id = Number(actorId);
+    return this.actors.find((actor) => actor.actorId === id) || null;
+  }
+
+  actorName(actorId) {
+    return this.actor(actorId)?.name || "";
+  }
+
+  renameActor(actorId, name) {
+    return this.actor(actorId)?.rename?.(name) === true;
+  }
+
   updatePlayTime(deltaTime) {
     const seconds = Number(deltaTime);
 

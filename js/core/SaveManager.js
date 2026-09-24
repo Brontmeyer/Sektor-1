@@ -212,6 +212,13 @@ class SaveManager {
 
         seenActorIds.add(actorId);
 
+        if (
+          actorData.name !== undefined &&
+          (typeof actorData.name !== "string" || actorData.name.trim().length === 0)
+        ) {
+          errors.push(`Actor ${actorId} name must be a non-empty string when provided.`);
+        }
+
         if (!$gameParty?.actorById?.(actorId)) {
           errors.push(`Saved actor ${actorId} does not exist in the current party roster.`);
         }
@@ -563,7 +570,11 @@ class SaveManager {
     };
 
     if (typeof actorData.name === "string" && actorData.name.trim().length > 0) {
-      actor.name = actorData.name;
+      if (typeof actor.rename === "function") {
+        actor.rename(actorData.name);
+      } else {
+        actor.name = actorData.name;
+      }
     }
 
     actor.level = integer(actorData.level, actor.level, 1);

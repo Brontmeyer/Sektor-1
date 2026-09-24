@@ -385,6 +385,8 @@ Code should prefer the stable internal key when identifying a reusable concept.
 
 Do not derive internal behavior from how a display name happens to be punctuated or capitalized.
 
+Playable actors follow the same rule: `actorId` is canonical identity and `Game_Actor.name` is mutable player-facing text. Never branch gameplay behavior on Tyler/Sarah/etc. as strings, and never use the current display name as a lookup key. Authored dialogue that must mention a renameable actor should use the runtime `{actor:<id>}` token so the current name is resolved at presentation time.
+
 ---
 
 # 🧪 Status Naming

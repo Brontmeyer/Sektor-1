@@ -228,9 +228,10 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Character 8
 - [ ] Character 9
 - [ ] Character 10
-- [ ] New Game protagonist naming with canonical/default-name fallback
+- [x] New Game protagonist naming with canonical/default-name fallback
 - [ ] Story recruitment commands so the game can begin with only the protagonist and add companions as they are met
 - [ ] Optional companion renaming at recruitment while preserving stable actor IDs internally
+- [x] Reusable actor-name entry scene/event command plus runtime dialogue name tokens for future recruitment scenes
 - [ ] Party Switching
 - [ ] Dual Techs
 - [x] Canonical character-specific Valor Arts v1

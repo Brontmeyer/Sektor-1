@@ -519,6 +519,7 @@ Battle-presentation directions and current status:
 - ✅ Main Menu Information & Command Layout v1 with four active-party information cards, singular destination naming, live currency/location presentation, and reserved Order / Valor / ROSTER destinations
 - ✅ Main Menu Refinement & Command Availability Foundation v1 with restored Load, RUNES labeling, tighter party-card proportions, generic command state policy, and validated future Save/Load area gates
 - ✅ Main Menu Actor Selection & Order Foundation v1 with shared active-party focus, explicit actor handoff, persistent front/back row state, portrait-offset row language, hidden-until-unlocked ROSTER, and Save Runtime v11
+- ✅ Actor Naming + New Game Identity Foundation v1 with canonical default names, reusable runtime renaming, new-game protagonist name entry, Save Runtime v11 persistence, `{actor:<id>}` dialogue tokens, and a validated `nameActor` event hook for future recruit introductions
 - ✅ Party Formation Ordering & Valor Visibility v1 with persistent visual formation order and fractional Valor presentation
 - ✅ Order Menu Presentation v1 with a dedicated full-screen formation editor that reuses the existing row/swap runtime
 - ✅ Resource Color Consistency v1 with centralized HP blue-cyan / MP green / Valor magenta-purple presentation across primary party UI surfaces

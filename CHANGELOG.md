@@ -12,6 +12,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Added Actor Naming + New Game Identity Foundation: new games now open a project-styled name-entry scene with Tyler selected as the canonical default, `Game_Actor` owns validated mutable display names while stable actor IDs remain authoritative, Save Runtime v11 persists custom names without a version bump, event dialogue may resolve `{actor:<id>}` tokens to the current runtime name, and the validated `nameActor` event command can reuse the same naming scene for future companion introductions.
+- Extended `Input` with a dedicated printable-text capture boundary so name entry can type letters (including E) without leaking the ordinary Confirm action into the naming flow; Enter confirms, Backspace edits, and Escape restores the canonical default name.
+
 - Applied a small finishing pass to recent menu interaction polish: empty Key Items no longer enter a dead list-focus state, MAGICK folds MP Cost into the shared metadata row stack instead of hanging below Scope, and STATUS aligns the Active/current-effect row to the same label/value rhythm used by resistance entries.
 
 - Refined ITEM interaction/presentation across all three tabs: the active-party cards now persist through Use / Arrange / Key Items, Arrange opens a temporary sort-order popup over the preview instead of replacing the party pane, applying a sort closes that popup and returns focus to the Arrange heading, and Key Items keeps its metadata panel quiet until the player actually enters the key-item list.
