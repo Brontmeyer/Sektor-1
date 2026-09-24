@@ -120,11 +120,13 @@ function testSceneMapAlwaysAdvancesMessageButDisablesMessageInputForChoice() {
 }
 
 
-function testInterpreterMarksSameSpeakerContinuationAndChoicePrompts() {
+function testInterpreterMarksUpcomingTextContinuationAndChoicePrompts() {
   const calls = [];
   const context = vm.createContext({
     console,
     DebugManager: { log() {} },
+    $gameSwitches: { setValue() {}, value() { return false; } },
+    $gameVariables: { addValue() {}, setValue() {} },
   });
 
   vm.runInContext(
@@ -154,8 +156,9 @@ function testInterpreterMarksSameSpeakerContinuationAndChoicePrompts() {
   const interpreter = new context.__Interpreter(messageWindow, choiceWindow);
   interpreter.setup([
     { code: "text", speaker: "Guard", text: "First." },
-    { code: "text", speaker: "Guard", text: "Second." },
-    { code: "text", speaker: "Merchant", text: "Different speaker." },
+    { code: "setSwitch", id: "Visited", value: true },
+    { code: "addVariable", id: "Visits", value: 1 },
+    { code: "text", speaker: "Merchant", text: "Different speaker still follows." },
   ]);
 
   interpreter.update();
@@ -163,7 +166,7 @@ function testInterpreterMarksSameSpeakerContinuationAndChoicePrompts() {
 
   messageWindow.open = false;
   interpreter.update();
-  assert.equal(calls[1][3].indicatorMode, "end");
+  assert.equal(calls[1][3].indicatorMode, "hidden");
 
   const choiceInterpreter = new context.__Interpreter(messageWindow, choiceWindow);
   messageWindow.open = false;
@@ -247,7 +250,7 @@ function testChoiceAppearsOnlyAfterPromptIsFullyRevealedAndConfirmDoesNotLeak() 
 function run() {
   testChoicePromptContinuesRevealingWithoutStealingConfirm();
   testSceneMapAlwaysAdvancesMessageButDisablesMessageInputForChoice();
-  testInterpreterMarksSameSpeakerContinuationAndChoicePrompts();
+  testInterpreterMarksUpcomingTextContinuationAndChoicePrompts();
   testChoiceAppearsOnlyAfterPromptIsFullyRevealedAndConfirmDoesNotLeak();
 
   console.log("Field choice prompt reveal regression tests passed.");

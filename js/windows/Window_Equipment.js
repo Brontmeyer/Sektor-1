@@ -108,6 +108,10 @@ class Window_Equipment {
       return false;
     }
 
+    if (typeof $gameParty?.equipActorMerchandise === "function") {
+      return $gameParty.equipActorMerchandise(this.actor, type, equipmentId);
+    }
+
     if (type === "weapon") {
       return equipmentId === 0
         ? this.actor.unequipWeapon()

@@ -814,6 +814,7 @@ class SaveManager {
       }
 
       this.restoreParty(saveData.party);
+      $gameParty?.reconcileEquipmentOwnership?.();
       globalThis.$gameSystem?.setPlayTimeSeconds?.(saveData.metadata?.playTimeSeconds ?? 0);
 
       if (saveData.switches) {

@@ -260,12 +260,36 @@ function testRosterNamesShareTheStatTextColumn() {
   assert.equal(tyler[2], atk[2], "actor name and affected stats share one left edge");
 }
 
+function testMerchantIdentityAndGreetingShareOneLeftEdge() {
+  const harness = createHarness();
+  harness.calls.length = 0;
+  harness.window.draw();
+
+  const shopkeeper = harness.calls.find(
+    (call) => call[0] === "fillText" && call[1] === "SHOPKEEPER",
+  );
+  const greeting = harness.calls.find(
+    (call) =>
+      call[0] === "fillText" &&
+      String(call[1]).startsWith("Welcome in."),
+  );
+
+  assert.ok(shopkeeper, "SHOPKEEPER label should be drawn");
+  assert.ok(greeting, "merchant greeting should be drawn");
+  assert.equal(
+    greeting[2],
+    shopkeeper[2],
+    "merchant greeting and identity block share one left edge",
+  );
+}
+
 function run() {
   testWelcomeIntroducesMerchantWithoutPreviewingStock();
   testBuyPresentationAvoidsOldPanelHeadingsAndKeepsRosterComparison();
   testSellUsesSharedQuantityPopupAndNoFooterPrice();
   testShopTypeControlsIdentityAndMerchandiseScope();
   testRosterNamesShareTheStatTextColumn();
+  testMerchantIdentityAndGreetingShareOneLeftEdge();
   console.log("Shop menu presentation regression tests passed.");
 }
 

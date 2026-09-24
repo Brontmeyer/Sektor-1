@@ -12,6 +12,11 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Tightened dialogue continuation semantics so mint-teal `▼` blinks only when another `text` command still follows in the current dialogue run; passive event mutations may sit between lines, while the final text command and choice prompts show no continuation marker
+- Aligned the shopkeeper greeting to the same left edge as SHOPKEEPER / merchant name / store type instead of inheriting the description helper's default inset
+- Added semantic **Hint** (soft violet) and **Key Item** (soft rose) roles to `UIThemePalette` so future important dialogue and protected-object presentation have stable colors without borrowing focus or resource colors
+- Enforced physical equipment ownership at the party boundary: one owned weapon / armor / accessory copy can equip only one actor, Equip lists expose only copies available to the selected actor, and legacy over-equipped save states reconcile safely after load without a save-version bump
+
 - Fixed choice prompts so the choice window appears only after the full prompt is revealed; the Confirm press used to finish typewriter text can no longer leak into the default choice
 - Added four-line field-message pagination with long-token wrapping so oversized dialogue cannot draw outside the message box; intermediate pages use the continuation chevron before choices become available
 - Added Map001 fixtures for General / Weapon / Armor / Accessory stores, restored the general merchant's visible person-style name, and aligned store labels to General Store / Weapon Store / Armor Store / Accessory Store

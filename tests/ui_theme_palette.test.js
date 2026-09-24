@@ -28,6 +28,8 @@ function testSemanticUiPalette() {
   assert.equal(Palette.primary(), "#ffffff");
   assert.equal(Palette.secondary(), "#aebbd0");
   assert.equal(Palette.muted(), "#8897ac");
+  assert.equal(Palette.hint(), "#c7a7ff");
+  assert.equal(Palette.keyItem(), "#ff9ed8");
   assert.equal(Palette.backdrop(), "#0b0e13");
 }
 

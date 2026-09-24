@@ -658,6 +658,145 @@ class Game_Party {
     return Math.max(0, owned - equipped);
   }
 
+  actorEquipmentId(actor, type) {
+    if (!actor) {
+      return 0;
+    }
+
+    if (type === "weapon") {
+      return Number(actor.weaponId) || 0;
+    }
+
+    if (type === "armor") {
+      return Number(actor.armorId) || 0;
+    }
+
+    if (type === "accessory") {
+      return Number(actor.accessoryId) || 0;
+    }
+
+    return 0;
+  }
+
+  availableEquipmentCount(type, id, actor = null) {
+    const equipmentId = Number(id);
+
+    if (
+      !["weapon", "armor", "accessory"].includes(type) ||
+      !Number.isInteger(equipmentId) ||
+      equipmentId <= 0
+    ) {
+      return 0;
+    }
+
+    const owned = Math.max(0, Number(this.merchandiseCount(type, equipmentId)) || 0);
+    const equippedByOthers = this.members().reduce((count, member) => {
+      if (!member || member === actor) {
+        return count;
+      }
+
+      return count + (this.actorEquipmentId(member, type) === equipmentId ? 1 : 0);
+    }, 0);
+
+    return Math.max(0, owned - equippedByOthers);
+  }
+
+  canActorEquipMerchandise(actor, type, id) {
+    const equipmentId = Number(id);
+
+    if (!this.members().includes(actor)) {
+      return false;
+    }
+
+    if (equipmentId === 0) {
+      return ["weapon", "armor", "accessory"].includes(type);
+    }
+
+    if (!this.merchandiseRecord(type, equipmentId)) {
+      return false;
+    }
+
+    if (this.actorEquipmentId(actor, type) === equipmentId) {
+      return true;
+    }
+
+    return this.availableEquipmentCount(type, equipmentId, actor) > 0;
+  }
+
+  equipActorMerchandise(actor, type, id) {
+    const equipmentId = Number(id);
+
+    if (!this.canActorEquipMerchandise(actor, type, equipmentId)) {
+      return false;
+    }
+
+    if (equipmentId === 0) {
+      if (type === "weapon") {
+        return actor.weaponId > 0 ? actor.unequipWeapon() : true;
+      }
+
+      if (type === "armor") {
+        return actor.armorId > 0 ? actor.unequipArmor() : true;
+      }
+
+      if (type === "accessory") {
+        return actor.accessoryId > 0 ? actor.unequipAccessory() : true;
+      }
+
+      return false;
+    }
+
+    if (this.actorEquipmentId(actor, type) === equipmentId) {
+      return true;
+    }
+
+    if (type === "weapon") {
+      return actor.equipWeapon(equipmentId);
+    }
+
+    if (type === "armor") {
+      return actor.equipArmor(equipmentId);
+    }
+
+    if (type === "accessory") {
+      return actor.equipAccessory(equipmentId);
+    }
+
+    return false;
+  }
+
+  reconcileEquipmentOwnership() {
+    for (const type of ["weapon", "armor", "accessory"]) {
+      const usedById = new Map();
+
+      for (const actor of this.members()) {
+        const equipmentId = this.actorEquipmentId(actor, type);
+
+        if (equipmentId <= 0) {
+          continue;
+        }
+
+        const owned = Math.max(0, Number(this.merchandiseCount(type, equipmentId)) || 0);
+        const used = usedById.get(equipmentId) || 0;
+
+        if (used < owned) {
+          usedById.set(equipmentId, used + 1);
+          continue;
+        }
+
+        if (type === "weapon") {
+          actor.unequipWeapon();
+        } else if (type === "armor") {
+          actor.unequipArmor();
+        } else if (type === "accessory") {
+          actor.unequipAccessory();
+        }
+      }
+    }
+
+    return true;
+  }
+
   purchaseMerchandise(type, id, amount = 1) {
     const record = this.merchandiseRecord(type, id);
     const quantity = Number(amount);

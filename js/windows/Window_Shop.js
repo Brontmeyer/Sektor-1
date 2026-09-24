@@ -664,7 +664,8 @@ class Window_Shop {
   }
 
   drawDescriptionText(context, bounds, text, options = {}) {
-    const paddingX = Number(options.paddingX) || 18;
+    const requestedPadding = Number(options.paddingX);
+    const paddingX = Number.isFinite(requestedPadding) ? requestedPadding : 18;
 
     context.save();
     context.textAlign = "left";

@@ -3,7 +3,6 @@
 class Window_Message {
   static INDICATOR_MODE = Object.freeze({
     CONTINUE: "continue",
-    END: "end",
     HIDDEN: "hidden",
   });
 
@@ -18,7 +17,7 @@ class Window_Message {
     this.pages = [""];
     this.pageIndex = 0;
     this.revealedCharacters = 0;
-    this.indicatorMode = Window_Message.INDICATOR_MODE.END;
+    this.indicatorMode = Window_Message.INDICATOR_MODE.HIDDEN;
     this.indicatorElapsed = 0;
     this.holdOpenAtEnd = false;
 
@@ -139,8 +138,13 @@ class Window_Message {
   }
 
   normalizeIndicatorMode(mode) {
-    const allowed = Object.values(Window_Message.INDICATOR_MODE);
-    return allowed.includes(mode) ? mode : Window_Message.INDICATOR_MODE.END;
+    if (mode === "continue") {
+      return Window_Message.INDICATOR_MODE.CONTINUE;
+    }
+
+    // Legacy callers may still pass "end". Final dialogue no longer displays
+    // a continuation marker, so treat every non-continuation mode as hidden.
+    return Window_Message.INDICATOR_MODE.HIDDEN;
   }
 
   messageTextWidth() {
@@ -192,12 +196,8 @@ class Window_Message {
       return Math.floor(this.indicatorElapsed / 0.36) % 2 === 0;
     }
 
-    if (this.indicatorMode === Window_Message.INDICATOR_MODE.HIDDEN) {
+    if (this.indicatorMode !== Window_Message.INDICATOR_MODE.CONTINUE) {
       return false;
-    }
-
-    if (this.indicatorMode === Window_Message.INDICATOR_MODE.END) {
-      return true;
     }
 
     return Math.floor(this.indicatorElapsed / 0.36) % 2 === 0;
@@ -229,7 +229,7 @@ class Window_Message {
     this.pages = [""];
     this.pageIndex = 0;
     this.revealedCharacters = 0;
-    this.indicatorMode = Window_Message.INDICATOR_MODE.END;
+    this.indicatorMode = Window_Message.INDICATOR_MODE.HIDDEN;
     this.indicatorElapsed = 0;
     this.holdOpenAtEnd = false;
   }

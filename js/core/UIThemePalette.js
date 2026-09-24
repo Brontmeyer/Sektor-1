@@ -9,6 +9,8 @@ class UIThemePalette {
     primary: "#ffffff",
     secondary: "#aebbd0",
     muted: "#8897ac",
+    hint: "#c7a7ff",
+    keyItem: "#ff9ed8",
     backdrop: "#0b0e13",
     portraitFill: "#0c172d",
     portraitBorder: "#89b6eb",
@@ -44,6 +46,14 @@ class UIThemePalette {
 
   static muted() {
     return this.color("muted", "#8897ac");
+  }
+
+  static hint() {
+    return this.color("hint", "#c7a7ff");
+  }
+
+  static keyItem() {
+    return this.color("keyItem", "#ff9ed8");
   }
 
   static backdrop() {

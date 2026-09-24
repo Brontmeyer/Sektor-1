@@ -120,16 +120,37 @@ class Game_Interpreter {
     }
   }
 
-  dialogueIndicatorMode(commandIndex = this.index, speaker = "") {
-    const next = this.commands[commandIndex + 1];
-    const currentSpeaker = String(speaker || "");
-    const nextSpeaker = String(next?.speaker || "");
+  dialogueContinuationBarrier(code) {
+    return [
+      "choice",
+      "shop",
+      "battle",
+      "gainItemMessage",
+      "gainArmorMessage",
+      "gainWeaponMessage",
+      "gainAccessoryMessage",
+      "gainExpMessage",
+    ].includes(code);
+  }
 
-    if (next?.code === "text" && nextSpeaker === currentSpeaker) {
-      return "continue";
+  hasFollowingDialogueText(commandIndex = this.index) {
+    for (let index = commandIndex + 1; index < this.commands.length; index++) {
+      const code = this.commands[index]?.code;
+
+      if (code === "text") {
+        return true;
+      }
+
+      if (this.dialogueContinuationBarrier(code)) {
+        return false;
+      }
     }
 
-    return "end";
+    return false;
+  }
+
+  dialogueIndicatorMode(commandIndex = this.index) {
+    return this.hasFollowingDialogueText(commandIndex) ? "continue" : "hidden";
   }
 
   commandText(command) {
@@ -138,7 +159,7 @@ class Game_Interpreter {
     }
 
     this.messageWindow.show(command.text, command.speaker || "", {
-      indicatorMode: this.dialogueIndicatorMode(this.index, command.speaker),
+      indicatorMode: this.dialogueIndicatorMode(this.index),
     });
 
     this.index++;

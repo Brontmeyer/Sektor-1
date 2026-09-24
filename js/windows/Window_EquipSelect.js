@@ -37,7 +37,10 @@ class Window_EquipSelect {
       return {
         title: "WEAPON",
         inventory: $gameParty.weapons,
-        count: (id) => $gameParty.weaponCount(id),
+        count: (id) =>
+          typeof $gameParty.availableEquipmentCount === "function"
+            ? $gameParty.availableEquipmentCount("weapon", id, this.actor)
+            : $gameParty.weaponCount(id),
         lookup: (id) => DatabaseManager.weapon(id),
         equippedId: () => this.actor?.weaponId ?? 0,
       };
@@ -47,7 +50,10 @@ class Window_EquipSelect {
       return {
         title: "ARMOR",
         inventory: $gameParty.armors,
-        count: (id) => $gameParty.armorCount(id),
+        count: (id) =>
+          typeof $gameParty.availableEquipmentCount === "function"
+            ? $gameParty.availableEquipmentCount("armor", id, this.actor)
+            : $gameParty.armorCount(id),
         lookup: (id) => DatabaseManager.armor(id),
         equippedId: () => this.actor?.armorId ?? 0,
       };
@@ -57,7 +63,10 @@ class Window_EquipSelect {
       return {
         title: "ACCESSORY",
         inventory: $gameParty.accessories,
-        count: (id) => $gameParty.accessoryCount(id),
+        count: (id) =>
+          typeof $gameParty.availableEquipmentCount === "function"
+            ? $gameParty.availableEquipmentCount("accessory", id, this.actor)
+            : $gameParty.accessoryCount(id),
         lookup: (id) => DatabaseManager.accessory(id),
         equippedId: () => this.actor?.accessoryId ?? 0,
       };

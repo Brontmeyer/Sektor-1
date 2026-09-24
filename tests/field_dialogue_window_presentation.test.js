@@ -109,7 +109,7 @@ function testDialogueUsesChevronInsteadOfPersistentKeyLegend() {
   const harness = createContext();
   const message = new harness.context.__classes.Window_Message();
 
-  message.show("One line.", "Guard", { indicatorMode: "end" });
+  message.show("One line.", "Guard", { indicatorMode: "continue" });
   message.revealAll();
   message.draw();
 
@@ -125,7 +125,7 @@ function testDialogueUsesChevronInsteadOfPersistentKeyLegend() {
   assert.doesNotMatch(source, /actionLabel\("confirm"\)/);
 }
 
-function testContinuationChevronBlinksButEndChevronStaysSolid() {
+function testContinuationChevronBlinksButFinalTextHasNoChevron() {
   const harness = createContext();
   const message = new harness.context.__classes.Window_Message();
 
@@ -138,10 +138,15 @@ function testContinuationChevronBlinksButEndChevronStaysSolid() {
   message.indicatorElapsed = 0.8;
   assert.equal(message.indicatorShouldDraw(), true);
 
-  message.show("This is the stop.", "Guard", { indicatorMode: "end" });
+  message.show("This is the stop.", "Guard", { indicatorMode: "hidden" });
   message.revealAll();
   message.indicatorElapsed = 999;
-  assert.equal(message.indicatorShouldDraw(), true);
+  assert.equal(message.indicatorShouldDraw(), false);
+
+  // Legacy "end" callers are treated as final text too.
+  message.show("Legacy final.", "Guard", { indicatorMode: "end" });
+  message.revealAll();
+  assert.equal(message.indicatorShouldDraw(), false);
 
   message.show("Choose.", "Guard", { indicatorMode: "hidden" });
   message.revealAll();
@@ -154,7 +159,7 @@ function testLongDialogueWrapsInsideFourLinePages() {
   const longToken = "m".repeat(220);
   const text = `Question ${longToken} ${longToken} ${longToken}`;
 
-  message.show(text, "Guard", { indicatorMode: "end" });
+  message.show(text, "Guard", { indicatorMode: "hidden" });
 
   assert.equal(message.pages.length > 1, true, "long dialogue should paginate instead of drawing outside the box");
   for (const page of message.pages) {
@@ -170,7 +175,7 @@ function run() {
   testDialogueUsesSharedTintablePanelRoles();
   testChoiceUsesSamePanelFamilyAndStandardSelectionLanguage();
   testDialogueUsesChevronInsteadOfPersistentKeyLegend();
-  testContinuationChevronBlinksButEndChevronStaysSolid();
+  testContinuationChevronBlinksButFinalTextHasNoChevron();
   testLongDialogueWrapsInsideFourLinePages();
   console.log("Field dialogue window presentation regression tests passed.");
 }
