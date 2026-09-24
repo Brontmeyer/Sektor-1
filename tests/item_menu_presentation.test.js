@@ -12,6 +12,7 @@ const read = (relativePath) =>
 function createHarness() {
   const actions = new Set();
   const drawCalls = [];
+  const drawMetrics = [];
   const context2d = {
     fillStyle: "",
     strokeStyle: "",
@@ -27,7 +28,17 @@ function createHarness() {
     moveTo() {},
     lineTo() {},
     stroke() {},
-    fillText(...args) { drawCalls.push(String(args[0])); },
+    fillText(...args) {
+      drawCalls.push(String(args[0]));
+      drawMetrics.push({
+        text: String(args[0]),
+        x: Number(args[1]),
+        y: Number(args[2]),
+        font: this.font,
+        textAlign: this.textAlign,
+        textBaseline: this.textBaseline,
+      });
+    },
     measureText(text) { return { width: String(text).length * 8 }; },
   };
 
@@ -156,6 +167,7 @@ function createHarness() {
     window: new context.__Window(party),
     actions,
     drawCalls,
+    drawMetrics,
     firstActor,
     secondActor,
   };
@@ -170,8 +182,19 @@ function press(harness, action) {
 
 function drawText(harness) {
   harness.drawCalls.length = 0;
+  harness.drawMetrics.length = 0;
   harness.window.draw();
   return harness.drawCalls.slice();
+}
+
+function drawMetric(harness, text) {
+  return harness.drawMetrics.find((entry) => entry.text === text) || null;
+}
+
+function drawMetricAtY(harness, text, y) {
+  return harness.drawMetrics.find(
+    (entry) => entry.text === text && entry.y === y,
+  ) || null;
 }
 
 function includes(texts, expected) {
@@ -199,7 +222,8 @@ function testUseFlowIsTabThenItemThenTargetThenBackToItem() {
   press(harness, "confirm");
   assert.equal(harness.window.focusArea, "items");
   let texts = drawText(harness);
-  assert.equal(includes(texts, "▶ Potion"), true);
+  assert.equal(includes(texts, "▶"), true);
+  assert.equal(includes(texts, "Potion"), true);
   assert.equal(includes(texts, "SELECT ITEM"), true);
   assert.equal(includes(texts, "Restores a small amount of HP."), true);
 
@@ -207,7 +231,8 @@ function testUseFlowIsTabThenItemThenTargetThenBackToItem() {
   assert.equal(harness.window.focusArea, "targets");
   assert.equal(harness.window.pendingItemId, 1);
   texts = drawText(harness);
-  assert.equal(includes(texts, "◆ Potion"), true);
+  assert.equal(includes(texts, "◆"), true);
+  assert.equal(includes(texts, "Potion"), true);
   assert.equal(includes(texts, "▶ Tyler"), true);
   assert.equal(includes(texts, "Use Potion on Tyler."), true);
   assert.equal(includes(texts, "Quantity"), true);
@@ -362,6 +387,49 @@ function testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter() {
   assert.doesNotMatch(source, /columns\.rightBodyY \+ 46/);
 }
 
+function testPopulatedItemPagesShareVisibleTextAnchorWithoutWhitespacePadding() {
+  const harness = createHarness();
+  harness.window.show();
+
+  // Use page: item focus renders a marker in its own gutter and the label at a stable X.
+  press(harness, "confirm");
+  drawText(harness);
+  const columns = harness.window.contentColumns();
+  const row = harness.window.contentRowGeometry(columns);
+  const usePotion = drawMetricAtY(harness, "Potion", row.firstRowY);
+  const useMarker = drawMetricAtY(harness, "▶", row.firstRowY);
+  assert.ok(usePotion, "Use should draw Potion as its own text token");
+  assert.ok(useMarker, "Use should draw the cursor separately from Potion");
+  assert.equal(/^\s/.test(usePotion.text), false);
+  assert.equal(useMarker.x < usePotion.x, true);
+
+  // Arrange preview must use the same visible-text anchor as Use.
+  harness.window.returnToTabs();
+  harness.window.changePage(1);
+  drawText(harness);
+  const arrangePotion = drawMetricAtY(harness, "Potion", row.firstRowY);
+  assert.ok(arrangePotion, "Arrange preview should draw Potion");
+  assert.equal(arrangePotion.x, usePotion.x);
+  assert.equal(arrangePotion.y, usePotion.y);
+  assert.equal(arrangePotion.font, usePotion.font.replace(/^600 /, ""));
+
+  // Key Items use the same first-column label anchor and no whitespace cursor padding.
+  harness.window.changePage(1);
+  press(harness, "confirm");
+  drawText(harness);
+  const keyItem = drawMetricAtY(harness, "Bronze Pass", row.firstRowY);
+  assert.ok(keyItem, "Key Items should draw the key-item name independently");
+  assert.equal(/^\s/.test(keyItem.text), false);
+  assert.equal(keyItem.x, usePotion.x);
+  assert.equal(keyItem.y, usePotion.y);
+
+  const source = read("js/windows/Window_Inventory.js");
+  assert.match(source, /contentRowGeometry\(columns/);
+  assert.match(source, /drawRowMarker\(context/);
+  assert.doesNotMatch(source, /`\$\{itemFocus \? "▶ " : pending \? "◆ " : "  "\}/);
+  assert.doesNotMatch(source, /`\$\{focused \? "▶ " : "  "\}\$\{item\?\.name/);
+}
+
 function testSceneRoutesItemMenuToPartyBackedInventoryWindow() {
   const scene = read("js/scenes/Scene_Menu.js");
 
@@ -380,6 +448,7 @@ function run() {
   testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading();
   testItemTabsShareEqualGridAndPartyInventoryHeaderReplacesActorHeader();
   testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter();
+  testPopulatedItemPagesShareVisibleTextAnchorWithoutWhitespacePadding();
   testSceneRoutesItemMenuToPartyBackedInventoryWindow();
   console.log("Item menu presentation regression tests passed.");
 }

@@ -11,12 +11,8 @@
     "powerMultiplier": 2.75,
     "valorArt": true,
     "valorLevel": 1,
-    "target": [
-      "enemy"
-    ],
-    "scope": [
-      "single"
-    ]
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "_comment": "Sarah - Rallyheart",
@@ -29,12 +25,8 @@
     "healPercent": 0.35,
     "valorArt": true,
     "valorLevel": 1,
-    "target": [
-      "ally"
-    ],
-    "scope": [
-      "all"
-    ]
+    "target": ["ally"],
+    "scope": ["all"]
   },
   {
     "_comment": "Aboo - Wild Arc",
@@ -50,12 +42,8 @@
     },
     "valorArt": true,
     "valorLevel": 1,
-    "target": [
-      "enemy"
-    ],
-    "scope": [
-      "all"
-    ]
+    "target": ["enemy"],
+    "scope": ["all"]
   },
   {
     "_comment": "G Prime - Zero Lock",
@@ -70,12 +58,8 @@
     },
     "valorArt": true,
     "valorLevel": 1,
-    "target": [
-      "enemy"
-    ],
-    "scope": [
-      "all"
-    ]
+    "target": ["enemy"],
+    "scope": ["all"]
   },
   {
     "_comment": "Test Slime - Goo Rush",
@@ -89,12 +73,8 @@
     "status": {
       "slow": 0.35
     },
-    "target": [
-      "enemy"
-    ],
-    "scope": [
-      "single"
-    ]
+    "target": ["enemy"],
+    "scope": ["single"]
   },
   {
     "_comment": "Tyler - Scan",
@@ -104,11 +84,7 @@
     "type": "skill",
     "category": "support",
     "effect": "scan",
-    "target": [
-      "enemy"
-    ],
-    "scope": [
-      "single"
-    ]
+    "target": ["enemy"],
+    "scope": ["single"]
   }
 ]

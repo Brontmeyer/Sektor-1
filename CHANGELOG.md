@@ -12,7 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
-- Locked ITEM's right-side content to one shared heading/first-row rhythm across Use / Arrange / Key Items and added a larger gutter between target cards and the center divider, preventing the recurring page-spacing drift and cramped actor edge
+- Fixed the recurring populated ITEM alignment bug at its real source: selectable rows no longer embed cursor-reservation spaces inside label strings. Use / Arrange / Key Items now render cursor markers in a dedicated gutter and draw visible labels from one shared `contentRowGeometry()` text anchor, so empty and populated states cannot shift independently.
+- Strengthened ITEM presentation regression coverage to compare rendered visible-label coordinates and reject leading-whitespace cursor padding, protecting the actual glyph alignment instead of only the surrounding row coordinates.
+
+- Centralized ITEM's right-side heading/row rhythm across Use / Arrange / Key Items and added a larger gutter between target cards and the center divider, reducing duplicated page geometry and cramped actor edges
 
 - Refined ITEM into a party-owned inventory presentation: the redundant selected-actor header is replaced by a shared PARTY INVENTORY summary, while target actor cards remain only where targeting actually matters
 - Added read-only owned Weapon / Armor / Accessory rows to ITEM and Arrange preview using muted unavailable styling; those rows may be browsed for context but cannot be used, preserving EQUIP as the sole equipment authority

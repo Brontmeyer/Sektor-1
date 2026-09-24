@@ -927,6 +927,34 @@ class Window_Inventory {
     };
   }
 
+  contentRowGeometry(columns = this.contentColumns(), bounds = null) {
+    const rhythm = this.contentRhythm(columns);
+    const rowX = bounds?.x ?? columns.rightX;
+    const rowWidth = bounds?.width ?? columns.rightWidth;
+
+    return {
+      firstRowY: rhythm.firstRowY,
+      rowHeight: 32,
+      cursorX: rowX + 12,
+      textX: rowX + 34,
+      quantityX: rowX + rowWidth - 8,
+    };
+  }
+
+  drawRowMarker(context, marker, x, y, color = "#ffd75a") {
+    if (!marker) {
+      return;
+    }
+
+    context.save();
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+    context.fillStyle = color;
+    context.font = "600 17px sans-serif";
+    context.fillText(marker, x, y);
+    context.restore();
+  }
+
   useVisibleRows() {
     const columns = this.contentColumns();
     return Math.max(
@@ -1183,15 +1211,14 @@ class Window_Inventory {
       return;
     }
 
-    const rowHeight = 32;
-    const listTop = rhythm.firstRowY;
+    const row = this.contentRowGeometry(columns);
     const range = this.itemViewport.visibleRange(this.itemIndex, entries.length);
 
     for (let i = range.start; i < range.end; i++) {
       const entry = entries[i];
       const itemId = entry?.id;
       const item = entry?.record;
-      const y = listTop + (i - range.start) * rowHeight;
+      const y = row.firstRowY + (i - range.start) * row.rowHeight;
       const itemFocus =
         this.focusArea === Window_Inventory.FOCUS.ITEMS && i === this.itemIndex;
       const pending =
@@ -1225,11 +1252,16 @@ class Window_Inventory {
       const typeTag = disabled
         ? ` [${entry.type === "accessory" ? "ACC" : entry.type.toUpperCase()}]`
         : "";
+      this.drawRowMarker(
+        context,
+        itemFocus ? "▶" : pending ? "◆" : "",
+        row.cursorX,
+        y,
+        itemFocus ? (disabled ? "#9aa6b8" : "#ffd75a") : "#7ff0d5",
+      );
       context.fillText(
-        `${itemFocus ? "▶ " : pending ? "◆ " : "  "}${
-          item?.name || `Item ${itemId}`
-        }${typeTag}`,
-        columns.rightX + 12,
+        `${item?.name || `Item ${itemId}`}${typeTag}`,
+        row.textX,
         y,
       );
 
@@ -1238,7 +1270,7 @@ class Window_Inventory {
       context.font = "16px sans-serif";
       context.fillText(
         `x${entry?.quantity ?? 0}`,
-        columns.rightX + columns.rightWidth - 8,
+        row.quantityX,
         y,
       );
       context.textAlign = "left";
@@ -1320,32 +1352,32 @@ class Window_Inventory {
       return;
     }
 
-    const previewRowHeight = 32;
+    const row = this.contentRowGeometry(columns);
     const previewVisible = Math.max(
       5,
       Math.min(
         11,
-        Math.floor((columns.rightBodyHeight - 34) / previewRowHeight),
+        Math.floor((columns.rightBodyHeight - 34) / row.rowHeight),
       ),
     );
 
     previewEntries.slice(0, previewVisible).forEach((entry, index) => {
-      const y = rhythm.firstRowY + index * previewRowHeight;
+      const y = row.firstRowY + index * row.rowHeight;
       const disabled = entry?.usable === false;
       const typeTag = disabled
         ? ` [${entry.type === "accessory" ? "ACC" : entry.type.toUpperCase()}]`
         : "";
       context.fillStyle = disabled ? "#6f7d92" : "#ffffff";
-      context.font = "16px sans-serif";
+      context.font = "17px sans-serif";
       context.fillText(
         `${entry?.record?.name || `Item ${entry?.id}`}${typeTag}`,
-        columns.rightX + 12,
+        row.textX,
         y,
       );
       context.textAlign = "right";
       context.fillText(
         `x${entry?.quantity ?? 0}`,
-        columns.rightX + columns.rightWidth - 8,
+        row.quantityX,
         y,
       );
       context.textAlign = "left";
@@ -1382,15 +1414,22 @@ class Window_Inventory {
     const columnWidth = Math.floor((columns.rightWidth - columnGap) / 2);
     const start = this.keyItemViewport.offset;
     const visible = itemIds.slice(start, start + rowsPerColumn * 2);
-    const rowHeight = 34;
+    const rowGeometry = this.contentRowGeometry(columns, {
+      x: columns.rightX,
+      width: columnWidth,
+    });
 
     visible.forEach((itemId, visibleIndex) => {
       const item = this.itemRecord(itemId);
       const absoluteIndex = start + visibleIndex;
       const column = Math.floor(visibleIndex / rowsPerColumn);
-      const row = visibleIndex % rowsPerColumn;
+      const rowIndex = visibleIndex % rowsPerColumn;
       const x = columns.rightX + column * (columnWidth + columnGap);
-      const y = rhythm.firstRowY + row * rowHeight;
+      const columnRow = this.contentRowGeometry(columns, {
+        x,
+        width: columnWidth,
+      });
+      const y = rowGeometry.firstRowY + rowIndex * rowGeometry.rowHeight;
       const focused =
         this.focusArea === Window_Inventory.FOCUS.KEY_ITEMS &&
         absoluteIndex === this.keyItemIndex;
@@ -1401,9 +1440,15 @@ class Window_Inventory {
 
       context.fillStyle = focused ? "#ffd75a" : "#ffffff";
       context.font = focused ? "600 17px sans-serif" : "17px sans-serif";
+      this.drawRowMarker(
+        context,
+        focused ? "▶" : "",
+        columnRow.cursorX,
+        y,
+      );
       context.fillText(
-        `${focused ? "▶ " : "  "}${item?.name || `Item ${itemId}`}`,
-        x + 10,
+        item?.name || `Item ${itemId}`,
+        columnRow.textX,
         y,
       );
     });
