@@ -376,6 +376,48 @@ class Game_Party {
     return this.itemCount(itemId) > 0;
   }
 
+  hasKeyItem(itemId, amount = 1) {
+    const item = DatabaseManager.item(itemId);
+    const quantity = Number(amount);
+
+    if (!item || item.keyItem !== true) {
+      return false;
+    }
+
+    if (!Number.isSafeInteger(quantity) || quantity <= 0) {
+      return false;
+    }
+
+    return this.itemCount(itemId) >= quantity;
+  }
+
+  consumeKeyItem(itemId, amount = 1) {
+    const item = DatabaseManager.item(itemId);
+    const quantity = Number(amount);
+
+    if (!item || item.keyItem !== true) {
+      console.error(`Cannot consume non-key item ID ${itemId} as a key item.`);
+      return false;
+    }
+
+    if (item.consumable !== true) {
+      DebugManager.log(`${item.name} is a permanent key item and was not consumed.`);
+      return false;
+    }
+
+    if (!Number.isSafeInteger(quantity) || quantity <= 0) {
+      console.error(`Invalid key item amount: ${amount}`);
+      return false;
+    }
+
+    if (!this.hasKeyItem(itemId, quantity)) {
+      DebugManager.log(`Not enough ${item.name} to consume.`);
+      return false;
+    }
+
+    return this.gainItem(itemId, -quantity);
+  }
+
   itemIds() {
     return Object.keys(this.items)
       .map(Number)

@@ -702,6 +702,7 @@ class DatabaseValidator {
       text: ["code", "text", "speaker"],
       choice: ["code", "speaker", "prompt", "choices"],
       ifSwitch: ["code", "id", "value", "trueCommands", "falseCommands"],
+      ifKeyItem: ["code", "itemId", "consume", "trueCommands", "falseCommands"],
       setSwitch: ["code", "id", "value"],
       setSelfSwitch: ["code", "letter", "value"],
       setVariable: ["code", "id", "value"],
@@ -797,6 +798,44 @@ class DatabaseValidator {
           }
         }
         break;
+
+      case "ifKeyItem": {
+        const validReference = this.validateDatabaseReference(
+          `${label}.itemId`,
+          command.itemId,
+          database?.items,
+          "item",
+          errors,
+        );
+        const item = validReference ? database?.items?.[command.itemId] : null;
+
+        if (item && item.keyItem !== true) {
+          errors.push(`${label}.itemId must reference an item with keyItem: true.`);
+        }
+
+        if (command.consume !== undefined && typeof command.consume !== "boolean") {
+          errors.push(`${label}.consume must be true or false when provided.`);
+        }
+
+        if (command.consume === true && item?.keyItem === true && item.consumable !== true) {
+          errors.push(
+            `${label} cannot consume permanent key item ${command.itemId}; set consumable: true on the item or omit consume.`,
+          );
+        }
+
+        for (const key of ["trueCommands", "falseCommands"]) {
+          if (command[key] !== undefined) {
+            this.validateEventCommands(
+              command[key],
+              `${label}.${key}`,
+              database,
+              errors,
+              depth + 1,
+            );
+          }
+        }
+        break;
+      }
 
       case "setSwitch":
         this.validateEventIdentifier(`${label}.id`, command.id, errors);
@@ -1580,10 +1619,6 @@ class DatabaseValidator {
       });
 
       if (isKeyItem) {
-        if (item.consumable !== false) {
-          errors.push(`${label} key items must be non-consumable.`);
-        }
-
         if (item.effect !== null && item.effect !== undefined) {
           errors.push(`${label} key items must use a null effect.`);
         }

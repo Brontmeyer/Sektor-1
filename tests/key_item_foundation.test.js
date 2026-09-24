@@ -44,7 +44,7 @@ function testCanonicalTestKeyUsesKeyItemContract() {
   assert.equal(key.id, 3);
   assert.equal(key.name, "Test Key");
   assert.equal(key.keyItem, true);
-  assert.equal(key.consumable, false);
+  assert.equal(key.consumable, true);
   assert.equal(key.sellable, false);
   assert.equal(key.price, 0);
   assert.equal(key.effect, null);
@@ -59,7 +59,6 @@ function testMalformedKeyItemsAreRejectedWithoutWeakeningUsableItems() {
   const items = clone(readData("Items.json"));
   const malformed = clone(items);
 
-  malformed[3].consumable = true;
   malformed[3].effect = { type: "healHp", value: 1 };
   malformed[3].keyItem = "yes";
 
@@ -75,13 +74,15 @@ function testMalformedKeyItemsAreRejectedWithoutWeakeningUsableItems() {
   const keyErrors = [];
   DatabaseValidator.validateItems(malformed, keyErrors);
   assert.equal(
-    keyErrors.some((error) => error.includes("key items must be non-consumable")),
-    true,
-  );
-  assert.equal(
     keyErrors.some((error) => error.includes("key items must use a null effect")),
     true,
   );
+
+  const permanentKey = clone(items);
+  permanentKey[3].consumable = false;
+  const permanentErrors = [];
+  DatabaseValidator.validateItems(permanentKey, permanentErrors);
+  assert.deepEqual(permanentErrors, []);
 
   const normal = clone(items);
   normal[1].effect = null;

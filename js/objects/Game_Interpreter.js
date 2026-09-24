@@ -74,6 +74,8 @@ class Game_Interpreter {
 
       case "ifSwitch":
         return this.commandIfSwitch(command);
+      case "ifKeyItem":
+        return this.commandIfKeyItem(command);
       case "setSwitch":
         return this.commandSetSwitch(command);
       case "setSelfSwitch":
@@ -248,6 +250,31 @@ class Game_Interpreter {
         : command.falseCommands;
 
     const branchCommands = branch || [];
+
+    this.commands.splice(this.index, 1, ...branchCommands);
+
+    return false;
+  }
+
+  commandIfKeyItem(command) {
+    const item = DatabaseManager.item(command.itemId);
+
+    if (!item || item.keyItem !== true) {
+      console.error(`ifKeyItem requires a valid key item ID: ${command.itemId}`);
+      this.commands.splice(this.index, 1, ...(command.falseCommands || []));
+      return false;
+    }
+
+    const ownsKeyItem = $gameParty.hasKeyItem(command.itemId, 1);
+    let conditionMet = ownsKeyItem;
+
+    if (conditionMet && command.consume === true) {
+      conditionMet = $gameParty.consumeKeyItem(command.itemId, 1);
+    }
+
+    const branchCommands = conditionMet
+      ? command.trueCommands || []
+      : command.falseCommands || [];
 
     this.commands.splice(this.index, 1, ...branchCommands);
 

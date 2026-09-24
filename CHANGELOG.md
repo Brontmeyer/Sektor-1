@@ -12,7 +12,7 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
-- Added a canonical Key Item data contract: `keyItem: true` records are non-consumable, may use `effect: null`, can be protected from selling with `sellable: false`, stay out of battle item selectors, and render with the semantic Key Item palette role in the ITEM menu.
+- Added a canonical Key Item data contract: `keyItem: true` records may be permanent or consumable, use `effect: null`, can be protected from selling with `sellable: false`, stay out of battle item selectors, and render with the semantic Key Item palette role in the ITEM menu.
 - Added the development-only **Test Key** (Item ID 3) plus a dedicated Map001 test chest so the populated Key Items page can be verified in-engine instead of relying only on an empty-state fixture.
 - Allowed authoring-only `_comment` metadata throughout Map data at useful structural levels (map, spawn/menu access, obstacle/transfer, event, page/conditions, command, choice, and shop goods) while keeping unknown runtime properties rejected.
 - Added dedicated key-item foundation regression coverage for valid/invalid key-item data, Map001 comments, the Test Key chest, and battle-selector exclusion.
@@ -81,6 +81,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Key Item Runtime v1: `keyItem: true` records may now be permanent or consumable, `Game_Party` owns key-item possession/consumption checks, and the new `ifKeyItem` event command can branch on possession with optional one-copy consumption.
+- Added a Map001 **Test Key Lock** fixture that consumes the canonical Test Key exactly once on a successful unlock, plus dedicated runtime/validator regression coverage for consumable and permanent key-item behavior.
 - Added Order Menu Presentation v1 as a dedicated full-screen formation surface with shared Sektor 1 panel geometry, contextual formation summary/details, preserved front/back row editing, and slot swapping delegated through the existing `Window_MainMenuParty` / `Game_Party` runtime instead of duplicating formation logic
 - Added dedicated Order menu regression coverage for full-screen presentation, row changes, hierarchical swap cancellation, slot swapping, and permanent-footer-hint absence
 

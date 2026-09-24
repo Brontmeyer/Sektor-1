@@ -31,15 +31,15 @@
     }
   },
   {
-    "_comment": "ID 3: Test Key Item",
+    "_comment": "ID 3: Test Key Item (consumable development fixture)",
     "id": 3,
     "article": "a",
     "name": "Test Key",
     "pluralName": "Test Keys",
-    "description": "A temporary key item used to verify Key Items presentation.",
+    "description": "A temporary key item used to verify Key Items presentation and event consumption.",
     "type": "item",
     "keyItem": true,
-    "consumable": false,
+    "consumable": true,
     "sellable": false,
     "price": 0,
     "effect": null

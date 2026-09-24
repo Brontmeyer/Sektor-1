@@ -10,32 +10,32 @@
   "obstacles": [
     {
       "x": 300,
-      "y": 700,
-      "width": 600,
+      "y": 750,
+      "width": 650,
       "height": 50
     },
     {
       "x": 300,
       "y": 0,
-      "width": 600,
+      "width": 650,
       "height": 50
     },
     {
-      "x": 900,
+      "x": 950,
       "y": 0,
       "width": 50,
-      "height": 750
+      "height": 800
     },
     {
       "x": 250,
       "y": 0,
       "width": 50,
-      "height": 750
+      "height": 800
     }
   ],
   "transfers": [
     {
-      "x": 550,
+      "x": 555,
       "y": 50,
       "width": 150,
       "height": 150,
@@ -49,7 +49,7 @@
       "_comment": "ID 1: Test NPC",
       "id": 1,
       "name": "Test NPC",
-      "x": 400,
+      "x": 320,
       "y": 100,
       "width": 32,
       "height": 32,
@@ -125,7 +125,7 @@
       "_comment": "ID 2: Test Chest",
       "id": 2,
       "name": "Test Chest",
-      "x": 400,
+      "x": 320,
       "y": 200,
       "width": 32,
       "height": 32,
@@ -196,7 +196,7 @@
       "_comment": "ID 3: Test Merchant",
       "id": 3,
       "name": "Test Merchant",
-      "x": 400,
+      "x": 320,
       "y": 300,
       "width": 32,
       "height": 32,
@@ -228,7 +228,7 @@
       "_comment": "ID 4: Weapon Store",
       "id": 4,
       "name": "Weapon Store Test Merchant",
-      "x": 400,
+      "x": 320,
       "y": 400,
       "width": 32,
       "height": 32,
@@ -260,7 +260,7 @@
       "_comment": "ID 5: Armor Store",
       "id": 5,
       "name": "Armor Store Test Merchant",
-      "x": 400,
+      "x": 320,
       "y": 500,
       "width": 32,
       "height": 32,
@@ -292,7 +292,7 @@
       "_comment": "ID 6: Accessory Store",
       "id": 6,
       "name": "Accessory Store Test Merchant",
-      "x": 400,
+      "x": 320,
       "y": 600,
       "width": 32,
       "height": 32,
@@ -354,8 +354,8 @@
       "_comment": "ID 8: Test Boss Battle",
       "id": 8,
       "name": "Boss Battle Tester",
-      "x": 800,
-      "y": 200,
+      "x": 900,
+      "y": 100,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -380,8 +380,8 @@
       "_comment": "ID 9: Test Back Attack",
       "id": 9,
       "name": "Back Attack Tester",
-      "x": 800,
-      "y": 300,
+      "x": 900,
+      "y": 200,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -406,8 +406,8 @@
       "_comment": "ID 10: Test Pincer Battle",
       "id": 10,
       "name": "Pincer Tester",
-      "x": 800,
-      "y": 400,
+      "x": 900,
+      "y": 300,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -432,8 +432,8 @@
       "_comment": "ID 11: Test Eight Enemy Rows Battle",
       "id": 11,
       "name": "Eight Enemy Rows Tester",
-      "x": 800,
-      "y": 500,
+      "x": 900,
+      "y": 400,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -458,8 +458,8 @@
       "_comment": "ID 12: Test Pincer Rows Battle",
       "id": 12,
       "name": "Pincer Rows Tester",
-      "x": 800,
-      "y": 600,
+      "x": 900,
+      "y": 500,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -484,8 +484,8 @@
       "_comment": "ID 13: Test Key Item",
       "id": 13,
       "name": "Test Key Chest",
-      "x": 500,
-      "y": 200,
+      "x": 420,
+      "y": 100,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -524,6 +524,67 @@
               "code": "text",
               "speaker": "Key Item Chest",
               "text": "The chest is empty."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "ID 14: Test Key Lock",
+      "id": 14,
+      "name": "Test Key Lock",
+      "x": 420,
+      "y": 200,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "_comment": "Locked state. Requires and consumes one Test Key.",
+          "conditions": {},
+          "commands": [
+            {
+              "_comment": "consume defaults to false on ifKeyItem, so true is explicit here.",
+              "code": "ifKeyItem",
+              "itemId": 3,
+              "consume": true,
+              "trueCommands": [
+                {
+                  "code": "setSelfSwitch",
+                  "letter": "A",
+                  "value": true
+                },
+                {
+                  "code": "text",
+                  "speaker": "Test Lock",
+                  "text": "The Test Key turns in the lock and disappears."
+                }
+              ],
+              "falseCommands": [
+                {
+                  "code": "text",
+                  "speaker": "Test Lock",
+                  "text": "The lock will not move. You need the Test Key."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "_comment": "Unlocked state. The key is never consumed again.",
+          "conditions": {
+            "selfSwitches": [
+              {
+                "letter": "A",
+                "value": true
+              }
+            ]
+          },
+          "commands": [
+            {
+              "code": "text",
+              "speaker": "Test Lock",
+              "text": "The test lock is already open."
             }
           ]
         }
