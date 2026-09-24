@@ -12,6 +12,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Locked ITEM's right-side content to one shared heading/first-row rhythm across Use / Arrange / Key Items and added a larger gutter between target cards and the center divider, preventing the recurring page-spacing drift and cramped actor edge
+
 - Refined ITEM into a party-owned inventory presentation: the redundant selected-actor header is replaced by a shared PARTY INVENTORY summary, while target actor cards remain only where targeting actually matters
 - Added read-only owned Weapon / Armor / Accessory rows to ITEM and Arrange preview using muted unavailable styling; those rows may be browsed for context but cannot be used, preserving EQUIP as the sole equipment authority
 - Locked Use / Arrange / Key Items to one exact three-column tab grid so tab placement can no longer drift between pages
@@ -70,6 +72,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added focused regression coverage for the Guard-style prompt flow and Scene_Map message/choice update ordering
 
 ### Added
+
+- Added Order Menu Presentation v1 as a dedicated full-screen formation surface with shared Sektor 1 panel geometry, contextual formation summary/details, preserved front/back row editing, and slot swapping delegated through the existing `Window_MainMenuParty` / `Game_Party` runtime instead of duplicating formation logic
+- Added dedicated Order menu regression coverage for full-screen presentation, row changes, hierarchical swap cancellation, slot swapping, and permanent-footer-hint absence
 
 - Added shared `ConfigMenuLayout` ownership for CONFIG / CONTROLS / WINDOW COLOR outer geometry, semantic panels, header composition, and focus selection styling
 - Added Config Submenu Presentation and Description Strip Vertical Alignment regression suites to protect shared Config-family geometry, centered description text, and ITEM heading spacing

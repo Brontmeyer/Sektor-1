@@ -82,9 +82,12 @@ function testArrangeAndKeyItemEmptyStatesUseTheSameHeadingGap() {
     source.indexOf("drawContent(context)"),
   );
 
-  assert.match(arrange, /columns\.rightBodyY \+ 46/);
-  assert.match(keyItems, /columns\.rightBodyY \+ 46/);
-  assert.doesNotMatch(keyItems, /columns\.rightBodyY \+ 52/);
+  assert.match(arrange, /const rhythm = this\.contentRhythm\(columns\)/);
+  assert.match(arrange, /rhythm\.emptyY/);
+  assert.match(keyItems, /const rhythm = this\.contentRhythm\(columns\)/);
+  assert.match(keyItems, /rhythm\.emptyY/);
+  assert.doesNotMatch(source, /columns\.rightBodyY \+ 46/);
+  assert.doesNotMatch(source, /columns\.rightBodyY \+ 52/);
 }
 
 function run() {

@@ -520,6 +520,7 @@ Battle-presentation directions and current status:
 - ✅ Main Menu Refinement & Command Availability Foundation v1 with restored Load, RUNES labeling, tighter party-card proportions, generic command state policy, and validated future Save/Load area gates
 - ✅ Main Menu Actor Selection & Order Foundation v1 with shared active-party focus, explicit actor handoff, persistent front/back row state, portrait-offset row language, hidden-until-unlocked ROSTER, and Save Runtime v11
 - ✅ Party Formation Ordering & Valor Visibility v1 with persistent visual formation order and fractional Valor presentation
+- ✅ Order Menu Presentation v1 with a dedicated full-screen formation editor that reuses the existing row/swap runtime
 - ✅ Resource Color Consistency v1 with centralized HP blue-cyan / MP green / Valor magenta-purple presentation across primary party UI surfaces
 - ✅ Player Battle Row Geometry v1 with presentation-only party front/back battlefield offsets and row-neutral targeting/combat geometry
 - ✅ Window Color Customization v1 with Config Runtime v3 four-corner persistence, live RGB editing/preview, and centralized semantic-panel tint blending
@@ -527,6 +528,7 @@ Battle-presentation directions and current status:
 - ✅ Skill Menu Presentation & List Navigation v1 with ordinary-technique filtering, MAGICK-consistent actor/detail hierarchy, three-column row scrolling, contextual arrows, and shared held-direction repeat
 - ✅ Equip Menu Presentation & Stat Preview v1 with shared actor summary, full gear labels, live derived-stat comparison, held-repeat equipment browsing, and square portrait consistency
 - ✅ Item Menu Presentation & Inventory Navigation v1 with Use / Arrange / Key Items tabs, target-aware field use, HP/MP party cards, and project-standard focus cues
+- ✅ ITEM Presentation Polish v2 with party-owned header, read-only equipment rows, shared content rhythm, and target-card divider breathing room
 - ✅ Character Menu Layout Consistency v1 with centralized outer geometry across MAGICK / SKILL / ESSENCE / EQUIP / STATUS / VALOR / ITEM
 - ✅ Save Menu Presentation & Slot Summary v1 with full-screen slot cards over unchanged Save Runtime v11 persistence
 - ✅ Persistent Play Time v1 with Game_System HH:MM:SS tracking, MAIN MENU presentation, and additive Save Runtime v11 metadata persistence

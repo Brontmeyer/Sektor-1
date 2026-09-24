@@ -393,7 +393,7 @@ class Window_MainMenuParty {
     const contentTop = this.y + 12;
     const contentBottom = this.y + this.height - 12;
     const cardHeight = Math.max(
-      102,
+      96,
       (contentBottom - contentTop - cardGap * 3) / 4,
     );
     const cardX = this.x + 12;

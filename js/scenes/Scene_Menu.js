@@ -15,6 +15,7 @@ class Scene_Menu extends Scene_Base {
     this.partyWindow = new Window_MainMenuParty($gameParty, this.layout.party);
 
     this.inventoryWindow = new Window_Inventory($gameParty);
+    this.orderWindow = new Window_Order($gameParty);
     this.statusWindow = new Window_Status($gameParty);
     this.valorWindow = new Window_Valor($gameParty);
     this.equipmentWindow = new Window_Equipment($gameParty);
@@ -69,13 +70,14 @@ class Scene_Menu extends Scene_Base {
   }
 
   beginOrderSelection() {
-    if (!this.partyWindow.activate("order")) {
+    if (($gameParty?.battleFormationMembers?.() || []).length === 0) {
       this.saveMessage = "No active party member is available.";
       this.saveMessageTimer = 2;
       return false;
     }
 
-    this.pendingActorCommand = "Order";
+    this.pendingActorCommand = null;
+    this.orderWindow.show();
     return true;
   }
 
@@ -113,14 +115,6 @@ class Scene_Menu extends Scene_Base {
 
     if (result.type === "cancel") {
       this.endPartySelection();
-      return;
-    }
-
-    if (this.partyWindow.mode === "order") {
-      // Row edits and slot swaps are committed immediately to Game_Party.
-      // Formation ordering is visual only: active-party membership, turn
-      // scheduling, stats, damage, targeting rules, and action priority stay
-      // independent from where a battler is drawn.
       return;
     }
 
@@ -186,6 +180,11 @@ class Scene_Menu extends Scene_Base {
 
     if (this.inventoryWindow.isOpen()) {
       this.inventoryWindow.update();
+      return;
+    }
+
+    if (this.orderWindow.isOpen()) {
+      this.orderWindow.update();
       return;
     }
 
@@ -294,6 +293,7 @@ class Scene_Menu extends Scene_Base {
     return (
       this.saveSlotsWindow.isOpen() ||
       this.inventoryWindow.isOpen() ||
+      this.orderWindow.isOpen() ||
       this.magickWindow.isOpen() ||
       this.skillsWindow.isOpen() ||
       this.essenceWindow.isOpen() ||
@@ -351,16 +351,6 @@ class Scene_Menu extends Scene_Base {
   partySelectionHint() {
     if (!this.partyWindow.isActive()) {
       return "";
-    }
-
-    if (this.partyWindow.mode === "order") {
-      const swapping = this.partyWindow.hasPendingSwap?.() === true;
-      const confirmLabel = swapping ? "Swap" : "Pick Up";
-      const cancelLabel = swapping ? "Cancel" : "Back";
-
-      return `${Input.actionLabel("up")}/${Input.actionLabel("down")}: ${swapping ? "Destination" : "Actor"}   ` +
-        `${Input.actionLabel("left")}: Back   ${Input.actionLabel("right")}: Front   ` +
-        `${Input.actionLabel("confirm")}: ${confirmLabel}   ${Input.actionLabel("cancel")}: ${cancelLabel}`;
     }
 
     return `${this.pendingActorCommand}: choose actor   ` +
@@ -450,6 +440,8 @@ class Scene_Menu extends Scene_Base {
       this.saveSlotsWindow.draw();
     } else if (this.inventoryWindow.isOpen()) {
       this.inventoryWindow.draw();
+    } else if (this.orderWindow.isOpen()) {
+      this.orderWindow.draw();
     } else if (this.magickWindow.isOpen()) {
       this.magickWindow.draw();
     } else if (this.skillsWindow.isOpen()) {

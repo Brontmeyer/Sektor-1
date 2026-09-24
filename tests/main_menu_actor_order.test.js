@@ -288,7 +288,8 @@ function testSceneMenuUsesSharedActorSelectionContract() {
   assert.match(scene, /beginActorSelection\(command\)/);
   assert.match(scene, /beginOrderSelection\(\)/);
   assert.match(scene, /partyWindow\.activate\("actor"\)/);
-  assert.match(scene, /partyWindow\.activate\("order"\)/);
+  assert.match(scene, /this\.orderWindow = new Window_Order\(\$gameParty\)/);
+  assert.match(scene, /this\.orderWindow\.show\(\)/);
   assert.match(scene, /actorNavigation\?\.selectActor/);
   assert.match(scene, /Valor: this\.valorWindow/);
   assert.doesNotMatch(scene, /Valor progression is planned for a focused pass/);

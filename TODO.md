@@ -117,6 +117,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add Item Menu Presentation & Inventory Navigation v1 with shared actor summary, Use/Arrange/Key Items tabs, target-aware field item use, supported sort previews, and key-item empty-state handling
 - [x] Refine ITEM focus/vitals/layout after hands-on review and standardize character-menu header geometry through shared `CharacterMenuLayout` ownership
 - [x] Refine ITEM as party-owned inventory with a PARTY INVENTORY header, exact three-column tabs, and muted read-only equipment rows while preserving EQUIP ownership
+- [x] Lock ITEM Use / Arrange / Key Items to one shared content rhythm and add target-card breathing room before the center divider
 - [x] Add Save Menu Presentation & Slot Summary v1 with full-screen slot cards, existing-save summaries, empty-slot states, and preserved Save Runtime v11 authority
 - [x] Refine SAVE/LOAD into reference-inspired file-card presentation and complete Load Menu Presentation v1 without changing Save Runtime v11
 - [x] Refine ITEM interaction to Use → Item → Target focus, persistent pending-item identity, hierarchical cancel, and automatic Arrange-heading return after sort apply
@@ -128,6 +129,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add canonical persistent play-time tracking with main-menu HH:MM:SS and Save/Load persistence
 - [x] Implement Main Menu Actor Selection & Order Foundation v1 with shared party-card focus, actor handoff, persistent front/back row state, portrait-position row language, and ROSTER hidden-by-default policy
 - [x] Extend Order with persistent active-party visual formation swapping (positions 1-4) without changing mechanical party/turn order
+- [x] Add Order Menu Presentation v1 as a dedicated full-screen formation editor while reusing the existing party-row and formation-slot runtime
 - [x] Connect player front/back row state to battlefield geometry as presentation only; keep row/slot position free of damage, weapon, targeting, or stat advantages unless the design is explicitly revisited
 - [x] Separate player-facing multi-level Valor progression from the ordinary Skill menu while reusing the shared Skill action runtime
 - [ ] Implement ROSTER (Remote Organization & Strategic Team Evaluation Registry) for active/reserve party switching once reserve characters exist

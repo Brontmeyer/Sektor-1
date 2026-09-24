@@ -345,6 +345,23 @@ function testItemTabsShareEqualGridAndPartyInventoryHeaderReplacesActorHeader() 
   assert.doesNotMatch(source, /Input\.actionLabel/);
 }
 
+
+function testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter() {
+  const harness = createHarness();
+  harness.window.show();
+  const columns = harness.window.contentColumns();
+  const rhythm = harness.window.contentRhythm(columns);
+
+  assert.equal(rhythm.headingY > columns.rightBodyY, true);
+  assert.equal(rhythm.firstRowY > rhythm.headingY, true);
+  assert.equal(rhythm.emptyY, rhythm.firstRowY);
+
+  const source = read("js/windows/Window_Inventory.js");
+  assert.match(source, /const rhythm = this\.contentRhythm\(columns\)/);
+  assert.match(source, /width: Math\.max\(0, columns\.leftWidth - 14\)/);
+  assert.doesNotMatch(source, /columns\.rightBodyY \+ 46/);
+}
+
 function testSceneRoutesItemMenuToPartyBackedInventoryWindow() {
   const scene = read("js/scenes/Scene_Menu.js");
 
@@ -362,6 +379,7 @@ function run() {
   testOwnedEquipmentAppearsInItemInventoryButCannotBeUsed();
   testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading();
   testItemTabsShareEqualGridAndPartyInventoryHeaderReplacesActorHeader();
+  testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter();
   testSceneRoutesItemMenuToPartyBackedInventoryWindow();
   console.log("Item menu presentation regression tests passed.");
 }

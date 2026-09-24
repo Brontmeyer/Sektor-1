@@ -915,6 +915,18 @@ class Window_Inventory {
     };
   }
 
+  contentRhythm(columns = this.contentColumns()) {
+    const headingY = columns.rightBodyY + 12;
+    const firstRowY = headingY + 42;
+
+    return {
+      headingY,
+      firstRowY,
+      emptyY: firstRowY,
+      scrollTopY: firstRowY - 4,
+    };
+  }
+
   useVisibleRows() {
     const columns = this.contentColumns();
     return Math.max(
@@ -1114,7 +1126,7 @@ class Window_Inventory {
   drawUsePage(context, columns) {
     const members = this.members();
     const entries = this.inventoryDisplayEntries();
-    const rightHeadingY = columns.rightBodyY + 10;
+    const rhythm = this.contentRhythm(columns);
 
     context.save();
     context.textAlign = "left";
@@ -1126,7 +1138,7 @@ class Window_Inventory {
         ? "SELECT ITEM"
         : "ITEMS",
       columns.rightX + 6,
-      rightHeadingY,
+      rhythm.headingY,
     );
 
     if (members.length === 0) {
@@ -1151,7 +1163,7 @@ class Window_Inventory {
           {
             x: columns.leftX,
             y: columns.leftTop + index * (cardHeight + gap),
-            width: columns.leftWidth,
+            width: Math.max(0, columns.leftWidth - 14),
             height: cardHeight,
           },
           index,
@@ -1165,14 +1177,14 @@ class Window_Inventory {
       context.fillText(
         "No usable items owned.",
         columns.rightX + 12,
-        columns.rightBodyY + 46,
+        rhythm.emptyY,
       );
       context.restore();
       return;
     }
 
     const rowHeight = 32;
-    const listTop = columns.rightBodyY + 46;
+    const listTop = rhythm.firstRowY;
     const range = this.itemViewport.visibleRange(this.itemIndex, entries.length);
 
     for (let i = range.start; i < range.end; i++) {
@@ -1235,7 +1247,7 @@ class Window_Inventory {
     this.drawScrollIndicators(
       context,
       columns.rightX + columns.rightWidth - 2,
-      columns.rightBodyY + 42,
+      rhythm.scrollTopY,
       columns.rightBodyY + columns.rightBodyHeight - 18,
       this.itemViewport.hasPrevious(),
       this.itemViewport.hasNext(entries.length),
@@ -1248,6 +1260,7 @@ class Window_Inventory {
     const options = this.arrangeOptions();
     const previewMode = this.currentArrangeOption()?.mode || this.sortMode;
     const previewEntries = this.inventoryDisplayEntries(previewMode);
+    const rhythm = this.contentRhythm(columns);
 
     context.save();
     context.textAlign = "left";
@@ -1255,7 +1268,7 @@ class Window_Inventory {
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
     context.fillText("SORT", columns.leftX + 6, columns.leftTop + 12);
-    context.fillText("PREVIEW", columns.rightX + 6, columns.rightBodyY + 10);
+    context.fillText("PREVIEW", columns.rightX + 6, rhythm.headingY);
 
     const range = this.arrangeViewport.visibleRange(
       this.arrangeIndex,
@@ -1301,7 +1314,7 @@ class Window_Inventory {
       context.fillText(
         "No usable items owned.",
         columns.rightX + 12,
-        columns.rightBodyY + 46,
+        rhythm.emptyY,
       );
       context.restore();
       return;
@@ -1317,7 +1330,7 @@ class Window_Inventory {
     );
 
     previewEntries.slice(0, previewVisible).forEach((entry, index) => {
-      const y = columns.rightBodyY + 46 + index * previewRowHeight;
+      const y = rhythm.firstRowY + index * previewRowHeight;
       const disabled = entry?.usable === false;
       const typeTag = disabled
         ? ` [${entry.type === "accessory" ? "ACC" : entry.type.toUpperCase()}]`
@@ -1343,13 +1356,14 @@ class Window_Inventory {
 
   drawKeyItemsPage(context, columns) {
     const itemIds = this.keyItemIds();
+    const rhythm = this.contentRhythm(columns);
 
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
-    context.fillText("KEY ITEMS", columns.rightX + 6, columns.rightBodyY + 10);
+    context.fillText("KEY ITEMS", columns.rightX + 6, rhythm.headingY);
 
     if (itemIds.length === 0) {
       context.fillStyle = "#8897ac";
@@ -1357,7 +1371,7 @@ class Window_Inventory {
       context.fillText(
         "No key items owned.",
         columns.rightX + 12,
-        columns.rightBodyY + 46,
+        rhythm.emptyY,
       );
       context.restore();
       return;
@@ -1376,7 +1390,7 @@ class Window_Inventory {
       const column = Math.floor(visibleIndex / rowsPerColumn);
       const row = visibleIndex % rowsPerColumn;
       const x = columns.rightX + column * (columnWidth + columnGap);
-      const y = columns.rightBodyY + 46 + row * rowHeight;
+      const y = rhythm.firstRowY + row * rowHeight;
       const focused =
         this.focusArea === Window_Inventory.FOCUS.KEY_ITEMS &&
         absoluteIndex === this.keyItemIndex;
@@ -1397,7 +1411,7 @@ class Window_Inventory {
     this.drawScrollIndicators(
       context,
       columns.rightX + columns.rightWidth - 8,
-      columns.rightBodyY + 42,
+      rhythm.scrollTopY,
       columns.rightBodyY + columns.rightBodyHeight - 18,
       this.keyItemViewport.hasPrevious(),
       this.keyItemViewport.hasNext(itemIds.length),
