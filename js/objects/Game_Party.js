@@ -594,6 +594,26 @@ class Game_Party {
     }
   }
 
+  loseMerchandise(type, id, amount = 1) {
+    return this.gainMerchandise(type, id, -Math.abs(Number(amount) || 0));
+  }
+
+  merchandiseSellPrice(type, id) {
+    const record = this.merchandiseRecord(type, id);
+
+    if (!record) {
+      return 0;
+    }
+
+    const unitPrice = Number(record.price);
+
+    if (!Number.isSafeInteger(unitPrice) || unitPrice < 0) {
+      return 0;
+    }
+
+    return Math.max(0, Math.floor(unitPrice / 2));
+  }
+
   purchaseMerchandise(type, id, amount = 1) {
     const record = this.merchandiseRecord(type, id);
     const quantity = Number(amount);
@@ -633,6 +653,57 @@ class Game_Party {
 
     if (!this.spendGil(totalPrice)) {
       this.gainMerchandise(type, id, -quantity);
+      return { success: false, reason: "paymentRejected" };
+    }
+
+    return {
+      success: true,
+      type,
+      id: Number(id),
+      quantity,
+      unitPrice,
+      totalPrice,
+      gil: this._gil,
+      owned: this.merchandiseCount(type, id),
+    };
+  }
+
+  sellMerchandise(type, id, amount = 1) {
+    const record = this.merchandiseRecord(type, id);
+    const quantity = Number(amount);
+
+    if (!record) {
+      return { success: false, reason: "unknownMerchandise" };
+    }
+
+    if (!Number.isSafeInteger(quantity) || quantity <= 0) {
+      return { success: false, reason: "invalidQuantity" };
+    }
+
+    const owned = this.merchandiseCount(type, id);
+
+    if (owned < quantity) {
+      return {
+        success: false,
+        reason: "insufficientInventory",
+        owned,
+        requested: quantity,
+      };
+    }
+
+    const unitPrice = this.merchandiseSellPrice(type, id);
+    const totalPrice = unitPrice * quantity;
+
+    if (!Number.isSafeInteger(totalPrice) || totalPrice < 0) {
+      return { success: false, reason: "invalidPrice" };
+    }
+
+    if (!this.loseMerchandise(type, id, quantity)) {
+      return { success: false, reason: "inventoryRejected" };
+    }
+
+    if (!this.gainGil(totalPrice)) {
+      this.gainMerchandise(type, id, quantity);
       return { success: false, reason: "paymentRejected" };
     }
 

@@ -207,7 +207,7 @@ function testWindowColorEditorEditsLiveAndResetsOnlyColors() {
   window.update();
   assert.equal(
     ConfigManager.windowColorChannel("topLeft", "g"),
-    Math.max(0, originalGreen - 8),
+    Math.max(0, originalGreen - 1),
   );
 
   harness.trigger("Enter");

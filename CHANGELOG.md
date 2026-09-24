@@ -12,6 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Rebuilt the shop flow around a proper **Buy / Sell / Exit** opening state, richer merchandiser layouts, quantity confirmation for purchases, and a stable two-column sell list ordered to match the party Item menu for item inventory
+- Added roster-wide equipment comparison cards to shop buying screens so weapons / armor / accessories preview the relevant before-and-after stats across the full current roster instead of only showing price metadata
+- Tightened follow-up polish from the previous menu pass by removing the duplicate Arrange "Current" footer, centering Equip stat arrows more cleanly between current and preview values, and changing Window Color editing to single-step holdable left/right adjustments
+
 - Standardized the ITEM Arrange / Key Items empty-state vertical rhythm so the heading-to-message gap no longer jumps when switching pages
 - Vertically centered the shared character-menu description strips while preserving left alignment, using one `Window_TextLayout` helper across Magick / Skill / Essence / Equip / Valor / Item
 - Reworked Controls and Window Color into the same CONFIG-family header/content geometry as the main Config screen, moving specialized instructions into the contextual header instead of permanent footer legends

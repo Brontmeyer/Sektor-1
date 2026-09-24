@@ -234,7 +234,8 @@ function testPlayerFacingCurrencyUsesRunesAcrossCurrentUi() {
   assert.match(sceneMenu, /fillText\("RUNES"/);
   assert.match(battleResults, /\["RUNES"/);
   assert.match(shopWindow, /Runes:/);
-  assert.match(shopWindow, / Runes   Owned /);
+  assert.match(shopWindow, /\["Runes"/);
+  assert.match(shopWindow, /"Owned"/);
   assert.match(shopScene, /for \$\{purchase\.totalPrice\} Runes\./);
   assert.match(shopScene, /Not enough Runes\./);
 

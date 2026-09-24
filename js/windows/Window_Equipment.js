@@ -353,9 +353,9 @@ class Window_Equipment {
 
     let y = layout.statStartY;
     const labelX = bounds.x + 42;
-    const currentX = bounds.x + Math.floor(bounds.width * 0.58);
-    const arrowX = bounds.x + Math.floor(bounds.width * 0.72);
-    const previewX = bounds.x + Math.floor(bounds.width * 0.82);
+    const previewX = bounds.x + bounds.width - 28;
+    const currentX = previewX - 112;
+    const arrowX = Math.round((currentX + previewX) / 2);
 
     rows.forEach((stat) => {
       const current = Number(stat.current) || 0;

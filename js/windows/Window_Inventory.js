@@ -1184,13 +1184,6 @@ class Window_Inventory {
       context.textAlign = "left";
     });
 
-    context.fillStyle = "#aebbd0";
-    context.font = "14px sans-serif";
-    context.fillText(
-      `Current: ${this.sortLabel()}`,
-      columns.rightX + 12,
-      columns.rightBodyY + columns.rightBodyHeight - 12,
-    );
     context.restore();
   }
 

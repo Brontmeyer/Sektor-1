@@ -25,28 +25,51 @@ class Scene_Shop extends Scene_Base {
       return;
     }
 
-    if (result?.action !== "purchase") {
+    if (result?.action === "purchase") {
+      const quantity = Math.max(1, Number(result.quantity) || 1);
+      const record = $gameParty.merchandiseRecord(result.type, result.id);
+      const purchase = $gameParty.purchaseMerchandise(result.type, result.id, quantity);
+
+      if (purchase.success) {
+        this.shopWindow.setMessage(
+          `Purchased ${record?.name || "merchandise"}${quantity > 1 ? ` x${quantity}` : ""} for ${purchase.totalPrice} Runes.`,
+        );
+        return;
+      }
+
+      if (purchase.reason === "insufficientGil") {
+        this.shopWindow.setMessage(
+          `Not enough Runes. Need ${purchase.requiredGil}, have ${purchase.gil}.`,
+        );
+        return;
+      }
+
+      this.shopWindow.setMessage("That purchase could not be completed.");
       return;
     }
 
-    const record = $gameParty.merchandiseRecord(result.type, result.id);
-    const purchase = $gameParty.purchaseMerchandise(result.type, result.id, 1);
+    if (result?.action === "sell") {
+      const quantity = Math.max(1, Number(result.quantity) || 1);
+      const record = $gameParty.merchandiseRecord(result.type, result.id);
+      const sale = $gameParty.sellMerchandise(result.type, result.id, quantity);
 
-    if (purchase.success) {
-      this.shopWindow.setMessage(
-        `Purchased ${record?.name || "merchandise"} for ${purchase.totalPrice} Runes.`,
-      );
+      if (sale.success) {
+        this.shopWindow.setMessage(
+          `Sold ${record?.name || "merchandise"}${quantity > 1 ? ` x${quantity}` : ""} for ${sale.totalPrice} Runes.`,
+        );
+        return;
+      }
+
+      if (sale.reason === "insufficientInventory") {
+        this.shopWindow.setMessage(
+          `Cannot sell ${record?.name || "that item"}. Owned ${sale.owned}, requested ${sale.requested}.`,
+        );
+        return;
+      }
+
+      this.shopWindow.setMessage("That sale could not be completed.");
       return;
     }
-
-    if (purchase.reason === "insufficientGil") {
-      this.shopWindow.setMessage(
-        `Not enough Runes. Need ${purchase.requiredGil}, have ${purchase.gil}.`,
-      );
-      return;
-    }
-
-    this.shopWindow.setMessage("That purchase could not be completed.");
   }
 
   draw() {

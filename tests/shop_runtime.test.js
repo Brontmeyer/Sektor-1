@@ -117,6 +117,26 @@ function testFailedPurchaseDoesNotMutateGilOrInventory() {
   assert.equal(party.gil(), 49);
 }
 
+function testSellingReturnsHalfPriceWithoutCorruptingInventory() {
+  const Game_Party = loadGameParty();
+  const party = new Game_Party();
+
+  party.gainItem(1, 3);
+
+  const sale = party.sellMerchandise("item", 1, 2);
+  assert.equal(sale.success, true);
+  assert.equal(sale.unitPrice, 25);
+  assert.equal(sale.totalPrice, 50);
+  assert.equal(party.itemCount(1), 1);
+  assert.equal(party.gil(), 50);
+
+  const failed = party.sellMerchandise("item", 1, 2);
+  assert.equal(failed.success, false);
+  assert.equal(failed.reason, "insufficientInventory");
+  assert.equal(party.itemCount(1), 1);
+  assert.equal(party.gil(), 50);
+}
+
 function makeDrawContext(calls) {
   return {
     fillStyle: "",
@@ -155,6 +175,7 @@ function createShopUiHarness() {
     Input: {
       isTriggered(code) { return triggered.has(code); },
       isActionTriggered(action) { return actionTriggered(triggered, action); },
+      isActionRepeated(action) { return actionTriggered(triggered, action); },
       actionLabel,
     },
     $gameParty: party,
@@ -181,7 +202,7 @@ function createShopUiHarness() {
   };
 }
 
-function testShopWindowIsScrollablePresentationOnly() {
+function testShopWindowSupportsCommandEntryAndScrollableBuyPresentation() {
   const { party, calls, triggered, Window_Shop } = createShopUiHarness();
   const goods = [
     { type: "item", id: 1 },
@@ -212,18 +233,28 @@ function testShopWindowIsScrollablePresentationOnly() {
 
   triggered.add("Enter");
   window.update();
+  triggered.clear();
+  assert.equal(window.state, "buy");
+
+  triggered.add("Enter");
+  window.update();
+  triggered.clear();
+  assert.equal(window.state, "quantity");
+
+  triggered.add("Enter");
+  window.update();
+  triggered.clear();
   const request = window.takeResult();
 
   assert.deepEqual(
     { ...request },
-    { action: "purchase", type: "item", id: 1 },
+    { action: "purchase", type: "item", id: 1, quantity: 1 },
   );
   assert.equal(party.gil(), 100, "shop window only requests a purchase");
   assert.equal(party.itemCount(1), 0);
 
-  triggered.clear();
-  window.index = goods.length - 1;
-  window.listViewport.ensureVisible(window.index, goods.length);
+  window.buyIndex = goods.length - 1;
+  window.state = "buy";
   calls.length = 0;
   window.draw();
   assert.equal(
@@ -248,7 +279,7 @@ function testShopSceneOwnsPurchaseRequestsButPartyOwnsMutation() {
       height: 720,
       context: makeDrawContext(calls),
     },
-    Input: { isTriggered() { return false; }, isActionTriggered() { return false; }, actionLabel },
+    Input: { isTriggered() { return false; }, isActionTriggered() { return false; }, isActionRepeated() { return false; }, actionLabel },
     $gameParty: party,
     SceneManager: {
       pop() { popCount += 1; },
@@ -289,6 +320,13 @@ function testShopSceneOwnsPurchaseRequestsButPartyOwnsMutation() {
   assert.equal(party.gil(), 0);
   assert.equal(party.itemCount(1), 1);
   assert.equal(scene.shopWindow.message, "Not enough Runes. Need 50, have 0.");
+
+  party.gainItem(1, 1);
+  scene.shopWindow.result = { action: "sell", type: "item", id: 1, quantity: 1 };
+  scene.update();
+  assert.equal(party.gil(), 25);
+  assert.equal(party.itemCount(1), 1);
+  assert.equal(scene.shopWindow.message, "Sold Potion for 25 Runes.");
 
   scene.shopWindow.result = { action: "cancel" };
   scene.update();
@@ -453,7 +491,8 @@ function testShopEventValidationChecksGoodsAndDuplicates() {
 function run() {
   testPurchasesUseCanonicalPricesAndPartyInventory();
   testFailedPurchaseDoesNotMutateGilOrInventory();
-  testShopWindowIsScrollablePresentationOnly();
+  testSellingReturnsHalfPriceWithoutCorruptingInventory();
+  testShopWindowSupportsCommandEntryAndScrollableBuyPresentation();
   testShopSceneOwnsPurchaseRequestsButPartyOwnsMutation();
   testInterpreterPausesAfterStartingShop();
   testSceneManagerStartsValidatedShopScene();

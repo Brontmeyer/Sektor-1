@@ -7,7 +7,7 @@ class Window_WindowColor {
     this.channelIndex = 0;
     this.editing = false;
     this.message = "";
-    this.step = 8;
+    this.step = 1;
 
     this.entries = [
       { type: "color", key: "topLeft", label: "Top Left" },
@@ -129,7 +129,7 @@ class Window_WindowColor {
       return true;
     }
 
-    if (Input.isActionTriggered("left")) {
+    if (typeof Input.isActionRepeated === "function" ? Input.isActionRepeated("left") : Input.isActionTriggered("left")) {
       ConfigManager.adjustWindowColorChannel(
         entry.key,
         this.currentChannel(),
@@ -138,7 +138,7 @@ class Window_WindowColor {
       return true;
     }
 
-    if (Input.isActionTriggered("right")) {
+    if (typeof Input.isActionRepeated === "function" ? Input.isActionRepeated("right") : Input.isActionTriggered("right")) {
       ConfigManager.adjustWindowColorChannel(
         entry.key,
         this.currentChannel(),
