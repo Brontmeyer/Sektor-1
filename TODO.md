@@ -121,6 +121,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add canonical Key Item data/runtime foundation plus a Map001 Test Key fixture and authoring-only `_comment` support for strict map validation
 - [x] Add Key Item Runtime v1 with permanent/consumable key-item ownership, validated `ifKeyItem` event branching, optional one-copy consumption, and a Map001 Test Key Lock fixture
 - [x] Polish Key Item consumption requests so permanent keys satisfy story checks without being removed, and simplify ITEM headers to decision-useful state only
+- [x] Keep field ITEM target mode active across repeated successful uses until the player cancels or the selected item runs out; no-effect targets consume nothing
 - [x] Add Save Menu Presentation & Slot Summary v1 with full-screen slot cards, existing-save summaries, empty-slot states, and preserved Save Runtime v11 authority
 - [x] Refine SAVE/LOAD into reference-inspired file-card presentation and complete Load Menu Presentation v1 without changing Save Runtime v11
 - [x] Refine ITEM interaction to Use → Item → Target focus, persistent pending-item identity, hierarchical cancel, and automatic Arrange-heading return after sort apply

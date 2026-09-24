@@ -170,6 +170,7 @@ function createHarness() {
     drawMetrics,
     firstActor,
     secondActor,
+    gameParty: globals.$gameParty,
   };
 }
 
@@ -215,8 +216,11 @@ function testItemStartsOnUseTabOnly() {
   assert.equal(includes(texts, "Owned"), false);
 }
 
-function testUseFlowIsTabThenItemThenTargetThenBackToItem() {
+function testUseFlowKeepsChosenItemArmedUntilCancelOrQuantityRunsOut() {
   const harness = createHarness();
+  harness.firstActor.hp = 25;
+  harness.secondActor.hp = 40;
+  harness.gameParty.items[1] = 5;
   harness.window.show();
 
   press(harness, "confirm");
@@ -236,13 +240,55 @@ function testUseFlowIsTabThenItemThenTargetThenBackToItem() {
   assert.equal(includes(texts, "▶ Tyler"), true);
   assert.equal(includes(texts, "Use Potion on Tyler."), true);
   assert.equal(includes(texts, "Quantity"), true);
-  assert.equal(includes(texts, "x3"), true);
+  assert.equal(includes(texts, "x5"), true);
+
+  // Multiple confirmations keep using the same selected item on the same
+  // actor while the actor can still benefit and copies remain.
+  press(harness, "confirm");
+  assert.equal(harness.firstActor.hp, 75);
+  assert.equal(harness.window.itemCount(1), 4);
+  assert.equal(harness.window.focusArea, "targets");
+  assert.equal(harness.window.pendingItemId, 1);
+
+  press(harness, "confirm");
+  assert.equal(harness.firstActor.hp, 125);
+  assert.equal(harness.window.itemCount(1), 3);
+  assert.equal(harness.window.focusArea, "targets");
+
+  press(harness, "confirm");
+  assert.equal(harness.firstActor.hp, 150);
+  assert.equal(harness.window.itemCount(1), 2);
+  assert.equal(harness.window.focusArea, "targets");
+
+  // A full target rejects the use without consuming another copy or leaving
+  // targeting mode, allowing the player to move directly to another actor.
+  press(harness, "confirm");
+  assert.equal(harness.firstActor.hp, 150);
+  assert.equal(harness.window.itemCount(1), 2);
+  assert.equal(harness.window.focusArea, "targets");
+  assert.equal(harness.window.pendingItemId, 1);
 
   press(harness, "down");
   assert.equal(harness.window.targetIndex, 1);
   press(harness, "confirm");
   assert.equal(harness.secondActor.hp, 90);
-  assert.equal(harness.window.itemCount(1), 2);
+  assert.equal(harness.window.itemCount(1), 1);
+  assert.equal(harness.window.focusArea, "targets");
+  assert.equal(harness.window.pendingItemId, 1);
+
+  // Cancel is the explicit return to the item list while copies remain.
+  press(harness, "cancel");
+  assert.equal(harness.window.focusArea, "items");
+  assert.equal(harness.window.pendingItemId, null);
+  assert.equal(harness.window.itemCount(1), 1);
+
+  // Re-enter targeting and consume the last copy. Running out automatically
+  // returns to the item list because there is no longer an armed item.
+  press(harness, "confirm");
+  assert.equal(harness.window.focusArea, "targets");
+  press(harness, "confirm");
+  assert.equal(harness.secondActor.hp, 140);
+  assert.equal(harness.window.itemCount(1), 0);
   assert.equal(harness.window.focusArea, "items");
   assert.equal(harness.window.pendingItemId, null);
 }
@@ -471,7 +517,7 @@ function testSceneRoutesItemMenuToPartyBackedInventoryWindow() {
 
 function run() {
   testItemStartsOnUseTabOnly();
-  testUseFlowIsTabThenItemThenTargetThenBackToItem();
+  testUseFlowKeepsChosenItemArmedUntilCancelOrQuantityRunsOut();
   testArrangeApplyReturnsFocusToArrangeHeading();
   testKeyItemsKeepReferenceTabFlowAndPartyRowsShowHpAndMp();
   testCancelMovesBackOneInteractionLevel();

@@ -574,16 +574,27 @@ class Window_Inventory {
       return;
     }
 
+    const remaining = this.itemCount(itemId);
     const updated = this.inventoryDisplayEntries();
-    const previousIndex = updated.findIndex(
+    const updatedIndex = updated.findIndex(
       (entry) => entry.kind === "item" && entry.id === itemId,
     );
-    this.itemIndex = previousIndex >= 0
-      ? previousIndex
+    this.itemIndex = updatedIndex >= 0
+      ? updatedIndex
       : Math.max(0, Math.min(this.itemIndex, Math.max(0, updated.length - 1)));
     this.itemViewport.ensureVisible(this.itemIndex, updated.length);
-    this.pendingItemId = null;
-    this.focusArea = Window_Inventory.FOCUS.ITEMS;
+
+    if (remaining <= 0) {
+      this.pendingItemId = null;
+      this.focusArea = Window_Inventory.FOCUS.ITEMS;
+      return;
+    }
+
+    // Keep the chosen item armed so the player can heal several actors, or
+    // the same actor repeatedly, without reopening the item list after every
+    // successful use. Cancel remains the explicit way back to item selection.
+    this.pendingItemId = itemId;
+    this.focusArea = Window_Inventory.FOCUS.TARGETS;
   }
 
   updateArrangePage() {

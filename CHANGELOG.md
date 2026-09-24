@@ -12,6 +12,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Refined field ITEM use into a persistent target-mode workflow: after choosing a usable item, successful uses keep that item armed so the player can heal the same actor repeatedly or move across party members without reopening the item list; full/invalid targets consume nothing, Cancel returns explicitly to item selection, and exhausting the final copy returns automatically.
+
 - Polished Key Item event semantics so `ifKeyItem` treats `consume: true` as a safe request: consumable keys lose one copy, while permanent keys still satisfy the requirement and remain owned; the party remains the single authority for possession / consumption decisions.
 - Simplified ITEM's party-scoped header presentation by removing dashboard-style counts and redundant Action / Confirm / Type rows; PARTY INVENTORY now stays quiet and the compact ITEM metadata panel shows only page-specific information that can affect the player's current decision.
 

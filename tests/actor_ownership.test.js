@@ -126,6 +126,12 @@ function testPartyOwnedDefaultItemTargetAndExplicitInventoryClear() {
   assert.equal(leader.hp > 100, true);
   assert.equal(party.itemCount(1), 0);
 
+  // A target that cannot benefit must reject the item without consuming it.
+  party.gainItem(1, 2);
+  leader.setHp(leader.maxHp);
+  assert.equal(party.useItem(1, leader), false);
+  assert.equal(party.itemCount(1), 2);
+
   party.clearInventory();
 
   assert.equal(party.itemCount(1), 0);
