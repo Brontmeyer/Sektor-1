@@ -62,8 +62,13 @@ class Scene_Shop extends Scene_Base {
 
       if (sale.reason === "insufficientInventory") {
         this.shopWindow.setMessage(
-          `Cannot sell ${record?.name || "that item"}. Owned ${sale.owned}, requested ${sale.requested}.`,
+          `Cannot sell ${record?.name || "that item"}. Available ${sale.available ?? sale.owned}, requested ${sale.requested}.`,
         );
+        return;
+      }
+
+      if (sale.reason === "unsellable") {
+        this.shopWindow.setMessage(`${record?.name || "That item"} cannot be sold.`);
         return;
       }
 

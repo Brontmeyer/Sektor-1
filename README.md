@@ -256,11 +256,11 @@ The current Save Runtime v11 persists both equipped accessory IDs and party acce
 
 # 💰 Shops & Economy
 
-Shops & Runes Spending v1 turns existing currency rewards and merchandise price metadata into a playable purchase loop. Map events can open a merchant with a validated list of Items, Weapons, Armor, and Accessories. The merchant list identifies only merchandise type and ID; purchase prices always come from the canonical database record so map content cannot drift away from item/equipment pricing.
+Shops & Runes Spending turns existing currency rewards and canonical merchandise price metadata into a playable Buy / Sell loop. Map events open a merchant with a validated list of Items, Weapons, Armor, and Accessories; event data chooses **what is stocked**, while the merchandise database remains the sole purchase-price authority.
 
-`Game_Party` owns the purchase transaction. A successful purchase spends the exact canonical price and adds the merchandise through the same inventory APIs used by rewards and equipment. Failed purchases, including insufficient funds, leave both currency and inventory unchanged.
+`Game_Party` owns both transaction boundaries. Purchases validate quantity and available Runes before inventory/currency mutation. Sales use a canonical 50% resale value, refuse records marked `sellable: false`, and reserve every currently equipped weapon / armor / accessory copy so presentation can never sell gear out from under an actor. Surplus copies remain saleable. Failed transactions leave inventory and currency unchanged.
 
-The first shop version buys one unit at a time and intentionally does not define selling or resale values yet. Those rules remain a separate economy-design decision. Map001 includes a test merchant with all current merchandise categories. Save Runtime remains v6 because Shops consume already-persistent currency and inventory state rather than introducing new save data. The underlying runtime API retains its historical `gil` naming for compatibility, while player-facing UI says **Runes**.
+The current presentation opens on a merchant introduction rather than previewing stock. **Buy** uses a scrollable merchandise list, a clean details panel, quantity confirmation, and roster-wide stat previews for weapons / armor / accessories. **Sell** keeps a stable two-column inventory order and opens the same quantity-confirmation pattern with sell price, available count, selected quantity, and total Runes received. Save Runtime is unchanged because shops consume existing persistent currency, inventory, and equipment state. The underlying runtime API retains its historical `gil` naming for compatibility, while all player-facing UI says **Runes**.
 
 ------------------------------------------------------------------------
 

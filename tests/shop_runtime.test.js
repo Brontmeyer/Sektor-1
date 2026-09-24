@@ -225,8 +225,17 @@ function testShopWindowSupportsCommandEntryAndScrollableBuyPresentation() {
     true,
   );
   assert.equal(
-    calls.some((call) => call[0] === "fillText" && call[1] === "Runes: 100"),
+    calls.some((call) => call[0] === "fillText" && call[1] === "Runes"),
     true,
+  );
+  assert.equal(
+    calls.some((call) => call[0] === "fillText" && call[1] === "100"),
+    true,
+  );
+  assert.equal(
+    calls.some((call) => call[0] === "fillText" && call[1] === "Potion"),
+    false,
+    "the welcome screen should introduce the merchant instead of exposing wares before Buy is opened",
   );
   assert.equal(party.gil(), 100, "drawing must not spend Gil");
   assert.equal(party.itemCount(1), 0, "drawing must not grant merchandise");
@@ -264,6 +273,51 @@ function testShopWindowSupportsCommandEntryAndScrollableBuyPresentation() {
   );
 }
 
+
+
+function testSellMenuProtectsEquippedCopiesAndUsesQuantityConfirmation() {
+  const { party, triggered, Window_Shop } = createShopUiHarness();
+  const window = new Window_Shop({
+    name: "Test Merchant",
+    goods: [{ type: "weapon", id: 1 }],
+  });
+
+  party.gainWeapon(1, 2);
+  party._actors = [{ actorId: 1, name: "Tyler", weaponId: 1, armorId: 0, accessoryId: 0 }];
+
+  window.commandIndex = 1;
+  triggered.add("Enter");
+  window.update();
+  triggered.clear();
+
+  assert.equal(window.state, "sell");
+  assert.equal(window.orderedSellEntries().length, 1);
+  assert.equal(window.currentSellEntry().available, 1);
+
+  triggered.add("Enter");
+  window.update();
+  triggered.clear();
+
+  assert.equal(window.state, "quantity");
+  assert.equal(window.quantityMode, "sell");
+  assert.equal(window.quantityMax(), 1);
+
+  triggered.add("Enter");
+  window.update();
+  triggered.clear();
+
+  assert.deepEqual(
+    { ...window.takeResult() },
+    { action: "sell", type: "weapon", id: 1, quantity: 1 },
+  );
+
+  party.loseWeapon(1, 1);
+  assert.equal(
+    window.orderedSellEntries().some((entry) => entry.type === "weapon" && entry.id === 1),
+    false,
+    "the final equipped copy must not appear as saleable inventory",
+  );
+}
 
 function testShopSceneOwnsPurchaseRequestsButPartyOwnsMutation() {
   const Game_Party = loadGameParty();
@@ -493,6 +547,7 @@ function run() {
   testFailedPurchaseDoesNotMutateGilOrInventory();
   testSellingReturnsHalfPriceWithoutCorruptingInventory();
   testShopWindowSupportsCommandEntryAndScrollableBuyPresentation();
+  testSellMenuProtectsEquippedCopiesAndUsesQuantityConfirmation();
   testShopSceneOwnsPurchaseRequestsButPartyOwnsMutation();
   testInterpreterPausesAfterStartingShop();
   testSceneManagerStartsValidatedShopScene();

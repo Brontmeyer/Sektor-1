@@ -139,6 +139,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Persistent Runes rewards (legacy internal `gil` runtime naming retained)
 - [x] Price metadata for items, weapons, armor, and accessories
 - [x] Shops / Runes Spending v1
+- [x] Shop Presentation v2 with merchant intro, quantity-aware Buy/Sell flow, roster equipment comparison, and equipped-copy sale protection
 
 ---
 

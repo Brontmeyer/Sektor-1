@@ -601,7 +601,7 @@ class Game_Party {
   merchandiseSellPrice(type, id) {
     const record = this.merchandiseRecord(type, id);
 
-    if (!record) {
+    if (!record || record.sellable === false) {
       return 0;
     }
 
@@ -612,6 +612,50 @@ class Game_Party {
     }
 
     return Math.max(0, Math.floor(unitPrice / 2));
+  }
+
+  equippedMerchandiseCount(type, id) {
+    const merchandiseId = Number(id);
+
+    if (!Number.isInteger(merchandiseId) || merchandiseId <= 0) {
+      return 0;
+    }
+
+    if (type === "item") {
+      return 0;
+    }
+
+    return this.members().reduce((count, actor) => {
+      if (!actor) {
+        return count;
+      }
+
+      if (type === "weapon" && Number(actor.weaponId) === merchandiseId) {
+        return count + 1;
+      }
+
+      if (type === "armor" && Number(actor.armorId) === merchandiseId) {
+        return count + 1;
+      }
+
+      if (type === "accessory" && Number(actor.accessoryId) === merchandiseId) {
+        return count + 1;
+      }
+
+      return count;
+    }, 0);
+  }
+
+  sellableMerchandiseCount(type, id) {
+    const record = this.merchandiseRecord(type, id);
+
+    if (!record || record.sellable === false) {
+      return 0;
+    }
+
+    const owned = Math.max(0, Number(this.merchandiseCount(type, id)) || 0);
+    const equipped = Math.max(0, this.equippedMerchandiseCount(type, id));
+    return Math.max(0, owned - equipped);
   }
 
   purchaseMerchandise(type, id, amount = 1) {
@@ -680,13 +724,19 @@ class Game_Party {
       return { success: false, reason: "invalidQuantity" };
     }
 
-    const owned = this.merchandiseCount(type, id);
+    if (record.sellable === false) {
+      return { success: false, reason: "unsellable" };
+    }
 
-    if (owned < quantity) {
+    const owned = this.merchandiseCount(type, id);
+    const available = this.sellableMerchandiseCount(type, id);
+
+    if (available < quantity) {
       return {
         success: false,
         reason: "insufficientInventory",
         owned,
+        available,
         requested: quantity,
       };
     }

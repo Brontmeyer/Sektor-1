@@ -12,6 +12,11 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Refined Shop Presentation v2 around the hands-on buy/sell review: the welcome state now introduces the merchant instead of exposing wares before **Buy**, buy/detail/roster geometry no longer collides, and the lower comparison surfaces no longer carry redundant PARTY / ROSTER PREVIEW headings
+- Reworked selling into the same quantity-confirmation contract as buying: selecting a sale opens a centered popup with per-unit sell price, available quantity, selected quantity, and total Runes received; the old persistent sell-price footer is removed
+- Protected equipped equipment from shop selling at the `Game_Party` transaction boundary, while still allowing surplus copies to be sold; merchandise records may also opt out with `sellable: false` without pushing economy rules into presentation code
+- Added dedicated Shop Menu Presentation regression coverage for the merchant intro, uncluttered buy roster preview, and shared sell-confirmation popup
+
 - Rebuilt the shop flow around a proper **Buy / Sell / Exit** opening state, richer merchandiser layouts, quantity confirmation for purchases, and a stable two-column sell list ordered to match the party Item menu for item inventory
 - Added roster-wide equipment comparison cards to shop buying screens so weapons / armor / accessories preview the relevant before-and-after stats across the full current roster instead of only showing price metadata
 - Tightened follow-up polish from the previous menu pass by removing the duplicate Arrange "Current" footer, centering Equip stat arrows more cleanly between current and preview values, and changing Window Color editing to single-step holdable left/right adjustments

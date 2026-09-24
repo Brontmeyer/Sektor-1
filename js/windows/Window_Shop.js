@@ -8,31 +8,36 @@ class Window_Shop {
     QUANTITY: "quantity",
   });
 
+  static QUANTITY_MODE = Object.freeze({
+    BUY: "buy",
+    SELL: "sell",
+  });
+
   constructor(shopData = {}) {
     this.title = shopData.name || "Shop";
     this.goods = Array.isArray(shopData.goods) ? shopData.goods : [];
+
     this.commandIndex = 0;
     this.buyIndex = 0;
     this.sellIndex = 0;
     this.quantity = 1;
+    this.quantityMode = Window_Shop.QUANTITY_MODE.BUY;
     this.result = null;
     this.message = "";
     this.state = Window_Shop.STATE.COMMAND;
 
     this.width = Math.min(1260, Graphics.width - 24);
     this.height = Math.min(700, Graphics.height - 24);
-    this.padding = 16;
-
-    this.buyViewport = new Window_ListViewport(9);
-    this.sellViewport = new Window_ListViewport(10);
-
     this.x = Math.floor((Graphics.width - this.width) / 2);
     this.y = Math.floor((Graphics.height - this.height) / 2);
+
+    this.buyViewport = new Window_ListViewport(7);
+    this.sellViewport = new Window_ListViewport(10);
   }
 
-  // ==============================
-  // Input / State Helpers
-  // ==============================
+  // =====================================
+  // Input / State
+  // =====================================
 
   actionTriggered(action) {
     return typeof Input.isActionTriggered === "function"
@@ -82,6 +87,10 @@ class Window_Shop {
     return [];
   }
 
+  // =====================================
+  // Merchandise Data
+  // =====================================
+
   entries() {
     return this.goods
       .map((good) => {
@@ -100,13 +109,43 @@ class Window_Shop {
           owned: $gameParty?.merchandiseCount?.(good.type, good.id) || 0,
         };
       })
-      .filter((entry) => entry !== null);
+      .filter(Boolean);
   }
 
   currentEntry() {
     const entries = this.entries();
-    this.buyIndex = Math.max(0, Math.min(this.buyIndex, Math.max(0, entries.length - 1)));
+    this.buyIndex = Math.max(
+      0,
+      Math.min(this.buyIndex, Math.max(0, entries.length - 1)),
+    );
     return entries[this.buyIndex] || null;
+  }
+
+  inventoryIdsForType(type) {
+    const stores = {
+      item: "items",
+      weapon: "weapons",
+      armor: "armors",
+      accessory: "accessories",
+    };
+    const store = stores[type];
+
+    if (!store) {
+      return [];
+    }
+
+    return Object.keys($gameParty?.[store] || {})
+      .map(Number)
+      .filter((id) => Number.isInteger(id) && id > 0)
+      .sort((a, b) => a - b);
+  }
+
+  sellableCount(type, id) {
+    if (typeof $gameParty?.sellableMerchandiseCount === "function") {
+      return Math.max(0, Number($gameParty.sellableMerchandiseCount(type, id)) || 0);
+    }
+
+    return Math.max(0, Number($gameParty?.merchandiseCount?.(type, id)) || 0);
   }
 
   orderedSellEntries() {
@@ -114,27 +153,11 @@ class Window_Shop {
     const entries = [];
 
     for (const type of groups) {
-      const source = Object.keys($gameParty?.[
-        type === "item"
-          ? "items"
-          : type === "weapon"
-            ? "weapons"
-            : type === "armor"
-              ? "armors"
-              : "accessories"
-      ] || {})
-        .map(Number)
-        .filter((id) => Number.isInteger(id) && id > 0)
-        .sort((a, b) => a - b);
-
-      for (const id of source) {
-        const owned = $gameParty?.merchandiseCount?.(type, id) || 0;
-        if (owned <= 0) {
-          continue;
-        }
-
+      for (const id of this.inventoryIdsForType(type)) {
         const data = $gameParty?.merchandiseRecord?.(type, id) || null;
-        if (!data) {
+        const available = this.sellableCount(type, id);
+
+        if (!data || available <= 0 || data.sellable === false) {
           continue;
         }
 
@@ -144,7 +167,8 @@ class Window_Shop {
           data,
           name: data.name,
           price: Number(data.price) || 0,
-          owned,
+          owned: $gameParty?.merchandiseCount?.(type, id) || 0,
+          available,
           sellPrice: this.sellPrice(type, id),
         });
       }
@@ -155,12 +179,19 @@ class Window_Shop {
 
   currentSellEntry() {
     const entries = this.orderedSellEntries();
-    this.sellIndex = Math.max(0, Math.min(this.sellIndex, Math.max(0, entries.length - 1)));
+    this.sellIndex = Math.max(
+      0,
+      Math.min(this.sellIndex, Math.max(0, entries.length - 1)),
+    );
     return entries[this.sellIndex] || null;
   }
 
   selectedEntry() {
-    if (this.state === Window_Shop.STATE.SELL) {
+    if (
+      this.state === Window_Shop.STATE.SELL ||
+      (this.state === Window_Shop.STATE.QUANTITY &&
+        this.quantityMode === Window_Shop.QUANTITY_MODE.SELL)
+    ) {
       return this.currentSellEntry();
     }
 
@@ -181,9 +212,32 @@ class Window_Shop {
   }
 
   sellPrice(type, id) {
+    if (typeof $gameParty?.merchandiseSellPrice === "function") {
+      return Math.max(0, Number($gameParty.merchandiseSellPrice(type, id)) || 0);
+    }
+
     const record = $gameParty?.merchandiseRecord?.(type, id);
-    const basePrice = Number(record?.price) || 0;
-    return Math.max(0, Math.floor(basePrice / 2));
+    return Math.max(0, Math.floor((Number(record?.price) || 0) / 2));
+  }
+
+  equippedCount(type, id) {
+    if (typeof $gameParty?.equippedMerchandiseCount === "function") {
+      return Math.max(0, Number($gameParty.equippedMerchandiseCount(type, id)) || 0);
+    }
+
+    let count = 0;
+
+    for (const actor of this.partyMembers()) {
+      if (type === "weapon" && Number(actor?.weaponId) === Number(id)) {
+        count += 1;
+      } else if (type === "armor" && Number(actor?.armorId) === Number(id)) {
+        count += 1;
+      } else if (type === "accessory" && Number(actor?.accessoryId) === Number(id)) {
+        count += 1;
+      }
+    }
+
+    return count;
   }
 
   buyQuantityMax(entry = this.currentEntry()) {
@@ -192,49 +246,91 @@ class Window_Shop {
     }
 
     const price = Math.max(0, Number(entry.price) || 0);
-    if (price <= 0) {
+    if (price === 0) {
       return 99;
     }
 
-    const gil = Math.max(0, Number($gameParty?.gil?.() || 0));
-    return Math.max(0, Math.min(99, Math.floor(gil / price)));
+    const runes = Math.max(0, Number($gameParty?.gil?.() || 0));
+    return Math.max(0, Math.min(99, Math.floor(runes / price)));
+  }
+
+  sellQuantityMax(entry = this.currentSellEntry()) {
+    return entry ? Math.max(0, Number(entry.available) || 0) : 0;
+  }
+
+  quantityEntry() {
+    return this.quantityMode === Window_Shop.QUANTITY_MODE.SELL
+      ? this.currentSellEntry()
+      : this.currentEntry();
+  }
+
+  quantityMax() {
+    return this.quantityMode === Window_Shop.QUANTITY_MODE.SELL
+      ? this.sellQuantityMax()
+      : this.buyQuantityMax();
+  }
+
+  quantityUnitPrice() {
+    const entry = this.quantityEntry();
+    if (!entry) {
+      return 0;
+    }
+
+    return this.quantityMode === Window_Shop.QUANTITY_MODE.SELL
+      ? this.sellPrice(entry.type, entry.id)
+      : Math.max(0, Number(entry.price) || 0);
   }
 
   merchantTypes() {
     return [...new Set(this.entries().map((entry) => entry.type))];
   }
 
-  equippedCount(type, id) {
-    const members = this.partyMembers();
-    let count = 0;
+  merchantFocusLabel() {
+    const types = this.merchantTypes();
 
-    members.forEach((actor) => {
-      if (!actor) {
-        return;
-      }
+    if (types.length === 0) {
+      return "Merchant";
+    }
 
-      if (type === "weapon" && Number(actor.weaponId) === Number(id)) {
-        count += 1;
-      }
+    if (types.length > 2) {
+      return "General Store";
+    }
 
-      if (type === "armor" && Number(actor.armorId) === Number(id)) {
-        count += 1;
-      }
+    if (types.length === 1) {
+      return `${this.typeLabel(types[0])} Shop`;
+    }
 
-      if (type === "accessory" && Number(actor.accessoryId) === Number(id)) {
-        count += 1;
-      }
-    });
+    return types.map((type) => this.typeLabel(type)).join(" & ");
+  }
 
-    return count;
+  merchantGreeting() {
+    const types = this.merchantTypes();
+
+    if (types.length === 1 && types[0] === "weapon") {
+      return "Weapons for the road ahead. Take your time and compare before you buy.";
+    }
+
+    if (types.length === 1 && types[0] === "accessory") {
+      return "Small gear can make a big difference. Have a look around.";
+    }
+
+    if (types.length === 1 && types[0] === "item") {
+      return "Supplies, restoratives, and useful odds and ends for the journey.";
+    }
+
+    return "Welcome in. Buy what you need, sell what you can spare, and keep moving.";
   }
 
   currentPrompt() {
+    if (this.state === Window_Shop.STATE.QUANTITY) {
+      return this.quantityMode === Window_Shop.QUANTITY_MODE.SELL
+        ? "How many would you like to sell?"
+        : "How many would you like to buy?";
+    }
+
     switch (this.state) {
       case Window_Shop.STATE.BUY:
         return "What would you like to buy?";
-      case Window_Shop.STATE.QUANTITY:
-        return "How many would you like?";
       case Window_Shop.STATE.SELL:
         return "What would you like to sell?";
       default:
@@ -243,8 +339,6 @@ class Window_Shop {
   }
 
   currentDescription() {
-    const entry = this.selectedEntry();
-
     if (this.message) {
       return this.message;
     }
@@ -252,14 +346,15 @@ class Window_Shop {
     if (this.state === Window_Shop.STATE.COMMAND) {
       switch (this.currentCommand()) {
         case "Buy":
-          return "Browse this merchant's wares and confirm how many you want before spending any Runes.";
+          return "Browse the shop inventory, compare gear across the roster, and confirm a quantity before spending Runes.";
         case "Sell":
-          return "Sell extra inventory in stable party order. Item lists respect the same ordering used in the party Item menu.";
+          return "Sell available inventory. Equipped copies and records marked unsellable stay protected.";
         default:
           return "Leave the shop and return to the field.";
       }
     }
 
+    const entry = this.selectedEntry();
     if (!entry) {
       return this.state === Window_Shop.STATE.SELL
         ? "No saleable merchandise owned."
@@ -269,9 +364,9 @@ class Window_Shop {
     return entry.data?.description || "No description available.";
   }
 
-  // ==============================
+  // =====================================
   // Update
-  // ==============================
+  // =====================================
 
   update() {
     if (this.result !== null) {
@@ -301,7 +396,8 @@ class Window_Shop {
     }
 
     if (this.actionTriggered("left")) {
-      this.commandIndex = (this.commandIndex - 1 + this.commands().length) % this.commands().length;
+      this.commandIndex =
+        (this.commandIndex - 1 + this.commands().length) % this.commands().length;
       this.message = "";
       return;
     }
@@ -323,16 +419,8 @@ class Window_Shop {
       return;
     }
 
-    if (command === "Buy") {
-      this.state = Window_Shop.STATE.BUY;
-      this.message = "";
-      return;
-    }
-
-    if (command === "Sell") {
-      this.state = Window_Shop.STATE.SELL;
-      this.message = "";
-    }
+    this.message = "";
+    this.state = command === "Sell" ? Window_Shop.STATE.SELL : Window_Shop.STATE.BUY;
   }
 
   updateBuy() {
@@ -340,6 +428,7 @@ class Window_Shop {
 
     if (this.actionTriggered("cancel")) {
       this.state = Window_Shop.STATE.COMMAND;
+      this.message = "";
       return;
     }
 
@@ -362,38 +451,93 @@ class Window_Shop {
     }
 
     if (!this.actionTriggered("confirm")) {
-      this.buyViewport.ensureVisible(this.buyIndex, entries.length);
       return;
     }
 
     const entry = this.currentEntry();
+    const max = this.buyQuantityMax(entry);
+
     if (!entry) {
       return;
     }
 
-    const max = this.buyQuantityMax(entry);
     if (max <= 0) {
       this.message = `Not enough Runes. Need ${entry.price}, have ${$gameParty?.gil?.() ?? 0}.`;
       return;
     }
 
-    this.quantity = Math.max(1, Math.min(max, this.quantity || 1));
+    this.quantityMode = Window_Shop.QUANTITY_MODE.BUY;
+    this.quantity = 1;
     this.state = Window_Shop.STATE.QUANTITY;
   }
 
+  updateSell() {
+    const entries = this.orderedSellEntries();
+
+    if (this.actionTriggered("cancel")) {
+      this.state = Window_Shop.STATE.COMMAND;
+      this.message = "";
+      return;
+    }
+
+    if (entries.length === 0) {
+      return;
+    }
+
+    const rowCount = Math.ceil(entries.length / 2);
+    let row = Math.floor(this.sellIndex / 2);
+    let column = this.sellIndex % 2;
+
+    if (this.actionRepeated("up")) {
+      row = (row - 1 + rowCount) % rowCount;
+    } else if (this.actionRepeated("down")) {
+      row = (row + 1) % rowCount;
+    } else if (this.actionTriggered("left")) {
+      column = column === 0 ? 1 : 0;
+    } else if (this.actionTriggered("right")) {
+      column = column === 1 ? 0 : 1;
+    } else if (this.actionTriggered("confirm")) {
+      const entry = this.currentSellEntry();
+      const max = this.sellQuantityMax(entry);
+
+      if (entry && max > 0) {
+        this.quantityMode = Window_Shop.QUANTITY_MODE.SELL;
+        this.quantity = 1;
+        this.state = Window_Shop.STATE.QUANTITY;
+        this.message = "";
+      }
+      return;
+    } else {
+      return;
+    }
+
+    let nextIndex = row * 2 + column;
+    if (nextIndex >= entries.length) {
+      nextIndex = entries.length - 1;
+    }
+
+    this.sellIndex = Math.max(0, nextIndex);
+    this.sellViewport.ensureVisible(Math.floor(this.sellIndex / 2), rowCount);
+    this.message = "";
+  }
+
   updateQuantity() {
-    const entry = this.currentEntry();
-    const max = this.buyQuantityMax(entry);
+    const entry = this.quantityEntry();
+    const max = this.quantityMax();
+    const returnState =
+      this.quantityMode === Window_Shop.QUANTITY_MODE.SELL
+        ? Window_Shop.STATE.SELL
+        : Window_Shop.STATE.BUY;
 
     if (!entry || max <= 0) {
-      this.state = Window_Shop.STATE.BUY;
       this.quantity = 1;
+      this.state = returnState;
       return;
     }
 
     if (this.actionTriggered("cancel")) {
-      this.state = Window_Shop.STATE.BUY;
       this.quantity = 1;
+      this.state = returnState;
       return;
     }
 
@@ -417,68 +561,24 @@ class Window_Shop {
       return;
     }
 
-    if (this.actionTriggered("confirm")) {
-      this.result = {
-        action: "purchase",
-        type: entry.type,
-        id: entry.id,
-        quantity: this.quantity,
-      };
-      this.quantity = 1;
-      this.state = Window_Shop.STATE.BUY;
+    if (!this.actionTriggered("confirm")) {
+      return;
     }
+
+    this.result = {
+      action:
+        this.quantityMode === Window_Shop.QUANTITY_MODE.SELL ? "sell" : "purchase",
+      type: entry.type,
+      id: entry.id,
+      quantity: this.quantity,
+    };
+    this.quantity = 1;
+    this.state = returnState;
   }
 
-  updateSell() {
-    const entries = this.orderedSellEntries();
-
-    if (this.actionTriggered("cancel")) {
-      this.state = Window_Shop.STATE.COMMAND;
-      return;
-    }
-
-    if (entries.length === 0) {
-      return;
-    }
-
-    const rowCount = Math.ceil(entries.length / 2);
-    let row = Math.floor(this.sellIndex / 2);
-    let column = this.sellIndex % 2;
-
-    if (this.actionRepeated("up")) {
-      row = (row - 1 + rowCount) % rowCount;
-    } else if (this.actionRepeated("down")) {
-      row = (row + 1) % rowCount;
-    } else if (this.actionTriggered("left")) {
-      column = column === 0 ? 1 : 0;
-    } else if (this.actionTriggered("right")) {
-      column = column === 1 ? 0 : 1;
-    } else if (this.actionTriggered("confirm")) {
-      const entry = this.currentSellEntry();
-      if (entry) {
-        this.result = {
-          action: "sell",
-          type: entry.type,
-          id: entry.id,
-          quantity: 1,
-        };
-      }
-      return;
-    }
-
-    let nextIndex = row * 2 + column;
-    if (nextIndex >= entries.length) {
-      nextIndex = entries.length - 1;
-    }
-
-    this.sellIndex = Math.max(0, nextIndex);
-    this.sellViewport.ensureVisible(Math.floor(this.sellIndex / 2), rowCount);
-    this.message = "";
-  }
-
-  // ==============================
-  // Drawing Helpers
-  // ==============================
+  // =====================================
+  // Shared Drawing
+  // =====================================
 
   drawPanel(context, bounds, options = {}) {
     if (
@@ -512,16 +612,16 @@ class Window_Shop {
     context.fillRect(x, y, width, height);
   }
 
-  drawPortraitPlaceholder(context, actor, x, y, size) {
+  drawPortraitPlaceholder(context, subject, x, y, size) {
     if (
       typeof Window_ActorSummary !== "undefined" &&
       typeof Window_ActorSummary.drawPortraitPlaceholder === "function"
     ) {
-      Window_ActorSummary.drawPortraitPlaceholder(context, actor, x, y, size);
+      Window_ActorSummary.drawPortraitPlaceholder(context, subject, x, y, size);
       return;
     }
 
-    const initial = String(actor?.name || "?").trim().charAt(0).toUpperCase() || "?";
+    const initial = String(subject?.name || "?").trim().charAt(0).toUpperCase() || "?";
     context.fillStyle = "rgba(12, 23, 45, 0.94)";
     context.fillRect(x, y, size, size);
     context.strokeStyle = "rgba(137, 182, 235, 0.85)";
@@ -536,6 +636,7 @@ class Window_Shop {
 
   drawDescriptionText(context, bounds, text, options = {}) {
     const paddingX = Number(options.paddingX) || 18;
+
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
@@ -562,24 +663,31 @@ class Window_Shop {
     context.restore();
   }
 
+  drawBackground(context) {
+    context.save();
+    context.fillStyle = "#0b0e13";
+    context.fillRect(0, 0, Graphics.width, Graphics.height);
+    context.restore();
+  }
+
   headerBounds() {
-    const titleWidth = Math.min(300, Math.floor(this.width * 0.24));
     const gap = 8;
-    const topHeight = 68;
+    const height = 68;
+    const titleWidth = Math.min(300, Math.floor(this.width * 0.24));
     const prompt = {
       x: this.x,
       y: this.y,
       width: this.width - titleWidth - gap,
-      height: topHeight,
+      height,
     };
     const title = {
       x: prompt.x + prompt.width + gap,
       y: this.y,
       width: titleWidth,
-      height: topHeight,
+      height,
     };
 
-    return { prompt, title, gap, topHeight };
+    return { prompt, title };
   }
 
   bodyTopY() {
@@ -587,21 +695,33 @@ class Window_Shop {
   }
 
   drawHeader(context) {
-    const header = this.headerBounds();
-    this.drawPanel(context, header.prompt);
-    this.drawPanel(context, header.title);
+    const { prompt, title } = this.headerBounds();
+    this.drawPanel(context, prompt);
+    this.drawPanel(context, title);
 
     context.save();
-    context.textAlign = "left";
     context.textBaseline = "middle";
     context.fillStyle = "#ffffff";
     context.font = "600 24px sans-serif";
-    context.fillText(this.currentPrompt(), header.prompt.x + 18, header.prompt.y + header.prompt.height / 2);
+    context.textAlign = "left";
+    context.fillText(this.currentPrompt(), prompt.x + 18, prompt.y + prompt.height / 2);
 
-    context.textAlign = "center";
     context.font = "600 20px sans-serif";
-    context.fillText(this.title, header.title.x + header.title.width / 2, header.title.y + header.title.height / 2);
+    context.textAlign = "center";
+    context.fillText(this.title, title.x + title.width / 2, title.y + title.height / 2);
     context.restore();
+  }
+
+  drawDescriptionStrip(context) {
+    const bounds = {
+      x: this.x,
+      y: this.bodyTopY(),
+      width: this.width,
+      height: 58,
+    };
+    this.drawPanel(context, bounds, { assetAlpha: 0.46 });
+    this.drawDescriptionText(context, bounds, this.currentDescription());
+    return bounds;
   }
 
   drawScrollIndicators(context, x, topY, bottomY, hasPrevious, hasNext) {
@@ -614,7 +734,6 @@ class Window_Shop {
     if (hasPrevious) {
       context.fillText("▲", x, topY);
     }
-
     if (hasNext) {
       context.fillText("▼", x, bottomY);
     }
@@ -622,249 +741,281 @@ class Window_Shop {
     context.restore();
   }
 
-  drawBackground(context) {
-    context.save();
-    context.fillStyle = "#0b0e13";
-    context.fillRect(0, 0, Graphics.width, Graphics.height);
-    context.restore();
-  }
+  // =====================================
+  // Welcome / Command
+  // =====================================
 
   drawCommandState(context) {
-    const top = this.bodyTopY();
-    const descriptionBounds = {
-      x: this.x,
-      y: top,
-      width: this.width,
-      height: 58,
-    };
-    const contentY = descriptionBounds.y + descriptionBounds.height + 8;
-    const leftWidth = Math.floor(this.width * 0.68);
+    const description = this.drawDescriptionStrip(context);
     const gap = 8;
-    const leftBounds = {
+    const contentY = description.y + description.height + gap;
+    const contentHeight = this.y + this.height - contentY;
+    const leftWidth = Math.floor((this.width - gap) * 0.66);
+    const left = {
       x: this.x,
       y: contentY,
       width: leftWidth,
-      height: this.height - (contentY - this.y),
+      height: contentHeight,
     };
-    const rightBounds = {
-      x: leftBounds.x + leftBounds.width + gap,
+    const right = {
+      x: left.x + left.width + gap,
       y: contentY,
-      width: this.width - leftBounds.width - gap,
-      height: leftBounds.height,
+      width: this.width - left.width - gap,
+      height: contentHeight,
     };
 
-    this.drawPanel(context, descriptionBounds, { assetAlpha: 0.46 });
-    this.drawDescriptionText(context, descriptionBounds, this.currentDescription());
-    this.drawPanel(context, leftBounds);
-    this.drawPanel(context, rightBounds);
+    this.drawPanel(context, left);
+    this.drawPanel(context, right);
 
     const commands = this.commands();
     const commandGap = 12;
-    const commandWidth = Math.floor((leftBounds.width - 42 - commandGap * (commands.length - 1)) / commands.length);
-    const commandHeight = 40;
-    const commandY = leftBounds.y + 22;
+    const commandWidth = Math.floor(
+      (left.width - 36 - commandGap * (commands.length - 1)) / commands.length,
+    );
+    const commandY = left.y + 20;
+    const commandHeight = 42;
 
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
 
     commands.forEach((command, index) => {
-      const commandX = leftBounds.x + 18 + index * (commandWidth + commandGap);
+      const x = left.x + 18 + index * (commandWidth + commandGap);
       const selected = index === this.commandIndex;
+
       if (selected) {
-        this.drawSelection(context, commandX, commandY, commandWidth, commandHeight);
+        this.drawSelection(context, x, commandY, commandWidth, commandHeight);
       }
 
       context.fillStyle = selected ? "#ffd75a" : "#ffffff";
       context.font = selected ? "600 18px sans-serif" : "18px sans-serif";
-      context.fillText(`${selected ? "▶ " : "  "}${command}`, commandX + 12, commandY + commandHeight / 2);
+      context.fillText(
+        `${selected ? "▶ " : "  "}${command}`,
+        x + 12,
+        commandY + commandHeight / 2,
+      );
+    });
+
+    const portraitSize = Math.min(172, Math.floor(left.height * 0.42));
+    const portraitX = left.x + 38;
+    const portraitY = left.y + 104;
+    this.drawPortraitPlaceholder(
+      context,
+      { name: this.title || "Merchant" },
+      portraitX,
+      portraitY,
+      portraitSize,
+    );
+
+    const identityX = portraitX + portraitSize + 30;
+    context.fillStyle = "#7ff0d5";
+    context.font = "600 16px sans-serif";
+    context.fillText("SHOPKEEPER", identityX, portraitY + 18);
+    context.fillStyle = "#ffffff";
+    context.font = "600 27px sans-serif";
+    context.fillText(this.title, identityX, portraitY + 56);
+    context.fillStyle = "#ffd75a";
+    context.font = "600 17px sans-serif";
+    context.fillText(this.merchantFocusLabel(), identityX, portraitY + 88);
+
+    const greetingBounds = {
+      x: identityX,
+      y: portraitY + 110,
+      width: left.x + left.width - identityX - 30,
+      height: Math.max(70, portraitSize - 110),
+    };
+    this.drawDescriptionText(context, greetingBounds, this.merchantGreeting(), {
+      paddingX: 0,
+      font: "16px sans-serif",
+      lineHeight: 22,
+      maxLines: 4,
     });
 
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
-    context.fillText("MERCHANDISE", leftBounds.x + 18, leftBounds.y + 92);
+    context.fillText("VISIT", right.x + 18, right.y + 30);
 
-    context.strokeStyle = "rgba(210, 222, 242, 0.28)";
-    context.lineWidth = 1;
-    context.beginPath();
-    context.moveTo(leftBounds.x + 18, leftBounds.y + 108);
-    context.lineTo(leftBounds.x + leftBounds.width - 18, leftBounds.y + 108);
-    context.stroke();
-
-    const previewEntries = this.entries().slice(0, 8);
-    if (previewEntries.length === 0) {
-      context.fillStyle = "#8897ac";
-      context.font = "16px sans-serif";
-      context.fillText("This merchant is still stocking the shelves.", leftBounds.x + 18, leftBounds.y + 148);
-    } else {
-      context.font = "16px sans-serif";
-      previewEntries.forEach((entry, index) => {
-        const column = index % 2;
-        const row = Math.floor(index / 2);
-        const textX = leftBounds.x + 18 + column * Math.floor((leftBounds.width - 36) / 2);
-        const textY = leftBounds.y + 146 + row * 34;
-        context.fillStyle = "#aebbd0";
-        context.fillText(`[${this.typeLabel(entry.type)}]`, textX, textY);
-        context.fillStyle = "#ffffff";
-        context.fillText(entry.name, textX + 72, textY);
-      });
-    }
-
-    context.fillStyle = "#7ff0d5";
-    context.font = "600 18px sans-serif";
-    context.fillText("OVERVIEW", rightBounds.x + 18, rightBounds.y + 30);
-
-    const merchantTypes = this.merchantTypes();
-    const overviewRows = [
+    const visitRows = [
       ["Runes", String($gameParty?.gil?.() ?? 0)],
-      ["Goods", String(this.entries().length)],
-      ["Types", merchantTypes.map((type) => this.typeLabel(type)).join(", ") || "—"],
-      ["Buy", "Browse and confirm quantity"],
-      ["Sell", "Stable two-column inventory"],
+      ["Store", this.merchantFocusLabel()],
+      ["Buy", "Available"],
+      ["Sell", "Available"],
     ];
 
-    context.fillStyle = "#ffffff";
-    context.font = "15px sans-serif";
-    context.fillText(`Runes: ${$gameParty?.gil?.() ?? 0}`, rightBounds.x + 18, rightBounds.y + 54);
-
-    overviewRows.forEach(([label, value], index) => {
-      const y = rightBounds.y + 94 + index * 34;
+    visitRows.forEach(([label, value], index) => {
+      const y = right.y + 82 + index * 44;
       context.fillStyle = "#aebbd0";
       context.font = "15px sans-serif";
-      context.fillText(label, rightBounds.x + 18, y);
+      context.textAlign = "left";
+      context.fillText(label, right.x + 18, y);
       context.textAlign = "right";
       context.fillStyle = "#ffffff";
-      context.fillText(String(value), rightBounds.x + rightBounds.width - 18, y);
-      context.textAlign = "left";
+      context.fillText(String(value), right.x + right.width - 18, y);
     });
 
     context.restore();
   }
 
-  drawBuyState(context) {
-    const descriptionBounds = {
-      x: this.x,
-      y: this.bodyTopY(),
-      width: this.width,
-      height: 58,
-    };
-    const topY = descriptionBounds.y + descriptionBounds.height + 8;
-    const mainHeight = 252;
-    const listWidth = Math.floor(this.width * 0.63);
+  // =====================================
+  // Buy
+  // =====================================
+
+  buyLayout(descriptionBounds) {
     const gap = 8;
-    const listBounds = {
+    const mainY = descriptionBounds.y + descriptionBounds.height + gap;
+    const mainHeight = Math.min(274, Math.floor(this.height * 0.39));
+    const listWidth = Math.floor((this.width - gap) * 0.63);
+    const list = {
       x: this.x,
-      y: topY,
+      y: mainY,
       width: listWidth,
       height: mainHeight,
     };
-    const infoBounds = {
-      x: listBounds.x + listBounds.width + gap,
-      y: topY,
-      width: this.width - listWidth - gap,
+    const details = {
+      x: list.x + list.width + gap,
+      y: mainY,
+      width: this.width - list.width - gap,
       height: mainHeight,
     };
-    const previewBounds = {
+    const preview = {
       x: this.x,
-      y: topY + mainHeight + gap,
+      y: mainY + mainHeight + gap,
       width: this.width,
-      height: this.y + this.height - (topY + mainHeight + gap),
+      height: this.y + this.height - (mainY + mainHeight + gap),
     };
-    const entry = this.currentEntry();
+
+    return { list, details, preview };
+  }
+
+  drawBuyState(context) {
+    const description = this.drawDescriptionStrip(context);
+    const layout = this.buyLayout(description);
     const entries = this.entries();
+    const entry = this.currentEntry();
 
-    this.drawPanel(context, descriptionBounds, { assetAlpha: 0.46 });
-    this.drawDescriptionText(context, descriptionBounds, this.currentDescription());
-    this.drawPanel(context, listBounds);
-    this.drawPanel(context, infoBounds);
-    this.drawPanel(context, previewBounds);
+    this.drawPanel(context, layout.list);
+    this.drawPanel(context, layout.details);
+    this.drawPanel(context, layout.preview);
 
+    this.drawBuyList(context, layout.list, entries);
+    this.drawBuyDetails(context, layout.details, entry);
+
+    if (entry && this.isEquipmentType(entry.type)) {
+      this.drawEquipmentComparison(context, layout.preview, entry);
+    } else {
+      this.drawPartyPortraits(context, layout.preview);
+    }
+
+    if (this.state === Window_Shop.STATE.QUANTITY) {
+      this.drawQuantityOverlay(context);
+    }
+  }
+
+  drawBuyList(context, bounds, entries) {
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
-    context.fillText("BUY", listBounds.x + 18, listBounds.y + 28);
+    context.fillText("BUY", bounds.x + 18, bounds.y + 28);
 
     if (entries.length === 0) {
       context.fillStyle = "#8897ac";
       context.font = "16px sans-serif";
-      context.fillText("No merchandise available.", listBounds.x + 18, listBounds.y + 74);
-    } else {
-      const rowHeight = 28;
-      const listTop = listBounds.y + 74;
-      this.buyViewport.ensureVisible(this.buyIndex, entries.length);
-      const range = this.buyViewport.visibleRange(this.buyIndex, entries.length);
-
-      for (let i = range.start; i < range.end; i++) {
-        const current = entries[i];
-        const y = listTop + (i - range.start) * rowHeight;
-        const selected = i === this.buyIndex;
-
-        if (selected) {
-          this.drawSelection(context, listBounds.x + 12, y - 14, listBounds.width - 24, 28);
-        }
-
-        context.fillStyle = selected ? "#ffd75a" : "#ffffff";
-        context.font = selected ? "600 18px sans-serif" : "18px sans-serif";
-        context.fillText(`${selected ? "▶ " : "  "}${current.name}`, listBounds.x + 18, y);
-
-        context.textAlign = "right";
-        context.fillStyle = "#ffffff";
-        context.font = "17px sans-serif";
-        context.fillText(String(current.price), listBounds.x + listBounds.width - 18, y);
-        context.textAlign = "left";
-      }
-
-      this.drawScrollIndicators(
-        context,
-        listBounds.x + listBounds.width - 6,
-        listBounds.y + 64,
-        listBounds.y + listBounds.height - 18,
-        this.buyViewport.hasPrevious(),
-        this.buyViewport.hasNext(entries.length),
-      );
+      context.fillText("No merchandise available.", bounds.x + 18, bounds.y + 76);
+      context.restore();
+      return;
     }
 
-    const owned = entry ? ($gameParty?.merchandiseCount?.(entry.type, entry.id) || 0) : 0;
-    const equipped = entry ? this.equippedCount(entry.type, entry.id) : 0;
-    const infoRows = [
-      ["Runes", String($gameParty?.gil?.() ?? 0)],
-      ["Price", entry ? String(entry.price) : "—"],
-      ["Owned", String(owned)],
-      ["Equipped", String(equipped)],
-    ];
+    const rowHeight = 29;
+    const listTop = bounds.y + 72;
+    const availableHeight = bounds.height - 88;
+    this.buyViewport.maxVisibleRows = Math.max(
+      1,
+      Math.floor(availableHeight / rowHeight),
+    );
+    this.buyViewport.ensureVisible(this.buyIndex, entries.length);
+    const range = this.buyViewport.visibleRange(this.buyIndex, entries.length);
 
+    for (let i = range.start; i < range.end; i++) {
+      const entry = entries[i];
+      const y = listTop + (i - range.start) * rowHeight;
+      const selected = i === this.buyIndex;
+
+      if (selected) {
+        this.drawSelection(context, bounds.x + 12, y - 14, bounds.width - 24, 28);
+      }
+
+      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+      context.font = selected ? "600 17px sans-serif" : "17px sans-serif";
+      context.fillText(`${selected ? "▶ " : "  "}${entry.name}`, bounds.x + 18, y);
+
+      context.textAlign = "right";
+      context.fillStyle = "#ffffff";
+      context.font = "16px sans-serif";
+      context.fillText(String(entry.price), bounds.x + bounds.width - 18, y);
+      context.textAlign = "left";
+    }
+
+    this.drawScrollIndicators(
+      context,
+      bounds.x + bounds.width - 6,
+      bounds.y + 62,
+      bounds.y + bounds.height - 14,
+      this.buyViewport.hasPrevious(),
+      this.buyViewport.hasNext(entries.length),
+    );
+
+    context.restore();
+  }
+
+  drawBuyDetails(context, bounds, entry) {
+    const runes = Math.max(0, Number($gameParty?.gil?.() || 0));
+    const owned = entry
+      ? Math.max(0, Number($gameParty?.merchandiseCount?.(entry.type, entry.id)) || 0)
+      : 0;
+    const equipped = entry ? this.equippedCount(entry.type, entry.id) : 0;
+
+    context.save();
+    context.textBaseline = "middle";
+    context.textAlign = "left";
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
-    context.fillText("DETAILS", infoBounds.x + 18, infoBounds.y + 28);
-    context.fillStyle = "#ffffff";
-    context.font = "15px sans-serif";
-    context.fillText(`Runes: ${$gameParty?.gil?.() ?? 0}`, infoBounds.x + 18, infoBounds.y + 54);
+    context.fillText("DETAILS", bounds.x + 18, bounds.y + 28);
 
-    infoRows.forEach(([label, value], index) => {
-      const y = infoBounds.y + 92 + index * 42;
-      context.fillStyle = label === "Runes" ? "#7ff0d5" : "#aebbd0";
+    const rows = [
+      ["Runes", String(runes), "#7ff0d5"],
+      ["Price", entry ? String(entry.price) : "—", "#aebbd0"],
+      ["Owned", String(owned), "#aebbd0"],
+    ];
+
+    if (entry && this.isEquipmentType(entry.type)) {
+      rows.push(["Equipped", String(equipped), "#aebbd0"]);
+    }
+
+    rows.forEach(([label, value, labelColor], index) => {
+      const y = bounds.y + 80 + index * 46;
+      context.fillStyle = labelColor;
       context.font = "16px sans-serif";
-      context.fillText(label, infoBounds.x + 18, y);
+      context.fillText(label, bounds.x + 18, y);
       context.textAlign = "right";
       context.fillStyle = "#ffffff";
       context.font = "600 18px sans-serif";
-      context.fillText(value, infoBounds.x + infoBounds.width - 18, y);
+      context.fillText(value, bounds.x + bounds.width - 18, y);
       context.textAlign = "left";
     });
 
-    if (entry && this.isEquipmentType(entry.type)) {
-      this.drawEquipmentComparison(context, previewBounds, entry);
-    } else {
-      this.drawPartyPreview(context, previewBounds);
+    if (entry) {
+      context.fillStyle = "#aebbd0";
+      context.font = "14px sans-serif";
+      context.fillText(
+        this.typeLabel(entry.type),
+        bounds.x + 18,
+        bounds.y + bounds.height - 22,
+      );
     }
 
     context.restore();
-
-    if (this.state === Window_Shop.STATE.QUANTITY) {
-      this.drawQuantityOverlay(context, entry);
-    }
   }
 
   statDefinitionsForEntry(entry) {
@@ -872,281 +1023,218 @@ class Window_Shop {
       return [];
     }
 
-    const accessory = (actor, override) => override || actor?.accessory?.() || null;
     const currentWeapon = (actor) => actor?.weapon?.() || null;
     const currentArmor = (actor) => actor?.armor?.() || null;
+    const currentAccessory = (actor) => actor?.accessory?.() || null;
 
     const definitions = [
       {
-        key: "atk",
         shortLabel: "ATK",
         current: (actor) => Number(actor?.totalAttack?.() || 0),
         preview: (actor) => {
           if (entry.type === "weapon") {
-            return Number(actor?.attackWithWeapon?.(entry.data, accessory(actor)) || 0);
+            return Number(actor?.attackWithWeapon?.(entry.data, currentAccessory(actor)) || 0);
           }
-
           if (entry.type === "accessory") {
             return Number(actor?.attackWithWeapon?.(currentWeapon(actor), entry.data) || 0);
           }
-
           return Number(actor?.totalAttack?.() || 0);
         },
       },
       {
-        key: "def",
         shortLabel: "DEF",
         current: (actor) => Number(actor?.totalDefense?.() || 0),
         preview: (actor) => {
           if (entry.type === "armor") {
-            return Number(actor?.defenseWithArmor?.(entry.data, accessory(actor)) || 0);
+            return Number(actor?.defenseWithArmor?.(entry.data, currentAccessory(actor)) || 0);
           }
-
           if (entry.type === "accessory") {
             return Number(actor?.defenseWithArmor?.(currentArmor(actor), entry.data) || 0);
           }
-
           return Number(actor?.totalDefense?.() || 0);
         },
       },
       {
-        key: "mat",
         shortLabel: "MAT",
         current: (actor) => Number(actor?.totalMagicAttack?.() || 0),
         preview: (actor) => {
           if (entry.type === "weapon") {
-            return Number(actor?.magicAttackWithWeapon?.(entry.data, accessory(actor)) || 0);
+            return Number(actor?.magicAttackWithWeapon?.(entry.data, currentAccessory(actor)) || 0);
           }
-
           if (entry.type === "accessory") {
             return Number(actor?.magicAttackWithWeapon?.(currentWeapon(actor), entry.data) || 0);
           }
-
           return Number(actor?.totalMagicAttack?.() || 0);
         },
       },
       {
-        key: "mdf",
         shortLabel: "MDF",
         current: (actor) => Number(actor?.totalMagicDefense?.() || 0),
-        preview: (actor) => {
-          if (entry.type === "accessory") {
-            return Number(actor?.magicDefenseWithAccessory?.(entry.data) || 0);
-          }
-
-          return Number(actor?.totalMagicDefense?.() || 0);
-        },
+        preview: (actor) =>
+          entry.type === "accessory"
+            ? Number(actor?.magicDefenseWithAccessory?.(entry.data) || 0)
+            : Number(actor?.totalMagicDefense?.() || 0),
       },
       {
-        key: "crt",
         shortLabel: "CRT",
         current: (actor) => Number(actor?.totalCritical?.() || 0),
         preview: (actor) => {
           if (entry.type === "weapon") {
-            return Number(actor?.criticalWithWeapon?.(entry.data, accessory(actor)) || 0);
+            return Number(actor?.criticalWithWeapon?.(entry.data, currentAccessory(actor)) || 0);
           }
-
           if (entry.type === "accessory") {
             return Number(actor?.criticalWithWeapon?.(currentWeapon(actor), entry.data) || 0);
           }
-
           return Number(actor?.totalCritical?.() || 0);
         },
       },
     ];
 
-    const changes = definitions.map((definition) => {
-      const deltas = this.partyMembers().map((actor) => {
-        const current = definition.current(actor);
-        const preview = definition.preview(actor);
-        return Math.abs(preview - current);
-      });
-      const maxDelta = Math.max(0, ...deltas);
-      return { definition, maxDelta };
-    });
+    const scored = definitions.map((definition) => ({
+      definition,
+      maxDelta: Math.max(
+        0,
+        ...this.partyMembers().map((actor) =>
+          Math.abs(definition.preview(actor) - definition.current(actor)),
+        ),
+      ),
+    }));
+    const changed = scored.filter((entryScore) => entryScore.maxDelta > 0);
 
-    const changed = changes.filter((entryChange) => entryChange.maxDelta > 0);
-    if (changed.length > 0) {
-      return changed
-        .sort((a, b) => b.maxDelta - a.maxDelta)
-        .slice(0, 2)
-        .map((entryChange) => entryChange.definition);
-    }
-
-    return definitions.slice(0, 2);
+    return (changed.length > 0 ? changed : scored)
+      .sort((a, b) => b.maxDelta - a.maxDelta)
+      .slice(0, 2)
+      .map((entryScore) => entryScore.definition);
   }
 
   drawEquipmentComparison(context, bounds, entry) {
     const members = this.partyMembers();
     const stats = this.statDefinitionsForEntry(entry);
-    context.save();
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.fillStyle = "#7ff0d5";
-    context.font = "600 18px sans-serif";
-    context.fillText("ROSTER PREVIEW", bounds.x + 18, bounds.y + 28);
 
     if (members.length === 0) {
-      context.fillStyle = "#8897ac";
-      context.font = "16px sans-serif";
-      context.fillText("No roster members available.", bounds.x + 18, bounds.y + 66);
-      context.restore();
+      this.drawDescriptionText(context, bounds, "No roster members available.", {
+        color: "#8897ac",
+      });
       return;
     }
 
     const columns = members.length <= 2 ? members.length : 2;
     const rows = Math.ceil(members.length / columns);
     const gap = 10;
-    const cardWidth = Math.floor((bounds.width - 36 - gap * (columns - 1)) / columns);
-    const cardHeight = Math.max(88, Math.floor((bounds.height - 58 - gap * (rows - 1)) / rows));
+    const inset = 14;
+    const cardWidth = Math.floor(
+      (bounds.width - inset * 2 - gap * (columns - 1)) / columns,
+    );
+    const cardHeight = Math.floor(
+      (bounds.height - inset * 2 - gap * (rows - 1)) / rows,
+    );
+
+    context.save();
+    context.textAlign = "left";
+    context.textBaseline = "middle";
 
     members.forEach((actor, index) => {
       const column = index % columns;
       const row = Math.floor(index / columns);
-      const cardX = bounds.x + 18 + column * (cardWidth + gap);
-      const cardY = bounds.y + 44 + row * (cardHeight + gap);
-      const portraitSize = Math.min(54, cardHeight - 24);
-      const portraitX = cardX + 12;
-      const portraitY = cardY + Math.max(10, Math.floor((cardHeight - portraitSize) / 2));
-      const textX = portraitX + portraitSize + 12;
-
-      this.drawPanel(context, {
-        x: cardX,
-        y: cardY,
+      const card = {
+        x: bounds.x + inset + column * (cardWidth + gap),
+        y: bounds.y + inset + row * (cardHeight + gap),
         width: cardWidth,
         height: cardHeight,
-      }, {
+      };
+      const portraitSize = Math.max(44, Math.min(58, card.height - 24));
+      const portraitX = card.x + 12;
+      const portraitY = card.y + Math.floor((card.height - portraitSize) / 2);
+      const textX = portraitX + portraitSize + 12;
+
+      this.drawPanel(context, card, {
         assetAlpha: 0.34,
         fallbackStroke: "rgba(150, 176, 220, 0.46)",
       });
-
       this.drawPortraitPlaceholder(context, actor, portraitX, portraitY, portraitSize);
 
       context.fillStyle = "#ffffff";
       context.font = "600 16px sans-serif";
-      context.fillText(actor?.name || "Unknown", textX, cardY + 20);
+      context.fillText(actor?.name || "Unknown", textX, card.y + 20);
 
       stats.forEach((stat, statIndex) => {
         const current = stat.current(actor);
         const preview = stat.preview(actor);
-        const y = cardY + 48 + statIndex * 22;
-        const deltaColor = preview > current ? "#7dff8a" : preview < current ? "#ff6b6b" : "#ffffff";
+        const y = card.y + 48 + statIndex * 22;
+        const valueRight = card.x + card.width - 18;
+        const arrowX = valueRight - 46;
+        const currentX = arrowX - 20;
 
         context.fillStyle = "#7ff0d5";
         context.font = "600 13px sans-serif";
+        context.textAlign = "left";
         context.fillText(stat.shortLabel, textX, y);
-        context.textAlign = "right";
+
         context.fillStyle = "#ffffff";
         context.font = "600 14px sans-serif";
-        context.fillText(String(current), cardX + cardWidth - 84, y);
-        context.textAlign = "center";
-        context.fillStyle = preview === current ? "#aebbd0" : "#55e0c2";
-        context.fillText("→", cardX + cardWidth - 64, y);
         context.textAlign = "right";
-        context.fillStyle = deltaColor;
-        context.fillText(String(preview), cardX + cardWidth - 18, y);
-        context.textAlign = "left";
+        context.fillText(String(current), currentX, y);
+
+        context.fillStyle = preview === current ? "#aebbd0" : "#55e0c2";
+        context.textAlign = "center";
+        context.fillText("→", arrowX, y);
+
+        context.fillStyle =
+          preview > current ? "#7dff8a" : preview < current ? "#ff6b6b" : "#ffffff";
+        context.textAlign = "right";
+        context.fillText(String(preview), valueRight, y);
       });
     });
 
     context.restore();
   }
 
-  drawPartyPreview(context, bounds) {
+  drawPartyPortraits(context, bounds) {
     const members = this.partyMembers();
 
-    context.save();
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.fillStyle = "#7ff0d5";
-    context.font = "600 18px sans-serif";
-    context.fillText("PARTY", bounds.x + 18, bounds.y + 28);
-
     if (members.length === 0) {
-      context.fillStyle = "#8897ac";
-      context.font = "16px sans-serif";
-      context.fillText("No roster members available.", bounds.x + 18, bounds.y + 66);
-      context.restore();
+      this.drawDescriptionText(context, bounds, "No roster members available.", {
+        color: "#8897ac",
+      });
       return;
     }
 
-    const columns = Math.min(4, Math.max(2, members.length));
-    const rows = Math.ceil(members.length / columns);
-    const gap = 18;
-    const portraitSize = Math.min(72, Math.floor((bounds.height - 60 - gap * Math.max(0, rows - 1)) / rows));
+    const columns = Math.min(4, Math.max(1, members.length));
+    const slotWidth = (bounds.width - 36) / columns;
+    const portraitSize = Math.max(58, Math.min(78, bounds.height - 70));
+
+    context.save();
+    context.textBaseline = "middle";
+    context.textAlign = "center";
 
     members.forEach((actor, index) => {
-      const column = index % columns;
-      const row = Math.floor(index / columns);
-      const slotWidth = Math.floor((bounds.width - 36) / columns);
-      const centerX = bounds.x + 18 + column * slotWidth + slotWidth / 2;
+      const centerX = bounds.x + 18 + slotWidth * index + slotWidth / 2;
       const portraitX = Math.floor(centerX - portraitSize / 2);
-      const portraitY = bounds.y + 54 + row * (portraitSize + 40);
+      const blockHeight = portraitSize + 28;
+      const portraitY = Math.floor(bounds.y + (bounds.height - blockHeight) / 2);
       this.drawPortraitPlaceholder(context, actor, portraitX, portraitY, portraitSize);
       context.fillStyle = "#ffffff";
       context.font = "15px sans-serif";
-      context.textAlign = "center";
-      context.fillText(actor?.name || "Unknown", centerX, portraitY + portraitSize + 18);
+      context.fillText(actor?.name || "Unknown", centerX, portraitY + portraitSize + 20);
     });
 
     context.restore();
   }
 
-  drawQuantityOverlay(context, entry) {
-    if (!entry) {
-      return;
-    }
-
-    const width = 320;
-    const height = 138;
-    const bounds = {
-      x: Math.floor(this.x + (this.width - width) / 2),
-      y: Math.floor(this.y + 160),
-      width,
-      height,
-    };
-
-    context.save();
-    context.fillStyle = "rgba(0, 0, 0, 0.45)";
-    context.fillRect(this.x, this.y, this.width, this.height);
-    context.restore();
-
-    this.drawPanel(context, bounds, { assetAlpha: 0.58 });
-
-    context.save();
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.fillStyle = "#7ff0d5";
-    context.font = "600 18px sans-serif";
-    context.fillText("How many", bounds.x + 18, bounds.y + 42);
-    context.fillText("Total", bounds.x + 18, bounds.y + 82);
-
-    context.textAlign = "right";
-    context.fillStyle = "#ffffff";
-    context.font = "600 18px sans-serif";
-    context.fillText(String(this.quantity), bounds.x + bounds.width - 18, bounds.y + 42);
-    context.fillText(String(this.quantity * (Number(entry.price) || 0)), bounds.x + bounds.width - 18, bounds.y + 82);
-    context.restore();
-  }
+  // =====================================
+  // Sell
+  // =====================================
 
   drawSellState(context) {
-    const descriptionBounds = {
-      x: this.x,
-      y: this.bodyTopY(),
-      width: this.width,
-      height: 58,
-    };
+    const description = this.drawDescriptionStrip(context);
     const listBounds = {
       x: this.x,
-      y: descriptionBounds.y + descriptionBounds.height + 8,
+      y: description.y + description.height + 8,
       width: this.width,
-      height: this.y + this.height - (descriptionBounds.y + descriptionBounds.height + 8),
+      height: this.y + this.height - (description.y + description.height + 8),
     };
     const entries = this.orderedSellEntries();
-    const current = this.currentSellEntry();
 
-    this.drawPanel(context, descriptionBounds, { assetAlpha: 0.46 });
-    this.drawDescriptionText(context, descriptionBounds, this.currentDescription());
     this.drawPanel(context, listBounds);
 
     context.save();
@@ -1159,19 +1247,25 @@ class Window_Shop {
     if (entries.length === 0) {
       context.fillStyle = "#8897ac";
       context.font = "16px sans-serif";
-      context.fillText("No saleable merchandise owned.", listBounds.x + 18, listBounds.y + 72);
+      context.fillText("No saleable merchandise owned.", listBounds.x + 18, listBounds.y + 76);
       context.restore();
       return;
     }
 
     const columns = 2;
     const rowHeight = 34;
-    const rowCount = Math.ceil(entries.length / columns);
     const listTop = listBounds.y + 72;
-    const availableWidth = listBounds.width - 36;
-    const columnWidth = Math.floor(availableWidth / columns);
+    const availableHeight = listBounds.height - 92;
+    const visibleRows = Math.max(1, Math.floor(availableHeight / rowHeight));
+    const rowCount = Math.ceil(entries.length / columns);
+    const columnWidth = Math.floor((listBounds.width - 36) / columns);
+
+    this.sellViewport.maxVisibleRows = visibleRows;
     this.sellViewport.ensureVisible(Math.floor(this.sellIndex / 2), rowCount);
-    const range = this.sellViewport.visibleRange(Math.floor(this.sellIndex / 2), rowCount);
+    const range = this.sellViewport.visibleRange(
+      Math.floor(this.sellIndex / 2),
+      rowCount,
+    );
 
     for (let row = range.start; row < range.end; row++) {
       for (let column = 0; column < columns; column++) {
@@ -1196,31 +1290,89 @@ class Window_Shop {
         context.textAlign = "right";
         context.fillStyle = "#ffffff";
         context.font = "16px sans-serif";
-        context.fillText(
-          `x${entry.owned}`,
-          x + columnWidth - 12,
-          y,
-        );
+        context.fillText(`x${entry.available}`, x + columnWidth - 12, y);
         context.textAlign = "left";
       }
     }
 
-    context.fillStyle = "#aebbd0";
-    context.font = "15px sans-serif";
-    context.fillText(
-      `Sell Price: ${current ? current.sellPrice : 0} Runes`,
-      listBounds.x + 18,
-      listBounds.y + listBounds.height - 22,
-    );
-
     this.drawScrollIndicators(
       context,
       listBounds.x + listBounds.width - 6,
-      listBounds.y + 66,
-      listBounds.y + listBounds.height - 42,
+      listBounds.y + 64,
+      listBounds.y + listBounds.height - 18,
       this.sellViewport.hasPrevious(),
       this.sellViewport.hasNext(rowCount),
     );
+
+    context.restore();
+
+    if (this.state === Window_Shop.STATE.QUANTITY) {
+      this.drawQuantityOverlay(context);
+    }
+  }
+
+  // =====================================
+  // Shared Quantity Overlay
+  // =====================================
+
+  drawQuantityOverlay(context) {
+    const entry = this.quantityEntry();
+    if (!entry) {
+      return;
+    }
+
+    const sellMode = this.quantityMode === Window_Shop.QUANTITY_MODE.SELL;
+    const width = 380;
+    const height = 222;
+    const bounds = {
+      x: Math.floor(this.x + (this.width - width) / 2),
+      y: Math.floor(this.y + (this.height - height) / 2),
+      width,
+      height,
+    };
+    const unitPrice = this.quantityUnitPrice();
+    const max = this.quantityMax();
+    const total = unitPrice * this.quantity;
+
+    context.save();
+    context.fillStyle = "rgba(0, 0, 0, 0.48)";
+    context.fillRect(this.x, this.y, this.width, this.height);
+    context.restore();
+
+    this.drawPanel(context, bounds, { assetAlpha: 0.6 });
+
+    context.save();
+    context.textBaseline = "middle";
+    context.textAlign = "left";
+    context.fillStyle = "#ffffff";
+    context.font = "600 20px sans-serif";
+    context.fillText(entry.name, bounds.x + 18, bounds.y + 30);
+
+    const rows = sellMode
+      ? [
+          ["Sell Price", `${unitPrice} Runes`],
+          ["Available", `x${max}`],
+          ["Quantity", String(this.quantity)],
+          ["Receive", `${total} Runes`],
+        ]
+      : [
+          ["Price", `${unitPrice} Runes`],
+          ["Max", `x${max}`],
+          ["Quantity", String(this.quantity)],
+          ["Total", `${total} Runes`],
+        ];
+
+    rows.forEach(([label, value], index) => {
+      const y = bounds.y + 70 + index * 34;
+      context.fillStyle = index === rows.length - 1 ? "#7ff0d5" : "#aebbd0";
+      context.font = "16px sans-serif";
+      context.textAlign = "left";
+      context.fillText(label, bounds.x + 18, y);
+      context.textAlign = "right";
+      context.fillStyle = "#ffffff";
+      context.font = index === rows.length - 1 ? "600 18px sans-serif" : "16px sans-serif";
+      context.fillText(value, bounds.x + bounds.width - 18, y);
+    });
 
     context.restore();
   }
@@ -1230,7 +1382,11 @@ class Window_Shop {
     this.drawBackground(context);
     this.drawHeader(context);
 
-    if (this.state === Window_Shop.STATE.SELL) {
+    if (
+      this.state === Window_Shop.STATE.SELL ||
+      (this.state === Window_Shop.STATE.QUANTITY &&
+        this.quantityMode === Window_Shop.QUANTITY_MODE.SELL)
+    ) {
       this.drawSellState(context);
       return;
     }

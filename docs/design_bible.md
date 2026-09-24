@@ -310,9 +310,9 @@ Owned accessories live in party inventory, while the equipped accessory ID belon
 
 **Runes** are the player-facing purchase currency. Battle rewards feed the existing persistent party currency runtime, and Shops & Runes Spending v1 lets map merchants exchange those Runes for Items, Weapons, Armor, and Accessories. The older `gil` method/field naming remains an internal compatibility detail until a deliberate runtime rename is worthwhile.
 
-Merchant event data chooses **what is offered**, not **what it costs**. Price authority stays on the canonical merchandise record in its database, preventing a Potion or Steel Sword from accidentally acquiring conflicting prices in different map events. A purchase is owned by `Game_Party` so spending and inventory gain succeed or fail together.
+Merchant event data chooses **what is offered**, not **what it costs**. Price authority stays on the canonical merchandise record in its database, preventing a Potion or Steel Sword from accidentally acquiring conflicting prices in different map events. Buy and Sell transactions are owned by `Game_Party` so currency and inventory mutation succeed or fail together.
 
-The initial shop contract purchases one unit at a time from unlimited merchant stock. Selling, resale percentages, limited stock, discounts, reputation pricing, and other economy modifiers are intentionally not canonical yet. They should be designed as economy rules before being added to presentation code.
+The current economy contract uses unlimited merchant stock and quantity-aware purchases. Sale value is 50% of canonical purchase price. Equipment copies currently assigned to roster members are reserved from sale, but surplus copies remain available; a merchandise record may additionally declare `sellable: false` for future key/protected content. `Window_Shop` may explain and preview these rules, but it must never become their authority. Limited stock, discounts, reputation pricing, and other economy modifiers remain future design work.
 
 ---
 
