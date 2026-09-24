@@ -168,7 +168,7 @@ The main menu presents the active four party members through dedicated actor car
 
 **Config Submenu Presentation Consistency v1** gives **CONTROLS** and **WINDOW COLOR** the same description/title header split and framed content geometry as CONFIG through shared `ConfigMenuLayout`. Specialized rebinding and RGB-edit instructions now live in the contextual header instead of footer legends, while `ConfigManager` remains the sole authority for bindings and window colors. Character-menu description strips now use shared vertically centered wrapped text so one- and two-line descriptions sit naturally in the middle without losing left alignment.
 
-**Field Dialogue Window Presentation v1** brings `Window_Message` and `Window_Choice` onto the same semantic `menuPanel` / `accentPanel` rendering path used by the rest of the UI, so player-configured Window Color affects dialogue instead of leaving field conversations as separate black-and-white boxes. Choice focus uses the same dim selection surface and gold `▶` cursor language as menus. The existing typewriter timing and one-owner choice input behavior are unchanged. Once a line is fully revealed, the old persistent key legend is replaced by a mint-teal `▼`: it blinks when consecutive text from the same speaker is waiting, stays solid at a deliberate/end pause, and disappears while choices own focus.
+**Field Dialogue Window Presentation v1** brings `Window_Message` and `Window_Choice` onto the same semantic `menuPanel` / `accentPanel` rendering path used by the rest of the UI, so player-configured Window Color affects dialogue instead of leaving field conversations as separate black-and-white boxes. Choice focus uses the same dim selection surface and gold `▶` cursor language as menus. Dialogue text is constrained to four wrapped lines per page, including long unbroken tokens, and the mint-teal `▼` replaces the old persistent key legend: it blinks for another page or same-speaker continuation, stays solid at a deliberate/end pause, and disappears while choices own focus. Choice prompts do not open their choices until the full prompt is revealed, so Confirm used to finish typewriter text cannot accidentally choose the default response.
 
 ------------------------------------------------------------------------
 
@@ -261,6 +261,24 @@ Shops & Runes Spending turns existing currency rewards and canonical merchandise
 `Game_Party` owns both transaction boundaries. Purchases validate quantity and available Runes before inventory/currency mutation. Sales use a canonical 50% resale value, refuse records marked `sellable: false`, and reserve every currently equipped weapon / armor / accessory copy so presentation can never sell gear out from under an actor. Surplus copies remain saleable. Failed transactions leave inventory and currency unchanged.
 
 The current presentation opens on a merchant introduction rather than previewing stock. **Buy** uses a scrollable merchandise list, a clean details panel, quantity confirmation, and roster-wide stat previews for weapons / armor / accessories. **Sell** keeps a stable two-column inventory order and opens the same quantity-confirmation pattern with sell price, available count, selected quantity, and total Runes received. Save Runtime is unchanged because shops consume existing persistent currency, inventory, and equipment state. The underlying runtime API retains its historical `gil` naming for compatibility, while all player-facing UI says **Runes**.
+
+### Creating a shopkeeper
+
+A map shopkeeper is an ordinary event whose page contains one `shop` command. `name` is the **person shown to the player**, while `shopType` controls the store identity and category rules. For example:
+
+```json
+{
+  "code": "shop",
+  "name": "John Doe",
+  "shopType": "weapon",
+  "goods": [
+    { "type": "weapon", "id": 1 },
+    { "type": "weapon", "id": 2 }
+  ]
+}
+```
+
+Valid `shopType` values are `general`, `item`, `weapon`, `armor`, and `accessory`. General stores may stock any category; specialized stores must contain only their matching type. Merchandise IDs always reference the matching database file (`Items.json`, `Weapons.json`, `Armors.json`, or `Accessories.json`). Map001 contains one fixture for General Store, Weapon Store, Armor Store, and Accessory Store as copyable examples.
 
 ------------------------------------------------------------------------
 

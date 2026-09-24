@@ -1,9 +1,32 @@
 "use strict";
 
 class Window_TextLayout {
+  static splitLongToken(context, token, maxWidth) {
+    const chunks = [];
+    let chunk = "";
+
+    for (const character of Array.from(String(token || ""))) {
+      const next = chunk + character;
+
+      if (chunk && context.measureText(next).width > maxWidth) {
+        chunks.push(chunk);
+        chunk = character;
+      } else {
+        chunk = next;
+      }
+    }
+
+    if (chunk) {
+      chunks.push(chunk);
+    }
+
+    return chunks;
+  }
+
   static wrapLines(context, text, maxWidth) {
     const lines = [];
     const paragraphs = String(text || "").split("\n");
+    const safeWidth = Math.max(1, Number(maxWidth) || 1);
 
     for (const paragraph of paragraphs) {
       const words = paragraph.trim().split(/\s+/).filter(Boolean);
@@ -15,14 +38,25 @@ class Window_TextLayout {
 
       let line = "";
 
-      for (const word of words) {
-        const next = line ? `${line} ${word}` : word;
+      for (const originalWord of words) {
+        const pieces = context.measureText(originalWord).width > safeWidth
+          ? this.splitLongToken(context, originalWord, safeWidth)
+          : [originalWord];
 
-        if (line && context.measureText(next).width > maxWidth) {
-          lines.push(line);
-          line = word;
-        } else {
-          line = next;
+        for (const piece of pieces) {
+          const next = line ? `${line} ${piece}` : piece;
+
+          if (line && context.measureText(next).width > safeWidth) {
+            lines.push(line);
+            line = piece;
+          } else {
+            line = next;
+          }
+
+          if (context.measureText(line).width >= safeWidth && pieces.length > 1) {
+            lines.push(line);
+            line = "";
+          }
         }
       }
 

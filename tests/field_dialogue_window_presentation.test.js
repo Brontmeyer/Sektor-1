@@ -50,9 +50,11 @@ function createContext() {
 
   const context = vm.createContext(globals);
   vm.runInContext(
-    `${read("js/windows/Window_Message.js")}\n` +
+    `${read("js/core/UIThemePalette.js")}\n` +
+      `${read("js/windows/Window_TextLayout.js")}\n` +
+      `${read("js/windows/Window_Message.js")}\n` +
       `${read("js/windows/Window_Choice.js")}\n` +
-      `globalThis.__classes = { Window_Message, Window_Choice };`,
+      `globalThis.__classes = { UIThemePalette, Window_TextLayout, Window_Message, Window_Choice };`,
     context,
   );
 
@@ -119,7 +121,7 @@ function testDialogueUsesChevronInsteadOfPersistentKeyLegend() {
   assert.equal(texts.some((text) => text.includes("E / Enter")), false);
 
   const source = read("js/windows/Window_Message.js");
-  assert.match(source, /ADVANCE_COLOR = "#7ff0d5"/);
+  assert.match(source, /themeColor\("accent", "#7ff0d5"\)/);
   assert.doesNotMatch(source, /actionLabel\("confirm"\)/);
 }
 
@@ -146,11 +148,30 @@ function testContinuationChevronBlinksButEndChevronStaysSolid() {
   assert.equal(message.indicatorShouldDraw(), false);
 }
 
+function testLongDialogueWrapsInsideFourLinePages() {
+  const harness = createContext();
+  const message = new harness.context.__classes.Window_Message();
+  const longToken = "m".repeat(220);
+  const text = `Question ${longToken} ${longToken} ${longToken}`;
+
+  message.show(text, "Guard", { indicatorMode: "end" });
+
+  assert.equal(message.pages.length > 1, true, "long dialogue should paginate instead of drawing outside the box");
+  for (const page of message.pages) {
+    assert.equal(page.split("\n").length <= 4, true);
+  }
+
+  message.revealAll();
+  assert.equal(message.hasNextPage(), true);
+  assert.equal(message.indicatorShouldDraw(), true, "intermediate pages use the continuation chevron");
+}
+
 function run() {
   testDialogueUsesSharedTintablePanelRoles();
   testChoiceUsesSamePanelFamilyAndStandardSelectionLanguage();
   testDialogueUsesChevronInsteadOfPersistentKeyLegend();
   testContinuationChevronBlinksButEndChevronStaysSolid();
+  testLongDialogueWrapsInsideFourLinePages();
   console.log("Field dialogue window presentation regression tests passed.");
 }
 

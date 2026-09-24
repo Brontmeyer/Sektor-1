@@ -160,6 +160,46 @@ function testEventConditionsAndDuplicateIdsAreValidated() {
 }
 
 
+function testMap001ContainsDedicatedShopkeeperFixtures() {
+  const map = readData("Map001.json");
+  const shops = map.events
+    .flatMap((event) =>
+      (event?.pages || []).flatMap((page) =>
+        (page.commands || [])
+          .filter((command) => command.code === "shop")
+          .map((command) => ({ event, command })),
+      ),
+    );
+
+  assert.equal(shops.length, 4);
+
+  const byType = Object.fromEntries(
+    shops.map(({ event, command }) => [command.shopType, { event, command }]),
+  );
+
+  assert.equal(byType.general.command.name, "Test Merchant");
+  assert.deepEqual(
+    byType.general.command.goods.map((good) => good.type),
+    ["item", "item"],
+  );
+
+  assert.equal(byType.weapon.event.y, 400);
+  assert.equal(byType.armor.event.y, 500);
+  assert.equal(byType.accessory.event.y, 600);
+  assert.deepEqual(
+    byType.weapon.command.goods.map((good) => good.type),
+    ["weapon", "weapon"],
+  );
+  assert.deepEqual(
+    byType.armor.command.goods.map((good) => good.type),
+    ["armor", "armor"],
+  );
+  assert.deepEqual(
+    byType.accessory.command.goods.map((good) => good.type),
+    ["accessory", "accessory", "accessory"],
+  );
+}
+
 function testLegacyDirectEventCommandsRemainSupported() {
   const DatabaseValidator = loadValidator();
   const database = databaseContext();
@@ -330,6 +370,7 @@ async function run() {
   testOptionalMenuAccessContractIsValidated();
   testNestedEventContractsRejectMalformedCommands();
   testEventConditionsAndDuplicateIdsAreValidated();
+  testMap001ContainsDedicatedShopkeeperFixtures();
   testLegacyDirectEventCommandsRemainSupported();
   await testDatabaseManagerValidatesMapsBeforeReturningThem();
   testAddVariableNormalizesArithmeticInputs();

@@ -32,10 +32,18 @@ class Game_Interpreter {
       return;
     }
 
+    const currentCommand = this.commands[this.index];
+    const choicePromptReady =
+      currentCommand?.code === "choice" &&
+      this.messageWindow.isOpen() &&
+      typeof this.messageWindow.isMessageFullyRevealed === "function" &&
+      this.messageWindow.isMessageFullyRevealed();
+
     if (
       this.messageWindow.isOpen() &&
       !this.choiceWindow.isOpen() &&
-      !this.choiceWindow.hasResult()
+      !this.choiceWindow.hasResult() &&
+      !choicePromptReady
     ) {
       return;
     }
@@ -175,21 +183,31 @@ class Game_Interpreter {
       return false;
     }
 
-    // Choice window hasn't opened yet.
-
+    // Choice window hasn't opened yet. The prompt owns the screen first so
+    // Confirm can reveal its typewriter text without leaking into a choice.
     if (!this.choiceWindow.isOpen()) {
-      const choiceNames = command.choices.map((choice) => choice.text);
+      if (this.messageWindow.isOpen()) {
+        const fullyRevealed =
+          typeof this.messageWindow.isMessageFullyRevealed === "function"
+            ? this.messageWindow.isMessageFullyRevealed()
+            : true;
+
+        if (!fullyRevealed) {
+          return false;
+        }
+
+        const choiceNames = command.choices.map((choice) => choice.text);
+        this.choiceWindow.show(choiceNames);
+        return false;
+      }
 
       this.messageWindow.show(command.prompt || "", command.speaker || "", {
         indicatorMode: "hidden",
+        holdOpenAtEnd: true,
       });
-
-      this.choiceWindow.show(choiceNames);
     }
 
-    // Pause interpreter while waiting
-    // for the player.
-
+    // Pause interpreter while waiting for the prompt or the player's choice.
     return false;
   }
 

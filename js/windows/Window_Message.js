@@ -7,21 +7,31 @@ class Window_Message {
     HIDDEN: "hidden",
   });
 
-  static ADVANCE_COLOR = "#7ff0d5";
+  static MAX_LINES = 4;
+  static LINE_HEIGHT = 32;
 
   constructor() {
     this.visible = false;
 
     this.text = "";
     this.speaker = "";
+    this.pages = [""];
+    this.pageIndex = 0;
     this.revealedCharacters = 0;
     this.indicatorMode = Window_Message.INDICATOR_MODE.END;
     this.indicatorElapsed = 0;
+    this.holdOpenAtEnd = false;
 
     this.x = 40;
     this.width = Graphics.width - 80;
     this.height = 180;
     this.y = Graphics.height - this.height - 40;
+  }
+
+  themeColor(role, fallback) {
+    return typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.color(role, fallback)
+      : fallback;
   }
 
   update(deltaTime = 0, { allowInput = true } = {}) {
@@ -33,12 +43,21 @@ class Window_Message {
     this.indicatorElapsed += seconds;
     this.updateTextReveal(seconds);
 
-    if (allowInput && Input.isActionTriggered("confirm")) {
-      if (!this.isFullyRevealed()) {
-        this.revealAll();
-        return;
-      }
+    if (!allowInput || !Input.isActionTriggered("confirm")) {
+      return;
+    }
 
+    if (!this.isFullyRevealed()) {
+      this.revealAll();
+      return;
+    }
+
+    if (this.hasNextPage()) {
+      this.advancePage();
+      return;
+    }
+
+    if (!this.holdOpenAtEnd) {
       this.hide();
     }
   }
@@ -61,8 +80,12 @@ class Window_Message {
     );
   }
 
+  currentPageText() {
+    return this.pages[this.pageIndex] || "";
+  }
+
   textCharacters() {
-    return Array.from(this.text);
+    return Array.from(this.currentPageText());
   }
 
   characterCount() {
@@ -79,8 +102,27 @@ class Window_Message {
     return this.revealedCharacters >= this.characterCount();
   }
 
+  isMessageFullyRevealed() {
+    return !this.hasNextPage() && this.isFullyRevealed();
+  }
+
   revealAll() {
     this.revealedCharacters = this.characterCount();
+  }
+
+  hasNextPage() {
+    return this.pageIndex < this.pages.length - 1;
+  }
+
+  advancePage() {
+    if (!this.hasNextPage()) {
+      return false;
+    }
+
+    this.pageIndex += 1;
+    this.revealedCharacters = 0;
+    this.indicatorElapsed = 0;
+    return true;
   }
 
   show(text, speaker = "", options = {}) {
@@ -88,9 +130,12 @@ class Window_Message {
 
     this.text = text || "";
     this.speaker = speaker || "";
+    this.pages = this.preparePages(this.text);
+    this.pageIndex = 0;
     this.revealedCharacters = 0;
     this.indicatorMode = this.normalizeIndicatorMode(options.indicatorMode);
     this.indicatorElapsed = 0;
+    this.holdOpenAtEnd = options.holdOpenAtEnd === true;
   }
 
   normalizeIndicatorMode(mode) {
@@ -98,9 +143,53 @@ class Window_Message {
     return allowed.includes(mode) ? mode : Window_Message.INDICATOR_MODE.END;
   }
 
+  messageTextWidth() {
+    return Math.max(1, this.width - 50);
+  }
+
+  wrapLines(text) {
+    const context = Graphics.context;
+
+    if (
+      context &&
+      typeof context.measureText === "function" &&
+      typeof Window_TextLayout !== "undefined" &&
+      typeof Window_TextLayout.wrapLines === "function"
+    ) {
+      context.save?.();
+      const previousFont = context.font;
+      context.font = "24px sans-serif";
+      const lines = Window_TextLayout.wrapLines(
+        context,
+        text,
+        this.messageTextWidth(),
+      );
+      context.font = previousFont;
+      context.restore?.();
+      return lines;
+    }
+
+    return String(text || "").split("\n");
+  }
+
+  preparePages(text) {
+    const lines = this.wrapLines(text);
+    const pages = [];
+
+    for (let index = 0; index < lines.length; index += Window_Message.MAX_LINES) {
+      pages.push(lines.slice(index, index + Window_Message.MAX_LINES).join("\n"));
+    }
+
+    return pages.length > 0 ? pages : [""];
+  }
+
   indicatorShouldDraw() {
     if (!this.isFullyRevealed()) {
       return false;
+    }
+
+    if (this.hasNextPage()) {
+      return Math.floor(this.indicatorElapsed / 0.36) % 2 === 0;
     }
 
     if (this.indicatorMode === Window_Message.INDICATOR_MODE.HIDDEN) {
@@ -111,8 +200,6 @@ class Window_Message {
       return true;
     }
 
-    // Consecutive dialogue from the same speaker gets a gentle blink so the
-    // player can distinguish "more is coming" from a deliberate stop.
     return Math.floor(this.indicatorElapsed / 0.36) % 2 === 0;
   }
 
@@ -122,7 +209,7 @@ class Window_Message {
     }
 
     context.save();
-    context.fillStyle = Window_Message.ADVANCE_COLOR;
+    context.fillStyle = this.themeColor("accent", "#7ff0d5");
     context.font = "600 22px sans-serif";
     context.textAlign = "center";
     context.textBaseline = "middle";
@@ -139,9 +226,12 @@ class Window_Message {
 
     this.text = "";
     this.speaker = "";
+    this.pages = [""];
+    this.pageIndex = 0;
     this.revealedCharacters = 0;
     this.indicatorMode = Window_Message.INDICATOR_MODE.END;
     this.indicatorElapsed = 0;
+    this.holdOpenAtEnd = false;
   }
 
   isOpen() {
@@ -198,7 +288,7 @@ class Window_Message {
     context.save();
     this.drawPanel(context, messageBounds, "menuPanel", { assetAlpha: 0.5 });
 
-    context.fillStyle = "#ffffff";
+    context.fillStyle = this.themeColor("primary", "#ffffff");
     context.font = "24px sans-serif";
     context.textAlign = "left";
     context.textBaseline = "top";
@@ -208,7 +298,7 @@ class Window_Message {
       this.x + 25,
       this.y + 25,
       this.width - 50,
-      32,
+      Window_Message.LINE_HEIGHT,
     );
 
     if (this.speaker) {
@@ -223,7 +313,7 @@ class Window_Message {
         shadow: false,
       });
 
-      context.fillStyle = "#ffffff";
+      context.fillStyle = this.themeColor("primary", "#ffffff");
       context.font = "600 20px sans-serif";
       context.textAlign = "left";
       context.textBaseline = "middle";
@@ -240,30 +330,28 @@ class Window_Message {
 
   drawWrappedText(text, x, y, maxWidth, lineHeight) {
     const context = Graphics.context;
+
+    if (
+      typeof Window_TextLayout !== "undefined" &&
+      typeof Window_TextLayout.drawWrappedText === "function"
+    ) {
+      return Window_TextLayout.drawWrappedText(
+        context,
+        text,
+        x,
+        y,
+        maxWidth,
+        lineHeight,
+        Window_Message.MAX_LINES,
+      );
+    }
+
     let currentY = y;
-
-    for (const paragraph of String(text).split("\n")) {
-      const words = paragraph.split(" ");
-      let line = "";
-
-      for (const word of words) {
-        const testLine = line.length > 0 ? line + " " + word : word;
-        const testWidth = context.measureText(testLine).width;
-
-        if (testWidth > maxWidth && line.length > 0) {
-          context.fillText(line, x, currentY);
-          line = word;
-          currentY += lineHeight;
-        } else {
-          line = testLine;
-        }
-      }
-
-      if (line.length > 0) {
-        context.fillText(line, x, currentY);
-      }
-
+    for (const line of String(text || "").split("\n").slice(0, Window_Message.MAX_LINES)) {
+      context.fillText(line, x, currentY);
       currentY += lineHeight;
     }
+
+    return { nextY: currentY };
   }
 }

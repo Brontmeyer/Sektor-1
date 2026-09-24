@@ -225,7 +225,7 @@ function testShopTypeControlsIdentityAndMerchandiseScope() {
   const weaponHarness = createHarness("weapon");
   const welcome = texts(weaponHarness);
 
-  assert.equal(includes(welcome, "Weapon Shop"), true);
+  assert.equal(includes(welcome, "Weapon Store"), true);
 
   press(weaponHarness, "confirm");
   const buyValues = texts(weaponHarness);

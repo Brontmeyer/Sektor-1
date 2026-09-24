@@ -16,6 +16,12 @@ class Window_Choice {
     this.y = 0;
   }
 
+  themeColor(role, fallback) {
+    return typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.color(role, fallback)
+      : fallback;
+  }
+
   update() {
     if (!this.visible) {
       return;
@@ -164,7 +170,9 @@ class Window_Choice {
         );
       }
 
-      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+      context.fillStyle = selected
+        ? this.themeColor("focus", "#ffd75a")
+        : this.themeColor("primary", "#ffffff");
       context.font = selected ? "600 20px sans-serif" : "20px sans-serif";
       context.fillText(
         `${selected ? "▶ " : "  "}${this.choices[i]}`,

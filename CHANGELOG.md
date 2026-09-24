@@ -12,6 +12,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Fixed choice prompts so the choice window appears only after the full prompt is revealed; the Confirm press used to finish typewriter text can no longer leak into the default choice
+- Added four-line field-message pagination with long-token wrapping so oversized dialogue cannot draw outside the message box; intermediate pages use the continuation chevron before choices become available
+- Added Map001 fixtures for General / Weapon / Armor / Accessory stores, restored the general merchant's visible person-style name, and aligned store labels to General Store / Weapon Store / Armor Store / Accessory Store
+- Fixed shop welcome identity alignment after portrait drawing so SHOPKEEPER / merchant identity / VISIT metadata no longer inherit centered portrait text alignment
+- Added a canonical semantic `UIThemePalette` for gold focus, mint-teal information/progression, positive/negative comparison, primary/secondary text, muted text, and backdrop colors while leaving HP / MP / Valor ownership with `UIResourcePalette`
+
 - Added explicit shop-type metadata (`general`, `item`, `weapon`, `armor`, `accessory`) so merchant identity and buy/sell merchandise scope are data-driven instead of inferred from whatever happens to be stocked
 - Refined shop buy formatting by moving merchandise type into the Details heading area and aligning each roster member name with the same text column as the affected comparison stats
 - Replaced the persistent field-dialogue key legend with a shared mint-teal `▼` continuation indicator: same-speaker consecutive text blinks, deliberate/end pauses stay solid, and choice-owned prompts suppress the indicator

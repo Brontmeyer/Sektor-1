@@ -202,7 +202,7 @@
           "commands": [
             {
               "code": "shop",
-              "name": "Item Merchant",
+              "name": "Test Merchant",
               "goods": [
                 {
                   "type": "item",
@@ -212,9 +212,105 @@
                   "type": "item",
                   "id": 2
                 }
-                
               ],
               "shopType": "general"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Weapon Store Test Merchant",
+      "x": 400,
+      "y": 400,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "conditions": {},
+          "commands": [
+            {
+              "code": "shop",
+              "name": "Rowan Vale",
+              "shopType": "weapon",
+              "goods": [
+                {
+                  "type": "weapon",
+                  "id": 1
+                },
+                {
+                  "type": "weapon",
+                  "id": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Armor Store Test Merchant",
+      "x": 400,
+      "y": 500,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "conditions": {},
+          "commands": [
+            {
+              "code": "shop",
+              "name": "Mira Holt",
+              "shopType": "armor",
+              "goods": [
+                {
+                  "type": "armor",
+                  "id": 1
+                },
+                {
+                  "type": "armor",
+                  "id": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Accessory Store Test Merchant",
+      "x": 400,
+      "y": 600,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "conditions": {},
+          "commands": [
+            {
+              "code": "shop",
+              "name": "Lena Quill",
+              "shopType": "accessory",
+              "goods": [
+                {
+                  "type": "accessory",
+                  "id": 1
+                },
+                {
+                  "type": "accessory",
+                  "id": 2
+                },
+                {
+                  "type": "accessory",
+                  "id": 3
+                }
+              ]
             }
           ]
         }

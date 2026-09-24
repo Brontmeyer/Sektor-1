@@ -181,10 +181,74 @@ function testInterpreterMarksSameSpeakerContinuationAndChoicePrompts() {
   assert.equal(choiceShow[3].indicatorMode, "hidden");
 }
 
+function testChoiceAppearsOnlyAfterPromptIsFullyRevealedAndConfirmDoesNotLeak() {
+  let triggered = new Set();
+  const drawContext = {
+    font: "24px sans-serif",
+    measureText(text) { return { width: String(text).length * 10 }; },
+    save() {}, restore() {}, fillRect() {}, strokeRect() {}, fillText() {},
+    beginPath() {}, moveTo() {}, lineTo() {}, stroke() {},
+  };
+  const context = vm.createContext({
+    console,
+    Graphics: { width: 1280, height: 720, context: drawContext },
+    ConfigManager: { fieldMessageCharactersPerSecond() { return 20; } },
+    Input: {
+      isTriggered(code) { return triggered.has(code); },
+      isActionTriggered(action) {
+        return action === "confirm" && ["KeyE", "Enter"].some((code) => triggered.has(code));
+      },
+      actionLabel(action) { return action; },
+    },
+    DebugManager: { log() {} },
+  });
+
+  vm.runInContext(
+    `${read("js/core/UIThemePalette.js")}\n` +
+      `${read("js/windows/Window_TextLayout.js")}\n` +
+      `${read("js/windows/Window_Message.js")}\n` +
+      `${read("js/windows/Window_Choice.js")}\n` +
+      `${read("js/objects/Game_Interpreter.js")}\n` +
+      `globalThis.__classes = { Window_Message, Window_Choice, Game_Interpreter };`,
+    context,
+  );
+
+  const message = new context.__classes.Window_Message();
+  const choice = new context.__classes.Window_Choice();
+  const interpreter = new context.__classes.Game_Interpreter(message, choice);
+  interpreter.setup([{
+    code: "choice",
+    speaker: "Guard",
+    prompt: "Do you want to enter the city?",
+    choices: [
+      { text: "Yes", commands: [] },
+      { text: "No", commands: [] },
+    ],
+  }]);
+
+  interpreter.update();
+  assert.equal(message.isOpen(), true);
+  assert.equal(choice.isOpen(), false, "choice must not appear with unrevealed prompt text");
+
+  triggered = new Set(["KeyE"]);
+  message.update(0, { allowInput: true });
+  choice.update();
+  interpreter.update();
+
+  assert.equal(message.isMessageFullyRevealed(), true);
+  assert.equal(choice.isOpen(), true, "choice opens only after the prompt has fully revealed");
+  assert.equal(choice.hasResult(), false, "the reveal press must not choose the default option");
+
+  triggered = new Set();
+  choice.update();
+  assert.equal(choice.hasResult(), false);
+}
+
 function run() {
   testChoicePromptContinuesRevealingWithoutStealingConfirm();
   testSceneMapAlwaysAdvancesMessageButDisablesMessageInputForChoice();
   testInterpreterMarksSameSpeakerContinuationAndChoicePrompts();
+  testChoiceAppearsOnlyAfterPromptIsFullyRevealedAndConfirmDoesNotLeak();
 
   console.log("Field choice prompt reveal regression tests passed.");
 }

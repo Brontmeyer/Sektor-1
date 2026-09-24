@@ -20,22 +20,22 @@ class Window_Shop {
       greeting: "Welcome in. Buy what you need, sell what you can spare, and keep moving.",
     }),
     item: Object.freeze({
-      label: "Item Shop",
+      label: "Item Store",
       allowedTypes: Object.freeze(["item"]),
       greeting: "Supplies, restoratives, and useful odds and ends for the journey.",
     }),
     weapon: Object.freeze({
-      label: "Weapon Shop",
+      label: "Weapon Store",
       allowedTypes: Object.freeze(["weapon"]),
       greeting: "Weapons for the road ahead. Take your time and compare before you buy.",
     }),
     armor: Object.freeze({
-      label: "Armor Shop",
+      label: "Armor Store",
       allowedTypes: Object.freeze(["armor"]),
       greeting: "Protection matters. Compare the numbers and choose what keeps you standing.",
     }),
     accessory: Object.freeze({
-      label: "Accessory Shop",
+      label: "Accessory Store",
       allowedTypes: Object.freeze(["accessory"]),
       greeting: "Small gear can make a big difference. Have a look around.",
     }),
@@ -80,6 +80,12 @@ class Window_Shop {
     return typeof Input.isActionRepeated === "function"
       ? Input.isActionRepeated(action)
       : this.actionTriggered(action);
+  }
+
+  themeColor(role, fallback) {
+    return typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.color(role, fallback)
+      : fallback;
   }
 
   hasResult() {
@@ -688,7 +694,7 @@ class Window_Shop {
 
   drawBackground(context) {
     context.save();
-    context.fillStyle = "#0b0e13";
+    context.fillStyle = this.themeColor("backdrop", "#0b0e13");
     context.fillRect(0, 0, Graphics.width, Graphics.height);
     context.restore();
   }
@@ -810,7 +816,7 @@ class Window_Shop {
         this.drawSelection(context, x, commandY, commandWidth, commandHeight);
       }
 
-      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+      context.fillStyle = selected ? this.themeColor("focus", "#ffd75a") : "#ffffff";
       context.font = selected ? "600 18px sans-serif" : "18px sans-serif";
       context.fillText(
         `${selected ? "▶ " : "  "}${command}`,
@@ -830,14 +836,17 @@ class Window_Shop {
       portraitSize,
     );
 
+    // Portrait rendering centers its glyph. Restore left alignment before the
+    // merchant identity and visit metadata so headings do not drift into borders.
+    context.textAlign = "left";
     const identityX = portraitX + portraitSize + 30;
-    context.fillStyle = "#7ff0d5";
+    context.fillStyle = this.themeColor("accent", "#7ff0d5");
     context.font = "600 16px sans-serif";
     context.fillText("SHOPKEEPER", identityX, portraitY + 18);
     context.fillStyle = "#ffffff";
     context.font = "600 27px sans-serif";
     context.fillText(this.title, identityX, portraitY + 56);
-    context.fillStyle = "#ffd75a";
+    context.fillStyle = this.themeColor("focus", "#ffd75a");
     context.font = "600 17px sans-serif";
     context.fillText(this.merchantFocusLabel(), identityX, portraitY + 88);
 
@@ -854,7 +863,8 @@ class Window_Shop {
       maxLines: 4,
     });
 
-    context.fillStyle = "#7ff0d5";
+    context.textAlign = "left";
+    context.fillStyle = this.themeColor("accent", "#7ff0d5");
     context.font = "600 18px sans-serif";
     context.fillText("VISIT", right.x + 18, right.y + 30);
 
@@ -867,7 +877,7 @@ class Window_Shop {
 
     visitRows.forEach(([label, value], index) => {
       const y = right.y + 82 + index * 44;
-      context.fillStyle = "#aebbd0";
+      context.fillStyle = this.themeColor("secondary", "#aebbd0");
       context.font = "15px sans-serif";
       context.textAlign = "left";
       context.fillText(label, right.x + 18, y);
@@ -938,12 +948,12 @@ class Window_Shop {
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.fillStyle = "#7ff0d5";
+    context.fillStyle = this.themeColor("accent", "#7ff0d5");
     context.font = "600 18px sans-serif";
     context.fillText("BUY", bounds.x + 18, bounds.y + 28);
 
     if (entries.length === 0) {
-      context.fillStyle = "#8897ac";
+      context.fillStyle = this.themeColor("muted", "#8897ac");
       context.font = "16px sans-serif";
       context.fillText("No merchandise available.", bounds.x + 18, bounds.y + 76);
       context.restore();
@@ -969,7 +979,7 @@ class Window_Shop {
         this.drawSelection(context, bounds.x + 12, y - 14, bounds.width - 24, 28);
       }
 
-      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+      context.fillStyle = selected ? this.themeColor("focus", "#ffd75a") : "#ffffff";
       context.font = selected ? "600 17px sans-serif" : "17px sans-serif";
       context.fillText(`${selected ? "▶ " : "  "}${entry.name}`, bounds.x + 18, y);
 
@@ -1002,12 +1012,12 @@ class Window_Shop {
     context.save();
     context.textBaseline = "middle";
     context.textAlign = "left";
-    context.fillStyle = "#7ff0d5";
+    context.fillStyle = this.themeColor("accent", "#7ff0d5");
     context.font = "600 18px sans-serif";
     context.fillText("DETAILS", bounds.x + 18, bounds.y + 28);
 
     context.textAlign = "right";
-    context.fillStyle = "#aebbd0";
+    context.fillStyle = this.themeColor("secondary", "#aebbd0");
     context.font = "600 13px sans-serif";
     context.fillText(
       entry ? this.typeLabel(entry.type).toUpperCase() : "",
@@ -1017,13 +1027,13 @@ class Window_Shop {
     context.textAlign = "left";
 
     const rows = [
-      ["Runes", String(runes), "#7ff0d5"],
-      ["Price", entry ? String(entry.price) : "—", "#aebbd0"],
-      ["Owned", String(owned), "#aebbd0"],
+      ["Runes", String(runes), this.themeColor("accent", "#7ff0d5")],
+      ["Price", entry ? String(entry.price) : "—", this.themeColor("secondary", "#aebbd0")],
+      ["Owned", String(owned), this.themeColor("secondary", "#aebbd0")],
     ];
 
     if (entry && this.isEquipmentType(entry.type)) {
-      rows.push(["Equipped", String(equipped), "#aebbd0"]);
+      rows.push(["Equipped", String(equipped), this.themeColor("secondary", "#aebbd0")]);
     }
 
     rows.forEach(([label, value, labelColor], index) => {
@@ -1136,7 +1146,7 @@ class Window_Shop {
 
     if (members.length === 0) {
       this.drawDescriptionText(context, bounds, "No roster members available.", {
-        color: "#8897ac",
+        color: this.themeColor("muted", "#8897ac"),
       });
       return;
     }
@@ -1191,7 +1201,7 @@ class Window_Shop {
         const arrowX = valueRight - 46;
         const currentX = arrowX - 20;
 
-        context.fillStyle = "#7ff0d5";
+        context.fillStyle = this.themeColor("accent", "#7ff0d5");
         context.font = "600 13px sans-serif";
         context.textAlign = "left";
         context.fillText(stat.shortLabel, textX, y);
@@ -1201,12 +1211,12 @@ class Window_Shop {
         context.textAlign = "right";
         context.fillText(String(current), currentX, y);
 
-        context.fillStyle = preview === current ? "#aebbd0" : "#55e0c2";
+        context.fillStyle = preview === current ? this.themeColor("secondary", "#aebbd0") : "#55e0c2";
         context.textAlign = "center";
         context.fillText("→", arrowX, y);
 
         context.fillStyle =
-          preview > current ? "#7dff8a" : preview < current ? "#ff6b6b" : "#ffffff";
+          preview > current ? this.themeColor("positive", "#7dff8a") : preview < current ? this.themeColor("negative", "#ff6b6b") : "#ffffff";
         context.textAlign = "right";
         context.fillText(String(preview), valueRight, y);
       });
@@ -1220,7 +1230,7 @@ class Window_Shop {
 
     if (members.length === 0) {
       this.drawDescriptionText(context, bounds, "No roster members available.", {
-        color: "#8897ac",
+        color: this.themeColor("muted", "#8897ac"),
       });
       return;
     }
@@ -1266,12 +1276,12 @@ class Window_Shop {
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.fillStyle = "#7ff0d5";
+    context.fillStyle = this.themeColor("accent", "#7ff0d5");
     context.font = "600 18px sans-serif";
     context.fillText("SELL", listBounds.x + 18, listBounds.y + 28);
 
     if (entries.length === 0) {
-      context.fillStyle = "#8897ac";
+      context.fillStyle = this.themeColor("muted", "#8897ac");
       context.font = "16px sans-serif";
       context.fillText("No saleable merchandise owned.", listBounds.x + 18, listBounds.y + 76);
       context.restore();
@@ -1309,7 +1319,7 @@ class Window_Shop {
           this.drawSelection(context, x - 6, y - 14, columnWidth - 12, 28);
         }
 
-        context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+        context.fillStyle = selected ? this.themeColor("focus", "#ffd75a") : "#ffffff";
         context.font = selected ? "600 17px sans-serif" : "17px sans-serif";
         context.fillText(`${selected ? "▶ " : "  "}${entry.name}`, x, y);
 
@@ -1390,7 +1400,7 @@ class Window_Shop {
 
     rows.forEach(([label, value], index) => {
       const y = bounds.y + 70 + index * 34;
-      context.fillStyle = index === rows.length - 1 ? "#7ff0d5" : "#aebbd0";
+      context.fillStyle = index === rows.length - 1 ? this.themeColor("accent", "#7ff0d5") : this.themeColor("secondary", "#aebbd0");
       context.font = "16px sans-serif";
       context.textAlign = "left";
       context.fillText(label, bounds.x + 18, y);

@@ -141,6 +141,9 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Shops / Runes Spending v1
 - [x] Shop Presentation v2 with merchant intro, quantity-aware Buy/Sell flow, roster equipment comparison, and equipped-copy sale protection
 - [x] Shop Type Metadata & Presentation v1 with general/item/weapon/armor/accessory identities and category-scoped Buy/Sell lists
+- [x] Shopkeeper authoring fixtures v1 with General / Weapon / Armor / Accessory examples on Map001 and person-name/store-type separation
+- [x] Dialogue pagination & choice-gating polish with four-line wrapping, long-token containment, and no reveal-to-choice Confirm leakage
+- [x] Semantic UI Theme Palette v1 for focus / accent / comparison / text / backdrop roles
 - [x] Dialogue continuation indicator with blinking same-speaker `▼`, solid end-pause state, and choice suppression
 
 ---
