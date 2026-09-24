@@ -731,7 +731,9 @@ class Window_Shop {
 
     context.save();
     context.textBaseline = "middle";
-    context.fillStyle = "#ffffff";
+    context.fillStyle = typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.primary()
+      : "#ffffff";
     context.font = "600 24px sans-serif";
     context.textAlign = "left";
     context.fillText(this.currentPrompt(), prompt.x + 18, prompt.y + prompt.height / 2);

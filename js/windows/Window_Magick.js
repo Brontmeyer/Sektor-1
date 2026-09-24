@@ -254,29 +254,28 @@ class Window_Magick {
     const magick = this.currentMagick();
     this.drawPanel(context, bounds);
 
-    context.textAlign = "center";
-    context.textBaseline = "alphabetic";
-    context.fillStyle = "#ffffff";
-    context.font = "600 22px sans-serif";
-    context.fillText("MAGICK", bounds.x + bounds.width / 2, bounds.y + 34);
+    const heading = CharacterMenuLayout.drawInfoHeading(context, bounds, {
+      title: "MAGICK",
+    });
 
+    context.textBaseline = "middle";
     context.textAlign = "left";
     context.font = "14px sans-serif";
-    context.fillStyle = "#aebbd0";
-    context.fillText("Category", bounds.x + 18, bounds.y + 64);
-    context.fillText("Element", bounds.x + 18, bounds.y + 87);
-    context.fillText("Scope", bounds.x + 18, bounds.y + 110);
+    context.fillStyle = CharacterMenuLayout.themeColor("secondary", "#aebbd0");
+    context.fillText("Category", heading.labelX, CharacterMenuLayout.infoRowY(bounds, 0));
+    context.fillText("Element", heading.labelX, CharacterMenuLayout.infoRowY(bounds, 1));
+    context.fillText("Scope", heading.labelX, CharacterMenuLayout.infoRowY(bounds, 2));
 
     context.textAlign = "right";
-    context.fillStyle = "#ffffff";
-    context.fillText(this.titleCase(magick?.category), bounds.x + bounds.width - 18, bounds.y + 64);
-    context.fillText(this.titleCase(magick?.element), bounds.x + bounds.width - 18, bounds.y + 87);
-    context.fillText(this.scopeLabel(magick), bounds.x + bounds.width - 18, bounds.y + 110);
+    context.fillStyle = CharacterMenuLayout.themeColor("primary", "#ffffff");
+    context.fillText(this.titleCase(magick?.category), heading.valueX, CharacterMenuLayout.infoRowY(bounds, 0));
+    context.fillText(this.titleCase(magick?.element), heading.valueX, CharacterMenuLayout.infoRowY(bounds, 1));
+    context.fillText(this.scopeLabel(magick), heading.valueX, CharacterMenuLayout.infoRowY(bounds, 2));
 
     context.textAlign = "center";
     context.fillStyle = "#cbd5e3";
     context.font = "600 14px sans-serif";
-    context.fillText("MP NEEDED", bounds.x + bounds.width / 2, bounds.y + 136);
+    context.fillText("MP NEEDED", bounds.x + bounds.width / 2, bounds.y + 140);
     context.fillStyle = "#ffffff";
     context.font = "600 20px sans-serif";
     context.fillText(

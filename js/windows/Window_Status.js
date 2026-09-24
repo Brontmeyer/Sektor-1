@@ -115,27 +115,20 @@ class Window_Status {
     this.drawPanel(context, bounds);
 
     context.save();
+    const subtitle = `${this.pageTitle()}  ${this.pageIndex + 1}/${Window_Status.PAGE_COUNT}`;
+    const heading = CharacterMenuLayout.drawInfoHeading(context, bounds, {
+      title: "STATUS",
+      subtitle,
+    });
     context.textBaseline = "middle";
-    context.fillStyle = "#ffffff";
-    context.textAlign = "center";
-    context.font = "600 22px sans-serif";
-    context.fillText("STATUS", bounds.x + bounds.width / 2, bounds.y + 26);
-
-    context.font = "13px sans-serif";
-    context.fillStyle = "#aebbd0";
-    context.fillText(
-      `${this.pageTitle()}  ${this.pageIndex + 1}/${Window_Status.PAGE_COUNT}`,
-      bounds.x + bounds.width / 2,
-      bounds.y + 50,
-    );
 
     if (!actor) {
       context.restore();
       return;
     }
 
-    const labelX = bounds.x + 18;
-    const valueX = bounds.x + bounds.width - 18;
+    const labelX = heading.labelX;
+    const valueX = heading.valueX;
     const expNeeded = actor.expForNextLevel?.() ?? "--";
     const rows = [
       ["EXP", actor.exp ?? 0],
@@ -144,7 +137,7 @@ class Window_Status {
     ];
 
     rows.forEach(([label, value], index) => {
-      const y = bounds.y + 76 + index * 28;
+      const y = CharacterMenuLayout.infoRowY(bounds, index, { subtitle });
       context.textAlign = "left";
       context.font = "14px sans-serif";
       context.fillStyle = label === "Valor"

@@ -138,49 +138,43 @@ class Window_Valor {
     this.drawPanel(context, bounds);
 
     context.save();
-    context.textBaseline = "alphabetic";
-    context.textAlign = "center";
-    context.fillStyle = "#ffffff";
-    context.font = "600 22px sans-serif";
-    context.fillText("VALOR", bounds.x + bounds.width / 2, bounds.y + 32);
+    const subtitle = `VALOR LEVEL ${this.highestKnownLevel()}`;
+    const heading = CharacterMenuLayout.drawInfoHeading(context, bounds, {
+      title: "VALOR",
+      subtitle,
+    });
+    context.textBaseline = "middle";
 
-    context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.fillText(
-      `VALOR LEVEL ${this.highestKnownLevel()}`,
-      bounds.x + bounds.width / 2,
-      bounds.y + 54,
-    );
-
-    const labelX = bounds.x + 18;
-    const valueX = bounds.x + bounds.width - 18;
+    const labelX = heading.labelX;
+    const valueX = heading.valueX;
+    const valorY = CharacterMenuLayout.infoRowY(bounds, 0, { subtitle });
     context.font = "14px sans-serif";
     context.textAlign = "left";
     context.fillStyle = this.valorTextColor();
-    context.fillText("Valor", labelX, bounds.y + 84);
+    context.fillText("Valor", labelX, valorY);
     context.textAlign = "right";
     context.fillStyle = this.valorValueColor();
-    context.fillText(this.valorText(), valueX, bounds.y + 84);
+    context.fillText(this.valorText(), valueX, valorY);
 
     Window_ActorSummary.drawGauge(
       context,
       actor?.valor ?? 0,
       actor?.maxValor ?? 0,
       labelX,
-      bounds.y + 92,
+      valorY + 8,
       bounds.width - 36,
       "valor",
     );
 
     context.textAlign = "left";
-    context.fillStyle = "#aebbd0";
-    context.fillText("Arts", labelX, bounds.y + 123);
-    context.fillText("State", labelX, bounds.y + 148);
+    context.fillStyle = CharacterMenuLayout.themeColor("secondary", "#aebbd0");
+    context.fillText("Arts", labelX, valorY + 39);
+    context.fillText("State", labelX, valorY + 63);
     context.textAlign = "right";
-    context.fillStyle = "#ffffff";
-    context.fillText(String(arts.length), valueX, bounds.y + 123);
+    context.fillStyle = CharacterMenuLayout.themeColor("primary", "#ffffff");
+    context.fillText(String(arts.length), valueX, valorY + 39);
     context.fillStyle = ready ? this.valorTextColor() : "#ffffff";
-    context.fillText(ready ? "Ready" : "Building", valueX, bounds.y + 148);
+    context.fillText(ready ? "Ready" : "Building", valueX, valorY + 63);
     context.restore();
   }
 

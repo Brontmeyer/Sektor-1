@@ -97,19 +97,10 @@ class Window_Order {
     this.drawPanel(context, bounds);
 
     context.save();
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.fillStyle = UIThemePalette?.primary?.() || "#ffffff";
-    context.font = "600 22px sans-serif";
-    context.fillText("BATTLE FORMATION", bounds.x + 20, bounds.y + 28);
-
-    context.fillStyle = UIThemePalette?.secondary?.() || "#aebbd0";
-    context.font = "14px sans-serif";
-    context.fillText(
-      "Set visual formation order and each actor's battle row.",
-      bounds.x + 20,
-      bounds.y + 54,
-    );
+    CharacterMenuLayout.drawContextHeading(context, bounds, {
+      title: "BATTLE FORMATION",
+      description: "Set visual formation order and each actor's battle row.",
+    });
 
     const summaries = [
       ["Active Party", String(members.length)],
@@ -121,7 +112,7 @@ class Window_Order {
       118,
       Math.floor((bounds.width - 40) / summaries.length),
     );
-    const labelY = bounds.y + 92;
+    const labelY = bounds.y + 100;
 
     summaries.forEach(([label, value], index) => {
       const x = bounds.x + 20 + index * cellWidth;
@@ -145,15 +136,12 @@ class Window_Order {
     this.drawPanel(context, bounds);
 
     context.save();
+    const subtitle = "FORMATION";
+    const heading = CharacterMenuLayout.drawInfoHeading(context, bounds, {
+      title: "ORDER",
+      subtitle,
+    });
     context.textBaseline = "middle";
-    context.textAlign = "center";
-    context.fillStyle = UIThemePalette?.primary?.() || "#ffffff";
-    context.font = "600 22px sans-serif";
-    context.fillText("ORDER", bounds.x + bounds.width / 2, bounds.y + 26);
-
-    context.fillStyle = UIThemePalette?.secondary?.() || "#aebbd0";
-    context.font = "13px sans-serif";
-    context.fillText("FORMATION", bounds.x + bounds.width / 2, bounds.y + 50);
 
     const rows = [
       ["Selected", actor?.name || "—"],
@@ -161,11 +149,11 @@ class Window_Order {
       ["Row", actor ? this.selectedRow().toUpperCase() : "—"],
       ["Swap", swapActor?.name || "—"],
     ];
-    const labelX = bounds.x + 18;
-    const valueX = bounds.x + bounds.width - 18;
+    const labelX = heading.labelX;
+    const valueX = heading.valueX;
 
     rows.forEach(([label, value], index) => {
-      const y = bounds.y + 78 + index * 24;
+      const y = CharacterMenuLayout.infoRowY(bounds, index, { subtitle });
       context.textAlign = "left";
       context.fillStyle = label === "Swap"
         ? UIThemePalette?.hint?.() || "#c7a7ff"

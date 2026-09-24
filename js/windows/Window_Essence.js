@@ -334,11 +334,10 @@ class Window_Essence {
     const data = essence?.data?.() || null;
     this.drawPanel(context, bounds);
 
-    context.textAlign = "center";
-    context.textBaseline = "alphabetic";
-    context.fillStyle = "#ffffff";
-    context.font = "600 22px sans-serif";
-    context.fillText("ESSENCE", bounds.x + bounds.width / 2, bounds.y + 34);
+    const heading = CharacterMenuLayout.drawInfoHeading(context, bounds, {
+      title: "ESSENCE",
+    });
+    context.textBaseline = "middle";
 
     const labels = ["Type", "Element", "Level", "Resonance"];
     const values = [
@@ -351,13 +350,13 @@ class Window_Essence {
     context.font = "14px sans-serif";
 
     labels.forEach((label, index) => {
-      const rowY = bounds.y + 66 + index * 24;
+      const rowY = CharacterMenuLayout.infoRowY(bounds, index);
       context.textAlign = "left";
-      context.fillStyle = "#aebbd0";
-      context.fillText(label, bounds.x + 18, rowY);
+      context.fillStyle = CharacterMenuLayout.themeColor("secondary", "#aebbd0");
+      context.fillText(label, heading.labelX, rowY);
       context.textAlign = "right";
-      context.fillStyle = "#ffffff";
-      context.fillText(values[index], bounds.x + bounds.width - 18, rowY);
+      context.fillStyle = CharacterMenuLayout.themeColor("primary", "#ffffff");
+      context.fillText(values[index], heading.valueX, rowY);
     });
 
     if (essence?.isMasteryReady?.()) {

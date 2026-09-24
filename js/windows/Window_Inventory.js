@@ -772,27 +772,13 @@ class Window_Inventory {
     const bounds = this.actorBounds;
 
     this.drawPanel(context, bounds);
-    context.save();
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.fillStyle = "#ffffff";
-    context.font = "600 22px sans-serif";
-    context.fillText("PARTY INVENTORY", bounds.x + 20, bounds.y + 34);
-
-    context.fillStyle = "#aebbd0";
-    context.font = "15px sans-serif";
-    context.fillText(
-      "Shared inventory for the active party.",
-      bounds.x + 20,
-      bounds.y + 68,
-    );
-    context.fillText(
-      "Usable items, owned equipment, and key items all live here.",
-      bounds.x + 20,
-      bounds.y + 94,
-    );
-
-    context.restore();
+    CharacterMenuLayout.drawContextHeading(context, bounds, {
+      title: "PARTY INVENTORY",
+      descriptions: [
+        "Shared inventory for the active party.",
+        "Usable items, owned equipment, and key items all live here.",
+      ],
+    });
   }
 
   drawInfoPanel(context) {
@@ -801,25 +787,18 @@ class Window_Inventory {
     this.drawPanel(context, bounds);
 
     context.save();
+    const subtitle = `${this.pageTitle()}  ${this.pageIndex + 1}/${Window_Inventory.PAGE_COUNT}`;
+    const heading = CharacterMenuLayout.drawInfoHeading(context, bounds, {
+      title: "ITEM",
+      subtitle,
+    });
     context.textBaseline = "middle";
-    context.textAlign = "center";
-    context.fillStyle = "#ffffff";
-    context.font = "600 22px sans-serif";
-    context.fillText("ITEM", bounds.x + bounds.width / 2, bounds.y + 26);
 
-    context.fillStyle = "#aebbd0";
-    context.font = "13px sans-serif";
-    context.fillText(
-      `${this.pageTitle()}  ${this.pageIndex + 1}/${Window_Inventory.PAGE_COUNT}`,
-      bounds.x + bounds.width / 2,
-      bounds.y + 50,
-    );
-
-    const labelX = bounds.x + 18;
-    const valueX = bounds.x + bounds.width - 18;
+    const labelX = heading.labelX;
+    const valueX = heading.valueX;
 
     rows.forEach(([label, value], index) => {
-      const y = bounds.y + 82 + index * 30;
+      const y = CharacterMenuLayout.infoRowY(bounds, index, { subtitle });
       context.textAlign = "left";
       context.fillStyle = label === "Target" ? "#7ff0d5" : "#aebbd0";
       context.font = "14px sans-serif";

@@ -230,11 +230,10 @@ class Window_Skills {
     const skill = this.currentSkill();
     this.drawPanel(context, bounds);
 
-    context.textAlign = "center";
-    context.textBaseline = "alphabetic";
-    context.fillStyle = "#ffffff";
-    context.font = "600 22px sans-serif";
-    context.fillText("SKILL", bounds.x + bounds.width / 2, bounds.y + 34);
+    const heading = CharacterMenuLayout.drawInfoHeading(context, bounds, {
+      title: "SKILL",
+    });
+    context.textBaseline = "middle";
 
     const labels = ["Category", "Effect", "Target", "Scope"];
     const values = [
@@ -247,13 +246,13 @@ class Window_Skills {
     context.font = "14px sans-serif";
 
     labels.forEach((label, index) => {
-      const rowY = bounds.y + 66 + index * 24;
+      const rowY = CharacterMenuLayout.infoRowY(bounds, index);
       context.textAlign = "left";
-      context.fillStyle = "#aebbd0";
-      context.fillText(label, bounds.x + 18, rowY);
+      context.fillStyle = CharacterMenuLayout.themeColor("secondary", "#aebbd0");
+      context.fillText(label, heading.labelX, rowY);
       context.textAlign = "right";
-      context.fillStyle = "#ffffff";
-      context.fillText(values[index], bounds.x + bounds.width - 18, rowY);
+      context.fillStyle = CharacterMenuLayout.themeColor("primary", "#ffffff");
+      context.fillText(values[index], heading.valueX, rowY);
     });
   }
 

@@ -359,7 +359,9 @@ class Scene_Menu extends Scene_Base {
 
   drawMainHeader(context) {
     this.drawPanel(context, this.layout.header, { assetAlpha: 0.48 });
-    context.fillStyle = "#f4f7fb";
+    context.fillStyle = typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.primary()
+      : "#f4f7fb";
     context.font = "600 20px sans-serif";
     context.textAlign = "left";
     context.textBaseline = "middle";
@@ -374,7 +376,9 @@ class Scene_Menu extends Scene_Base {
     if (hint) {
       context.font = "13px sans-serif";
       context.textAlign = "right";
-      context.fillStyle = "#bdc9d8";
+      context.fillStyle = typeof UIThemePalette !== "undefined"
+        ? UIThemePalette.secondary()
+        : "#bdc9d8";
       context.fillText(
         hint,
         this.layout.header.x + this.layout.header.width - 18,

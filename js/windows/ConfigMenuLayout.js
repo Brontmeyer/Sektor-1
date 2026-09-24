@@ -119,7 +119,9 @@ class ConfigMenuLayout {
     context.save();
     context.textBaseline = "middle";
     context.textAlign = "left";
-    context.fillStyle = "#ffffff";
+    context.fillStyle = typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.primary()
+      : "#ffffff";
     context.font = "17px sans-serif";
 
     const text = description || "Configure Sektor 1.";
@@ -146,14 +148,18 @@ class ConfigMenuLayout {
     }
 
     context.textAlign = "center";
-    context.fillStyle = "#ffffff";
+    context.fillStyle = typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.primary()
+      : "#ffffff";
     context.font = "600 22px sans-serif";
     context.fillText(
       String(title || "CONFIG"),
       titleBounds.x + titleBounds.width / 2,
       titleBounds.y + 27,
     );
-    context.fillStyle = "#aebbd0";
+    context.fillStyle = typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.secondary()
+      : "#aebbd0";
     context.font = "13px sans-serif";
     context.fillText(
       String(subtitle || "SYSTEM"),

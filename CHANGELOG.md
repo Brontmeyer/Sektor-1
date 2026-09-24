@@ -12,6 +12,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Standardized menu-heading presentation across the character/party menu family: MAGICK, SKILL, ESSENCE, EQUIP, STATUS, VALOR, ITEM, and ORDER now share one `CharacterMenuLayout` metadata-heading contract for title position, optional subtitle position, label/value columns, and row rhythm; ITEM / ORDER also share one party/system context-heading contract. CONFIG / CONTROLS / WINDOW COLOR remain on their deliberate compact Config-family header, while SAVE / LOAD and Shop keep purpose-specific browser/merchant headers but consume the same semantic palette roles.
+- Added menu-heading consistency regression coverage so future presentation passes cannot quietly reintroduce per-window title offsets or bypass the shared heading contracts.
+
 - Refined field ITEM use into a persistent target-mode workflow: after choosing a usable item, successful uses keep that item armed so the player can heal the same actor repeatedly or move across party members without reopening the item list; full/invalid targets consume nothing, Cancel returns explicitly to item selection, and exhausting the final copy returns automatically.
 
 - Polished Key Item event semantics so `ifKeyItem` treats `consume: true` as a safe request: consumable keys lose one copy, while permanent keys still satisfy the requirement and remain owned; the party remains the single authority for possession / consumption decisions.

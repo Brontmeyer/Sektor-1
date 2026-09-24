@@ -247,23 +247,21 @@ class Window_Equipment {
     this.drawPanel(context, bounds);
 
     context.save();
-    context.textBaseline = "alphabetic";
-    context.fillStyle = "#ffffff";
-    context.font = "600 22px sans-serif";
-    context.textAlign = "center";
-    context.fillText("EQUIP", bounds.x + bounds.width / 2, bounds.y + 30);
-
+    const heading = CharacterMenuLayout.drawInfoHeading(context, bounds, {
+      title: "EQUIP",
+    });
+    context.textBaseline = "middle";
     context.font = "14px sans-serif";
     this.slots.forEach((slot, index) => {
-      const y = bounds.y + 62 + index * 30;
+      const y = CharacterMenuLayout.infoRowY(bounds, index);
       context.textAlign = "left";
-      context.fillStyle = "#aebbd0";
-      context.fillText(slot.label, bounds.x + 18, y);
+      context.fillStyle = CharacterMenuLayout.themeColor("secondary", "#aebbd0");
+      context.fillText(slot.label, heading.labelX, y);
       context.textAlign = "right";
-      context.fillStyle = "#ffffff";
+      context.fillStyle = CharacterMenuLayout.themeColor("primary", "#ffffff");
       context.fillText(
         this.slotEquipment(slot.type)?.name || "None",
-        bounds.x + bounds.width - 18,
+        heading.valueX,
         y,
       );
     });

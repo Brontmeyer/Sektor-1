@@ -57,6 +57,86 @@ class CharacterMenuLayout {
     };
   }
 
+
+  static themeColor(role, fallback) {
+    if (typeof UIThemePalette !== "undefined" && typeof UIThemePalette[role] === "function") {
+      return UIThemePalette[role]();
+    }
+
+    return fallback;
+  }
+
+  static infoHeadingMetrics(bounds, options = {}) {
+    const hasSubtitle = Boolean(options.subtitle);
+
+    return {
+      titleY: bounds.y + 30,
+      subtitleY: bounds.y + 52,
+      rowStartY: bounds.y + (hasSubtitle ? 80 : 66),
+      rowSpacing: 24,
+      labelX: bounds.x + 18,
+      valueX: bounds.x + bounds.width - 18,
+    };
+  }
+
+  static drawInfoHeading(context, bounds, options = {}) {
+    const title = String(options.title || "").trim();
+    const subtitle = String(options.subtitle || "").trim();
+    const metrics = this.infoHeadingMetrics(bounds, { subtitle });
+
+    context.save();
+    context.textBaseline = "middle";
+    context.textAlign = "center";
+    context.fillStyle = this.themeColor("primary", "#ffffff");
+    context.font = "600 22px sans-serif";
+    context.fillText(title, bounds.x + bounds.width / 2, metrics.titleY);
+
+    if (subtitle) {
+      context.fillStyle = this.themeColor("secondary", "#aebbd0");
+      context.font = "13px sans-serif";
+      context.fillText(subtitle, bounds.x + bounds.width / 2, metrics.subtitleY);
+    }
+
+    context.restore();
+    return metrics;
+  }
+
+  static infoRowY(bounds, index, options = {}) {
+    const metrics = this.infoHeadingMetrics(bounds, options);
+    const rowSpacing = Number(options.rowSpacing) || metrics.rowSpacing;
+    return metrics.rowStartY + Math.max(0, Number(index) || 0) * rowSpacing;
+  }
+
+  static drawContextHeading(context, bounds, options = {}) {
+    const title = String(options.title || "").trim();
+    const descriptions = Array.isArray(options.descriptions)
+      ? options.descriptions.filter((entry) => String(entry || "").trim())
+      : [options.description].filter((entry) => String(entry || "").trim());
+    const titleY = bounds.y + 30;
+    const descriptionY = bounds.y + 62;
+    const lineHeight = 24;
+
+    context.save();
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+    context.fillStyle = this.themeColor("primary", "#ffffff");
+    context.font = "600 22px sans-serif";
+    context.fillText(title, bounds.x + 20, titleY);
+
+    context.fillStyle = this.themeColor("secondary", "#aebbd0");
+    context.font = "14px sans-serif";
+    descriptions.forEach((description, index) => {
+      context.fillText(
+        String(description),
+        bounds.x + 20,
+        descriptionY + index * lineHeight,
+      );
+    });
+    context.restore();
+
+    return { titleY, descriptionY, lineHeight };
+  }
+
   static split(bounds, ratio, options = {}) {
     const gap = Number(options.gap) || 8;
     const minimumLeft = Math.max(0, Number(options.minimumLeft) || 0);

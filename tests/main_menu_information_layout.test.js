@@ -252,7 +252,7 @@ function testSingularHeadingContractAndLoadOrder() {
   const equipment = read("js/windows/Window_Equipment.js");
   const options = read("js/windows/Window_Options.js");
 
-  assert.match(inventory, /fillText\("ITEM"/);
+  assert.match(inventory, /title: "ITEM"/);
   assert.match(skills, /"SKILL"/);
   assert.match(essence, /"ESSENCE"/);
   assert.match(equipment, /"EQUIP"/);

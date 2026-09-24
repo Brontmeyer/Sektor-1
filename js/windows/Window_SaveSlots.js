@@ -264,12 +264,16 @@ class Window_SaveSlots {
     context.stroke();
 
     context.textAlign = "left";
-    context.fillStyle = "#ffffff";
+    context.fillStyle = typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.primary()
+      : "#ffffff";
     context.font = "600 20px sans-serif";
     context.fillText("Select a file.", bounds.x + 20, bounds.y + bounds.height / 2);
 
     context.textAlign = "center";
-    context.fillStyle = "#ffd75a";
+    context.fillStyle = typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.focus()
+      : "#ffd75a";
     context.font = "600 19px sans-serif";
     context.fillText(
       `FILE ${selectedSlot}`,
@@ -277,8 +281,10 @@ class Window_SaveSlots {
       bounds.y + bounds.height / 2,
     );
 
-    context.fillStyle = "#ffffff";
-    context.font = "600 21px sans-serif";
+    context.fillStyle = typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.primary()
+      : "#ffffff";
+    context.font = "600 22px sans-serif";
     context.fillText(
       this.screenTitle(),
       modeX + modeWidth / 2,
