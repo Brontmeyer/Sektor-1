@@ -116,6 +116,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add Equip Menu Presentation & Stat Preview v1 with shared actor summary, full Weapon/Armor/Accessories labels, description strip, held-repeat equipment browsing, live stat comparison, and square main-menu portrait consistency
 - [x] Add Item Menu Presentation & Inventory Navigation v1 with shared actor summary, Use/Arrange/Key Items tabs, target-aware field item use, supported sort previews, and key-item empty-state handling
 - [x] Refine ITEM focus/vitals/layout after hands-on review and standardize character-menu header geometry through shared `CharacterMenuLayout` ownership
+- [x] Refine ITEM as party-owned inventory with a PARTY INVENTORY header, exact three-column tabs, and muted read-only equipment rows while preserving EQUIP ownership
 - [x] Add Save Menu Presentation & Slot Summary v1 with full-screen slot cards, existing-save summaries, empty-slot states, and preserved Save Runtime v11 authority
 - [x] Refine SAVE/LOAD into reference-inspired file-card presentation and complete Load Menu Presentation v1 without changing Save Runtime v11
 - [x] Refine ITEM interaction to Use → Item → Target focus, persistent pending-item identity, hierarchical cancel, and automatic Arrange-heading return after sort apply

@@ -121,6 +121,85 @@ class Window_Inventory {
     return DatabaseManager.item?.(itemId) || null;
   }
 
+  equipmentInventoryEntries() {
+    const definitions = [
+      { type: "weapon", store: "weapons", getter: "weapon" },
+      { type: "armor", store: "armors", getter: "armor" },
+      { type: "accessory", store: "accessories", getter: "accessory" },
+    ];
+    const entries = [];
+
+    for (const definition of definitions) {
+      const inventory = $gameParty?.[definition.store] || {};
+      const getter = DatabaseManager?.[definition.getter];
+
+      if (typeof getter !== "function") {
+        continue;
+      }
+
+      Object.keys(inventory)
+        .map(Number)
+        .filter((id) => Number.isInteger(id) && id > 0)
+        .sort((a, b) => a - b)
+        .forEach((id) => {
+          const quantity = Math.max(0, Number(inventory[id]) || 0);
+          const record = getter.call(DatabaseManager, id);
+
+          if (quantity <= 0 || !record) {
+            return;
+          }
+
+          entries.push({
+            kind: "equipment",
+            type: definition.type,
+            id,
+            record,
+            quantity,
+            usable: false,
+          });
+        });
+    }
+
+    return entries;
+  }
+
+  inventoryDisplayEntries(mode = this.sortMode) {
+    const items = this.usableItemIds(mode).map((itemId) => ({
+      kind: "item",
+      type: "item",
+      id: itemId,
+      record: this.itemRecord(itemId),
+      quantity: this.itemCount(itemId),
+      usable: true,
+    }));
+
+    return [...items, ...this.equipmentInventoryEntries()];
+  }
+
+  selectedInventoryEntry() {
+    if (this.focusArea === Window_Inventory.FOCUS.TARGETS && this.pendingItemId) {
+      return {
+        kind: "item",
+        type: "item",
+        id: this.pendingItemId,
+        record: this.itemRecord(this.pendingItemId),
+        quantity: this.itemCount(this.pendingItemId),
+        usable: true,
+      };
+    }
+
+    if (this.pageIndex !== 0) {
+      return null;
+    }
+
+    const entries = this.inventoryDisplayEntries();
+    this.itemIndex = Math.max(
+      0,
+      Math.min(this.itemIndex, Math.max(0, entries.length - 1)),
+    );
+    return entries[this.itemIndex] || null;
+  }
+
   isKeyItem(item) {
     return (
       item?.keyItem === true ||
@@ -231,12 +310,8 @@ class Window_Inventory {
       return ids[this.keyItemIndex] || null;
     }
 
-    const ids = this.usableItemIds();
-    this.itemIndex = Math.max(
-      0,
-      Math.min(this.itemIndex, Math.max(0, ids.length - 1)),
-    );
-    return ids[this.itemIndex] || null;
+    const entry = this.selectedInventoryEntry();
+    return entry?.kind === "item" ? entry.id : null;
   }
 
   selectedItem() {
@@ -305,7 +380,7 @@ class Window_Inventory {
 
     if (
       nextFocus === Window_Inventory.FOCUS.ITEMS &&
-      this.usableItemIds().length === 0
+      this.inventoryDisplayEntries().length === 0
     ) {
       return false;
     }
@@ -323,7 +398,7 @@ class Window_Inventory {
 
   syncSelectionState() {
     const members = this.members();
-    const usable = this.usableItemIds();
+    const inventoryEntries = this.inventoryDisplayEntries();
     const keyItems = this.keyItemIds();
     const options = this.arrangeOptions();
 
@@ -333,7 +408,7 @@ class Window_Inventory {
     );
     this.itemIndex = Math.max(
       0,
-      Math.min(this.itemIndex, Math.max(0, usable.length - 1)),
+      Math.min(this.itemIndex, Math.max(0, inventoryEntries.length - 1)),
     );
     this.arrangeIndex = Math.max(
       0,
@@ -353,7 +428,7 @@ class Window_Inventory {
     }
 
     this.itemViewport.maxVisibleRows = this.useVisibleRows();
-    this.itemViewport.ensureVisible(this.itemIndex, usable.length);
+    this.itemViewport.ensureVisible(this.itemIndex, inventoryEntries.length);
     this.arrangeViewport.ensureVisible(this.arrangeIndex, options.length);
     this.keyItemViewport.maxVisibleRows = this.keyVisibleRows() * 2;
     this.keyItemViewport.ensureVisible(this.keyItemIndex, keyItems.length);
@@ -425,40 +500,41 @@ class Window_Inventory {
   }
 
   updateItemList() {
-    const itemIds = this.usableItemIds();
+    const entries = this.inventoryDisplayEntries();
 
-    if (itemIds.length === 0) {
+    if (entries.length === 0) {
       this.returnToTabs();
       return;
     }
 
     if (this.directionRepeated("up")) {
-      this.itemIndex =
-        (this.itemIndex - 1 + itemIds.length) % itemIds.length;
-      this.itemViewport.ensureVisible(this.itemIndex, itemIds.length);
+      this.itemIndex = (this.itemIndex - 1 + entries.length) % entries.length;
+      this.itemViewport.ensureVisible(this.itemIndex, entries.length);
       return;
     }
 
     if (this.directionRepeated("down")) {
-      this.itemIndex = (this.itemIndex + 1) % itemIds.length;
-      this.itemViewport.ensureVisible(this.itemIndex, itemIds.length);
+      this.itemIndex = (this.itemIndex + 1) % entries.length;
+      this.itemViewport.ensureVisible(this.itemIndex, entries.length);
       return;
     }
 
-    if (this.actionTriggered("confirm")) {
-      const itemId = itemIds[this.itemIndex];
-
-      if (!itemId || this.members().length === 0) {
-        return;
-      }
-
-      this.pendingItemId = itemId;
-      this.targetIndex = Math.max(
-        0,
-        Math.min(this.targetIndex, this.members().length - 1),
-      );
-      this.focusArea = Window_Inventory.FOCUS.TARGETS;
+    if (!this.actionTriggered("confirm")) {
+      return;
     }
+
+    const entry = entries[this.itemIndex];
+
+    if (!entry?.usable || entry.kind !== "item" || this.members().length === 0) {
+      return;
+    }
+
+    this.pendingItemId = entry.id;
+    this.targetIndex = Math.max(
+      0,
+      Math.min(this.targetIndex, this.members().length - 1),
+    );
+    this.focusArea = Window_Inventory.FOCUS.TARGETS;
   }
 
   updateTargetList() {
@@ -498,11 +574,13 @@ class Window_Inventory {
       return;
     }
 
-    const updated = this.usableItemIds();
-    this.itemIndex = Math.max(
-      0,
-      Math.min(this.itemIndex, Math.max(0, updated.length - 1)),
+    const updated = this.inventoryDisplayEntries();
+    const previousIndex = updated.findIndex(
+      (entry) => entry.kind === "item" && entry.id === itemId,
     );
+    this.itemIndex = previousIndex >= 0
+      ? previousIndex
+      : Math.max(0, Math.min(this.itemIndex, Math.max(0, updated.length - 1)));
     this.itemViewport.ensureVisible(this.itemIndex, updated.length);
     this.pendingItemId = null;
     this.focusArea = Window_Inventory.FOCUS.ITEMS;
@@ -535,7 +613,7 @@ class Window_Inventory {
     }
 
     this.sortMode = option.mode;
-    this.itemViewport.reset(this.itemIndex, this.usableItemIds().length);
+    this.itemViewport.reset(this.itemIndex, this.inventoryDisplayEntries().length);
     this.returnToTabs();
   }
 
@@ -566,7 +644,12 @@ class Window_Inventory {
         return "Choose an item to use.";
       }
 
-      const item = this.selectedItem();
+      const entry = this.selectedInventoryEntry();
+      const item = entry?.kind === "item" ? entry.record : null;
+
+      if (entry?.kind === "equipment") {
+        return `${entry.record?.name || "Equipment"} is owned equipment. Manage it from EQUIP.`;
+      }
 
       if (!item) {
         return "No usable items owned.";
@@ -605,6 +688,7 @@ class Window_Inventory {
 
   infoRows() {
     const item = this.selectedItem();
+    const inventoryEntry = this.selectedInventoryEntry();
 
     if (this.pageIndex === 0) {
       if (this.focusArea === Window_Inventory.FOCUS.TABS) {
@@ -612,6 +696,14 @@ class Window_Inventory {
           ["Action", "Use"],
           ["Item", "—"],
           ["Target", "—"],
+        ];
+      }
+
+      if (inventoryEntry?.kind === "equipment") {
+        return [
+          ["Item", inventoryEntry.record?.name || "—"],
+          ["Quantity", `x${inventoryEntry.quantity}`],
+          ["Action", "Equip Menu"],
         ];
       }
 
@@ -667,8 +759,55 @@ class Window_Inventory {
     }
   }
 
-  drawActorPanel(context) {
-    Window_ActorSummary.draw(context, this.actor(), this.actorBounds);
+  drawPartyInventoryPanel(context) {
+    const bounds = this.actorBounds;
+    const members = this.members();
+    const itemStacks = this.inventoryItemIds().length;
+    const equipmentStacks = this.equipmentInventoryEntries().length;
+    const totalUnits = this.inventoryItemIds().reduce(
+      (sum, id) => sum + this.itemCount(id),
+      0,
+    ) + this.equipmentInventoryEntries().reduce(
+      (sum, entry) => sum + entry.quantity,
+      0,
+    );
+
+    this.drawPanel(context, bounds);
+    context.save();
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+    context.fillStyle = "#ffffff";
+    context.font = "600 22px sans-serif";
+    context.fillText("PARTY INVENTORY", bounds.x + 20, bounds.y + 28);
+
+    context.fillStyle = "#aebbd0";
+    context.font = "14px sans-serif";
+    context.fillText(
+      "Shared inventory • choose an item first, then choose who receives it.",
+      bounds.x + 20,
+      bounds.y + 54,
+    );
+
+    const summaryY = bounds.y + 90;
+    const summary = [
+      ["Active Party", String(members.length)],
+      ["Item Stacks", String(itemStacks)],
+      ["Equipment", String(equipmentStacks)],
+      ["Total Units", String(totalUnits)],
+    ];
+    const summaryWidth = Math.max(120, Math.floor((bounds.width - 40) / summary.length));
+
+    summary.forEach(([label, value], index) => {
+      const x = bounds.x + 20 + index * summaryWidth;
+      context.fillStyle = "#7ff0d5";
+      context.font = "600 13px sans-serif";
+      context.fillText(label, x, summaryY);
+      context.fillStyle = "#ffffff";
+      context.font = "600 18px sans-serif";
+      context.fillText(value, x, summaryY + 24);
+    });
+
+    context.restore();
   }
 
   drawInfoPanel(context) {
@@ -794,17 +933,16 @@ class Window_Inventory {
 
   drawTabs(context, columns) {
     const labels = ["Use", "Arrange", "Key Items"];
-    const gap = 8;
-    const tabWidth = Math.floor(
-      (columns.rightWidth - gap * (labels.length - 1)) / labels.length,
-    );
+    const tabWidth = columns.rightWidth / labels.length;
 
     context.save();
     context.textBaseline = "middle";
     context.textAlign = "left";
 
     labels.forEach((label, index) => {
-      const x = columns.rightX + index * (tabWidth + gap);
+      const cellX = columns.rightX + index * tabWidth;
+      const x = Math.round(cellX);
+      const width = Math.round(columns.rightX + (index + 1) * tabWidth) - x;
       const activePage = this.pageIndex === index;
       const focused =
         activePage && this.focusArea === Window_Inventory.FOCUS.TABS;
@@ -812,9 +950,9 @@ class Window_Inventory {
       if (focused) {
         this.drawSelection(
           context,
-          x,
+          x + 4,
           columns.tabTop,
-          tabWidth,
+          Math.max(0, width - 8),
           columns.tabHeight,
         );
       }
@@ -827,7 +965,7 @@ class Window_Inventory {
       context.font = focused ? "600 17px sans-serif" : "16px sans-serif";
       context.fillText(
         `${focused ? "▶ " : "  "}${label}`,
-        x + 10,
+        x + 12,
         columns.tabTop + columns.tabHeight / 2,
       );
 
@@ -835,8 +973,8 @@ class Window_Inventory {
         context.strokeStyle = "rgba(127, 240, 213, 0.72)";
         context.lineWidth = 2;
         context.beginPath();
-        context.moveTo(x + 10, columns.tabTop + columns.tabHeight - 1);
-        context.lineTo(x + tabWidth - 10, columns.tabTop + columns.tabHeight - 1);
+        context.moveTo(x + 12, columns.tabTop + columns.tabHeight - 1);
+        context.lineTo(x + width - 12, columns.tabTop + columns.tabHeight - 1);
         context.stroke();
       }
     });
@@ -975,7 +1113,7 @@ class Window_Inventory {
 
   drawUsePage(context, columns) {
     const members = this.members();
-    const items = this.usableItemIds();
+    const entries = this.inventoryDisplayEntries();
     const rightHeadingY = columns.rightBodyY + 10;
 
     context.save();
@@ -1021,7 +1159,7 @@ class Window_Inventory {
       });
     }
 
-    if (items.length === 0) {
+    if (entries.length === 0) {
       context.fillStyle = "#8897ac";
       context.font = "16px sans-serif";
       context.fillText(
@@ -1035,17 +1173,18 @@ class Window_Inventory {
 
     const rowHeight = 32;
     const listTop = columns.rightBodyY + 46;
-    const range = this.itemViewport.visibleRange(this.itemIndex, items.length);
+    const range = this.itemViewport.visibleRange(this.itemIndex, entries.length);
 
     for (let i = range.start; i < range.end; i++) {
-      const itemId = items[i];
-      const item = this.itemRecord(itemId);
+      const entry = entries[i];
+      const itemId = entry?.id;
+      const item = entry?.record;
       const y = listTop + (i - range.start) * rowHeight;
       const itemFocus =
         this.focusArea === Window_Inventory.FOCUS.ITEMS && i === this.itemIndex;
       const pending =
         this.focusArea === Window_Inventory.FOCUS.TARGETS &&
-        itemId === this.pendingItemId;
+        entry?.kind === "item" && itemId === this.pendingItemId;
 
       if (itemFocus || pending) {
         this.drawSelection(
@@ -1060,25 +1199,33 @@ class Window_Inventory {
         );
       }
 
+      const disabled = entry?.usable === false;
       context.fillStyle = itemFocus
-        ? "#ffd75a"
+        ? disabled
+          ? "#9aa6b8"
+          : "#ffd75a"
         : pending
           ? "#7ff0d5"
-          : "#ffffff";
+          : disabled
+            ? "#6f7d92"
+            : "#ffffff";
       context.font = itemFocus ? "600 17px sans-serif" : "17px sans-serif";
+      const typeTag = disabled
+        ? ` [${entry.type === "accessory" ? "ACC" : entry.type.toUpperCase()}]`
+        : "";
       context.fillText(
         `${itemFocus ? "▶ " : pending ? "◆ " : "  "}${
           item?.name || `Item ${itemId}`
-        }`,
+        }${typeTag}`,
         columns.rightX + 12,
         y,
       );
 
       context.textAlign = "right";
-      context.fillStyle = "#ffffff";
+      context.fillStyle = disabled ? "#6f7d92" : "#ffffff";
       context.font = "16px sans-serif";
       context.fillText(
-        `x${this.itemCount(itemId)}`,
+        `x${entry?.quantity ?? 0}`,
         columns.rightX + columns.rightWidth - 8,
         y,
       );
@@ -1091,7 +1238,7 @@ class Window_Inventory {
       columns.rightBodyY + 42,
       columns.rightBodyY + columns.rightBodyHeight - 18,
       this.itemViewport.hasPrevious(),
-      this.itemViewport.hasNext(items.length),
+      this.itemViewport.hasNext(entries.length),
     );
 
     context.restore();
@@ -1100,7 +1247,7 @@ class Window_Inventory {
   drawArrangePage(context, columns) {
     const options = this.arrangeOptions();
     const previewMode = this.currentArrangeOption()?.mode || this.sortMode;
-    const previewIds = this.usableItemIds(previewMode);
+    const previewEntries = this.inventoryDisplayEntries(previewMode);
 
     context.save();
     context.textAlign = "left";
@@ -1148,7 +1295,7 @@ class Window_Inventory {
       );
     }
 
-    if (previewIds.length === 0) {
+    if (previewEntries.length === 0) {
       context.fillStyle = "#8897ac";
       context.font = "16px sans-serif";
       context.fillText(
@@ -1169,15 +1316,22 @@ class Window_Inventory {
       ),
     );
 
-    previewIds.slice(0, previewVisible).forEach((itemId, index) => {
-      const item = this.itemRecord(itemId);
+    previewEntries.slice(0, previewVisible).forEach((entry, index) => {
       const y = columns.rightBodyY + 46 + index * previewRowHeight;
-      context.fillStyle = "#ffffff";
+      const disabled = entry?.usable === false;
+      const typeTag = disabled
+        ? ` [${entry.type === "accessory" ? "ACC" : entry.type.toUpperCase()}]`
+        : "";
+      context.fillStyle = disabled ? "#6f7d92" : "#ffffff";
       context.font = "16px sans-serif";
-      context.fillText(item?.name || `Item ${itemId}`, columns.rightX + 12, y);
+      context.fillText(
+        `${entry?.record?.name || `Item ${entry?.id}`}${typeTag}`,
+        columns.rightX + 12,
+        y,
+      );
       context.textAlign = "right";
       context.fillText(
-        `x${this.itemCount(itemId)}`,
+        `x${entry?.quantity ?? 0}`,
         columns.rightX + columns.rightWidth - 8,
         y,
       );
@@ -1277,7 +1431,7 @@ class Window_Inventory {
     context.fillStyle = "#0b0e13";
     context.fillRect(0, 0, Graphics.width, Graphics.height);
 
-    this.drawActorPanel(context);
+    this.drawPartyInventoryPanel(context);
     this.drawInfoPanel(context);
     this.drawDescription(context);
     this.drawContent(context);

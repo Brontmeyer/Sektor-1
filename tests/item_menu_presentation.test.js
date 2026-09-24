@@ -59,6 +59,10 @@ function createHarness() {
     },
   };
 
+  const weapons = { 1: { id: 1, name: "Steel Sword", description: "A steel weapon." } };
+  const armors = { 1: { id: 1, name: "Iron Armor", description: "Iron protection." } };
+  const accessories = { 1: { id: 1, name: "Power Wrist", description: "Raises attack." } };
+
   function createActor(actorId, name, hp, maxHp) {
     return {
       actorId,
@@ -92,9 +96,15 @@ function createHarness() {
     },
     DatabaseManager: {
       item(id) { return items[id] || null; },
+      weapon(id) { return weapons[id] || null; },
+      armor(id) { return armors[id] || null; },
+      accessory(id) { return accessories[id] || null; },
     },
     $gameParty: {
       items: { 1: 3, 2: 1, 3: 1 },
+      weapons: { 1: 1 },
+      armors: { 1: 1 },
+      accessories: { 1: 1 },
       itemIds() { return Object.keys(this.items).map(Number); },
       itemCount(id) { return this.items[id] || 0; },
       useItem(itemId, target) {
@@ -276,6 +286,31 @@ function testCancelMovesBackOneInteractionLevel() {
 }
 
 
+function testOwnedEquipmentAppearsInItemInventoryButCannotBeUsed() {
+  const harness = createHarness();
+  harness.window.show();
+  press(harness, "confirm");
+
+  const texts = drawText(harness);
+  assert.equal(includes(texts, "Steel Sword [WEAPON]"), true);
+  assert.equal(includes(texts, "Iron Armor [ARMOR]"), true);
+  assert.equal(includes(texts, "Power Wrist [ACC]"), true);
+
+  const entries = harness.window.inventoryDisplayEntries();
+  const steelIndex = entries.findIndex((entry) => entry.type === "weapon");
+  assert.equal(steelIndex >= 0, true);
+  harness.window.itemIndex = steelIndex;
+  const beforeFocus = harness.window.focusArea;
+  press(harness, "confirm");
+  assert.equal(harness.window.focusArea, beforeFocus);
+  assert.equal(harness.window.pendingItemId, null);
+
+  const selectedTexts = drawText(harness);
+  assert.equal(includes(selectedTexts, "Manage it from EQUIP"), true);
+  assert.equal(includes(selectedTexts, "Equip Menu"), true);
+}
+
+
 function testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading() {
   const source = read("js/windows/Window_Inventory.js");
 
@@ -286,7 +321,7 @@ function testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading() {
 }
 
 
-function testItemTabsLiveOverTheItemPaneAndRosterUsesTheFullLeftHeight() {
+function testItemTabsShareEqualGridAndPartyInventoryHeaderReplacesActorHeader() {
   const harness = createHarness();
   harness.window.show();
   const columns = harness.window.contentColumns();
@@ -295,10 +330,12 @@ function testItemTabsLiveOverTheItemPaneAndRosterUsesTheFullLeftHeight() {
   assert.equal(columns.rightX > columns.dividerX, true);
   assert.equal(columns.tabTop < columns.rightBodyY, true);
   assert.equal(columns.leftTop < columns.rightBodyY, true);
-  assert.equal(includes(texts, "PARTY"), false);
+  assert.equal(includes(texts, "PARTY INVENTORY"), true);
+  assert.equal(includes(texts, "Shared inventory"), true);
 
   const source = read("js/windows/Window_Inventory.js");
   assert.match(source, /drawTabs\(context, columns\)/);
+  assert.match(source, /const tabWidth = columns\.rightWidth \/ labels\.length/);
   assert.match(source, /context\.moveTo\(columns\.dividerX, columns\.innerY\)/);
   assert.match(
     source,
@@ -322,8 +359,9 @@ function run() {
   testArrangeApplyReturnsFocusToArrangeHeading();
   testKeyItemsKeepReferenceTabFlowAndPartyRowsShowHpAndMp();
   testCancelMovesBackOneInteractionLevel();
+  testOwnedEquipmentAppearsInItemInventoryButCannotBeUsed();
   testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading();
-  testItemTabsLiveOverTheItemPaneAndRosterUsesTheFullLeftHeight();
+  testItemTabsShareEqualGridAndPartyInventoryHeaderReplacesActorHeader();
   testSceneRoutesItemMenuToPartyBackedInventoryWindow();
   console.log("Item menu presentation regression tests passed.");
 }

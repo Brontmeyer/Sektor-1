@@ -12,6 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Refined ITEM into a party-owned inventory presentation: the redundant selected-actor header is replaced by a shared PARTY INVENTORY summary, while target actor cards remain only where targeting actually matters
+- Added read-only owned Weapon / Armor / Accessory rows to ITEM and Arrange preview using muted unavailable styling; those rows may be browsed for context but cannot be used, preserving EQUIP as the sole equipment authority
+- Locked Use / Arrange / Key Items to one exact three-column tab grid so tab placement can no longer drift between pages
+
 - Tightened dialogue continuation semantics so mint-teal `▼` blinks only when another `text` command still follows in the current dialogue run; passive event mutations may sit between lines, while the final text command and choice prompts show no continuation marker
 - Aligned the shopkeeper greeting to the same left edge as SHOPKEEPER / merchant name / store type instead of inheriting the description helper's default inset
 - Added semantic **Hint** (soft violet) and **Key Item** (soft rose) roles to `UIThemePalette` so future important dialogue and protected-object presentation have stable colors without borrowing focus or resource colors
