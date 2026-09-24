@@ -1438,7 +1438,9 @@ class Window_Inventory {
         this.drawSelection(context, x + 4, y - 16, columnWidth - 8, 30);
       }
 
-      context.fillStyle = focused ? "#ffd75a" : "#ffffff";
+      context.fillStyle = focused
+        ? (typeof UIThemePalette !== "undefined" ? UIThemePalette.focus() : "#ffd75a")
+        : (typeof UIThemePalette !== "undefined" ? UIThemePalette.keyItem() : "#ff9ed8");
       context.font = focused ? "600 17px sans-serif" : "17px sans-serif";
       this.drawRowMarker(
         context,

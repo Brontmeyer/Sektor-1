@@ -50,7 +50,13 @@ class Window_BattleItem {
     return $gameParty
       .itemIds()
       .map((itemId) => DatabaseManager.item(itemId))
-      .filter((item) => item !== null);
+      .filter(
+        (item) =>
+          item !== null &&
+          item?.keyItem !== true &&
+          item?.effect &&
+          typeof item.effect.type === "string",
+      );
   }
 
   currentItem() {

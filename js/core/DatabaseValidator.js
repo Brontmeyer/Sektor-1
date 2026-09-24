@@ -240,6 +240,7 @@ class DatabaseValidator {
         "transfers",
         "events",
         "menuAccess",
+        "_comment",
       ],
       errors,
     );
@@ -275,7 +276,7 @@ class DatabaseValidator {
       this.validateKnownKeys(
         "Map playerStart",
         mapData.playerStart,
-        ["x", "y"],
+        ["x", "y", "_comment"],
         errors,
       );
       this.validateMapPoint(
@@ -304,7 +305,7 @@ class DatabaseValidator {
         this.validateKnownKeys(
           "Map menuAccess",
           mapData.menuAccess,
-          ["allowSave", "allowLoad"],
+          ["allowSave", "allowLoad", "_comment"],
           errors,
         );
 
@@ -334,7 +335,7 @@ class DatabaseValidator {
         this.validateKnownKeys(
           label,
           transfer,
-          ["x", "y", "width", "height", "targetMapId", "targetX", "targetY"],
+          ["x", "y", "width", "height", "targetMapId", "targetX", "targetY", "_comment"],
           errors,
         );
         this.validateMapRectangle(
@@ -433,7 +434,7 @@ class DatabaseValidator {
       this.validateKnownKeys(
         rectangleLabel,
         rectangle,
-        ["x", "y", "width", "height"],
+        ["x", "y", "width", "height", "_comment"],
         errors,
       );
       this.validateMapRectangle(
@@ -495,7 +496,7 @@ class DatabaseValidator {
     this.validateKnownKeys(
       label,
       event,
-      ["id", "name", "x", "y", "width", "height", "solid", "pages", "commands"],
+      ["id", "name", "x", "y", "width", "height", "solid", "pages", "commands", "_comment"],
       errors,
     );
 
@@ -559,7 +560,7 @@ class DatabaseValidator {
       return;
     }
 
-    this.validateKnownKeys(label, page, ["conditions", "commands"], errors);
+    this.validateKnownKeys(label, page, ["conditions", "commands", "_comment"], errors);
     this.validateEventConditions(page.conditions ?? {}, `${label} conditions`, errors);
     this.validateEventCommands(page.commands ?? [], `${label} commands`, database, errors);
   }
@@ -573,7 +574,7 @@ class DatabaseValidator {
     this.validateKnownKeys(
       label,
       conditions,
-      ["switches", "selfSwitches", "variables"],
+      ["switches", "selfSwitches", "variables", "_comment"],
       errors,
     );
 
@@ -593,7 +594,7 @@ class DatabaseValidator {
           continue;
         }
 
-        this.validateKnownKeys(conditionLabel, condition, ["id", "value"], errors);
+        this.validateKnownKeys(conditionLabel, condition, ["id", "value", "_comment"], errors);
         this.validateEventIdentifier(`${conditionLabel}.id`, condition.id, errors);
         if (typeof condition.value !== "boolean") {
           errors.push(`${conditionLabel}.value must be true or false.`);
@@ -611,7 +612,7 @@ class DatabaseValidator {
           continue;
         }
 
-        this.validateKnownKeys(conditionLabel, condition, ["letter", "value"], errors);
+        this.validateKnownKeys(conditionLabel, condition, ["letter", "value", "_comment"], errors);
         if (typeof condition.letter !== "string" || condition.letter.trim() === "") {
           errors.push(`${conditionLabel}.letter must be a non-empty string.`);
         }
@@ -636,7 +637,7 @@ class DatabaseValidator {
         this.validateKnownKeys(
           conditionLabel,
           condition,
-          ["id", "value", "operator"],
+          ["id", "value", "operator", "_comment"],
           errors,
         );
         this.validateEventIdentifier(`${conditionLabel}.id`, condition.id, errors);
@@ -725,7 +726,7 @@ class DatabaseValidator {
       return;
     }
 
-    this.validateKnownKeys(label, command, allowedKeys, errors);
+    this.validateKnownKeys(label, command, [...allowedKeys, "_comment"], errors);
 
     const validateOptionalString = (key) => {
       if (command[key] !== undefined && typeof command[key] !== "string") {
@@ -765,7 +766,7 @@ class DatabaseValidator {
             errors.push(`${choiceLabel} must be an object.`);
             continue;
           }
-          this.validateKnownKeys(choiceLabel, choice, ["text", "commands"], errors);
+          this.validateKnownKeys(choiceLabel, choice, ["text", "commands", "_comment"], errors);
           if (typeof choice.text !== "string") {
             errors.push(`${choiceLabel}.text must be a string.`);
           }
@@ -914,7 +915,7 @@ class DatabaseValidator {
             continue;
           }
 
-          this.validateKnownKeys(goodLabel, good, ["type", "id"], errors);
+          this.validateKnownKeys(goodLabel, good, ["type", "id", "_comment"], errors);
 
           if (!Object.hasOwn(collections, good.type)) {
             errors.push(
@@ -1535,6 +1536,27 @@ class DatabaseValidator {
       }
 
       const label = `Item ${index}`;
+      const isKeyItem = item.keyItem === true;
+
+      this.validateKnownKeys(
+        label,
+        item,
+        [
+          "_comment",
+          "id",
+          "article",
+          "name",
+          "pluralName",
+          "description",
+          "type",
+          "consumable",
+          "price",
+          "effect",
+          "keyItem",
+          "sellable",
+        ],
+        errors,
+      );
 
       if (item.type !== "item") {
         errors.push(`${label} type must be "item".`);
@@ -1544,10 +1566,34 @@ class DatabaseValidator {
         errors.push(`${label} consumable must be true or false.`);
       }
 
+      if (item.keyItem !== undefined && typeof item.keyItem !== "boolean") {
+        errors.push(`${label} keyItem must be true or false when provided.`);
+      }
+
+      if (item.sellable !== undefined && typeof item.sellable !== "boolean") {
+        errors.push(`${label} sellable must be true or false when provided.`);
+      }
+
       this.validateFiniteNumber(`${label} price`, item.price, errors, {
         min: 0,
         integer: true,
       });
+
+      if (isKeyItem) {
+        if (item.consumable !== false) {
+          errors.push(`${label} key items must be non-consumable.`);
+        }
+
+        if (item.effect !== null && item.effect !== undefined) {
+          errors.push(`${label} key items must use a null effect.`);
+        }
+
+        if (typeof item.description !== "string") {
+          errors.push(`${label} description must be a string.`);
+        }
+
+        continue;
+      }
 
       if (!this.isPlainObject(item.effect)) {
         errors.push(`${label} effect must be an object.`);

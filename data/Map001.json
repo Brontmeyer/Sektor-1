@@ -46,6 +46,7 @@
   ],
   "events": [
     {
+      "_comment": "ID 1: Test NPC",
       "id": 1,
       "name": "Test NPC",
       "x": 400,
@@ -121,6 +122,7 @@
       ]
     },
     {
+      "_comment": "ID 2: Test Chest",
       "id": 2,
       "name": "Test Chest",
       "x": 400,
@@ -136,7 +138,8 @@
               "code": "gainItemMessage",
               "itemId": 2,
               "amount": 15,
-              "source": "NPC"
+              "source": "Chest",
+              "_comment": "Example command-level authoring note."
             },
             {
               "code": "gainItemMessage",
@@ -148,13 +151,13 @@
               "code": "gainWeaponMessage",
               "weaponId": 2,
               "amount": 1,
-              "source": "Battle"
+              "source": "Chest"
             },
             {
               "code": "gainArmorMessage",
               "armorId": 2,
               "amount": 1,
-              "source": "Quest Reward"
+              "source": "Chest"
             },
             {
               "code": "gainAccessoryMessage",
@@ -167,7 +170,8 @@
               "letter": "A",
               "value": true
             }
-          ]
+          ],
+          "_comment": "Awards consumables and equipment, then closes via self switch A."
         },
         {
           "conditions": {
@@ -189,6 +193,7 @@
       ]
     },
     {
+      "_comment": "ID 3: Test Merchant",
       "id": 3,
       "name": "Test Merchant",
       "x": 400,
@@ -220,7 +225,8 @@
       ]
     },
     {
-      "id": 10,
+      "_comment": "ID 4: Weapon Store",
+      "id": 4,
       "name": "Weapon Store Test Merchant",
       "x": 400,
       "y": 400,
@@ -251,7 +257,8 @@
       ]
     },
     {
-      "id": 11,
+      "_comment": "ID 5: Armor Store",
+      "id": 5,
       "name": "Armor Store Test Merchant",
       "x": 400,
       "y": 500,
@@ -282,7 +289,8 @@
       ]
     },
     {
-      "id": 12,
+      "_comment": "ID 6: Accessory Store",
+      "id": 6,
       "name": "Accessory Store Test Merchant",
       "x": 400,
       "y": 600,
@@ -317,7 +325,8 @@
       ]
     },
     {
-      "id": 4,
+      "_comment": "ID 7: Test Battle",
+      "id": 7,
       "name": "Battle Tester",
       "x": 800,
       "y": 100,
@@ -342,7 +351,8 @@
       ]
     },
     {
-      "id": 5,
+      "_comment": "ID 8: Test Boss Battle",
+      "id": 8,
       "name": "Boss Battle Tester",
       "x": 800,
       "y": 200,
@@ -367,7 +377,8 @@
       ]
     },
     {
-      "id": 6,
+      "_comment": "ID 9: Test Back Attack",
+      "id": 9,
       "name": "Back Attack Tester",
       "x": 800,
       "y": 300,
@@ -392,7 +403,8 @@
       ]
     },
     {
-      "id": 7,
+      "_comment": "ID 10: Test Pincer Battle",
+      "id": 10,
       "name": "Pincer Tester",
       "x": 800,
       "y": 400,
@@ -417,7 +429,8 @@
       ]
     },
     {
-      "id": 8,
+      "_comment": "ID 11: Test Eight Enemy Rows Battle",
+      "id": 11,
       "name": "Eight Enemy Rows Tester",
       "x": 800,
       "y": 500,
@@ -442,7 +455,8 @@
       ]
     },
     {
-      "id": 9,
+      "_comment": "ID 12: Test Pincer Rows Battle",
+      "id": 12,
       "name": "Pincer Rows Tester",
       "x": 800,
       "y": 600,
@@ -461,6 +475,55 @@
               "code": "text",
               "speaker": "System",
               "text": "The pincer-row test encounter has ended."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "ID 13: Test Key Item",
+      "id": 13,
+      "name": "Test Key Chest",
+      "x": 500,
+      "y": 200,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "_comment": "Unopened state.",
+          "conditions": {},
+          "commands": [
+            {
+              "_comment": "Grants the canonical development key item.",
+              "code": "gainItemMessage",
+              "itemId": 3,
+              "amount": 1,
+              "source": "Key Item Chest"
+            },
+            {
+              "code": "setSelfSwitch",
+              "letter": "A",
+              "value": true
+            }
+          ]
+        },
+        {
+          "_comment": "Opened state.",
+          "conditions": {
+            "selfSwitches": [
+              {
+                "letter": "A",
+                "value": true
+              }
+            ]
+          },
+          "commands": [
+            {
+              "_comment": "The key has already been collected.",
+              "code": "text",
+              "speaker": "Key Item Chest",
+              "text": "The chest is empty."
             }
           ]
         }

@@ -12,6 +12,11 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Added a canonical Key Item data contract: `keyItem: true` records are non-consumable, may use `effect: null`, can be protected from selling with `sellable: false`, stay out of battle item selectors, and render with the semantic Key Item palette role in the ITEM menu.
+- Added the development-only **Test Key** (Item ID 3) plus a dedicated Map001 test chest so the populated Key Items page can be verified in-engine instead of relying only on an empty-state fixture.
+- Allowed authoring-only `_comment` metadata throughout Map data at useful structural levels (map, spawn/menu access, obstacle/transfer, event, page/conditions, command, choice, and shop goods) while keeping unknown runtime properties rejected.
+- Added dedicated key-item foundation regression coverage for valid/invalid key-item data, Map001 comments, the Test Key chest, and battle-selector exclusion.
+
 - Fixed the recurring populated ITEM alignment bug at its real source: selectable rows no longer embed cursor-reservation spaces inside label strings. Use / Arrange / Key Items now render cursor markers in a dedicated gutter and draw visible labels from one shared `contentRowGeometry()` text anchor, so empty and populated states cannot shift independently.
 - Strengthened ITEM presentation regression coverage to compare rendered visible-label coordinates and reject leading-whitespace cursor padding, protecting the actual glyph alignment instead of only the surrounding row coordinates.
 

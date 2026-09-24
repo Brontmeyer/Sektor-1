@@ -371,8 +371,9 @@ function testMagickAndItemSelectorsAlsoSupportPreservedReopen() {
   assert.equal(magickWindow.index, 1);
 
   const itemEntries = [
-    { id: 1, name: "Potion" },
-    { id: 2, name: "Ether" },
+    { id: 1, name: "Potion", effect: { type: "healHp", value: 50 } },
+    { id: 2, name: "Ether", effect: { type: "healHp", value: 20 } },
+    { id: 3, name: "Test Key", keyItem: true, effect: null },
   ];
   const Window_BattleItem = loadSelector(
     "js/windows/Window_BattleItem.js",
@@ -381,13 +382,18 @@ function testMagickAndItemSelectorsAlsoSupportPreservedReopen() {
       Graphics: { height: 720, context: createDrawContext() },
       Input: { isTriggered: () => false },
       $gameParty: {
-        itemIds: () => [1, 2],
+        itemIds: () => [1, 2, 3],
         itemCount: () => 1,
       },
       DatabaseManager: { item: (id) => itemEntries[id - 1] || null },
     },
   );
   const itemWindow = new Window_BattleItem();
+
+  assert.deepEqual(
+    Array.from(itemWindow.items(), (item) => item.name),
+    ["Potion", "Ether"],
+  );
 
   itemWindow.show();
   itemWindow.index = 1;

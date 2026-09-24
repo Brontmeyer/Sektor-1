@@ -7,10 +7,8 @@
     "name": "Potion",
     "pluralName": "Potions",
     "description": "Restores a small amount of HP.",
-
     "type": "item",
     "consumable": true,
-
     "price": 50,
     "effect": {
       "type": "healHp",
@@ -24,14 +22,26 @@
     "name": "Hi-Potion",
     "pluralName": "Hi-Potions",
     "description": "Restores a moderate amount of HP.",
-
     "type": "item",
     "consumable": true,
-
     "price": 200,
     "effect": {
       "type": "healHp",
       "value": 200
     }
+  },
+  {
+    "_comment": "ID 3: Test Key Item",
+    "id": 3,
+    "article": "a",
+    "name": "Test Key",
+    "pluralName": "Test Keys",
+    "description": "A temporary key item used to verify Key Items presentation.",
+    "type": "item",
+    "keyItem": true,
+    "consumable": false,
+    "sellable": false,
+    "price": 0,
+    "effect": null
   }
 ]

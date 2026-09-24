@@ -1,7 +1,7 @@
 [
   null,
   {
-    "_comment": "Tyler - Unbroken",
+    "_comment": "ID 1: Tyler - Unbroken",
     "id": 1,
     "name": "Unbroken",
     "description": "A decisive single-target strike that converts a full Valor gauge into overwhelming physical force.",
@@ -15,7 +15,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "Sarah - Rallyheart",
+    "_comment": "ID 2: Sarah - Rallyheart",
     "id": 2,
     "name": "Rallyheart",
     "description": "A party-wide surge of resolve that restores 35% of each injured ally's maximum HP.",
@@ -29,7 +29,7 @@
     "scope": ["all"]
   },
   {
-    "_comment": "Aboo - Wild Arc",
+    "_comment": "ID 3: Aboo - Wild Arc",
     "id": 3,
     "name": "Wild Arc",
     "description": "A sweeping physical assault against all enemies with a 60% base chance to inflict Darkness.",
@@ -46,7 +46,7 @@
     "scope": ["all"]
   },
   {
-    "_comment": "G Prime - Zero Lock",
+    "_comment": "ID 4: G Prime - Zero Lock",
     "id": 4,
     "name": "Zero Lock",
     "description": "A battlefield-control Art that attempts to inflict Slow on every enemy.",
@@ -62,7 +62,7 @@
     "scope": ["all"]
   },
   {
-    "_comment": "Test Slime - Goo Rush",
+    "_comment": "ID 5: Test Slime - Goo Rush",
     "id": 5,
     "name": "Goo Rush",
     "description": "A lurching body-check that deals physical damage and may leave the target Slowed.",
@@ -77,7 +77,7 @@
     "scope": ["single"]
   },
   {
-    "_comment": "Tyler - Scan",
+    "_comment": "ID 6: Tyler - Scan",
     "id": 6,
     "name": "Scan",
     "description": "Analyze one enemy to reveal its tactical information for the current battle.",
