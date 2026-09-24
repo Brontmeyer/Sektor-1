@@ -38,6 +38,7 @@
 
   "transfers": [
     {
+      "_comment": "Transfer to Map 1",
       "x": 555,
       "y": 50,
       "width": 150,

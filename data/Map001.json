@@ -3,10 +3,12 @@
   "name": "Sektor 1 Test Zone",
   "width": 2400,
   "height": 1600,
+  
   "playerStart": {
     "x": 610,
     "y": 300
   },
+
   "obstacles": [
     {
       "x": 300,
@@ -33,8 +35,10 @@
       "height": 800
     }
   ],
+
   "transfers": [
     {
+      "_comment": "Transfer to Map 2",
       "x": 555,
       "y": 50,
       "width": 150,
@@ -44,6 +48,7 @@
       "targetY": 300
     }
   ],
+
   "events": [
     {
       "_comment": "ID 1: Test NPC",
