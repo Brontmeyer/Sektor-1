@@ -12,8 +12,14 @@
   "obstacles": [
     {
       "x": 300,
-      "y": 750,
-      "width": 650,
+      "y": 500,
+      "width": 150,
+      "height": 50
+    },
+    {
+      "x": 800,
+      "y": 500,
+      "width": 150,
       "height": 50
     },
     {
@@ -26,13 +32,31 @@
       "x": 950,
       "y": 0,
       "width": 50,
-      "height": 800
+      "height": 550
     },
     {
       "x": 250,
       "y": 0,
       "width": 50,
-      "height": 800
+      "height": 550
+    },
+        {
+      "x": 850,
+      "y": 550,
+      "width": 50,
+      "height": 200
+    },
+    {
+      "x": 350,
+      "y": 550,
+      "width": 50,
+      "height": 200
+    },
+        {
+      "x": 400,
+      "y": 700,
+      "width": 450,
+      "height": 50
     }
   ],
 
@@ -47,7 +71,7 @@
       "targetY": 300
     }
   ],
-  
+
   "events": [
     {
       "_comment": "ID 1: Test NPC",
@@ -264,8 +288,8 @@
       "_comment": "ID 5: Armor Store",
       "id": 5,
       "name": "Armor Store Test Merchant",
-      "x": 320,
-      "y": 500,
+      "x": 420,
+      "y": 400,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -296,8 +320,8 @@
       "_comment": "ID 6: Accessory Store",
       "id": 6,
       "name": "Accessory Store Test Merchant",
-      "x": 320,
-      "y": 600,
+      "x": 420,
+      "y": 300,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -462,8 +486,8 @@
       "_comment": "ID 12: Test Pincer Rows Battle",
       "id": 12,
       "name": "Pincer Rows Tester",
-      "x": 900,
-      "y": 500,
+      "x": 800,
+      "y": 400,
       "width": 32,
       "height": 32,
       "solid": true,
