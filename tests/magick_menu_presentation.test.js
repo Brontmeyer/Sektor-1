@@ -162,9 +162,38 @@ function testReferenceHierarchyUsesRealActorAndMagickData() {
   assert.equal(text.includes("Category"), true);
   assert.equal(text.includes("Element"), true);
   assert.equal(text.includes("Scope"), true);
-  assert.equal(text.includes("MP NEEDED"), true);
+  assert.equal(text.includes("MP Cost"), true);
   assert.equal(text.includes("003"), true);
   assert.equal(text.some((value) => value.includes("Spell 01")), true);
+}
+
+
+function testMpCostUsesSharedMetadataRowRhythm() {
+  const harness = createHarness();
+  harness.window.show();
+  harness.window.draw();
+
+  const label = harness.calls.find(
+    (call) => call[0] === "fillText" && call[2] === "MP Cost",
+  );
+  const value = harness.calls.find(
+    (call) => call[0] === "fillText" && call[2] === "003",
+  );
+  const scopeLabel = harness.calls.find(
+    (call) => call[0] === "fillText" && call[2] === "Scope",
+  );
+  const scopeValue = harness.calls.find(
+    (call) => call[0] === "fillText" && call[2] === "Single / All",
+  );
+
+  assert.ok(label);
+  assert.ok(value);
+  assert.ok(scopeLabel);
+  assert.ok(scopeValue);
+  assert.equal(label[4] > scopeLabel[4], true);
+  assert.equal(value[4], label[4]);
+  assert.equal(label[3], scopeLabel[3]);
+  assert.equal(value[3], scopeValue[3]);
 }
 
 function testActorSummaryUsesStackedLevelAndVitals() {
@@ -228,6 +257,7 @@ function run() {
   testThreeColumnGridConsumesAllDirections();
   testGridScrollsByRowsAndShowsOnlyNeededArrows();
   testReferenceHierarchyUsesRealActorAndMagickData();
+  testMpCostUsesSharedMetadataRowRhythm();
   testActorSummaryUsesStackedLevelAndVitals();
   testConfigRenameAndWhiteRunesValueArePlayerFacingOnly();
   testMagickUsesSharedHeldDirectionContract();

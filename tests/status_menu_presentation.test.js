@@ -207,6 +207,31 @@ function testPageSwitchingUsesDedicatedVerticalAndConfirmInputs() {
   assert.equal(window.pageIndex, 2);
 }
 
+
+function testActiveStatusUsesResistanceStyleLabelValueRow() {
+  const { window, drawCalls } = createHarness();
+  window.show();
+  window.changePage(2);
+  window.draw();
+
+  const active = drawCalls.find((call) => String(call[0]) === "Active");
+  const poisonEntries = drawCalls.filter((call) => String(call[0]) === "Poison");
+  const activeValue = poisonEntries[0];
+  const poison = poisonEntries.find((call) => call[2] > active[2]);
+  const poisonValue = drawCalls.find(
+    (call) => String(call[0]) === "Immune" && call[2] === poison?.[2],
+  );
+
+  assert.ok(active);
+  assert.ok(activeValue);
+  assert.ok(poison);
+  assert.ok(poisonValue);
+  assert.equal(active[1], poison[1]);
+  assert.equal(active[2] < poison[2], true);
+  assert.equal(activeValue[2], active[2]);
+  assert.equal(activeValue[1], poisonValue[1]);
+}
+
 function testActorNavigationRemainsLeftRightAcrossPages() {
   const { window, actions, secondActor } = createHarness();
   window.show();
@@ -228,6 +253,7 @@ function testStatusPagesDoNotInventUnsupportedReferenceMechanics() {
 function run() {
   testStatusUsesThreeReferenceInspiredPages();
   testPageSwitchingUsesDedicatedVerticalAndConfirmInputs();
+  testActiveStatusUsesResistanceStyleLabelValueRow();
   testActorNavigationRemainsLeftRightAcrossPages();
   testStatusPagesDoNotInventUnsupportedReferenceMechanics();
   console.log("Status menu presentation regression tests passed.");

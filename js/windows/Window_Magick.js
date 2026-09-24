@@ -258,31 +258,24 @@ class Window_Magick {
       title: "MAGICK",
     });
 
+    const rows = [
+      ["Category", this.titleCase(magick?.category)],
+      ["Element", this.titleCase(magick?.element)],
+      ["Scope", this.scopeLabel(magick)],
+      ["MP Cost", String(Math.max(0, Number(magick?.mpCost) || 0)).padStart(3, "0")],
+    ];
+
     context.textBaseline = "middle";
-    context.textAlign = "left";
-    context.font = "14px sans-serif";
-    context.fillStyle = CharacterMenuLayout.themeColor("secondary", "#aebbd0");
-    context.fillText("Category", heading.labelX, CharacterMenuLayout.infoRowY(bounds, 0));
-    context.fillText("Element", heading.labelX, CharacterMenuLayout.infoRowY(bounds, 1));
-    context.fillText("Scope", heading.labelX, CharacterMenuLayout.infoRowY(bounds, 2));
-
-    context.textAlign = "right";
-    context.fillStyle = CharacterMenuLayout.themeColor("primary", "#ffffff");
-    context.fillText(this.titleCase(magick?.category), heading.valueX, CharacterMenuLayout.infoRowY(bounds, 0));
-    context.fillText(this.titleCase(magick?.element), heading.valueX, CharacterMenuLayout.infoRowY(bounds, 1));
-    context.fillText(this.scopeLabel(magick), heading.valueX, CharacterMenuLayout.infoRowY(bounds, 2));
-
-    context.textAlign = "center";
-    context.fillStyle = "#cbd5e3";
-    context.font = "600 14px sans-serif";
-    context.fillText("MP NEEDED", bounds.x + bounds.width / 2, bounds.y + 140);
-    context.fillStyle = "#ffffff";
-    context.font = "600 20px sans-serif";
-    context.fillText(
-      String(Math.max(0, Number(magick?.mpCost) || 0)).padStart(3, "0"),
-      bounds.x + bounds.width / 2,
-      bounds.y + 160,
-    );
+    rows.forEach(([label, value], index) => {
+      const y = CharacterMenuLayout.infoRowY(bounds, index, { rowSpacing: 23 });
+      context.textAlign = "left";
+      context.font = "14px sans-serif";
+      context.fillStyle = CharacterMenuLayout.themeColor("secondary", "#aebbd0");
+      context.fillText(label, heading.labelX, y);
+      context.textAlign = "right";
+      context.fillStyle = CharacterMenuLayout.themeColor("primary", "#ffffff");
+      context.fillText(value, heading.valueX, y);
+    });
   }
 
   drawDescription(context) {

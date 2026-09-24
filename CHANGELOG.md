@@ -12,6 +12,11 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Applied a small finishing pass to recent menu interaction polish: empty Key Items no longer enter a dead list-focus state, MAGICK folds MP Cost into the shared metadata row stack instead of hanging below Scope, and STATUS aligns the Active/current-effect row to the same label/value rhythm used by resistance entries.
+
+- Refined ITEM interaction/presentation across all three tabs: the active-party cards now persist through Use / Arrange / Key Items, Arrange opens a temporary sort-order popup over the preview instead of replacing the party pane, applying a sort closes that popup and returns focus to the Arrange heading, and Key Items keeps its metadata panel quiet until the player actually enters the key-item list.
+- Tightened character-menu presentation from hands-on review: MAGICK keeps MP Needed comfortably inside its metadata panel, STATUS aligns Active/current-effect as a single label/value row, ORDER keeps its existing formation information but presents the summary metrics on one centered divided row, and VALOR replaces the vague Arts / State rows with selected-Art / level context.
+
 - Standardized menu-heading presentation across the character/party menu family: MAGICK, SKILL, ESSENCE, EQUIP, STATUS, VALOR, ITEM, and ORDER now share one `CharacterMenuLayout` metadata-heading contract for title position, optional subtitle position, label/value columns, and row rhythm; ITEM / ORDER also share one party/system context-heading contract. CONFIG / CONTROLS / WINDOW COLOR remain on their deliberate compact Config-family header, while SAVE / LOAD and Shop keep purpose-specific browser/merchant headers but consume the same semantic palette roles.
 - Added menu-heading consistency regression coverage so future presentation passes cannot quietly reintroduce per-window title offsets or bypass the shared heading contracts.
 

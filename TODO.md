@@ -122,6 +122,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add Key Item Runtime v1 with permanent/consumable key-item ownership, validated `ifKeyItem` event branching, optional one-copy consumption, and a Map001 Test Key Lock fixture
 - [x] Polish Key Item consumption requests so permanent keys satisfy story checks without being removed, and simplify ITEM headers to decision-useful state only
 - [x] Keep field ITEM target mode active across repeated successful uses until the player cancels or the selected item runs out; no-effect targets consume nothing
+- [x] Refine ITEM tab continuity so party cards persist through Use / Arrange / Key Items, Arrange uses a temporary sort popup, and Key Items metadata appears only after list entry
+- [x] Apply targeted menu-presentation polish to Magick MP-cost spacing, Status active-effect alignment, Order summary formatting, and Valor selected-Art metadata
 - [x] Add Save Menu Presentation & Slot Summary v1 with full-screen slot cards, existing-save summaries, empty-slot states, and preserved Save Runtime v11 authority
 - [x] Refine SAVE/LOAD into reference-inspired file-card presentation and complete Load Menu Presentation v1 without changing Save Runtime v11
 - [x] Refine ITEM interaction to Use → Item → Target focus, persistent pending-item identity, hierarchical cancel, and automatic Arrange-heading return after sort apply
@@ -224,6 +226,11 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Character 6
 - [ ] Character 7
 - [ ] Character 8
+- [ ] Character 9
+- [ ] Character 10
+- [ ] New Game protagonist naming with canonical/default-name fallback
+- [ ] Story recruitment commands so the game can begin with only the protagonist and add companions as they are met
+- [ ] Optional companion renaming at recruitment while preserving stable actor IDs internally
 - [ ] Party Switching
 - [ ] Dual Techs
 - [x] Canonical character-specific Valor Arts v1
@@ -245,7 +252,8 @@ Completed systems and design rules should be documented rather than duplicated h
 
 # 🌎 World
 
-- [ ] World Map
+- [ ] Area Map foundation for current-zone landmarks, exits, and discovered locations
+- [ ] World Map built on the shared location/discovery contract once multiple regions exist
 - [ ] Towns
 - [ ] Dungeons
 - [ ] Side Quests

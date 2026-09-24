@@ -188,6 +188,11 @@ function testValorScreenUsesSharedCharacterLanguageAndLimitInspiredLevels() {
   assert.equal(text.includes("VALOR"), true);
   assert.equal(text.includes("VALOR LEVEL 1"), true);
   assert.equal(text.includes("42.5 / 100"), true);
+  assert.equal(text.includes("Selected"), true);
+  assert.equal(text.includes("Unbroken"), true);
+  assert.equal(text.includes("Level"), true);
+  assert.equal(text.includes("Arts"), false);
+  assert.equal(text.includes("State"), false);
   assert.equal(text.includes("LEVEL 1"), true);
   assert.equal(text.includes("LEVEL 2"), true);
   assert.equal(text.includes("LEVEL 3"), true);

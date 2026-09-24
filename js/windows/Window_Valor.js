@@ -166,15 +166,19 @@ class Window_Valor {
       "valor",
     );
 
+    const selectedArt = this.currentArt(arts);
+    const selectedLevel = selectedArt
+      ? this.actor?.valorArtLevel?.(selectedArt) || 1
+      : null;
+
     context.textAlign = "left";
     context.fillStyle = CharacterMenuLayout.themeColor("secondary", "#aebbd0");
-    context.fillText("Arts", labelX, valorY + 39);
-    context.fillText("State", labelX, valorY + 63);
+    context.fillText("Selected", labelX, valorY + 39);
+    context.fillText("Level", labelX, valorY + 63);
     context.textAlign = "right";
     context.fillStyle = CharacterMenuLayout.themeColor("primary", "#ffffff");
-    context.fillText(String(arts.length), valueX, valorY + 39);
-    context.fillStyle = ready ? this.valorTextColor() : "#ffffff";
-    context.fillText(ready ? "Ready" : "Building", valueX, valorY + 63);
+    context.fillText(selectedArt?.name || "—", valueX, valorY + 39);
+    context.fillText(selectedLevel ? String(selectedLevel) : "—", valueX, valorY + 63);
     context.restore();
   }
 

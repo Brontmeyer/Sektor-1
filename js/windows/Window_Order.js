@@ -108,20 +108,29 @@ class Window_Order {
       ["Back Row", String(rows.back)],
       ["Slots", String(Math.min(4, members.length))],
     ];
-    const cellWidth = Math.max(
-      118,
-      Math.floor((bounds.width - 40) / summaries.length),
-    );
-    const labelY = bounds.y + 100;
+    const metricsX = bounds.x + 20;
+    const metricsWidth = bounds.width - 40;
+    const cellWidth = metricsWidth / summaries.length;
+    const dividerY = bounds.y + 82;
+    const labelY = dividerY + 20;
+    const valueY = labelY + 24;
 
+    context.strokeStyle = "rgba(210, 222, 242, 0.24)";
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(metricsX, dividerY);
+    context.lineTo(metricsX + metricsWidth, dividerY);
+    context.stroke();
+
+    context.textAlign = "center";
     summaries.forEach(([label, value], index) => {
-      const x = bounds.x + 20 + index * cellWidth;
+      const centerX = metricsX + cellWidth * index + cellWidth / 2;
       context.fillStyle = UIThemePalette?.accent?.() || "#7ff0d5";
       context.font = "600 13px sans-serif";
-      context.fillText(label, x, labelY);
+      context.fillText(label, centerX, labelY);
       context.fillStyle = UIThemePalette?.primary?.() || "#ffffff";
       context.font = "600 18px sans-serif";
-      context.fillText(value, x, labelY + 24);
+      context.fillText(value, centerX, valueY);
     });
 
     context.restore();

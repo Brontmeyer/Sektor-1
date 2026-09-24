@@ -26,7 +26,6 @@ class Window_Inventory {
     this.pendingItemId = null;
 
     this.itemViewport = new Window_ListViewport(10);
-    this.arrangeViewport = new Window_ListViewport(6);
     this.keyItemViewport = new Window_ListViewport(10);
 
     this.refreshLayout();
@@ -385,6 +384,13 @@ class Window_Inventory {
       return false;
     }
 
+    if (
+      nextFocus === Window_Inventory.FOCUS.KEY_ITEMS &&
+      this.keyItemIds().length === 0
+    ) {
+      return false;
+    }
+
     this.focusArea = nextFocus;
     this.pendingItemId = null;
     this.syncSelectionState();
@@ -429,7 +435,6 @@ class Window_Inventory {
 
     this.itemViewport.maxVisibleRows = this.useVisibleRows();
     this.itemViewport.ensureVisible(this.itemIndex, inventoryEntries.length);
-    this.arrangeViewport.ensureVisible(this.arrangeIndex, options.length);
     this.keyItemViewport.maxVisibleRows = this.keyVisibleRows() * 2;
     this.keyItemViewport.ensureVisible(this.keyItemIndex, keyItems.length);
   }
@@ -603,13 +608,11 @@ class Window_Inventory {
     if (this.directionRepeated("up")) {
       this.arrangeIndex =
         (this.arrangeIndex - 1 + options.length) % options.length;
-      this.arrangeViewport.ensureVisible(this.arrangeIndex, options.length);
       return;
     }
 
     if (this.directionRepeated("down")) {
       this.arrangeIndex = (this.arrangeIndex + 1) % options.length;
-      this.arrangeViewport.ensureVisible(this.arrangeIndex, options.length);
       return;
     }
 
@@ -738,7 +741,7 @@ class Window_Inventory {
       return rows;
     }
 
-    if (!item) {
+    if (this.focusArea === Window_Inventory.FOCUS.TABS || !item) {
       return [];
     }
 
@@ -1086,6 +1089,45 @@ class Window_Inventory {
     context.restore();
   }
 
+  drawPartyRoster(context, columns) {
+    const members = this.members();
+
+    if (members.length === 0) {
+      context.save();
+      context.textAlign = "left";
+      context.textBaseline = "middle";
+      context.fillStyle = "#8897ac";
+      context.font = "16px sans-serif";
+      context.fillText(
+        "No active party members.",
+        columns.leftX + 10,
+        columns.leftTop + 28,
+      );
+      context.restore();
+      return;
+    }
+
+    const gap = 6;
+    const availableCardHeight = Math.floor(
+      (columns.leftHeight - gap * (members.length - 1)) / members.length,
+    );
+    const cardHeight = Math.max(96, Math.min(108, availableCardHeight));
+
+    members.forEach((member, index) => {
+      this.drawPartyMemberRow(
+        context,
+        member,
+        {
+          x: columns.leftX,
+          y: columns.leftTop + index * (cardHeight + gap),
+          width: Math.max(0, columns.leftWidth - 14),
+          height: cardHeight,
+        },
+        index,
+      );
+    });
+  }
+
   drawScrollIndicators(context, x, topY, bottomY, hasPrevious, hasNext) {
     context.save();
     context.fillStyle = "#ffffff";
@@ -1116,7 +1158,6 @@ class Window_Inventory {
   }
 
   drawUsePage(context, columns) {
-    const members = this.members();
     const entries = this.inventoryDisplayEntries();
     const rhythm = this.contentRhythm(columns);
 
@@ -1132,36 +1173,6 @@ class Window_Inventory {
       columns.rightX + 6,
       rhythm.headingY,
     );
-
-    if (members.length === 0) {
-      context.fillStyle = "#8897ac";
-      context.font = "16px sans-serif";
-      context.fillText(
-        "No active party members.",
-        columns.leftX + 10,
-        columns.leftTop + 28,
-      );
-    } else {
-      const gap = 6;
-      const availableCardHeight = Math.floor(
-        (columns.leftHeight - gap * (members.length - 1)) / members.length,
-      );
-      const cardHeight = Math.max(96, Math.min(108, availableCardHeight));
-
-      members.forEach((member, index) => {
-        this.drawPartyMemberRow(
-          context,
-          member,
-          {
-            x: columns.leftX,
-            y: columns.leftTop + index * (cardHeight + gap),
-            width: Math.max(0, columns.leftWidth - 14),
-            height: cardHeight,
-          },
-          index,
-        );
-      });
-    }
 
     if (entries.length === 0) {
       context.fillStyle = "#8897ac";
@@ -1252,9 +1263,84 @@ class Window_Inventory {
     context.restore();
   }
 
-  drawArrangePage(context, columns) {
+  drawArrangeOverlay(context, columns) {
+    if (this.focusArea !== Window_Inventory.FOCUS.ARRANGE) {
+      return;
+    }
+
     const options = this.arrangeOptions();
-    const previewMode = this.currentArrangeOption()?.mode || this.sortMode;
+    const overlayWidth = Math.min(
+      280,
+      Math.max(228, Math.floor(columns.rightWidth * 0.42)),
+    );
+    const bounds = {
+      x: Math.round(columns.rightX + (columns.rightWidth - overlayWidth) / 2),
+      y: columns.tabBottom + 8,
+      width: overlayWidth,
+      height: 194,
+    };
+
+    this.drawPanel(context, bounds, { assetAlpha: 0.72 });
+
+    context.save();
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+    context.fillStyle = "#7ff0d5";
+    context.font = "600 15px sans-serif";
+    context.fillText("SORT ORDER", bounds.x + 16, bounds.y + 22);
+
+    context.strokeStyle = "rgba(210, 222, 242, 0.28)";
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(bounds.x + 14, bounds.y + 40);
+    context.lineTo(bounds.x + bounds.width - 14, bounds.y + 40);
+    context.stroke();
+
+    const firstY = bounds.y + 64;
+    const rowHeight = 30;
+
+    options.forEach((option, index) => {
+      const y = firstY + index * rowHeight;
+      const focused = index === this.arrangeIndex;
+      const applied = option.mode === this.sortMode;
+
+      if (focused) {
+        this.drawSelection(
+          context,
+          bounds.x + 8,
+          y - 13,
+          bounds.width - 16,
+          27,
+        );
+      }
+
+      this.drawRowMarker(
+        context,
+        focused ? "▶" : "",
+        bounds.x + 18,
+        y,
+        focused ? "#ffd75a" : "#7ff0d5",
+      );
+      context.fillStyle = focused
+        ? "#ffd75a"
+        : applied
+          ? "#7ff0d5"
+          : "#ffffff";
+      context.font = focused ? "600 16px sans-serif" : "16px sans-serif";
+      context.fillText(
+        `${option.label}${applied ? "  ✓" : ""}`,
+        bounds.x + 40,
+        y,
+      );
+    });
+
+    context.restore();
+  }
+
+  drawArrangePage(context, columns) {
+    const previewMode = this.focusArea === Window_Inventory.FOCUS.ARRANGE
+      ? this.currentArrangeOption()?.mode || this.sortMode
+      : this.sortMode;
     const previewEntries = this.inventoryDisplayEntries(previewMode);
     const rhythm = this.contentRhythm(columns);
 
@@ -1263,46 +1349,7 @@ class Window_Inventory {
     context.textBaseline = "middle";
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
-    context.fillText("SORT", columns.leftX + 6, columns.leftTop + 12);
     context.fillText("PREVIEW", columns.rightX + 6, rhythm.headingY);
-
-    const range = this.arrangeViewport.visibleRange(
-      this.arrangeIndex,
-      options.length,
-    );
-    const optionTop = columns.leftTop + 48;
-    const optionRowHeight = 38;
-
-    for (let i = range.start; i < range.end; i++) {
-      const option = options[i];
-      const y = optionTop + (i - range.start) * optionRowHeight;
-      const focused =
-        this.focusArea === Window_Inventory.FOCUS.ARRANGE &&
-        i === this.arrangeIndex;
-      const applied = option.mode === this.sortMode;
-
-      if (focused) {
-        this.drawSelection(
-          context,
-          columns.leftX + 6,
-          y - 17,
-          columns.leftWidth - 20,
-          32,
-        );
-      }
-
-      context.fillStyle = focused
-        ? "#ffd75a"
-        : applied
-          ? "#7ff0d5"
-          : "#ffffff";
-      context.font = focused ? "600 17px sans-serif" : "17px sans-serif";
-      context.fillText(
-        `${focused ? "▶ " : "  "}${option.label}${applied ? "  ✓" : ""}`,
-        columns.leftX + 12,
-        y,
-      );
-    }
 
     if (previewEntries.length === 0) {
       context.fillStyle = "#8897ac";
@@ -1313,6 +1360,7 @@ class Window_Inventory {
         rhythm.emptyY,
       );
       context.restore();
+      this.drawArrangeOverlay(context, columns);
       return;
     }
 
@@ -1339,15 +1387,12 @@ class Window_Inventory {
         y,
       );
       context.textAlign = "right";
-      context.fillText(
-        `x${entry?.quantity ?? 0}`,
-        row.quantityX,
-        y,
-      );
+      context.fillText(`x${entry?.quantity ?? 0}`, row.quantityX, y);
       context.textAlign = "left";
     });
 
     context.restore();
+    this.drawArrangeOverlay(context, columns);
   }
 
   drawKeyItemsPage(context, columns) {
@@ -1436,6 +1481,7 @@ class Window_Inventory {
     this.drawPanel(context, bounds);
     this.drawContentDivider(context, columns);
     this.drawTabs(context, columns);
+    this.drawPartyRoster(context, columns);
 
     if (this.pageIndex === 0) {
       this.drawUsePage(context, columns);

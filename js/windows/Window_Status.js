@@ -477,11 +477,18 @@ class Window_Status {
     context.font = "600 20px sans-serif";
     context.fillText("STATUS EFFECTS", bounds.x + 24, bounds.y + 32);
 
+    const columns = 3;
+    const columnWidth = Math.floor((bounds.width - 72) / columns);
+    const activeY = bounds.y + 66;
+    const activeColumnX = bounds.x + 30;
+    const activeLabelX = activeColumnX;
+    const activeValueX = activeColumnX + columnWidth - 28;
+
     context.fillStyle = "#aebbd0";
     context.font = "15px sans-serif";
-    context.fillText("Active", bounds.x + 24, bounds.y + 66);
-    context.fillStyle = "#ffffff";
-    context.font = "16px sans-serif";
+    context.textAlign = "left";
+    context.fillText("Active", activeLabelX, activeY);
+
     const activeText = active.length === 0
       ? "None"
       : active
@@ -491,20 +498,19 @@ class Window_Status {
               : `${entry.name} (${entry.turnsRemaining})`,
           )
           .join(", ");
+    const activeMaxWidth = Math.max(80, activeValueX - activeLabelX - 76);
+    const activeValue =
+      typeof Window_TextLayout !== "undefined" &&
+      typeof Window_TextLayout.ellipsize === "function" &&
+      context.measureText(activeText).width > activeMaxWidth
+        ? Window_TextLayout.ellipsize(context, activeText, activeMaxWidth)
+        : activeText;
 
-    if (typeof Window_TextLayout !== "undefined" && Window_TextLayout.drawWrappedText) {
-      Window_TextLayout.drawWrappedText(
-        context,
-        activeText,
-        bounds.x + 88,
-        bounds.y + 57,
-        bounds.width - 120,
-        19,
-        2,
-      );
-    } else {
-      context.fillText(activeText, bounds.x + 88, bounds.y + 66);
-    }
+    context.fillStyle = "#ffffff";
+    context.font = "16px sans-serif";
+    context.textAlign = "right";
+    context.fillText(activeValue, activeValueX, activeY);
+    context.textAlign = "left";
 
     const dividerY = bounds.y + 104;
     context.strokeStyle = "rgba(210, 222, 242, 0.34)";
@@ -517,8 +523,6 @@ class Window_Status {
     context.font = "600 18px sans-serif";
     context.fillText("STATUS RESISTANCE", bounds.x + 24, dividerY + 28);
 
-    const columns = 3;
-    const columnWidth = Math.floor((bounds.width - 72) / columns);
     const rowsPerColumn = Math.max(1, Math.ceil(definitions.length / columns));
 
     definitions.forEach((definition, index) => {

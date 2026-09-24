@@ -166,6 +166,11 @@ function testOrderUsesDedicatedFullScreenPresentation() {
   assert.equal(includes(texts, "Active Party"), true);
   assert.equal(includes(texts, "Front Row"), true);
   assert.equal(includes(texts, "Back Row"), true);
+
+  const source = read("js/windows/Window_Order.js");
+  assert.match(source, /const metricsX = bounds\.x \+ 20/);
+  assert.match(source, /context\.textAlign = "center"/);
+  assert.match(source, /context\.moveTo\(metricsX, dividerY\)/);
 }
 
 function testOrderDelegatesRowsAndSlotSwapsToExistingPartyRuntime() {

@@ -300,8 +300,18 @@ function testArrangeApplyReturnsFocusToArrangeHeading() {
   press(harness, "right");
   assert.equal(harness.window.pageIndex, 1);
   assert.equal(harness.window.focusArea, "tabs");
+
+  let texts = drawText(harness);
+  assert.equal(includes(texts, "Tyler"), true);
+  assert.equal(includes(texts, "Sarah"), true);
+  assert.equal(includes(texts, "SORT ORDER"), false);
+
   press(harness, "confirm");
   assert.equal(harness.window.focusArea, "arrange");
+  texts = drawText(harness);
+  assert.equal(includes(texts, "SORT ORDER"), true);
+  assert.equal(includes(texts, "Tyler"), true);
+  assert.equal(includes(texts, "Sarah"), true);
 
   press(harness, "down");
   press(harness, "down");
@@ -311,10 +321,12 @@ function testArrangeApplyReturnsFocusToArrangeHeading() {
   assert.equal(harness.window.sortMode, "most");
   assert.equal(harness.window.pageIndex, 1);
   assert.equal(harness.window.focusArea, "tabs");
-  const texts = drawText(harness);
+  texts = drawText(harness);
   assert.equal(includes(texts, "▶ Arrange"), true);
-  assert.equal(includes(texts, "Current"), true);
+  assert.equal(includes(texts, "SORT ORDER"), false);
+  assert.equal(includes(texts, "Order"), true);
   assert.equal(includes(texts, "Most"), true);
+  assert.equal(includes(texts, "Tyler"), true);
 
   const source = read("js/windows/Window_Inventory.js");
   assert.doesNotMatch(source, /Customize|Field|Battle|Throw/);
@@ -327,12 +339,19 @@ function testKeyItemsKeepReferenceTabFlowAndPartyRowsShowHpAndMp() {
   press(harness, "right");
   assert.equal(harness.window.pageIndex, 2);
   assert.equal(harness.window.focusArea, "tabs");
+
+  let texts = drawText(harness);
+  assert.equal(includes(texts, "Tyler"), true);
+  assert.equal(includes(texts, "Sarah"), true);
+  assert.equal(includes(texts, "Quantity"), false);
+
   press(harness, "confirm");
   assert.equal(harness.window.focusArea, "keyItems");
 
-  const texts = drawText(harness);
+  texts = drawText(harness);
   assert.equal(includes(texts, "Bronze Pass"), true);
   assert.equal(includes(texts, "A stamped transit key item."), true);
+  assert.equal(includes(texts, "Quantity"), true);
 
   harness.window.changePage(-2);
   press(harness, "confirm");
@@ -388,6 +407,8 @@ function testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading() {
   assert.match(source, /contentColumns\(bounds = this\.contentBounds\)/);
   assert.match(source, /drawUsePage\(context, columns\)/);
   assert.match(source, /drawArrangePage\(context, columns\)/);
+  assert.match(source, /drawPartyRoster\(context, columns\)/);
+  assert.match(source, /drawArrangeOverlay\(context, columns\)/);
   assert.doesNotMatch(source, /\? "SELECT TARGET"[\s\S]*: "PARTY"/);
 }
 
@@ -507,6 +528,21 @@ function testPopulatedItemPagesShareVisibleTextAnchorWithoutWhitespacePadding() 
   assert.doesNotMatch(source, /`\$\{focused \? "▶ " : "  "\}\$\{item\?\.name/);
 }
 
+function testEmptyKeyItemsStayOnTabInsteadOfEnteringDeadListFocus() {
+  const harness = createHarness();
+  delete harness.gameParty.items[3];
+  harness.window.show();
+  harness.window.changePage(2);
+
+  press(harness, "confirm");
+
+  assert.equal(harness.window.pageIndex, 2);
+  assert.equal(harness.window.focusArea, "tabs");
+
+  const texts = drawText(harness);
+  assert.equal(includes(texts, "No key items owned."), true);
+}
+
 function testSceneRoutesItemMenuToPartyBackedInventoryWindow() {
   const scene = read("js/scenes/Scene_Menu.js");
 
@@ -527,6 +563,7 @@ function run() {
   testItemHeaderKeepsOnlyDecisionUsefulInformation();
   testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter();
   testPopulatedItemPagesShareVisibleTextAnchorWithoutWhitespacePadding();
+  testEmptyKeyItemsStayOnTabInsteadOfEnteringDeadListFocus();
   testSceneRoutesItemMenuToPartyBackedInventoryWindow();
   console.log("Item menu presentation regression tests passed.");
 }
