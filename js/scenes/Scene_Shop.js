@@ -6,6 +6,7 @@ class Scene_Shop extends Scene_Base {
 
     this.shopData = {
       name: shopData.name || "Shop",
+      shopType: shopData.shopType || "general",
       goods: Array.isArray(shopData.goods) ? shopData.goods : [],
     };
     this.shopWindow = new Window_Shop(this.shopData);

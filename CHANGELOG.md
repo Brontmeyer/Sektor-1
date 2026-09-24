@@ -12,6 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Added explicit shop-type metadata (`general`, `item`, `weapon`, `armor`, `accessory`) so merchant identity and buy/sell merchandise scope are data-driven instead of inferred from whatever happens to be stocked
+- Refined shop buy formatting by moving merchandise type into the Details heading area and aligning each roster member name with the same text column as the affected comparison stats
+- Replaced the persistent field-dialogue key legend with a shared mint-teal `▼` continuation indicator: same-speaker consecutive text blinks, deliberate/end pauses stay solid, and choice-owned prompts suppress the indicator
+
 - Refined Shop Presentation v2 around the hands-on buy/sell review: the welcome state now introduces the merchant instead of exposing wares before **Buy**, buy/detail/roster geometry no longer collides, and the lower comparison surfaces no longer carry redundant PARTY / ROSTER PREVIEW headings
 - Reworked selling into the same quantity-confirmation contract as buying: selecting a sale opens a centered popup with per-unit sell price, available quantity, selected quantity, and total Runes received; the old persistent sell-price footer is removed
 - Protected equipped equipment from shop selling at the `Game_Party` transaction boundary, while still allowing surplus copies to be sold; merchandise records may also opt out with `sellable: false` without pushing economy rules into presentation code

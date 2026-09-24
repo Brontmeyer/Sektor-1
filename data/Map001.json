@@ -3,12 +3,10 @@
   "name": "Sektor 1 Test Zone",
   "width": 2400,
   "height": 1600,
-
   "playerStart": {
     "x": 610,
     "y": 300
   },
-
   "obstacles": [
     {
       "x": 300,
@@ -35,47 +33,37 @@
       "height": 750
     }
   ],
-
   "transfers": [
     {
       "x": 550,
       "y": 50,
       "width": 150,
       "height": 150,
-
       "targetMapId": 2,
       "targetX": 610,
       "targetY": 300
     }
   ],
-
   "events": [
     {
       "id": 1,
       "name": "Test NPC",
-
       "x": 400,
       "y": 100,
-
       "width": 32,
       "height": 32,
-
       "solid": true,
-
       "pages": [
         {
           "conditions": {},
-
           "commands": [
             {
               "code": "choice",
               "speaker": "Guard",
               "prompt": "Do you want to enter the city?",
-
               "choices": [
                 {
                   "text": "Yes",
-
                   "commands": [
                     {
                       "code": "text",
@@ -99,10 +87,8 @@
                     }
                   ]
                 },
-
                 {
                   "text": "No",
-
                   "commands": [
                     {
                       "code": "text",
@@ -115,7 +101,6 @@
             }
           ]
         },
-
         {
           "conditions": {
             "switches": [
@@ -125,7 +110,6 @@
               }
             ]
           },
-
           "commands": [
             {
               "code": "text",
@@ -136,23 +120,17 @@
         }
       ]
     },
-
     {
       "id": 2,
       "name": "Test Chest",
-
       "x": 400,
       "y": 200,
-
       "width": 32,
       "height": 32,
-
       "solid": true,
-
       "pages": [
         {
           "conditions": {},
-
           "commands": [
             {
               "code": "gainItemMessage",
@@ -191,7 +169,6 @@
             }
           ]
         },
-
         {
           "conditions": {
             "selfSwitches": [
@@ -201,7 +178,6 @@
               }
             ]
           },
-
           "commands": [
             {
               "code": "text",
@@ -212,60 +188,49 @@
         }
       ]
     },
-
     {
       "id": 3,
       "name": "Test Merchant",
-
       "x": 400,
       "y": 300,
-
       "width": 32,
       "height": 32,
-
       "solid": true,
-
       "pages": [
         {
           "conditions": {},
-
           "commands": [
             {
               "code": "shop",
-              "name": "Test Merchant",
+              "name": "Item Merchant",
               "goods": [
-                { "type": "item", "id": 1 },
-                { "type": "item", "id": 2 },
-                { "type": "weapon", "id": 1 },
-                { "type": "weapon", "id": 2 },
-                { "type": "armor", "id": 1 },
-                { "type": "armor", "id": 2 },
-                { "type": "accessory", "id": 1 },
-                { "type": "accessory", "id": 2 },
-                { "type": "accessory", "id": 3 }
-              ]
+                {
+                  "type": "item",
+                  "id": 1
+                },
+                {
+                  "type": "item",
+                  "id": 2
+                }
+                
+              ],
+              "shopType": "general"
             }
           ]
         }
       ]
     },
-
     {
       "id": 4,
       "name": "Battle Tester",
-
       "x": 800,
       "y": 100,
-
       "width": 32,
       "height": 32,
-
       "solid": true,
-
       "pages": [
         {
           "conditions": {},
-
           "commands": [
             {
               "code": "battle",
@@ -280,23 +245,17 @@
         }
       ]
     },
-
     {
       "id": 5,
       "name": "Boss Battle Tester",
-
       "x": 800,
       "y": 200,
-
       "width": 32,
       "height": 32,
-
       "solid": true,
-
       "pages": [
         {
           "conditions": {},
-
           "commands": [
             {
               "code": "battle",
@@ -311,23 +270,17 @@
         }
       ]
     },
-
     {
       "id": 6,
       "name": "Back Attack Tester",
-
       "x": 800,
       "y": 300,
-
       "width": 32,
       "height": 32,
-
       "solid": true,
-
       "pages": [
         {
           "conditions": {},
-
           "commands": [
             {
               "code": "battle",
@@ -342,23 +295,17 @@
         }
       ]
     },
-
     {
       "id": 7,
       "name": "Pincer Tester",
-
       "x": 800,
       "y": 400,
-
       "width": 32,
       "height": 32,
-
       "solid": true,
-
       "pages": [
         {
           "conditions": {},
-
           "commands": [
             {
               "code": "battle",
@@ -373,23 +320,17 @@
         }
       ]
     },
-
     {
       "id": 8,
       "name": "Eight Enemy Rows Tester",
-
       "x": 800,
       "y": 500,
-
       "width": 32,
       "height": 32,
-
       "solid": true,
-
       "pages": [
         {
           "conditions": {},
-
           "commands": [
             {
               "code": "battle",
@@ -404,23 +345,17 @@
         }
       ]
     },
-
     {
       "id": 9,
       "name": "Pincer Rows Tester",
-
       "x": 800,
       "y": 600,
-
       "width": 32,
       "height": 32,
-
       "solid": true,
-
       "pages": [
         {
           "conditions": {},
-
           "commands": [
             {
               "code": "battle",

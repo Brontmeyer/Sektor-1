@@ -102,9 +102,55 @@ function testChoiceUsesSamePanelFamilyAndStandardSelectionLanguage() {
   assert.match(source, /#ffd75a/);
 }
 
+
+function testDialogueUsesChevronInsteadOfPersistentKeyLegend() {
+  const harness = createContext();
+  const message = new harness.context.__classes.Window_Message();
+
+  message.show("One line.", "Guard", { indicatorMode: "end" });
+  message.revealAll();
+  message.draw();
+
+  const texts = harness.calls
+    .filter((call) => call[0] === "text")
+    .map((call) => call[1]);
+
+  assert.equal(texts.includes("▼"), true);
+  assert.equal(texts.some((text) => text.includes("E / Enter")), false);
+
+  const source = read("js/windows/Window_Message.js");
+  assert.match(source, /ADVANCE_COLOR = "#7ff0d5"/);
+  assert.doesNotMatch(source, /actionLabel\("confirm"\)/);
+}
+
+function testContinuationChevronBlinksButEndChevronStaysSolid() {
+  const harness = createContext();
+  const message = new harness.context.__classes.Window_Message();
+
+  message.show("More follows.", "Guard", { indicatorMode: "continue" });
+  message.revealAll();
+  message.indicatorElapsed = 0;
+  assert.equal(message.indicatorShouldDraw(), true);
+  message.indicatorElapsed = 0.4;
+  assert.equal(message.indicatorShouldDraw(), false);
+  message.indicatorElapsed = 0.8;
+  assert.equal(message.indicatorShouldDraw(), true);
+
+  message.show("This is the stop.", "Guard", { indicatorMode: "end" });
+  message.revealAll();
+  message.indicatorElapsed = 999;
+  assert.equal(message.indicatorShouldDraw(), true);
+
+  message.show("Choose.", "Guard", { indicatorMode: "hidden" });
+  message.revealAll();
+  assert.equal(message.indicatorShouldDraw(), false);
+}
+
 function run() {
   testDialogueUsesSharedTintablePanelRoles();
   testChoiceUsesSamePanelFamilyAndStandardSelectionLanguage();
+  testDialogueUsesChevronInsteadOfPersistentKeyLegend();
+  testContinuationChevronBlinksButEndChevronStaysSolid();
   console.log("Field dialogue window presentation regression tests passed.");
 }
 

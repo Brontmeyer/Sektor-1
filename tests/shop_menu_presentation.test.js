@@ -49,7 +49,7 @@ function makeActor(actorId, name) {
   };
 }
 
-function createHarness() {
+function createHarness(shopType = "general") {
   const calls = [];
   const triggered = new Set();
   const actors = [
@@ -135,6 +135,7 @@ function createHarness() {
   return {
     window: new context.__Window({
       name: "Test Merchant",
+      shopType,
       goods: [
         { type: "item", id: 1 },
         { type: "item", id: 2 },
@@ -219,10 +220,52 @@ function testSellUsesSharedQuantityPopupAndNoFooterPrice() {
   assert.equal(includes(values, "Receive"), true);
 }
 
+
+function testShopTypeControlsIdentityAndMerchandiseScope() {
+  const weaponHarness = createHarness("weapon");
+  const welcome = texts(weaponHarness);
+
+  assert.equal(includes(welcome, "Weapon Shop"), true);
+
+  press(weaponHarness, "confirm");
+  const buyValues = texts(weaponHarness);
+  assert.equal(includes(buyValues, "Iron Sword"), true);
+  assert.equal(includes(buyValues, "Steel Sword"), true);
+  assert.equal(includes(buyValues, "Potion"), false);
+
+  weaponHarness.window.commandIndex = 1;
+  weaponHarness.window.state = "command";
+  press(weaponHarness, "confirm");
+  const sellValues = texts(weaponHarness);
+  assert.equal(includes(sellValues, "Steel Sword"), false, "equipped weapon copies remain protected");
+  assert.equal(includes(sellValues, "Potion"), false, "weapon shops do not buy item inventory");
+}
+
+function testRosterNamesShareTheStatTextColumn() {
+  const harness = createHarness();
+  press(harness, "confirm");
+  harness.window.buyIndex = 2;
+  harness.calls.length = 0;
+  harness.window.draw();
+
+  const tyler = harness.calls.find(
+    (call) => call[0] === "fillText" && call[1] === "Tyler",
+  );
+  const atk = harness.calls.find(
+    (call) => call[0] === "fillText" && call[1] === "ATK",
+  );
+
+  assert.ok(tyler, "Tyler comparison label should be drawn");
+  assert.ok(atk, "ATK comparison label should be drawn");
+  assert.equal(tyler[2], atk[2], "actor name and affected stats share one left edge");
+}
+
 function run() {
   testWelcomeIntroducesMerchantWithoutPreviewingStock();
   testBuyPresentationAvoidsOldPanelHeadingsAndKeepsRosterComparison();
   testSellUsesSharedQuantityPopupAndNoFooterPrice();
+  testShopTypeControlsIdentityAndMerchandiseScope();
+  testRosterNamesShareTheStatTextColumn();
   console.log("Shop menu presentation regression tests passed.");
 }
 

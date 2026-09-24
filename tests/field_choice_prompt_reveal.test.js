@@ -119,9 +119,72 @@ function testSceneMapAlwaysAdvancesMessageButDisablesMessageInputForChoice() {
   assert.equal(calls[2][0], "interpreter");
 }
 
+
+function testInterpreterMarksSameSpeakerContinuationAndChoicePrompts() {
+  const calls = [];
+  const context = vm.createContext({
+    console,
+    DebugManager: { log() {} },
+  });
+
+  vm.runInContext(
+    `${read("js/objects/Game_Interpreter.js")}\nglobalThis.__Interpreter = Game_Interpreter;`,
+    context,
+  );
+
+  const messageWindow = {
+    open: false,
+    isOpen() { return this.open; },
+    show(text, speaker, options) {
+      calls.push(["show", text, speaker, options]);
+      this.open = true;
+    },
+    hide() { this.open = false; },
+  };
+  const choiceWindow = {
+    open: false,
+    result: null,
+    isOpen() { return this.open; },
+    hasResult() { return this.result !== null; },
+    getResult() { return this.result; },
+    clearResult() { this.result = null; },
+    show(choices) { calls.push(["choices", choices]); this.open = true; },
+  };
+
+  const interpreter = new context.__Interpreter(messageWindow, choiceWindow);
+  interpreter.setup([
+    { code: "text", speaker: "Guard", text: "First." },
+    { code: "text", speaker: "Guard", text: "Second." },
+    { code: "text", speaker: "Merchant", text: "Different speaker." },
+  ]);
+
+  interpreter.update();
+  assert.equal(calls[0][3].indicatorMode, "continue");
+
+  messageWindow.open = false;
+  interpreter.update();
+  assert.equal(calls[1][3].indicatorMode, "end");
+
+  const choiceInterpreter = new context.__Interpreter(messageWindow, choiceWindow);
+  messageWindow.open = false;
+  choiceWindow.open = false;
+  choiceInterpreter.setup([
+    {
+      code: "choice",
+      speaker: "Guard",
+      prompt: "Enter?",
+      choices: [{ text: "Yes", commands: [] }],
+    },
+  ]);
+  choiceInterpreter.update();
+  const choiceShow = calls.find((call) => call[0] === "show" && call[1] === "Enter?");
+  assert.equal(choiceShow[3].indicatorMode, "hidden");
+}
+
 function run() {
   testChoicePromptContinuesRevealingWithoutStealingConfirm();
   testSceneMapAlwaysAdvancesMessageButDisablesMessageInputForChoice();
+  testInterpreterMarksSameSpeakerContinuationAndChoicePrompts();
 
   console.log("Field choice prompt reveal regression tests passed.");
 }

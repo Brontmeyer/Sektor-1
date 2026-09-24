@@ -168,7 +168,7 @@ The main menu presents the active four party members through dedicated actor car
 
 **Config Submenu Presentation Consistency v1** gives **CONTROLS** and **WINDOW COLOR** the same description/title header split and framed content geometry as CONFIG through shared `ConfigMenuLayout`. Specialized rebinding and RGB-edit instructions now live in the contextual header instead of footer legends, while `ConfigManager` remains the sole authority for bindings and window colors. Character-menu description strips now use shared vertically centered wrapped text so one- and two-line descriptions sit naturally in the middle without losing left alignment.
 
-**Field Dialogue Window Presentation v1** brings `Window_Message` and `Window_Choice` onto the same semantic `menuPanel` / `accentPanel` rendering path used by the rest of the UI, so player-configured Window Color affects dialogue instead of leaving field conversations as separate black-and-white boxes. Choice focus uses the same dim selection surface and gold `▶` cursor language as menus. The existing typewriter timing and one-owner choice input behavior are unchanged; dialogue continuation keeps its contextual prompt because revealing/advancing text is a stateful interaction rather than a permanent menu legend.
+**Field Dialogue Window Presentation v1** brings `Window_Message` and `Window_Choice` onto the same semantic `menuPanel` / `accentPanel` rendering path used by the rest of the UI, so player-configured Window Color affects dialogue instead of leaving field conversations as separate black-and-white boxes. Choice focus uses the same dim selection surface and gold `▶` cursor language as menus. The existing typewriter timing and one-owner choice input behavior are unchanged. Once a line is fully revealed, the old persistent key legend is replaced by a mint-teal `▼`: it blinks when consecutive text from the same speaker is waiting, stays solid at a deliberate/end pause, and disappears while choices own focus.
 
 ------------------------------------------------------------------------
 
@@ -256,7 +256,7 @@ The current Save Runtime v11 persists both equipped accessory IDs and party acce
 
 # 💰 Shops & Economy
 
-Shops & Runes Spending turns existing currency rewards and canonical merchandise price metadata into a playable Buy / Sell loop. Map events open a merchant with a validated list of Items, Weapons, Armor, and Accessories; event data chooses **what is stocked**, while the merchandise database remains the sole purchase-price authority.
+Shops & Runes Spending turns existing currency rewards and canonical merchandise price metadata into a playable Buy / Sell loop. Map events open a merchant with an explicit `shopType` (`general`, `item`, `weapon`, `armor`, or `accessory`) plus a validated list of merchandise. General stores may mix categories; specialized shops accept only their matching merchandise type for both Buy and Sell. Event data chooses **what is stocked**, while the merchandise database remains the sole purchase-price authority.
 
 `Game_Party` owns both transaction boundaries. Purchases validate quantity and available Runes before inventory/currency mutation. Sales use a canonical 50% resale value, refuse records marked `sellable: false`, and reserve every currently equipped weapon / armor / accessory copy so presentation can never sell gear out from under an actor. Surplus copies remain saleable. Failed transactions leave inventory and currency unchanged.
 

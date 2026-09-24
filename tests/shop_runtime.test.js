@@ -426,7 +426,11 @@ function testInterpreterPausesAfterStartingShop() {
   assert.equal(interpreter.commandShop(command), false);
   assert.equal(interpreter.index, 4);
   assert.deepEqual(JSON.parse(JSON.stringify(started)), [
-    { name: "Test Merchant", goods: [{ type: "item", id: 1 }] },
+    {
+      name: "Test Merchant",
+      shopType: "general",
+      goods: [{ type: "item", id: 1 }],
+    },
   ]);
 }
 
@@ -525,6 +529,29 @@ function testShopEventValidationChecksGoodsAndDuplicates() {
   assert.throws(
     () => DatabaseValidator.validateMapData(invalid, database, 1),
     /unknown item ID 999/,
+  );
+
+  const invalidShopType = JSON.parse(JSON.stringify(map001));
+  const invalidTypeCommand = invalidShopType.events
+    .flatMap((event) => event.pages || [])
+    .flatMap((page) => page.commands || [])
+    .find((command) => command.code === "shop");
+  invalidTypeCommand.shopType = "magic";
+  assert.throws(
+    () => DatabaseValidator.validateMapData(invalidShopType, database, 1),
+    /shopType must be general, item, weapon, armor, or accessory/,
+  );
+
+  const mismatchedShop = JSON.parse(JSON.stringify(map001));
+  const mismatchedCommand = mismatchedShop.events
+    .flatMap((event) => event.pages || [])
+    .flatMap((page) => page.commands || [])
+    .find((command) => command.code === "shop");
+  mismatchedCommand.shopType = "weapon";
+  mismatchedCommand.goods = [{ type: "item", id: 1 }];
+  assert.throws(
+    () => DatabaseValidator.validateMapData(mismatchedShop, database, 1),
+    /type must be weapon for a weapon shop/,
   );
 
   const duplicate = JSON.parse(JSON.stringify(map001));

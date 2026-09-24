@@ -112,12 +112,26 @@ class Game_Interpreter {
     }
   }
 
+  dialogueIndicatorMode(commandIndex = this.index, speaker = "") {
+    const next = this.commands[commandIndex + 1];
+    const currentSpeaker = String(speaker || "");
+    const nextSpeaker = String(next?.speaker || "");
+
+    if (next?.code === "text" && nextSpeaker === currentSpeaker) {
+      return "continue";
+    }
+
+    return "end";
+  }
+
   commandText(command) {
     if (this.messageWindow.isOpen()) {
       return;
     }
 
-    this.messageWindow.show(command.text, command.speaker || "");
+    this.messageWindow.show(command.text, command.speaker || "", {
+      indicatorMode: this.dialogueIndicatorMode(this.index, command.speaker),
+    });
 
     this.index++;
 
@@ -166,7 +180,9 @@ class Game_Interpreter {
     if (!this.choiceWindow.isOpen()) {
       const choiceNames = command.choices.map((choice) => choice.text);
 
-      this.messageWindow.show(command.prompt || "", command.speaker || "");
+      this.messageWindow.show(command.prompt || "", command.speaker || "", {
+        indicatorMode: "hidden",
+      });
 
       this.choiceWindow.show(choiceNames);
     }
@@ -549,6 +565,7 @@ class Game_Interpreter {
   commandShop(command) {
     const started = SceneManager.startShop({
       name: command.name || "Shop",
+      shopType: command.shopType || "general",
       goods: command.goods || [],
     });
 

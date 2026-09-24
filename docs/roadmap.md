@@ -533,6 +533,8 @@ Battle-presentation directions and current status:
 - ✅ Config Menu Presentation v1 with unified framed layout and preserved Config Runtime / Controls / Window Color ownership
 - ✅ Config Submenu Presentation Consistency v1 with shared Config-family geometry, redesigned Controls / Window Color surfaces, and vertically centered character description strips
 - ✅ Field Dialogue Window Presentation v1 with shared tintable semantic panels, configured Window Color support, and project-standard choice focus
+- ✅ Dialogue Continuation Indicator v1 with blinking same-speaker `▼`, solid end-pause state, and choice suppression
+- ✅ Shop Type Metadata & Presentation v1 with general/item/weapon/armor/accessory store identities and category-scoped Buy/Sell behavior
 - ✅ Menu Hint Cleanup v1 with permanent key legends removed from mature menu destinations while specialized/contextual prompts remain
 - ✅ ITEM / EQUIP / ESSENCE Layout Refinement v1 with item-side tabs, full-height actor/item divider, complete four-member HP/MP cards, and shared EQUIP/ESSENCE center split
 - ✅ Status Menu Presentation v1 with shared actor summary, Main / Element / Effect pages, data-driven affinity/resistance presentation, and Equip footer-overlap cleanup

@@ -1,12 +1,22 @@
 "use strict";
 
 class Window_Message {
+  static INDICATOR_MODE = Object.freeze({
+    CONTINUE: "continue",
+    END: "end",
+    HIDDEN: "hidden",
+  });
+
+  static ADVANCE_COLOR = "#7ff0d5";
+
   constructor() {
     this.visible = false;
 
     this.text = "";
     this.speaker = "";
     this.revealedCharacters = 0;
+    this.indicatorMode = Window_Message.INDICATOR_MODE.END;
+    this.indicatorElapsed = 0;
 
     this.x = 40;
     this.width = Graphics.width - 80;
@@ -19,7 +29,9 @@ class Window_Message {
       return;
     }
 
-    this.updateTextReveal(deltaTime);
+    const seconds = Math.max(0, Number(deltaTime) || 0);
+    this.indicatorElapsed += seconds;
+    this.updateTextReveal(seconds);
 
     if (allowInput && Input.isActionTriggered("confirm")) {
       if (!this.isFullyRevealed()) {
@@ -71,12 +83,55 @@ class Window_Message {
     this.revealedCharacters = this.characterCount();
   }
 
-  show(text, speaker = "") {
+  show(text, speaker = "", options = {}) {
     this.visible = true;
 
     this.text = text || "";
     this.speaker = speaker || "";
     this.revealedCharacters = 0;
+    this.indicatorMode = this.normalizeIndicatorMode(options.indicatorMode);
+    this.indicatorElapsed = 0;
+  }
+
+  normalizeIndicatorMode(mode) {
+    const allowed = Object.values(Window_Message.INDICATOR_MODE);
+    return allowed.includes(mode) ? mode : Window_Message.INDICATOR_MODE.END;
+  }
+
+  indicatorShouldDraw() {
+    if (!this.isFullyRevealed()) {
+      return false;
+    }
+
+    if (this.indicatorMode === Window_Message.INDICATOR_MODE.HIDDEN) {
+      return false;
+    }
+
+    if (this.indicatorMode === Window_Message.INDICATOR_MODE.END) {
+      return true;
+    }
+
+    // Consecutive dialogue from the same speaker gets a gentle blink so the
+    // player can distinguish "more is coming" from a deliberate stop.
+    return Math.floor(this.indicatorElapsed / 0.36) % 2 === 0;
+  }
+
+  drawAdvanceIndicator(context) {
+    if (!this.indicatorShouldDraw()) {
+      return;
+    }
+
+    context.save();
+    context.fillStyle = Window_Message.ADVANCE_COLOR;
+    context.font = "600 22px sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(
+      "▼",
+      this.x + this.width - 28,
+      this.y + this.height - 24,
+    );
+    context.restore();
   }
 
   hide() {
@@ -85,6 +140,8 @@ class Window_Message {
     this.text = "";
     this.speaker = "";
     this.revealedCharacters = 0;
+    this.indicatorMode = Window_Message.INDICATOR_MODE.END;
+    this.indicatorElapsed = 0;
   }
 
   isOpen() {
@@ -177,17 +234,7 @@ class Window_Message {
       );
     }
 
-    context.font = "17px sans-serif";
-    context.textAlign = "right";
-    context.textBaseline = "middle";
-    context.fillStyle = this.isFullyRevealed() ? "#ffd75a" : "#aebbd0";
-    context.fillText(
-      this.isFullyRevealed()
-        ? `${Input.actionLabel("confirm")}  ▶`
-        : `${Input.actionLabel("confirm")}: Reveal`,
-      this.x + this.width - 20,
-      this.y + this.height - 27,
-    );
+    this.drawAdvanceIndicator(context);
     context.restore();
   }
 

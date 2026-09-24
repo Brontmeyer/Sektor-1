@@ -13,8 +13,37 @@ class Window_Shop {
     SELL: "sell",
   });
 
+  static SHOP_TYPES = Object.freeze({
+    general: Object.freeze({
+      label: "General Store",
+      allowedTypes: Object.freeze(["item", "weapon", "armor", "accessory"]),
+      greeting: "Welcome in. Buy what you need, sell what you can spare, and keep moving.",
+    }),
+    item: Object.freeze({
+      label: "Item Shop",
+      allowedTypes: Object.freeze(["item"]),
+      greeting: "Supplies, restoratives, and useful odds and ends for the journey.",
+    }),
+    weapon: Object.freeze({
+      label: "Weapon Shop",
+      allowedTypes: Object.freeze(["weapon"]),
+      greeting: "Weapons for the road ahead. Take your time and compare before you buy.",
+    }),
+    armor: Object.freeze({
+      label: "Armor Shop",
+      allowedTypes: Object.freeze(["armor"]),
+      greeting: "Protection matters. Compare the numbers and choose what keeps you standing.",
+    }),
+    accessory: Object.freeze({
+      label: "Accessory Shop",
+      allowedTypes: Object.freeze(["accessory"]),
+      greeting: "Small gear can make a big difference. Have a look around.",
+    }),
+  });
+
   constructor(shopData = {}) {
     this.title = shopData.name || "Shop";
+    this.shopType = this.normalizeShopType(shopData.shopType);
     this.goods = Array.isArray(shopData.goods) ? shopData.goods : [];
 
     this.commandIndex = 0;
@@ -88,11 +117,33 @@ class Window_Shop {
   }
 
   // =====================================
+  // Shop Type
+  // =====================================
+
+  normalizeShopType(value) {
+    const key = String(value || "general").trim().toLowerCase();
+    return Object.hasOwn(Window_Shop.SHOP_TYPES, key) ? key : "general";
+  }
+
+  shopTypeConfig() {
+    return Window_Shop.SHOP_TYPES[this.shopType] || Window_Shop.SHOP_TYPES.general;
+  }
+
+  shopAcceptsType(type) {
+    return this.shopTypeConfig().allowedTypes.includes(type);
+  }
+
+  sellTypes() {
+    return [...this.shopTypeConfig().allowedTypes];
+  }
+
+  // =====================================
   // Merchandise Data
   // =====================================
 
   entries() {
     return this.goods
+      .filter((good) => this.shopAcceptsType(good?.type))
       .map((good) => {
         const data = $gameParty?.merchandiseRecord?.(good.type, good.id) || null;
 
@@ -149,7 +200,7 @@ class Window_Shop {
   }
 
   orderedSellEntries() {
-    const groups = ["item", "weapon", "armor", "accessory"];
+    const groups = this.sellTypes();
     const entries = [];
 
     for (const type of groups) {
@@ -282,43 +333,15 @@ class Window_Shop {
   }
 
   merchantTypes() {
-    return [...new Set(this.entries().map((entry) => entry.type))];
+    return this.sellTypes();
   }
 
   merchantFocusLabel() {
-    const types = this.merchantTypes();
-
-    if (types.length === 0) {
-      return "Merchant";
-    }
-
-    if (types.length > 2) {
-      return "General Store";
-    }
-
-    if (types.length === 1) {
-      return `${this.typeLabel(types[0])} Shop`;
-    }
-
-    return types.map((type) => this.typeLabel(type)).join(" & ");
+    return this.shopTypeConfig().label;
   }
 
   merchantGreeting() {
-    const types = this.merchantTypes();
-
-    if (types.length === 1 && types[0] === "weapon") {
-      return "Weapons for the road ahead. Take your time and compare before you buy.";
-    }
-
-    if (types.length === 1 && types[0] === "accessory") {
-      return "Small gear can make a big difference. Have a look around.";
-    }
-
-    if (types.length === 1 && types[0] === "item") {
-      return "Supplies, restoratives, and useful odds and ends for the journey.";
-    }
-
-    return "Welcome in. Buy what you need, sell what you can spare, and keep moving.";
+    return this.shopTypeConfig().greeting;
   }
 
   currentPrompt() {
@@ -983,6 +1006,16 @@ class Window_Shop {
     context.font = "600 18px sans-serif";
     context.fillText("DETAILS", bounds.x + 18, bounds.y + 28);
 
+    context.textAlign = "right";
+    context.fillStyle = "#aebbd0";
+    context.font = "600 13px sans-serif";
+    context.fillText(
+      entry ? this.typeLabel(entry.type).toUpperCase() : "",
+      bounds.x + bounds.width - 18,
+      bounds.y + 28,
+    );
+    context.textAlign = "left";
+
     const rows = [
       ["Runes", String(runes), "#7ff0d5"],
       ["Price", entry ? String(entry.price) : "—", "#aebbd0"],
@@ -1004,16 +1037,6 @@ class Window_Shop {
       context.fillText(value, bounds.x + bounds.width - 18, y);
       context.textAlign = "left";
     });
-
-    if (entry) {
-      context.fillStyle = "#aebbd0";
-      context.font = "14px sans-serif";
-      context.fillText(
-        this.typeLabel(entry.type),
-        bounds.x + 18,
-        bounds.y + bounds.height - 22,
-      );
-    }
 
     context.restore();
   }
@@ -1153,6 +1176,9 @@ class Window_Shop {
       });
       this.drawPortraitPlaceholder(context, actor, portraitX, portraitY, portraitSize);
 
+      // Portrait rendering centers its glyph; reset the comparison text column so
+      // the actor name and affected stat labels share the exact same left edge.
+      context.textAlign = "left";
       context.fillStyle = "#ffffff";
       context.font = "600 16px sans-serif";
       context.fillText(actor?.name || "Unknown", textX, card.y + 20);

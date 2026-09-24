@@ -715,7 +715,7 @@ class DatabaseValidator {
       gainAccessoryMessage: ["code", "accessoryId", "amount", "source"],
       gainExp: ["code", "amount"],
       gainExpMessage: ["code", "amount"],
-      shop: ["code", "name", "goods"],
+      shop: ["code", "name", "shopType", "goods"],
       battle: ["code", "encounterId"],
     };
 
@@ -884,6 +884,14 @@ class DatabaseValidator {
       case "shop": {
         validateOptionalString("name");
 
+        const shopType = String(command.shopType || "general").trim().toLowerCase();
+        const allowedShopTypes = ["general", "item", "weapon", "armor", "accessory"];
+        if (!allowedShopTypes.includes(shopType)) {
+          errors.push(
+            `${label}.shopType must be general, item, weapon, armor, or accessory.`,
+          );
+        }
+
         if (!Array.isArray(command.goods) || command.goods.length === 0) {
           errors.push(`${label}.goods must be a non-empty array.`);
           break;
@@ -913,6 +921,16 @@ class DatabaseValidator {
               `${goodLabel}.type must be item, weapon, armor, or accessory.`,
             );
             continue;
+          }
+
+          if (
+            allowedShopTypes.includes(shopType) &&
+            shopType !== "general" &&
+            good.type !== shopType
+          ) {
+            errors.push(
+              `${goodLabel}.type must be ${shopType} for a ${shopType} shop.`,
+            );
           }
 
           if (

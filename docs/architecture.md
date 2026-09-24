@@ -261,7 +261,7 @@ The canonical Essence definitions live in `data/Essences.json`; mutable Resonanc
 
 ## World Runtime Objects
 
-`Game_Map`, `Game_Player`, `Game_Event`, and `Game_Interpreter` form the foundation of world exploration and event execution. Loaded map/event JSON is validated before these objects receive it, including nested event conditions and command payloads. Shop commands define only a merchant name and a list of merchandise type/ID references; prices remain canonical item/equipment data. The interpreter advances past the shop command before pushing `Scene_Shop`, so returning to the map resumes the event instead of reopening the merchant. The interpreter still performs runtime checks at mutation boundaries so direct or future callers cannot rely solely on file validation.
+`Game_Map`, `Game_Player`, `Game_Event`, and `Game_Interpreter` form the foundation of world exploration and event execution. Loaded map/event JSON is validated before these objects receive it, including nested event conditions and command payloads. Shop commands define a merchant name, an explicit shop type (`general`, `item`, `weapon`, `armor`, or `accessory`), and a list of merchandise type/ID references; prices remain canonical item/equipment data. Specialized shop types validate and present only their matching merchandise category, while `general` remains the mixed-category store contract. The interpreter advances past the shop command before pushing `Scene_Shop`, so returning to the map resumes the event instead of reopening the merchant. The interpreter still performs runtime checks at mutation boundaries so direct or future callers cannot rely solely on file validation.
 
 `Game_Switches`, `Game_SelfSwitches`, and `Game_Variables` provide persistent or event-facing state used to drive game logic. Additive variable operations normalize numeric input, while direct variable assignment remains intentionally capable of storing non-numeric event state.
 
@@ -360,7 +360,7 @@ Scene_Shop.js
 
 ## Scene_Map
 
-`Scene_Map` coordinates world exploration and map-facing gameplay. During field choices it continues advancing `Window_Message` reveal timing while disabling message-owned confirm handling, leaving `Window_Choice` as the sole owner of E/Enter until the selection resolves. Field Dialogue Window Presentation v1 changes only rendering: both windows request tintable semantic panel roles from `UIAssetManager`, and choices reuse the standard selection panel / gold cursor language, so Config Window Color applies to conversations without moving input or dialogue state into the renderer.
+`Scene_Map` coordinates world exploration and map-facing gameplay. During field choices it continues advancing `Window_Message` reveal timing while disabling message-owned confirm handling, leaving `Window_Choice` as the sole owner of E/Enter until the selection resolves. Field Dialogue Window Presentation v1 changes only rendering: both windows request tintable semantic panel roles from `UIAssetManager`, and choices reuse the standard selection panel / gold cursor language, so Config Window Color applies to conversations without moving input or dialogue state into the renderer. `Game_Interpreter` now supplies a tiny presentation hint for dialogue progression: same-speaker consecutive text uses a blinking continuation state, deliberate/end pauses use a solid state, and choice prompts suppress the message indicator. `Window_Message` renders that state as the shared mint-teal `▼` rather than exposing a persistent key legend.
 
 ## Scene_Menu
 
