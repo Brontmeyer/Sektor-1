@@ -290,10 +290,17 @@ class Game_Interpreter {
     // Advance before pushing the scene. Scene_Map is paused while naming is
     // active; when it returns, the interpreter resumes at the next command.
     this.index++;
+    const protagonistId = globalThis.$gameSystem?.protagonistActorId?.();
+    const unidentifiedName = globalThis.$gameSystem?.unidentifiedActorName?.();
+    const startsUnidentified =
+      actorId === protagonistId &&
+      actor.name === unidentifiedName;
+
     SceneManager.push(Scene_NameEntry, actorId, {
-      title: "NAME CHARACTER",
+      title: "NAME",
       prompt:
         this.resolveActorReferences(command.prompt || "Choose this character's name."),
+      startFromDefault: startsUnidentified,
     });
     return false;
   }

@@ -50,6 +50,40 @@ function testCurrentProjectPassesExpandedValidation() {
   assert.equal(DatabaseValidator.validate(projectDatabase()), true);
 }
 
+function testStoryIdentitySystemContract() {
+  const DatabaseValidator = loadValidator();
+  const database = projectDatabase();
+  const errors = [];
+
+  DatabaseValidator.validateSystem(
+    database.system,
+    database.mapInfos,
+    errors,
+    database.actors,
+  );
+  assert.deepEqual(errors, []);
+
+  const malformed = clone(database.system);
+  malformed.protagonistActorId = 999;
+  malformed.unidentifiedActorName = "???";
+  const malformedErrors = [];
+  DatabaseValidator.validateSystem(
+    malformed,
+    database.mapInfos,
+    malformedErrors,
+    database.actors,
+  );
+
+  assert.equal(
+    malformedErrors.some((error) => error.includes("unknown actor ID 999")),
+    true,
+  );
+  assert.equal(
+    malformedErrors.some((error) => error.includes("letters and spaces only")),
+    true,
+  );
+}
+
 function testActorGrowthExpAndSpriteContracts() {
   const DatabaseValidator = loadValidator();
   const actors = clone(readData("Actors.json"));
@@ -299,6 +333,7 @@ function testEssenceProgressionAndReferencesAreValidated() {
 
 function run() {
   testCurrentProjectPassesExpandedValidation();
+  testStoryIdentitySystemContract();
   testActorGrowthExpAndSpriteContracts();
   testEnemyElementRateAndSpriteContracts();
   testItemAndEquipmentContracts();

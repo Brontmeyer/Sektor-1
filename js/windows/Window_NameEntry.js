@@ -1,20 +1,61 @@
 "use strict";
 
 class Window_NameEntry {
+  static KEYBOARD_ROWS = Object.freeze([
+    Object.freeze(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]),
+    Object.freeze(["K", "L", "M", "N", "O", "P", "Q", "R", "S", "T"]),
+    Object.freeze(["U", "V", "W", "X", "Y", "Z"]),
+    Object.freeze(["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
+    Object.freeze(["k", "l", "m", "n", "o", "p", "q", "r", "s", "t"]),
+    Object.freeze(["u", "v", "w", "x", "y", "z"]),
+  ]);
+
+  static SIDE_COMMANDS = Object.freeze(["Space", "Delete", "Select", "Default"]);
+
   constructor(actor, options = {}) {
     this.actor = actor || null;
     this.title = String(options.title || "NAME").trim() || "NAME";
-    this.prompt = String(
-      options.prompt || "Choose the name this character will use throughout the story.",
-    );
-    this.value = this.actor?.name || this.actor?.defaultName?.() || "";
-    this.defaultValue = this.actor?.defaultName?.() || this.value || "Actor";
+    this.prompt = String(options.prompt || "Please enter a name.");
+    this.defaultValue = this.actor?.defaultName?.() || this.actor?.name || "Actor";
+    this.value = options.startFromDefault === true
+      ? this.defaultValue
+      : this.actor?.name || this.defaultValue;
     this.maxLength = Math.max(
       1,
       Number(this.actor?.nameMaxLength?.()) || Game_Actor.NAME_MAX_LENGTH || 16,
     );
     this.replaceOnType = true;
     this.confirmed = false;
+
+    this.focus = "grid";
+    this.gridRow = 0;
+    this.gridColumn = 0;
+    this.commandIndex = 0;
+    this.selectGridCharacter(String(this.value || this.defaultValue).charAt(0));
+
+    this.portraitImage = this.createPortraitImage();
+  }
+
+  keyboardRows() {
+    return Window_NameEntry.KEYBOARD_ROWS;
+  }
+
+  sideCommands() {
+    return Window_NameEntry.SIDE_COMMANDS;
+  }
+
+  createPortraitImage() {
+    if (typeof Image === "undefined" || !this.actor?.sideBattleSprite) {
+      return null;
+    }
+
+    const image = new Image();
+    image.loadFailed = false;
+    image.onerror = () => {
+      image.loadFailed = true;
+    };
+    image.src = `js/sprites/actors/${this.actor.sideBattleSprite}`;
+    return image;
   }
 
   codePointLength(value = this.value) {
@@ -105,6 +146,123 @@ class Window_NameEntry {
     return this.confirmed;
   }
 
+  currentGridCharacter() {
+    const row = this.keyboardRows()[this.gridRow] || [];
+    return row[this.gridColumn] || row[0] || "";
+  }
+
+  currentSideCommand() {
+    return this.sideCommands()[this.commandIndex] || this.sideCommands()[0];
+  }
+
+  selectGridCharacter(character) {
+    if (!character) {
+      return false;
+    }
+
+    for (let row = 0; row < this.keyboardRows().length; row++) {
+      const column = this.keyboardRows()[row].indexOf(character);
+
+      if (column >= 0) {
+        this.gridRow = row;
+        this.gridColumn = column;
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  moveGridVertical(direction) {
+    const rows = this.keyboardRows();
+    const nextRow = (this.gridRow + direction + rows.length) % rows.length;
+    this.gridRow = nextRow;
+    this.gridColumn = Math.min(this.gridColumn, rows[nextRow].length - 1);
+  }
+
+  moveGridHorizontal(direction) {
+    const row = this.keyboardRows()[this.gridRow] || [];
+
+    if (direction > 0 && this.gridColumn >= row.length - 1) {
+      this.focus = "commands";
+      this.commandIndex = Math.min(this.gridRow, this.sideCommands().length - 1);
+      return;
+    }
+
+    if (direction < 0 && this.gridColumn <= 0) {
+      this.gridColumn = row.length - 1;
+      return;
+    }
+
+    this.gridColumn = Math.max(0, Math.min(row.length - 1, this.gridColumn + direction));
+  }
+
+  moveCommandVertical(direction) {
+    const count = this.sideCommands().length;
+    this.commandIndex = (this.commandIndex + direction + count) % count;
+  }
+
+  activateSelection() {
+    if (this.focus === "grid") {
+      return this.appendCharacter(this.currentGridCharacter());
+    }
+
+    switch (this.currentSideCommand()) {
+      case "Space":
+        return this.appendCharacter(" ");
+      case "Delete":
+        return this.backspace();
+      case "Select":
+        return this.confirm();
+      case "Default":
+        this.restoreDefault();
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  updateNavigation() {
+    if (Input.isActionTriggered?.("up")) {
+      if (this.focus === "grid") {
+        this.moveGridVertical(-1);
+      } else {
+        this.moveCommandVertical(-1);
+      }
+      return true;
+    }
+
+    if (Input.isActionTriggered?.("down")) {
+      if (this.focus === "grid") {
+        this.moveGridVertical(1);
+      } else {
+        this.moveCommandVertical(1);
+      }
+      return true;
+    }
+
+    if (Input.isActionTriggered?.("left")) {
+      if (this.focus === "commands") {
+        this.focus = "grid";
+        const row = Math.min(this.commandIndex, this.keyboardRows().length - 1);
+        this.gridRow = row;
+        this.gridColumn = this.keyboardRows()[row].length - 1;
+      } else {
+        this.moveGridHorizontal(-1);
+      }
+      return true;
+    }
+
+    if (Input.isActionTriggered?.("right")) {
+      if (this.focus === "grid") {
+        this.moveGridHorizontal(1);
+      }
+      return true;
+    }
+
+    return false;
+  }
+
   update() {
     if (this.confirmed) {
       return;
@@ -112,25 +270,40 @@ class Window_NameEntry {
 
     if (Input.isTextBackspaceTriggered?.()) {
       this.backspace();
+      return;
     }
 
     if (Input.isTextResetTriggered?.()) {
       this.restoreDefault();
+      return;
     }
 
     const characters = typeof Input.consumeTextCharacters === "function"
       ? Input.consumeTextCharacters()
       : [];
 
-    for (const character of characters) {
-      this.appendCharacter(character);
+    if (this.focus === "grid" && characters.length > 0) {
+      for (const character of characters) {
+        this.appendCharacter(character);
+      }
+
+      // Printable keys take priority while the letter grid has focus so the
+      // player's configured WASD / E bindings remain typeable name letters.
+      // Arrow keys produce no printable text and continue to navigate the grid.
+      return;
     }
 
-    // Name entry deliberately confirms on the physical Enter key rather than
-    // the configurable Confirm action. This lets E remain a normal printable
-    // character while the player is typing a name.
+    if (this.updateNavigation()) {
+      return;
+    }
+
     if (Input.isTextConfirmTriggered?.()) {
-      this.confirm();
+      this.activateSelection();
+      return;
+    }
+
+    if (this.focus === "commands" && Input.isActionTriggered?.("confirm")) {
+      this.activateSelection();
     }
   }
 
@@ -185,10 +358,162 @@ class Window_NameEntry {
     }
   }
 
+  drawPortrait(context, bounds) {
+    this.drawPanel(context, bounds, { assetAlpha: 0.34 });
+
+    const image = this.portraitImage;
+    if (
+      image &&
+      image.complete &&
+      image.loadFailed !== true &&
+      image.naturalWidth > 0 &&
+      image.naturalHeight > 0 &&
+      typeof context.drawImage === "function"
+    ) {
+      const frames = Math.max(1, Number(this.actor?.battleSpriteFrames) || 1);
+      const rows = Math.max(1, Number(this.actor?.battleSpriteRows) || 1);
+      const sourceWidth = image.naturalWidth / frames;
+      const sourceHeight = image.naturalHeight / rows;
+      const scale = Math.min(
+        (bounds.width - 18) / sourceWidth,
+        (bounds.height - 18) / sourceHeight,
+      );
+      const width = sourceWidth * scale;
+      const height = sourceHeight * scale;
+
+      context.drawImage(
+        image,
+        0,
+        0,
+        sourceWidth,
+        sourceHeight,
+        bounds.x + (bounds.width - width) / 2,
+        bounds.y + bounds.height - height - 8,
+        width,
+        height,
+      );
+      return;
+    }
+
+    context.textAlign = "center";
+    context.fillStyle = "#ffffff";
+    context.font = "600 44px sans-serif";
+    context.fillText(
+      String(this.value || this.defaultValue || "?").trim().charAt(0).toUpperCase() || "?",
+      bounds.x + bounds.width / 2,
+      bounds.y + bounds.height / 2,
+    );
+  }
+
+  drawNameSlots(context, bounds) {
+    this.drawPanel(context, bounds, { assetAlpha: 0.32 });
+
+    const characters = Array.from(this.value || "").slice(0, this.maxLength);
+    const padding = 18;
+    const slotWidth = (bounds.width - padding * 2) / this.maxLength;
+    const baselineY = bounds.y + bounds.height * 0.66;
+
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.font = "600 21px sans-serif";
+
+    for (let index = 0; index < this.maxLength; index++) {
+      const x = bounds.x + padding + slotWidth * index;
+      const character = characters[index] || "";
+
+      context.strokeStyle = "rgba(174, 187, 208, 0.58)";
+      context.lineWidth = 1;
+      context.beginPath?.();
+      context.moveTo?.(x + 3, baselineY + 18);
+      context.lineTo?.(x + slotWidth - 3, baselineY + 18);
+      context.stroke?.();
+
+      if (character) {
+        context.fillStyle = "#ffd75a";
+        context.fillText(character, x + slotWidth / 2, baselineY);
+      }
+    }
+
+    context.textAlign = "right";
+    context.fillStyle = "#aebbd0";
+    context.font = "13px sans-serif";
+    context.fillText(
+      `${this.codePointLength()}/${this.maxLength}`,
+      bounds.x + bounds.width - 14,
+      bounds.y + 18,
+    );
+  }
+
+  drawKeyboard(context, bounds) {
+    this.drawPanel(context, bounds, { assetAlpha: 0.4 });
+    const rows = this.keyboardRows();
+    const columns = 10;
+    const paddingX = 34;
+    const paddingY = 22;
+    const cellWidth = (bounds.width - paddingX * 2) / columns;
+    const cellHeight = (bounds.height - paddingY * 2) / rows.length;
+
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.font = "19px sans-serif";
+
+    for (let row = 0; row < rows.length; row++) {
+      for (let column = 0; column < rows[row].length; column++) {
+        const x = bounds.x + paddingX + column * cellWidth;
+        const y = bounds.y + paddingY + row * cellHeight;
+        const selected =
+          this.focus === "grid" && row === this.gridRow && column === this.gridColumn;
+
+        if (selected) {
+          this.drawSelection(context, {
+            x: x + 2,
+            y: y + 3,
+            width: cellWidth - 4,
+            height: cellHeight - 6,
+          });
+        }
+
+        context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+        context.fillText(rows[row][column], x + cellWidth / 2, y + cellHeight / 2);
+      }
+    }
+  }
+
+  drawSideCommands(context, bounds) {
+    this.drawPanel(context, bounds, { assetAlpha: 0.4 });
+    const commands = this.sideCommands();
+    const rowHeight = bounds.height / commands.length;
+
+    context.textAlign = "left";
+    context.textBaseline = "middle";
+    context.font = "17px sans-serif";
+
+    for (let index = 0; index < commands.length; index++) {
+      const selected = this.focus === "commands" && this.commandIndex === index;
+      const rowBounds = {
+        x: bounds.x + 12,
+        y: bounds.y + index * rowHeight + 6,
+        width: bounds.width - 24,
+        height: rowHeight - 12,
+      };
+
+      if (selected) {
+        this.drawSelection(context, rowBounds);
+      }
+
+      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+      context.fillText(
+        selected ? `▶ ${commands[index]}` : `   ${commands[index]}`,
+        rowBounds.x + 10,
+        rowBounds.y + rowBounds.height / 2,
+      );
+    }
+  }
+
   draw() {
     const context = Graphics.context;
-    const width = Math.min(760, Graphics.width - 48);
-    const height = Math.min(390, Graphics.height - 48);
+    const width = Math.min(930, Graphics.width - 48);
+    const height = Math.min(610, Graphics.height - 48);
     const bounds = {
       x: Math.round((Graphics.width - width) / 2),
       y: Math.round((Graphics.height - height) / 2),
@@ -197,104 +522,84 @@ class Window_NameEntry {
     };
 
     context.save();
-    context.fillStyle = "#0b0e13";
+    context.fillStyle = typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.backdrop()
+      : "#0b0e13";
     context.fillRect(0, 0, Graphics.width, Graphics.height);
-    this.drawPanel(context, bounds);
+
+    const promptBounds = {
+      x: bounds.x,
+      y: bounds.y,
+      width: bounds.width,
+      height: 74,
+    };
+    this.drawPanel(context, promptBounds);
 
     context.textBaseline = "middle";
     context.textAlign = "left";
     context.fillStyle = typeof UIThemePalette !== "undefined"
-      ? UIThemePalette.primary()
-      : "#ffffff";
-    context.font = "600 24px sans-serif";
-    context.fillText(this.title, bounds.x + 28, bounds.y + 38);
+      ? UIThemePalette.accent()
+      : "#7ff0d5";
+    context.font = "600 14px sans-serif";
+    context.fillText(this.title, promptBounds.x + 26, promptBounds.y + 22);
 
     context.fillStyle = typeof UIThemePalette !== "undefined"
-      ? UIThemePalette.secondary()
-      : "#aebbd0";
-    context.font = "15px sans-serif";
+      ? UIThemePalette.primary()
+      : "#ffffff";
+    context.font = "18px sans-serif";
+    context.fillText(this.prompt, promptBounds.x + 26, promptBounds.y + 49);
 
-    if (
-      typeof Window_TextLayout !== "undefined" &&
-      typeof Window_TextLayout.drawWrappedText === "function"
-    ) {
-      Window_TextLayout.drawWrappedText(
-        context,
-        this.prompt,
-        bounds.x + 28,
-        bounds.y + 76,
-        bounds.width - 56,
-        20,
-        2,
-      );
-    } else {
-      context.fillText(this.prompt, bounds.x + 28, bounds.y + 76);
-    }
+    const identityBounds = {
+      x: bounds.x,
+      y: bounds.y + 82,
+      width: bounds.width,
+      height: 146,
+    };
+    this.drawPanel(context, identityBounds);
 
     const portraitBounds = {
-      x: bounds.x + 34,
-      y: bounds.y + 126,
+      x: identityBounds.x + 20,
+      y: identityBounds.y + 14,
       width: 118,
       height: 118,
     };
-    this.drawPanel(context, portraitBounds, { assetAlpha: 0.34 });
-    context.textAlign = "center";
-    context.fillStyle = "#ffffff";
-    context.font = "600 44px sans-serif";
-    context.fillText(
-      String(this.value || this.defaultValue || "?").trim().charAt(0).toUpperCase() || "?",
-      portraitBounds.x + portraitBounds.width / 2,
-      portraitBounds.y + portraitBounds.height / 2,
-    );
+    this.drawPortrait(context, portraitBounds);
 
-    const fieldBounds = {
-      x: bounds.x + 186,
-      y: bounds.y + 138,
-      width: bounds.width - 220,
-      height: 58,
+    const nameBounds = {
+      x: portraitBounds.x + portraitBounds.width + 20,
+      y: identityBounds.y + 28,
+      width: identityBounds.width - portraitBounds.width - 78,
+      height: 90,
     };
-    this.drawSelection(context, fieldBounds);
-    context.strokeStyle = "rgba(127, 240, 213, 0.55)";
-    context.lineWidth = 1;
-    context.strokeRect(
-      fieldBounds.x,
-      fieldBounds.y,
-      fieldBounds.width,
-      fieldBounds.height,
-    );
+    this.drawNameSlots(context, nameBounds);
+
+    const lowerY = bounds.y + 236;
+    const lowerHeight = bounds.height - 278;
+    const commandWidth = 190;
+    const gap = 10;
+    const keyboardBounds = {
+      x: bounds.x,
+      y: lowerY,
+      width: bounds.width - commandWidth - gap,
+      height: lowerHeight,
+    };
+    const commandBounds = {
+      x: keyboardBounds.x + keyboardBounds.width + gap,
+      y: lowerY,
+      width: commandWidth,
+      height: lowerHeight,
+    };
+
+    this.drawKeyboard(context, keyboardBounds);
+    this.drawSideCommands(context, commandBounds);
 
     context.textAlign = "left";
-    context.fillStyle = "#ffd75a";
-    context.font = "600 25px sans-serif";
-    context.fillText(
-      this.value || " ",
-      fieldBounds.x + 18,
-      fieldBounds.y + fieldBounds.height / 2,
-    );
-
-    context.textAlign = "right";
     context.fillStyle = "#aebbd0";
     context.font = "13px sans-serif";
     context.fillText(
-      `${this.codePointLength()}/${this.maxLength}`,
-      fieldBounds.x + fieldBounds.width - 14,
-      fieldBounds.y + fieldBounds.height + 24,
-    );
-
-    context.textAlign = "left";
-    context.fillStyle = "#7ff0d5";
-    context.font = "600 14px sans-serif";
-    context.fillText("DEFAULT", bounds.x + 186, bounds.y + 250);
-    context.fillStyle = "#ffffff";
-    context.font = "17px sans-serif";
-    context.fillText(this.defaultValue, bounds.x + 276, bounds.y + 250);
-
-    context.fillStyle = "#aebbd0";
-    context.font = "14px sans-serif";
-    context.fillText(
-      "Letters + spaces only  •  Backspace: Delete  •  Esc: Default  •  Enter: Confirm",
-      bounds.x + 28,
-      bounds.y + bounds.height - 34,
+      `Letters + spaces only  •  Type directly or use arrows  •  Enter: Select  •  Backspace: Delete  •  Default: ${this.defaultValue}`,
+      bounds.x + 8,
+      bounds.y + bounds.height - 18,
     );
 
     context.restore();

@@ -234,9 +234,9 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Character 8
 - [ ] Character 9
 - [ ] Character 10
-- [x] New Game protagonist naming with canonical/default-name fallback
-- [ ] Story recruitment commands so the game can begin with only the protagonist and add companions as they are met
-- [ ] Optional companion renaming at recruitment while preserving stable actor IDs internally
+- [x] Story-driven protagonist naming with unidentified New Game state and canonical/default-name fallback
+- [x] Story recruitment commands so the game can begin with only the protagonist and add companions as they are met
+- [x] Optional companion renaming at recruitment while preserving stable actor IDs internally
 - [x] Reusable actor-name entry scene/event command plus runtime dialogue name tokens for future recruitment scenes
 - [ ] Party Switching
 - [ ] Dual Techs
@@ -318,6 +318,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Pass 94: Add Essence slot scroll affordance, Item Arrange overflow cue, and Battle HUD breathing-room cleanup
 - [x] Pass 95: Add Active Time Battle Foundation v1 and TIME HUD presentation without replacing the proven round scheduler
 - [x] Pass 97: Promote TIME readiness into unified actor/enemy turn authority and restrict actor naming to letters/spaces
+- [x] Pass 101: Move naming into story events, add the full name-entry keyboard, unidentified protagonist startup, and optional companion naming fixtures
 - [x] Pass 98: Add ATB Active/Wait configuration, serialize queued enemy actions, simplify TIME HUD text, and reorder battle commands
 - [x] Pass 99: Decouple ATB input/execution, preserve player command control during enemy actions, refine Wait semantics, and randomize standard starting TIME
 - [x] Pass 100: Harden ATB Confirm ownership and enforce the global 99-copy inventory ceiling across shops, treasure, rewards, and save restoration

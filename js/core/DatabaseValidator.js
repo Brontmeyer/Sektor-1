@@ -124,6 +124,30 @@ class DatabaseValidator {
       errors.push("System.startMapId must be an integer.");
     }
 
+    if (system.protagonistActorId !== undefined) {
+      if (!Number.isInteger(system.protagonistActorId) || system.protagonistActorId <= 0) {
+        errors.push("System.protagonistActorId must be a positive integer when provided.");
+      } else if (Array.isArray(actors) && !actors[system.protagonistActorId]) {
+        errors.push(
+          `System.protagonistActorId references unknown actor ID ${system.protagonistActorId}.`,
+        );
+      }
+    }
+
+    if (system.unidentifiedActorName !== undefined) {
+      const value = typeof system.unidentifiedActorName === "string"
+        ? system.unidentifiedActorName.normalize("NFKC").replace(/\s+/g, " ").trim()
+        : "";
+
+      if (!value || !/^[\p{L} ]+$/u.test(value)) {
+        errors.push(
+          "System.unidentifiedActorName must contain letters and spaces only when provided.",
+        );
+      } else if (Array.from(value).length > 16) {
+        errors.push("System.unidentifiedActorName must be 16 characters or fewer.");
+      }
+    }
+
     if (system.startingActorIds !== undefined) {
       if (!Array.isArray(system.startingActorIds) || system.startingActorIds.length === 0) {
         errors.push("System.startingActorIds must be a non-empty array when provided.");

@@ -6,6 +6,16 @@ class Game_System {
       .filter((actorData) => actorData !== null)
       .map((actorData) => new Game_Actor(actorData.id));
 
+    // The protagonist begins the story before their identity is established.
+    // Keep the canonical database name untouched as Game_Actor.defaultName()
+    // so the later story naming event can still offer it as the default.
+    const protagonist = this.actor(this.protagonistActorId());
+
+    if (protagonist) {
+      const unidentifiedName = this.unidentifiedActorName();
+      protagonist.rename?.(unidentifiedName);
+    }
+
     const startingActorIds = this.startingActorIds();
     const startingActors = startingActorIds
       .map((actorId) => this.actor(actorId))
@@ -27,6 +37,27 @@ class Game_System {
   actor(actorId) {
     const id = Number(actorId);
     return this.actors.find((actor) => actor.actorId === id) || null;
+  }
+
+  protagonistActorId() {
+    const configured = Number(DatabaseManager.system?.protagonistActorId);
+
+    if (
+      Number.isInteger(configured) &&
+      configured > 0 &&
+      DatabaseManager.actor?.(configured)
+    ) {
+      return configured;
+    }
+
+    return 1;
+  }
+
+  unidentifiedActorName() {
+    const configured = Game_Actor.normalizeName(
+      DatabaseManager.system?.unidentifiedActorName || "Unknown",
+    );
+    return configured || "Unknown";
   }
 
   startingActorIds() {

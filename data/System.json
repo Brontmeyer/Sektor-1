@@ -3,6 +3,8 @@
   "startMapId": 1,
   "battleView": "side",
   "debugMode": true,
+  "protagonistActorId": 1,
+  "unidentifiedActorName": "Unknown",
   "startingActorIds": [
     1
   ]

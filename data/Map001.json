@@ -615,9 +615,9 @@
       ]
     },
     {
-      "_comment": "ID 15: Super Sexy Sarah recruitment fixture",
+      "_comment": "ID 15: Sarah recruitment fixture",
       "id": 15,
-      "name": "Super Sexy Sarah Recruiter",
+      "name": "Sarah Recruiter",
       "x": 510,
       "y": 600,
       "width": 32,
@@ -625,12 +625,12 @@
       "solid": true,
       "pages": [
         {
-          "_comment": "Recruit Super Sexy Sarah once.",
+          "_comment": "Recruit Sarah once.",
           "conditions": {},
           "commands": [
             {
               "code": "text",
-              "speaker": "Super Sexy Sarah",
+              "speaker": "Sarah",
               "text": "I am coming with you, {actor:1}."
             },
             {
@@ -640,6 +640,11 @@
               "message": "{actor:2} joined the party."
             },
             {
+              "code": "nameActor",
+              "actorId": 2,
+              "prompt": "Choose this companion's name, or keep the default."
+            },
+            {
               "code": "setSelfSwitch",
               "letter": "A",
               "value": true
@@ -647,7 +652,7 @@
           ]
         },
         {
-          "_comment": "After Super Sexy Sarah has joined.",
+          "_comment": "After Sarah has joined.",
           "conditions": {
             "selfSwitches": [
               {
@@ -659,7 +664,7 @@
           "commands": [
             {
               "code": "text",
-              "speaker": "Super Sexy Sarah",
+              "speaker": "Sarah",
               "text": "I am with you."
             }
           ]
@@ -692,6 +697,11 @@
               "message": "{actor:3} joined the party."
             },
             {
+              "code": "nameActor",
+              "actorId": 3,
+              "prompt": "Choose this companion’s name, or keep the default."
+            },
+            {
               "code": "setSelfSwitch",
               "letter": "A",
               "value": true
@@ -718,7 +728,6 @@
         }
       ]
     },
-
     {
       "_comment": "ID 17: G Prime recruitment fixture",
       "id": 17,
@@ -743,6 +752,11 @@
               "actorId": 4,
               "speaker": "System",
               "message": "{actor:4} joined the party."
+            },
+            {
+              "code": "nameActor",
+              "actorId": 4,
+              "prompt": "Choose this companion’s name, or keep the default."
             },
             {
               "code": "setSelfSwitch",
@@ -771,7 +785,6 @@
         }
       ]
     },
-
     {
       "_comment": "ID 18: Test Rows Back Attack",
       "id": 18,
@@ -793,6 +806,39 @@
               "code": "text",
               "speaker": "System",
               "text": "The back-attack test encounter has ended."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "ID 19: Protagonist naming fixture",
+      "id": 19,
+      "name": "Protagonist Name Tester",
+      "x": 610,
+      "y": 500,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "_comment": "Repeatable developer fixture for the event-driven protagonist naming scene.",
+          "conditions": {},
+          "commands": [
+            {
+              "code": "text",
+              "speaker": "System",
+              "text": "You reach for the memory of your name..."
+            },
+            {
+              "code": "nameActor",
+              "actorId": 1,
+              "prompt": "What is your name?"
+            },
+            {
+              "code": "text",
+              "speaker": "System",
+              "text": "Your name is {actor:1}."
             }
           ]
         }

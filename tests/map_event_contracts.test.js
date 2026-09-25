@@ -442,9 +442,40 @@ function testItemGainNormalizesQuantitiesAndRejectsInvalidInput() {
   assert.equal(party.itemCount(999), 0);
 }
 
+function testMap001ContainsStoryDrivenNamingFixtures() {
+  const map = readData("Map001.json");
+  const protagonistEvent = map.events.find((event) => event?.id === 19);
+
+  assert.ok(protagonistEvent, "Map001 should contain the protagonist naming fixture.");
+  assert.equal(
+    protagonistEvent.pages[0].commands.some(
+      (command) => command.code === "nameActor" && command.actorId === 1,
+    ),
+    true,
+  );
+
+  for (const [eventId, actorId] of [[15, 2], [16, 3], [17, 4]]) {
+    const event = map.events.find((entry) => entry?.id === eventId);
+    const commands = event?.pages?.[0]?.commands || [];
+    const recruitIndex = commands.findIndex(
+      (command) => command.code === "recruitActor" && command.actorId === actorId,
+    );
+    const nameIndex = commands.findIndex(
+      (command) => command.code === "nameActor" && command.actorId === actorId,
+    );
+
+    assert.ok(recruitIndex >= 0, `Event ${eventId} should recruit actor ${actorId}.`);
+    assert.ok(
+      nameIndex > recruitIndex,
+      `Event ${eventId} should offer actor ${actorId} naming after recruitment.`,
+    );
+  }
+}
+
 async function run() {
   testCurrentMapsPassValidation();
   testActorNamingEventCommandIsValidated();
+  testMap001ContainsStoryDrivenNamingFixtures();
   testMapIdentityGeometryAndTransferContracts();
   testOptionalMenuAccessContractIsValidated();
   testNestedEventContractsRejectMalformedCommands();

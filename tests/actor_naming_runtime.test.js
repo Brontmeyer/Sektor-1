@@ -63,8 +63,11 @@ function testActorNamesAreRuntimeIdentityWithCanonicalFallback() {
 
   assert.ok(actor);
   assert.equal(actor.defaultName(), "Tyler");
-  assert.equal(actor.name, "Tyler");
-  assert.equal(system.actorName(1), "Tyler");
+  assert.equal(actor.name, "Unknown");
+  assert.equal(system.actorName(1), "Unknown");
+  assert.equal(system.actor(2).name, system.actor(2).defaultName());
+  assert.equal(system.actor(3).name, system.actor(3).defaultName());
+  assert.equal(system.actor(4).name, system.actor(4).defaultName());
   assert.equal(system.actor(999), null);
 
   assert.equal(system.renameActor(1, "  Nova   Prime  "), true);
@@ -163,17 +166,48 @@ function testNameActorEventPushesReusableNamingSceneAndAdvancesInterpreter() {
 
   assert.equal(pushed.length, 1);
   assert.equal(pushed[0][1], 2);
-  assert.equal(pushed[0][2].title, "NAME CHARACTER");
+  assert.equal(pushed[0][2].title, "NAME");
   assert.equal(pushed[0][2].prompt, "What should Sarah be called?");
   assert.equal(interpreter.index, 1);
 }
 
-function testStartupRoutesThroughNameEntryBeforeMap() {
+function testUnidentifiedProtagonistNamingStartsFromCanonicalDefault() {
+  const { system, pushed, Game_Interpreter } = createHarness();
+  const messageWindow = {
+    isOpen() { return false; },
+    show() {},
+    hide() {},
+  };
+  const choiceWindow = {
+    isOpen() { return false; },
+    hasResult() { return false; },
+  };
+  const interpreter = new Game_Interpreter(messageWindow, choiceWindow);
+
+  assert.equal(system.actor(1).name, "Unknown");
+  interpreter.setup([{ code: "nameActor", actorId: 1, prompt: "What is your name?" }]);
+  interpreter.update();
+
+  assert.equal(pushed.length, 1);
+  assert.equal(pushed[0][1], 1);
+  assert.equal(pushed[0][2].startFromDefault, true);
+}
+
+function testStartupDefersNamingUntilStoryEvent() {
   const main = read("js/main.js");
   const index = read("index.html");
+  const map = JSON.parse(read("data/Map001.json"));
+  const namingEvent = map.events.find((event) => event?.id === 19);
 
-  assert.match(main, /SceneManager\.goto\(Scene_NameEntry, 1,/);
+  assert.doesNotMatch(main, /SceneManager\.goto\(Scene_NameEntry/);
   assert.match(main, /SceneManager\.goto\(Scene_Map\)/);
+  assert.ok(namingEvent, "Map001 should contain the protagonist naming fixture.");
+  assert.equal(
+    namingEvent.pages[0].commands.some(
+      (command) => command.code === "nameActor" && command.actorId === 1,
+    ),
+    true,
+  );
   assert.match(index, /js\/windows\/Window_NameEntry\.js/);
   assert.match(index, /js\/scenes\/Scene_NameEntry\.js/);
 }
@@ -182,7 +216,8 @@ function run() {
   testActorNamesAreRuntimeIdentityWithCanonicalFallback();
   testDialogueActorTokensResolveRuntimeNames();
   testNameActorEventPushesReusableNamingSceneAndAdvancesInterpreter();
-  testStartupRoutesThroughNameEntryBeforeMap();
+  testUnidentifiedProtagonistNamingStartsFromCanonicalDefault();
+  testStartupDefersNamingUntilStoryEvent();
   console.log("Actor naming runtime regression tests passed.");
 }
 
