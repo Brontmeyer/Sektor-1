@@ -57,16 +57,19 @@ function testConfigPersistsIndependentlyFromSaveSlots() {
 
   ConfigManager.initialize();
   assert.equal(ConfigManager.get("battleSpeed"), "normal");
+  assert.equal(ConfigManager.get("atbMode"), "active");
   assert.equal(ConfigManager.storageKey().startsWith("Sektor1_Save_"), false);
 
   assert.equal(ConfigManager.set("battleSpeed", "fast"), true);
   assert.equal(ConfigManager.set("battleCursorMemory", "memory"), true);
+  assert.equal(ConfigManager.set("atbMode", "wait"), true);
   assert.equal(localStorage.store.has(ConfigManager.storageKey()), true);
 
   ConfigManager.data = null;
   ConfigManager.initialize();
   assert.equal(ConfigManager.get("battleSpeed"), "fast");
   assert.equal(ConfigManager.get("battleCursorMemory"), "memory");
+  assert.equal(ConfigManager.get("atbMode"), "wait");
   assert.equal(ConfigManager.set("battleSpeed", "warp"), false);
   assert.equal(ConfigManager.get("battleSpeed"), "fast");
 }
@@ -142,11 +145,11 @@ function testOptionsWindowCyclesAndPersistsSettings() {
 
   triggered = new Set(["ArrowDown"]);
   window.update();
-  assert.equal(window.currentOption().key, "battleMessageSpeed");
+  assert.equal(window.currentOption().key, "atbMode");
 
   triggered = new Set(["ArrowLeft"]);
   window.update();
-  assert.equal(ConfigManager.get("battleMessageSpeed"), "slow");
+  assert.equal(ConfigManager.get("atbMode"), "wait");
   assert.equal(localStorage.store.has(ConfigManager.storageKey()), true);
 }
 
@@ -196,6 +199,45 @@ function testFieldMessageSpeedControlsRevealAndConfirmBehavior() {
   assert.equal(message.isOpen(), false);
 }
 
+function testAtbModePausesOnlyTimeWhilePlayerChoosesInWaitMode() {
+  const localStorage = localStorageHarness();
+  const context = vm.createContext({
+    console,
+    localStorage,
+    Scene_Base: class {},
+    BattleManager: { OUTCOME_VICTORY: "victory" },
+  });
+
+  vm.runInContext(
+    `${read("js/core/ConfigManager.js")}\n${read("js/scenes/Scene_Battle.js")}\n` +
+      `globalThis.__classes = { ConfigManager, Scene_Battle };`,
+    context,
+  );
+
+  const { ConfigManager, Scene_Battle } = context.__classes;
+  ConfigManager.initialize();
+  const actor = { name: "Actor" };
+  const scene = Object.create(Scene_Battle.prototype);
+  scene.outcome = null;
+  scene.enemies = [];
+  scene.timeManager = { activeBattler: actor };
+  scene.actionPhase = "none";
+  scene.battleInputLocked = false;
+
+  ConfigManager.set("atbMode", "active", { persist: false });
+  assert.equal(scene.battleTimeDeltaTime(0.5), 0.5);
+
+  ConfigManager.set("atbMode", "wait", { persist: false });
+  assert.equal(scene.battleTimeDeltaTime(0.5), 0);
+
+  scene.battleInputLocked = true;
+  assert.equal(scene.battleTimeDeltaTime(0.5), 0.5);
+
+  scene.battleInputLocked = false;
+  scene.actionPhase = "lunge";
+  assert.equal(scene.battleTimeDeltaTime(0.5), 0.5);
+}
+
 function testBattleSpeedAndMessageSpeedUseSeparateClocks() {
   const localStorage = localStorageHarness();
   const calls = [];
@@ -219,6 +261,8 @@ function testBattleSpeedAndMessageSpeedUseSeparateClocks() {
 
   const fake = {
     outcome: "escape",
+    updateActiveTimeClaimDelay(value) { calls.push(["cadence", value]); },
+    battleTimeDeltaTime(value) { return value; },
     updateBattleTime(value) { calls.push(["time", value]); },
     updateBattlerStates(value) { calls.push(["states", value]); },
     updateActionPhase(value) { calls.push(["phase", value]); },
@@ -233,7 +277,7 @@ function testBattleSpeedAndMessageSpeedUseSeparateClocks() {
   Scene_Battle.prototype.update.call(fake, 0.2);
 
   const battleValues = calls
-    .filter(([name]) => name !== "banner")
+    .filter(([name]) => !["banner"].includes(name))
     .map(([, value]) => value);
   assert.equal(battleValues.every((value) => Math.abs(value - 0.27) < 1e-9), true);
   const banner = calls.find(([name]) => name === "banner");
@@ -362,6 +406,7 @@ function run() {
   testSpeedMappingsAndMagickOrderingAreDeterministic();
   testOptionsWindowCyclesAndPersistsSettings();
   testFieldMessageSpeedControlsRevealAndConfirmBehavior();
+  testAtbModePausesOnlyTimeWhilePlayerChoosesInWaitMode();
   testBattleSpeedAndMessageSpeedUseSeparateClocks();
   testCursorMemoryControlsFreshSelectorEntryButNotHierarchy();
   testFullscreenOptionsSceneDrawsAndReturnsToMenu();

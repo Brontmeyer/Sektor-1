@@ -2,20 +2,21 @@
 
 class ConfigManager {
   static currentVersion() {
-    return 3;
+    return 4;
   }
 
   static storageKey() {
-    return "Sektor1_Config_v3";
+    return "Sektor1_Config_v4";
   }
 
   static legacyStorageKeys() {
-    return ["Sektor1_Config_v2", "Sektor1_Config_v1"];
+    return ["Sektor1_Config_v3", "Sektor1_Config_v2", "Sektor1_Config_v1"];
   }
 
   static defaults() {
     return {
       battleSpeed: "normal",
+      atbMode: "active",
       battleMessageSpeed: "normal",
       fieldMessageSpeed: "normal",
       battleCursorMemory: "initial",
@@ -48,6 +49,14 @@ class ConfigManager {
         values: ["slow", "normal", "fast"],
         labels: { slow: "Slow", normal: "Normal", fast: "Fast" },
         description: "Changes battle animation, action, and Time gauge pacing.",
+      },
+      {
+        key: "atbMode",
+        label: "ATB Mode",
+        values: ["active", "wait"],
+        labels: { active: "Active", wait: "Wait" },
+        description:
+          "Active keeps Time moving during command selection; Wait pauses it.",
       },
       {
         key: "battleMessageSpeed",
@@ -580,6 +589,10 @@ class ConfigManager {
 
   static battleSpeedMultiplier() {
     return { slow: 0.75, normal: 1, fast: 1.35 }[this.get("battleSpeed")] || 1;
+  }
+
+  static atbWaitEnabled() {
+    return this.get("atbMode") === "wait";
   }
 
   static battleMessageSpeedMultiplier() {

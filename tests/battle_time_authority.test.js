@@ -74,7 +74,12 @@ function makeHarness(nextReady) {
     partyController,
     timeManager,
     actionPhase: "none",
+    activeTimeClaimDelay: 0,
     battleInputLocked: true,
+    scheduleActiveTimeClaimDelay(delay) {
+      this.activeTimeClaimDelay = Math.max(this.activeTimeClaimDelay, delay);
+      return this.activeTimeClaimDelay;
+    },
     usesActiveTimeAuthority() { return true; },
     addBattleMessage() {},
     performEnemyTurn(value) { this.enemyPerformed = value; },
@@ -135,11 +140,75 @@ function testFinishingActorActionReturnsBattleToWaitingForTime() {
   assert.equal(harness.manager.currentTurnState(), "turnStart");
 }
 
+function testActiveModeLetsReadyEnemyInterruptOpenActorCommand() {
+  const harness = makeHarness(null);
+  harness.partyController.setActiveBattler(harness.actor);
+  harness.timeManager.activeBattler = null;
+  harness.scene.battleInputLocked = false;
+  harness.timeManager.claimNextReadyBattler = function claimEnemy(predicate) {
+    assert.equal(typeof predicate, "function");
+    assert.equal(predicate(harness.enemy), true);
+    assert.equal(predicate(harness.actor), false);
+    this.activeBattler = harness.enemy;
+    return harness.enemy;
+  };
+
+  assert.equal(harness.manager.updateActiveTimeAuthority(), harness.enemy);
+  assert.equal(harness.scene.enemyPerformed, harness.enemy);
+  assert.equal(harness.partyController.currentBattler(), harness.actor);
+  assert.equal(harness.scene.battleInputLocked, true);
+}
+
+function testActiveInterruptDefeatClearsReservedActorCommand() {
+  const harness = makeHarness(null);
+  harness.partyController.setActiveBattler(harness.actor);
+  harness.timeManager.activeBattler = null;
+  harness.actor.hp = 0;
+  let resetBattler = null;
+  harness.timeManager.reset = (battler) => {
+    resetBattler = battler;
+  };
+  harness.timeManager.claimNextReadyBattler = () => null;
+
+  assert.equal(harness.manager.updateActiveTimeAuthority(), null);
+  assert.equal(resetBattler, harness.actor);
+  assert.equal(harness.partyController.currentBattler(), null);
+  assert.equal(harness.scene.battleInputLocked, true);
+}
+
+function testEnemyCompletionAddsCadenceBeforeNextReadyClaim() {
+  const harness = makeHarness(null);
+  harness.timeManager.activeBattler = harness.enemy;
+  harness.timeManager.reset = () => {};
+  harness.manager.detectBattleOutcome = () => null;
+
+  harness.manager.completeEnemyTurn(harness.enemy, false);
+
+  assert.equal(harness.timeManager.activeBattler, null);
+  assert.equal(harness.scene.activeTimeClaimDelay, 0.45);
+
+  let claims = 0;
+  harness.timeManager.claimNextReadyBattler = () => {
+    claims++;
+    return harness.actor;
+  };
+
+  assert.equal(harness.manager.updateActiveTimeAuthority(), null);
+  assert.equal(claims, 0);
+
+  harness.scene.activeTimeClaimDelay = 0;
+  harness.manager.processTurnStartStatuses = () => [];
+  harness.manager.battlerCanAct = () => true;
+  harness.manager.startForcedPartyAction = () => false;
+  assert.equal(harness.manager.updateActiveTimeAuthority(), harness.actor);
+  assert.equal(claims, 1);
+}
+
 function testLiveSceneStartsIdleUntilSomeoneIsReady() {
   const source = read("js/scenes/Scene_Battle.js");
 
   assert.match(source, /usesActiveTimeAuthority\(\) \{\s*return true;/);
-  assert.match(source, /this\.updateBattleTime\(battleDeltaTime\);\s*Scene_Battle\.prototype\.updateActiveTimeAuthority\.call\(this\);/);
+  assert.match(source, /Scene_Battle\.prototype\.battleTimeDeltaTime\.call\([\s\S]*?this\.updateBattleTime\(timeDeltaTime\);\s*Scene_Battle\.prototype\.updateActiveTimeAuthority\.call\(this\);/);
   assert.match(source, /this\.partyController\.clearActiveBattler\(\)/);
 }
 
@@ -147,6 +216,9 @@ function run() {
   testReadyActorBecomesTheOnlyCommandOwner();
   testReadyEnemyUsesSameAuthorityInsteadOfWaitingForEnemyRound();
   testFinishingActorActionReturnsBattleToWaitingForTime();
+  testActiveModeLetsReadyEnemyInterruptOpenActorCommand();
+  testActiveInterruptDefeatClearsReservedActorCommand();
+  testEnemyCompletionAddsCadenceBeforeNextReadyClaim();
   testLiveSceneStartsIdleUntilSomeoneIsReady();
   console.log("Battle Time authority regression tests passed.");
 }

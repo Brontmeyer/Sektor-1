@@ -902,20 +902,11 @@ class BattleRenderer {
       Number(timeManager?.maximum?.()) || 100,
     );
     const timeReady = timeManager?.isReady?.(actor) === true;
-    const timeValueText = timeReady
-      ? "READY"
-      : `${Math.round(rawTime)}/${Math.round(timeMaximum)}`;
 
     context.fillStyle = UIResourcePalette.text("time", {
       ready: timeReady,
     });
     context.fillText("TIME", timeX, centerY - 5);
-    context.fillStyle = UIResourcePalette.valueText();
-    context.fillText(
-      timeValueText,
-      timeX + context.measureText("TIME ").width,
-      centerY - 5,
-    );
     this.drawHudGauge(
       context,
       rawTime,

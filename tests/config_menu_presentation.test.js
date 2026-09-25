@@ -71,6 +71,7 @@ function testConfigUsesUnifiedHeaderContentAndGoldFocusLanguage() {
   assert.equal(drawn.includes("CONFIG"), true);
   assert.equal(drawn.includes("SYSTEM"), true);
   assert.equal(drawn.includes("▶ Battle Speed"), true);
+  assert.equal(drawn.some((text) => text.includes("ATB Mode")), true);
   assert.equal(drawn.some((text) => text.includes("Window Color")), true);
   assert.equal(drawn.some((text) => text.includes("Controls")), true);
   assert.equal(
@@ -84,12 +85,12 @@ function testConfigNavigationPreservesRuntimeOwnership() {
   harness.actions.add("down");
   harness.window.update();
   harness.actions.clear();
-  assert.equal(harness.window.currentOption().key, "battleMessageSpeed");
+  assert.equal(harness.window.currentOption().key, "atbMode");
 
   harness.actions.add("right");
   harness.window.update();
   harness.actions.clear();
-  assert.equal(harness.window.currentOption().key, "battleMessageSpeed");
+  assert.equal(harness.window.currentOption().key, "atbMode");
 }
 
 function testConfigSceneDropsLegacyGrayGradientChrome() {

@@ -12,6 +12,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added ATB Mode configuration with **Active** / **Wait** behavior. Active preserves continuous Time-gauge progression while the player chooses commands and allows Ready enemies to interrupt that open command flow through the same serialized authority; Wait freezes Time progression during player command/selector/target selection. Config Runtime v4 migrates older settings and defaults existing players to Active so the pre-option pacing is preserved.
+- Added a short serialized recovery gate after enemy ATB actions so several enemies becoming Ready together remain queued and resolve one at a time instead of visually firing on consecutive frames.
 - Promoted Active Time Battle into unified turn authority: actors and enemies now enter one shared readiness queue when TIME reaches 100, the next ready battler owns the action, and completed actions reset only that battler before the battle returns to waiting for the next readiness event. Legacy side-round helpers remain isolated for regression compatibility but no longer schedule live battles.
 - Added ATB authority regression coverage for cross-side readiness order, actor command ownership, enemy activation, action release, and defeated queued battlers.
 - Added Active Time Battle Foundation v1: battle-local Time gauges now fill continuously for actors and enemies from Agility, Battle Speed, and existing Haste / Slow / Stop rules; the battle HUD presents TIME beside VALOR with Ready feedback, and completed actions reset that battler's clock. The existing round scheduler remains authoritative until the dedicated ATB turn-authority pass.
@@ -23,6 +25,7 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Simplified the battle TIME HUD to label + gauge only, removing redundant numeric / READY text, and reordered the persistent battle command list to **Attack / Magick / Skills / Item**.
 - Tightened actor naming to the intended story-name contract: runtime names and name entry now accept Unicode letters plus single spaces only, ignoring digits, punctuation, symbols, apostrophes, and hyphens while preserving the existing 16-character limit and canonical defaults.
 - Polished late menu/battle presentation: ESSENCE now labels the slot panel as EQUIPPED ESSENCES with extra breathing room under the heading, actor Essence slots can scroll when future actors gain more slots than the panel can show, ITEM Arrange preview shows overflow affordance when its list is longer than the visible preview, the idle battle HUD no longer draws the top-right command legend above the party frame, and one-line party names now sit on their battle-row centerlines instead of riding against the top edge.
 

@@ -6,7 +6,7 @@ class Window_BattleCommand {
 
   constructor(scene = null) {
     this.scene = scene;
-    this.commands = ["Attack", "Skills", "Magick", "Item"];
+    this.commands = ["Attack", "Magick", "Skills", "Item"];
 
     this.index = 0;
     this.visible = true;

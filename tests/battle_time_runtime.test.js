@@ -170,6 +170,27 @@ function testReadyBattlersQueueAcrossBothSidesAndClaimInReadyOrder() {
   assert.equal(manager.claimNextReadyBattler(), actor);
 }
 
+function testReadyClaimPredicateCanSelectEnemyWithoutLosingQueuedActor() {
+  const { manager, party, enemies, battler } = makeFixture();
+  const actor = battler("Actor", 10);
+  const enemy = battler("Enemy", 10);
+  party.push(actor);
+  enemies.push(enemy);
+  manager.initialize();
+
+  manager.setValue(actor, 100);
+  manager.setValue(enemy, 100);
+
+  assert.equal(
+    manager.claimNextReadyBattler((candidate) => enemies.includes(candidate)),
+    enemy,
+  );
+  assert.deepEqual(
+    Array.from(manager.queuedBattlers()).map((entry) => entry.name),
+    ["Actor"],
+  );
+}
+
 function testStoppedReadyBattlerWaitsWithoutBlockingOtherReadyBattlers() {
   const { manager, party, enemies, battler } = makeFixture();
   const stopped = battler("Stopped", 10);
@@ -225,7 +246,7 @@ function testSceneUsesBattleSpeedScaledDeltaForTime() {
   assert.deepEqual(calls, [1.35]);
 
   const source = read("js/scenes/Scene_Battle.js");
-  assert.match(source, /this\.updateBattleTime\(battleDeltaTime\)/);
+  assert.match(source, /this\.updateBattleTime\(timeDeltaTime\)/);
 }
 
 function testCompletedTurnsResetTheirBattleLocalClock() {
@@ -253,6 +274,7 @@ function run() {
   testStopDurationStillExpiresWhileVisibleTimeIsFrozen();
   testTimeClampsAtReadyAndCanResetAfterAction();
   testReadyBattlersQueueAcrossBothSidesAndClaimInReadyOrder();
+  testReadyClaimPredicateCanSelectEnemyWithoutLosingQueuedActor();
   testStoppedReadyBattlerWaitsWithoutBlockingOtherReadyBattlers();
   testDefeatedQueuedBattlerIsDiscardedBeforeClaim();
   testSceneUsesBattleSpeedScaledDeltaForTime();

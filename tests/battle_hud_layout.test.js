@@ -227,8 +227,14 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
 
   assert.equal(text.includes("VALOR"), true);
   assert.equal(text.includes("TIME"), true);
-  assert.equal(text.includes("READY"), true);
   assert.equal(text.includes("DEFEATED"), true);
+  assert.equal(
+    text.filter((entry) => entry === "READY").length,
+    1,
+    "only Valor should render READY text; Time readiness is communicated by its full gauge",
+  );
+  assert.equal(text.includes("25/100"), false);
+  assert.equal(text.includes("60/100"), false);
   assert.equal(
     textCalls.some(
       (call) => call[1] === "#ffd75a" && call[2] === "Sarah",

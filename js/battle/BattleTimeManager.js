@@ -122,10 +122,12 @@ class BattleTimeManager {
     return [...this.readyQueue];
   }
 
-  claimNextReadyBattler() {
+  claimNextReadyBattler(predicate = null) {
     if (this.activeBattler) {
       return null;
     }
+
+    const accepts = typeof predicate === "function" ? predicate : () => true;
 
     const currentBattlers = new Set(this.battlers());
     const candidates = this.readyQueue.length;
@@ -138,6 +140,11 @@ class BattleTimeManager {
         this.battlerIsDefeated(battler) ||
         !this.isReady(battler)
       ) {
+        continue;
+      }
+
+      if (!accepts(battler)) {
+        this.readyQueue.push(battler);
         continue;
       }
 

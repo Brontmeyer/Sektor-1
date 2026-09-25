@@ -85,7 +85,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Battle HUD & Message Layout v1 with four stable actor rows and reusable HUD geometry
 - [x] Implement Active Time Battle Foundation v1 with battle-local actor/enemy Time gauges, Agility/status/Battle Speed fill, HUD presentation, and non-authoritative readiness state
 - [x] Promote Time readiness into unified ATB turn authority so actors and enemies act from one readiness queue instead of party/enemy side rounds
-- [ ] Add ATB Mode configuration (Wait / Active) now that unified readiness authority is stable
+- [x] Add ATB Mode configuration (Wait / Active) now that unified readiness authority is stable
 - [x] Implement Battle Presentation & Feedback v2 from hands-on playtest feedback
 - [x] Replace persistent top header/message panels with compact transient action/state banners
 - [x] Keep damage / Weak / Resist / Immune / Critical feedback on the battlefield; add brief Critical screen flash
@@ -315,3 +315,4 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Pass 94: Add Essence slot scroll affordance, Item Arrange overflow cue, and Battle HUD breathing-room cleanup
 - [x] Pass 95: Add Active Time Battle Foundation v1 and TIME HUD presentation without replacing the proven round scheduler
 - [x] Pass 97: Promote TIME readiness into unified actor/enemy turn authority and restrict actor naming to letters/spaces
+- [x] Pass 98: Add ATB Active/Wait configuration, serialize queued enemy actions, simplify TIME HUD text, and reorder battle commands

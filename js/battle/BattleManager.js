@@ -543,6 +543,37 @@ class BattleManager {
       return null;
     }
 
+    let commandOwner = this.party().currentBattler();
+
+    if (commandOwner && this.battlerIsDefeated(commandOwner)) {
+      this.clearDefeatedActiveTimeCommandOwner(commandOwner);
+      commandOwner = null;
+    }
+
+    if (commandOwner && !this.atbWaitEnabled()) {
+      if ((Number(battle.activeTimeClaimDelay) || 0) > 0) {
+        return commandOwner;
+      }
+
+      const interruptingEnemy =
+        battle.timeManager?.claimNextReadyBattler?.((candidate) =>
+          battle.enemies.includes(candidate),
+        ) || null;
+
+      if (interruptingEnemy) {
+        battle.battleInputLocked = true;
+        return this.activateReadyBattler(interruptingEnemy);
+      }
+
+      this.setTurnState(BattleManager.TURN_COMMAND);
+      battle.battleInputLocked = false;
+      return commandOwner;
+    }
+
+    if ((Number(battle.activeTimeClaimDelay) || 0) > 0) {
+      return null;
+    }
+
     const battler = battle.timeManager?.claimNextReadyBattler?.() || null;
 
     if (!battler) {
@@ -588,7 +619,42 @@ class BattleManager {
 
     this.setTurnState(BattleManager.TURN_COMMAND);
     battle.battleInputLocked = false;
+
+    if (!this.atbWaitEnabled()) {
+      battle.timeManager?.releaseActiveBattler?.(battler);
+    }
+
     return battler;
+  }
+
+  atbWaitEnabled() {
+    return (
+      typeof ConfigManager !== "undefined" &&
+      typeof ConfigManager.atbWaitEnabled === "function" &&
+      ConfigManager.atbWaitEnabled()
+    );
+  }
+
+  clearDefeatedActiveTimeCommandOwner(battler) {
+    const battle = this.scene;
+
+    battle.timeManager?.reset?.(battler);
+    this.party().clearActiveBattler?.(battler);
+    battle.selectingEnemyTarget = false;
+    battle.enemyTargetAction = null;
+    battle.pendingAttackTarget = null;
+    battle.pendingSkill = null;
+    battle.pendingSkillTarget = null;
+    battle.pendingMagick = null;
+    battle.pendingMagickTarget = null;
+    battle.pendingItem = null;
+    battle.skillsWindow?.hide?.();
+    battle.magickWindow?.hide?.();
+    battle.itemWindow?.hide?.();
+    battle.commandWindow?.closeSide?.();
+    this.setTurnState(BattleManager.TURN_START);
+    battle.battleInputLocked = true;
+    return true;
   }
 
   releaseActiveTimeBattler(battler) {
@@ -2715,6 +2781,7 @@ class BattleManager {
 
     if (this.usesActiveTimeAuthority()) {
       this.releaseActiveTimeBattler(enemy);
+      this.scene.scheduleActiveTimeClaimDelay?.(0.45);
       return;
     }
 

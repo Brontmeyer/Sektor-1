@@ -66,9 +66,11 @@ Active Time Battle uses a battle-local `0..100` Time clock for every current act
 
 Time fills continuously from a battler's Agility. Existing status metadata is reused rather than duplicated: Haste accelerates Time through `turnSpeedMultiplier()`, Slow reduces it, and Stop freezes the visible gauge through `haltsTurnProgression()`. A private halted-status clock advances Stop's existing turn duration at the battler's would-be Time cadence so removing side rounds cannot make Stop permanent. Defeated battlers hold no Time. `Scene_Battle` feeds the manager the same Battle Speed-scaled delta time already used by battle animation/action timing, so Slow / Normal / Fast configuration changes Time pacing consistently.
 
-At `100`, a battler becomes Ready and enters `BattleTimeManager`'s shared readiness queue. Actors and enemies use the same queue, so live battle no longer alternates party-side and enemy-side rounds. Only one claimed battler owns action flow at a time: a ready actor receives the command window, while a ready enemy immediately delegates to existing enemy AI. Other battlers may continue filling to Ready and wait in queue. Completing, skipping, or spending an action resets only that battler's Time gauge and releases authority so the next queued battler can act.
+At `100`, a battler becomes Ready and enters `BattleTimeManager`'s shared readiness queue. Actors and enemies use the same queue, so live battle no longer alternates party-side and enemy-side rounds. A ready actor receives command ownership, while a ready enemy delegates to existing enemy AI. Completing, skipping, or spending an action resets only that battler's Time gauge. Enemy completions apply a short battle-speed-scaled claim delay before another queued battler can take action authority, preventing several simultaneously Ready enemies from resolving on adjacent frames while preserving queue order. In Active mode, the player's open command owner remains reserved by `BattlePartyController` while `BattleTimeManager` may temporarily grant action authority to a Ready enemy; the open selector/target state is preserved and player input is locked only for the interrupting enemy action chain.
 
-The actor HUD presents `TIME` beside HP / MP / VALOR. Enemy Time remains hidden but follows the same clock and readiness rules. The current command/selector behavior is intentionally wait-like while one battler owns action flow; a future Config pass can expose explicit Wait / Active behavior without changing readiness ownership.
+The actor HUD presents `TIME` beside HP / MP / VALOR as a label plus gauge only; the full gauge is the readiness signal, so numeric `0/100` and `READY` copy are intentionally omitted. Enemy Time remains hidden but follows the same clock and readiness rules.
+
+Config Runtime v4 exposes **ATB Mode** with `Active` and `Wait`. Active keeps all non-halted Time gauges progressing while the player chooses commands; Ready enemies can therefore interrupt an open player command/selector/target flow, resolve one at a time, and then return control to the same actor selection state. Wait pauses Time progression while a ready player actor is choosing a command, selector entry, or target, so no new enemy readiness can develop during that decision window. Wait does not freeze action phases, animation, effects, popups, banners, or the enemy-action recovery gate. In both modes, enemy actions remain serialized through the shared readiness authority rather than resolving simultaneously.
 
 The current action sequences are timed phases rather than instantaneous state changes.
 
@@ -122,8 +124,8 @@ The visible battle command foundation contains four persistent commands:
 
 ```text
 Attack
-Skills
 Magick
+Skills
 Item
 ```
 
@@ -131,7 +133,7 @@ Battle Command Navigation & Side Actions v1 exposes **Escape** and **Defend** as
 
 Escape remains governed by the encounter's existing `canEscape` contract, but escapable encounters now use a real roll. `BattleManager.escapeChance()` starts at 45%, adjusts by 2.5 percentage points for each point of living-party average Agility above/below living-enemy average Agility, adds 15 percentage points per previous failed legal attempt, and clamps the final chance to 10-95%. A failed legal attempt consumes the active party battler's turn through the normal turn controller; the retry bonus is battle-local. A non-escapable encounter can still reveal the Escape side panel, but confirming it never rolls or consumes a turn and reports `You cannot escape!`. Retreat Magick remains guaranteed in escapable encounters but respects the same absolute no-escape gate; an impossible Retreat is rejected before casting, so it spends neither MP nor the actor's turn. Defend still resolves through `BattleManager.performDefend()` and the shared action-restriction contract.
 
-`BattleManager` interprets Attack / Skills / Magick / Item / Defend after command confirmation and now owns normal Escape probability/retry rules. `Scene_Battle` owns navigation and the final scene handoff after a successful Escape outcome. Future commands and special character mechanics should extend these boundaries without forcing unrelated command logic into rendering classes.
+`BattleManager` interprets Attack / Magick / Skills / Item / Defend after command confirmation and now owns normal Escape probability/retry rules. `Scene_Battle` owns navigation and the final scene handoff after a successful Escape outcome. Future commands and special character mechanics should extend these boundaries without forcing unrelated command logic into rendering classes.
 
 ---
 

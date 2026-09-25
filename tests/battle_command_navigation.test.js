@@ -107,7 +107,7 @@ function testMainCommandListContainsOnlyFourCoreCommands() {
 
   assert.deepEqual(
     Array.from(window.commands),
-    ["Attack", "Skills", "Magick", "Item"],
+    ["Attack", "Magick", "Skills", "Item"],
   );
   assert.equal(window.hasSideCommandOpen(), false);
   assert.equal(window.currentCommand(), "Attack");

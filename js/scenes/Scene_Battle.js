@@ -73,6 +73,7 @@ class Scene_Battle extends Scene_Base {
     this.pendingEnemyTurn = false;
     this.enemyTurnIndex = 0;
     this.enemyTurnDelay = 0;
+    this.activeTimeClaimDelay = 0;
     this.battleInputLocked = false;
 
     // ENEMY TARGET SELECTION
@@ -163,7 +164,12 @@ class Scene_Battle extends Scene_Base {
       deltaTime,
     );
 
-    this.updateBattleTime(battleDeltaTime);
+    Scene_Battle.prototype.updateActiveTimeClaimDelay.call(this, battleDeltaTime);
+    const timeDeltaTime = Scene_Battle.prototype.battleTimeDeltaTime.call(
+      this,
+      battleDeltaTime,
+    );
+    this.updateBattleTime(timeDeltaTime);
     Scene_Battle.prototype.updateActiveTimeAuthority.call(this);
     this.updateBattlerStates(battleDeltaTime);
     this.updateActionPhase(battleDeltaTime);
@@ -196,6 +202,13 @@ class Scene_Battle extends Scene_Base {
 
     if (Input.isActionTriggered("help")) {
       this.scanManager.toggleHelp();
+      return;
+    }
+
+    // Active ATB may temporarily interrupt an open command/selector with an
+    // enemy action. Keep the player's current selection state intact, but do
+    // not accept input until the interrupting action chain releases control.
+    if (this.battleInputLocked) {
       return;
     }
 
@@ -348,11 +361,6 @@ class Scene_Battle extends Scene_Base {
       return;
     }
 
-    // HANDLE BATTLE INPUT LOCK
-    if (this.battleInputLocked) {
-      return;
-    }
-
     // -----------------------------
     // HANDLE COMMAND WINDOW INPUT
     // -----------------------------
@@ -383,6 +391,56 @@ class Scene_Battle extends Scene_Base {
     }
 
     return ConfigManager.battleMessageDeltaTime(deltaTime);
+  }
+
+  atbWaitEnabled() {
+    return (
+      typeof ConfigManager !== "undefined" &&
+      typeof ConfigManager.atbWaitEnabled === "function" &&
+      ConfigManager.atbWaitEnabled()
+    );
+  }
+
+  isChoosingActiveTimeCommand() {
+    if (!Scene_Battle.prototype.atbWaitEnabled.call(this) || this.outcome) {
+      return false;
+    }
+
+    const battler = this.timeManager?.activeBattler || null;
+
+    if (!battler || this.enemies.includes(battler)) {
+      return false;
+    }
+
+    if (this.actionPhase && this.actionPhase !== "none") {
+      return false;
+    }
+
+    return this.battleInputLocked === false;
+  }
+
+  battleTimeDeltaTime(deltaTime) {
+    return Scene_Battle.prototype.isChoosingActiveTimeCommand.call(this)
+      ? 0
+      : deltaTime;
+  }
+
+  updateActiveTimeClaimDelay(deltaTime) {
+    const seconds = Math.max(0, Number(deltaTime) || 0);
+    this.activeTimeClaimDelay = Math.max(
+      0,
+      (Number(this.activeTimeClaimDelay) || 0) - seconds,
+    );
+    return this.activeTimeClaimDelay;
+  }
+
+  scheduleActiveTimeClaimDelay(delay = 0.45) {
+    const seconds = Math.max(0, Number(delay) || 0);
+    this.activeTimeClaimDelay = Math.max(
+      Number(this.activeTimeClaimDelay) || 0,
+      seconds,
+    );
+    return this.activeTimeClaimDelay;
   }
 
   cancelTargetSelection() {
