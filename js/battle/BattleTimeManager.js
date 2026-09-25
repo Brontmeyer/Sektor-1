@@ -3,14 +3,17 @@
 /**
  * Battle-local Active Time clock and readiness queue.
  *
- * Pass 97 promotes the proven Time gauges into one shared readiness authority
- * for actors and enemies. BattleManager still owns action legality/effects, but
- * side-round queues no longer decide who acts in live battles.
+ * Battle-local Active Time gauges feed one shared readiness authority for actors
+ * and enemies. Standard encounters receive independent randomized opening Time,
+ * while BattleManager owns action legality, queue/execution coordination, and
+ * completion. Legacy side-round queues no longer decide live battle order.
  */
 class BattleTimeManager {
   static MAX_TIME = 100;
   static BASE_FILL_PER_SECOND = 8;
   static AGILITY_FILL_PER_SECOND = 1.2;
+  static INITIAL_TIME_MIN = 0;
+  static INITIAL_TIME_MAX = 75;
 
   constructor(scene) {
     this.scene = scene;
@@ -30,16 +33,27 @@ class BattleTimeManager {
     return [...party, ...enemies].filter(Boolean);
   }
 
-  initialize() {
+  initialize(random = Math.random) {
     this.progress.clear();
     this.haltedProgress.clear();
     this.readyQueue = [];
     this.activeBattler = null;
 
     for (const battler of this.battlers()) {
-      this.progress.set(battler, 0);
+      this.progress.set(battler, this.initialValue(random));
       this.haltedProgress.set(battler, 0);
     }
+  }
+
+  initialValue(random = Math.random) {
+    const roll = typeof random === "function" ? Number(random()) : Math.random();
+    const normalizedRoll = Number.isFinite(roll)
+      ? Math.max(0, Math.min(0.999999999, roll))
+      : 0;
+    const minimum = BattleTimeManager.INITIAL_TIME_MIN;
+    const maximum = BattleTimeManager.INITIAL_TIME_MAX;
+
+    return minimum + normalizedRoll * (maximum - minimum);
   }
 
   maximum() {

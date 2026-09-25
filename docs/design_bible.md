@@ -523,7 +523,7 @@ The current HUD direction favors a polished, soft-framed Sektor 1 JRPG presentat
 
 Escape should be a tactical decision rather than a free scene exit. Escapable encounters use party-versus-enemy Agility plus battle-local retry pressure; a failed legal Escape attempt costs the active actor's turn, while boss/no-escape encounters never roll. Guaranteed escape effects may exist as explicit abilities, but they still respect the encounter's absolute no-escape gate.
 
-The core battle command presentation should stay compact. The persistent list is Attack, Skills, Magick, and Item; Escape and Defend are contextual horizontal side actions that remain hidden until the player deliberately requests them. Back navigation should move one interaction level at a time so choosing a Skill or Magick, entering target selection, and backing out returns to the originating selector instead of discarding navigation context.
+The core battle command presentation should stay compact. The persistent list is Attack, Magick, Skills, and Item; Escape and Defend are contextual horizontal side actions that remain hidden until the player deliberately requests them. Back navigation should move one interaction level at a time so choosing a Skill or Magick, entering target selection, and backing out returns to the originating selector instead of discarding navigation context.
 
 Style can become expressive without sacrificing information.
 

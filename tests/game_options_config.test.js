@@ -199,7 +199,7 @@ function testFieldMessageSpeedControlsRevealAndConfirmBehavior() {
   assert.equal(message.isOpen(), false);
 }
 
-function testAtbModePausesOnlyTimeWhilePlayerChoosesInWaitMode() {
+function testAtbModePausesOnlyDeepSelectionInWaitMode() {
   const localStorage = localStorageHarness();
   const context = vm.createContext({
     console,
@@ -220,19 +220,35 @@ function testAtbModePausesOnlyTimeWhilePlayerChoosesInWaitMode() {
   const scene = Object.create(Scene_Battle.prototype);
   scene.outcome = null;
   scene.enemies = [];
-  scene.timeManager = { activeBattler: actor };
+  scene.partyController = { currentBattler: () => actor };
   scene.actionPhase = "none";
   scene.battleInputLocked = false;
+  scene.selectingEnemyTarget = false;
+  scene.skillsWindow = { isOpen: () => false };
+  scene.magickWindow = { isOpen: () => false };
+  scene.itemWindow = { isOpen: () => false };
 
   ConfigManager.set("atbMode", "active", { persist: false });
+  scene.magickWindow.isOpen = () => true;
   assert.equal(scene.battleTimeDeltaTime(0.5), 0.5);
 
   ConfigManager.set("atbMode", "wait", { persist: false });
-  assert.equal(scene.battleTimeDeltaTime(0.5), 0);
 
-  scene.battleInputLocked = true;
+  // The main command bar is not a pause button.
+  scene.magickWindow.isOpen = () => false;
   assert.equal(scene.battleTimeDeltaTime(0.5), 0.5);
 
+  // Deep selectors and target selection freeze Time in Wait mode.
+  scene.magickWindow.isOpen = () => true;
+  assert.equal(scene.battleTimeDeltaTime(0.5), 0);
+  scene.magickWindow.isOpen = () => false;
+  scene.selectingEnemyTarget = true;
+  assert.equal(scene.battleTimeDeltaTime(0.5), 0);
+
+  // Committed/resolving actions resume the clock.
+  scene.selectingEnemyTarget = false;
+  scene.battleInputLocked = true;
+  assert.equal(scene.battleTimeDeltaTime(0.5), 0.5);
   scene.battleInputLocked = false;
   scene.actionPhase = "lunge";
   assert.equal(scene.battleTimeDeltaTime(0.5), 0.5);
@@ -406,7 +422,7 @@ function run() {
   testSpeedMappingsAndMagickOrderingAreDeterministic();
   testOptionsWindowCyclesAndPersistsSettings();
   testFieldMessageSpeedControlsRevealAndConfirmBehavior();
-  testAtbModePausesOnlyTimeWhilePlayerChoosesInWaitMode();
+  testAtbModePausesOnlyDeepSelectionInWaitMode();
   testBattleSpeedAndMessageSpeedUseSeparateClocks();
   testCursorMemoryControlsFreshSelectorEntryButNotHierarchy();
   testFullscreenOptionsSceneDrawsAndReturnsToMenu();

@@ -62,11 +62,29 @@ function testTimeInitializesForBothBattleSides() {
 
   manager.setValue(actor, 75);
   manager.setValue(enemy, 40);
-  manager.initialize();
+  manager.initialize(() => 0);
 
   assert.equal(manager.value(actor), 0);
   assert.equal(manager.value(enemy), 0);
   assert.equal(manager.maximum(), 100);
+}
+
+function testStandardBattleStartsUseIndependentRandomTimeOffsets() {
+  const { manager, party, enemies, battler, BattleTimeManager } = makeFixture();
+  const actor = battler("Actor");
+  const enemyA = battler("Enemy A");
+  const enemyB = battler("Enemy B");
+  party.push(actor);
+  enemies.push(enemyA, enemyB);
+
+  const rolls = [0.1, 0.5, 0.9];
+  manager.initialize(() => rolls.shift());
+
+  assert.equal(manager.value(actor), 7.5);
+  assert.equal(manager.value(enemyA), 37.5);
+  assert.equal(manager.value(enemyB), 67.5);
+  assert.equal(manager.value(enemyA) !== manager.value(enemyB), true);
+  assert.equal(BattleTimeManager.INITIAL_TIME_MAX < manager.maximum(), true);
 }
 
 function testAgilityChangesContinuousFillRate() {
@@ -74,7 +92,7 @@ function testAgilityChangesContinuousFillRate() {
   const slow = battler("Slow Feet", 5);
   const fast = battler("Fast Feet", 20);
   party.push(slow, fast);
-  manager.initialize();
+  manager.initialize(() => 0);
 
   manager.update(1);
 
@@ -90,7 +108,7 @@ function testHasteAndSlowModifyTimeFill() {
   haste.addStatus("haste");
   slow.addStatus("slow");
   party.push(haste, normal, slow);
-  manager.initialize();
+  manager.initialize(() => 0);
 
   manager.update(1);
 
@@ -103,7 +121,7 @@ function testStopFreezesAndDefeatClearsTime() {
   const stopped = battler("Stopped", 10);
   const defeated = battler("Defeated", 10);
   party.push(stopped, defeated);
-  manager.initialize();
+  manager.initialize(() => 0);
   manager.setValue(stopped, 42);
   manager.setValue(defeated, 60);
   stopped.addStatus("stop");
@@ -119,7 +137,7 @@ function testStopDurationStillExpiresWhileVisibleTimeIsFrozen() {
   const { manager, party, battler } = makeFixture();
   const stopped = battler("Stopped", 10);
   party.push(stopped);
-  manager.initialize();
+  manager.initialize(() => 0);
   manager.setValue(stopped, 42);
   stopped.addStatus("stop");
 
@@ -136,7 +154,7 @@ function testTimeClampsAtReadyAndCanResetAfterAction() {
   const { manager, party, battler } = makeFixture();
   const actor = battler("Ready", 50);
   party.push(actor);
-  manager.initialize();
+  manager.initialize(() => 0);
 
   manager.update(10);
 
@@ -153,7 +171,7 @@ function testReadyBattlersQueueAcrossBothSidesAndClaimInReadyOrder() {
   const enemy = battler("Enemy", 10);
   party.push(actor);
   enemies.push(enemy);
-  manager.initialize();
+  manager.initialize(() => 0);
 
   manager.setValue(enemy, 100);
   manager.setValue(actor, 100);
@@ -176,7 +194,7 @@ function testReadyClaimPredicateCanSelectEnemyWithoutLosingQueuedActor() {
   const enemy = battler("Enemy", 10);
   party.push(actor);
   enemies.push(enemy);
-  manager.initialize();
+  manager.initialize(() => 0);
 
   manager.setValue(actor, 100);
   manager.setValue(enemy, 100);
@@ -197,7 +215,7 @@ function testStoppedReadyBattlerWaitsWithoutBlockingOtherReadyBattlers() {
   const enemy = battler("Enemy", 10);
   party.push(stopped);
   enemies.push(enemy);
-  manager.initialize();
+  manager.initialize(() => 0);
 
   manager.setValue(stopped, 100);
   manager.setValue(enemy, 100);
@@ -219,7 +237,7 @@ function testDefeatedQueuedBattlerIsDiscardedBeforeClaim() {
   const enemy = battler("Enemy", 10);
   party.push(actor);
   enemies.push(enemy);
-  manager.initialize();
+  manager.initialize(() => 0);
 
   manager.setValue(enemy, 100);
   manager.setValue(actor, 100);
@@ -268,6 +286,7 @@ function testTimeManagerLoadsBeforeBattleScene() {
 
 function run() {
   testTimeInitializesForBothBattleSides();
+  testStandardBattleStartsUseIndependentRandomTimeOffsets();
   testAgilityChangesContinuousFillRate();
   testHasteAndSlowModifyTimeFill();
   testStopFreezesAndDefeatClearsTime();

@@ -82,6 +82,11 @@ function makeHarness(nextReady) {
     },
     usesActiveTimeAuthority() { return true; },
     addBattleMessage() {},
+    setActorState(state, duration) { this.actorState = [state, duration]; },
+    setActionPhase(phase, duration = 0) {
+      this.actionPhase = phase;
+      this.actionPhaseTimer = duration;
+    },
     performEnemyTurn(value) { this.enemyPerformed = value; },
   };
 
@@ -140,7 +145,7 @@ function testFinishingActorActionReturnsBattleToWaitingForTime() {
   assert.equal(harness.manager.currentTurnState(), "turnStart");
 }
 
-function testActiveModeLetsReadyEnemyInterruptOpenActorCommand() {
+function testReadyEnemyActsWithoutInterruptingOpenActorCommand() {
   const harness = makeHarness(null);
   harness.partyController.setActiveBattler(harness.actor);
   harness.timeManager.activeBattler = null;
@@ -156,7 +161,7 @@ function testActiveModeLetsReadyEnemyInterruptOpenActorCommand() {
   assert.equal(harness.manager.updateActiveTimeAuthority(), harness.enemy);
   assert.equal(harness.scene.enemyPerformed, harness.enemy);
   assert.equal(harness.partyController.currentBattler(), harness.actor);
-  assert.equal(harness.scene.battleInputLocked, true);
+  assert.equal(harness.scene.battleInputLocked, false);
 }
 
 function testActiveInterruptDefeatClearsReservedActorCommand() {
@@ -174,6 +179,50 @@ function testActiveInterruptDefeatClearsReservedActorCommand() {
   assert.equal(resetBattler, harness.actor);
   assert.equal(harness.partyController.currentBattler(), null);
   assert.equal(harness.scene.battleInputLocked, true);
+}
+
+function testEnemyCompletionRestoresReservedPlayerCommand() {
+  const harness = makeHarness(null);
+  harness.partyController.setActiveBattler(harness.actor);
+  harness.timeManager.activeBattler = harness.enemy;
+  harness.timeManager.reset = () => {};
+  harness.manager.detectBattleOutcome = () => null;
+  harness.scene.battleInputLocked = true;
+
+  harness.manager.completeEnemyTurn(harness.enemy, false);
+
+  assert.equal(harness.partyController.currentBattler(), harness.actor);
+  assert.equal(harness.scene.battleInputLocked, false);
+  assert.equal(harness.manager.currentTurnState(), "command");
+  assert.equal(harness.scene.activeTimeClaimDelay, 0.45);
+}
+
+function testPlayerActionChosenDuringEnemyRecoveryQueuesThenExecutesFirst() {
+  const harness = makeHarness(null);
+  harness.partyController.setActiveBattler(harness.actor);
+  harness.scene.activeTimeClaimDelay = 0.3;
+  harness.scene.battleInputLocked = false;
+
+  assert.equal(harness.manager.commitPartyAction("attack"), "queued");
+  assert.equal(harness.manager.queuedPartyAction.battler, harness.actor);
+  assert.equal(harness.scene.actionPhase, "none");
+  assert.equal(harness.scene.battleInputLocked, true);
+
+  let enemyClaims = 0;
+  harness.timeManager.claimNextReadyBattler = () => {
+    enemyClaims++;
+    return harness.enemy;
+  };
+
+  assert.equal(harness.manager.updateActiveTimeAuthority(), null);
+  assert.equal(enemyClaims, 0);
+
+  harness.scene.activeTimeClaimDelay = 0;
+  assert.equal(harness.manager.updateActiveTimeAuthority(), true);
+  assert.equal(harness.manager.queuedPartyAction, null);
+  assert.equal(harness.scene.actionPhase, "lunge");
+  assert.equal(harness.scene.pendingAttackDamage, true);
+  assert.equal(enemyClaims, 0);
 }
 
 function testEnemyCompletionAddsCadenceBeforeNextReadyClaim() {
@@ -216,8 +265,10 @@ function run() {
   testReadyActorBecomesTheOnlyCommandOwner();
   testReadyEnemyUsesSameAuthorityInsteadOfWaitingForEnemyRound();
   testFinishingActorActionReturnsBattleToWaitingForTime();
-  testActiveModeLetsReadyEnemyInterruptOpenActorCommand();
+  testReadyEnemyActsWithoutInterruptingOpenActorCommand();
   testActiveInterruptDefeatClearsReservedActorCommand();
+  testEnemyCompletionRestoresReservedPlayerCommand();
+  testPlayerActionChosenDuringEnemyRecoveryQueuesThenExecutesFirst();
   testEnemyCompletionAddsCadenceBeforeNextReadyClaim();
   testLiveSceneStartsIdleUntilSomeoneIsReady();
   console.log("Battle Time authority regression tests passed.");

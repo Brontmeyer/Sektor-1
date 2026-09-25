@@ -56,7 +56,7 @@ class ConfigManager {
         values: ["active", "wait"],
         labels: { active: "Active", wait: "Wait" },
         description:
-          "Active keeps Time moving during command selection; Wait pauses it.",
+          "Active always runs Time; Wait pauses it in submenus and targeting.",
       },
       {
         key: "battleMessageSpeed",

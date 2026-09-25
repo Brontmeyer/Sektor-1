@@ -173,5 +173,46 @@
         "slot": 2
       }
     ]
+  },
+  {
+    "_comment": "ID 7: Eight Slime Rows Back Attack",
+    "id": 7,
+    "name": "Eight Slime Rows Back Attack",
+    "canEscape": true,
+    "formation": "backAttack",
+    "members": [
+      {
+        "enemyId": 1,
+        "row": "front"
+      },
+      {
+        "enemyId": 1,
+        "row": "front"
+      },
+      {
+        "enemyId": 1,
+        "row": "front"
+      },
+      {
+        "enemyId": 1,
+        "row": "front"
+      },
+      {
+        "enemyId": 1,
+        "row": "back"
+      },
+      {
+        "enemyId": 1,
+        "row": "back"
+      },
+      {
+        "enemyId": 1,
+        "row": "back"
+      },
+      {
+        "enemyId": 1,
+        "row": "back"
+      }
+    ]
   }
 ]

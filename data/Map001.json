@@ -404,7 +404,7 @@
       "_comment": "ID 9: Test Back Attack",
       "id": 9,
       "name": "Back Attack Tester",
-      "x": 900,
+      "x": 800,
       "y": 200,
       "width": 32,
       "height": 32,
@@ -430,7 +430,7 @@
       "_comment": "ID 10: Test Pincer Battle",
       "id": 10,
       "name": "Pincer Tester",
-      "x": 900,
+      "x": 800,
       "y": 300,
       "width": 32,
       "height": 32,
@@ -482,8 +482,8 @@
       "_comment": "ID 12: Test Pincer Rows Battle",
       "id": 12,
       "name": "Pincer Rows Tester",
-      "x": 800,
-      "y": 400,
+      "x": 900,
+      "y": 300,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -766,6 +766,33 @@
               "code": "text",
               "speaker": "G Prime",
               "text": "I am with you."
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "_comment": "ID 18: Test Rows Back Attack",
+      "id": 18,
+      "name": "Rows Back Attack Tester",
+      "x": 900,
+      "y": 200,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "conditions": {},
+          "commands": [
+            {
+              "code": "battle",
+              "encounterId": 7
+            },
+            {
+              "code": "text",
+              "speaker": "System",
+              "text": "The back-attack test encounter has ended."
             }
           ]
         }

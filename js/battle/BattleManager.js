@@ -51,6 +51,11 @@ class BattleManager {
     // Escape pressure is battle-local. Every failed legal attempt makes the
     // next attempt easier, but nothing here belongs in persistent save data.
     this.escapeFailures = 0;
+
+    // Pass 99 - Action execution queue bridge. A player may finish choosing
+    // while an enemy recovery beat is still resolving; the committed action
+    // waits here without surrendering or reopening that command decision.
+    this.queuedPartyAction = null;
   }
 
   // =================================
@@ -543,6 +548,10 @@ class BattleManager {
       return null;
     }
 
+    if (this.queuedPartyAction) {
+      return this.startQueuedPartyActionIfReady();
+    }
+
     let commandOwner = this.party().currentBattler();
 
     if (commandOwner && this.battlerIsDefeated(commandOwner)) {
@@ -550,7 +559,7 @@ class BattleManager {
       commandOwner = null;
     }
 
-    if (commandOwner && !this.atbWaitEnabled()) {
+    if (commandOwner) {
       if ((Number(battle.activeTimeClaimDelay) || 0) > 0) {
         return commandOwner;
       }
@@ -561,7 +570,6 @@ class BattleManager {
         ) || null;
 
       if (interruptingEnemy) {
-        battle.battleInputLocked = true;
         return this.activateReadyBattler(interruptingEnemy);
       }
 
@@ -591,8 +599,9 @@ class BattleManager {
     }
 
     if (battle.enemies.includes(battler)) {
+      const commandOwner = this.party().currentBattler();
       battle.enemy = battler;
-      battle.battleInputLocked = true;
+      battle.battleInputLocked = commandOwner ? false : true;
       this.setTurnState(BattleManager.TURN_ACTION);
       battle.performEnemyTurn(battler);
       return battler;
@@ -620,9 +629,7 @@ class BattleManager {
     this.setTurnState(BattleManager.TURN_COMMAND);
     battle.battleInputLocked = false;
 
-    if (!this.atbWaitEnabled()) {
-      battle.timeManager?.releaseActiveBattler?.(battler);
-    }
+    battle.timeManager?.releaseActiveBattler?.(battler);
 
     return battler;
   }
@@ -637,6 +644,10 @@ class BattleManager {
 
   clearDefeatedActiveTimeCommandOwner(battler) {
     const battle = this.scene;
+
+    if (this.queuedPartyAction?.battler === battler) {
+      this.queuedPartyAction = null;
+    }
 
     battle.timeManager?.reset?.(battler);
     this.party().clearActiveBattler?.(battler);
@@ -665,6 +676,98 @@ class BattleManager {
     this.setTurnState(BattleManager.TURN_START);
     battle.battleInputLocked = true;
     return true;
+  }
+
+  partyActionExecutionBusy() {
+    const battle = this.scene;
+
+    return (
+      (battle.actionPhase && battle.actionPhase !== "none") ||
+      (Number(battle.activeTimeClaimDelay) || 0) > 0 ||
+      battle.enemies.includes(battle.timeManager?.activeBattler)
+    );
+  }
+
+  commitPartyAction(type) {
+    const battle = this.scene;
+    const battler = this.party().currentBattler();
+
+    if (!battler || !type || this.battlerIsDefeated(battler)) {
+      return false;
+    }
+
+    const entry = { battler, type };
+
+    if (this.partyActionExecutionBusy()) {
+      this.queuedPartyAction = entry;
+      this.setTurnState(BattleManager.TURN_ACTION);
+      battle.battleInputLocked = true;
+      return "queued";
+    }
+
+    return this.startPartyActionSequence(entry);
+  }
+
+  startQueuedPartyActionIfReady() {
+    const entry = this.queuedPartyAction;
+
+    if (!entry || this.partyActionExecutionBusy()) {
+      return null;
+    }
+
+    if (
+      this.party().currentBattler() !== entry.battler ||
+      this.battlerIsDefeated(entry.battler)
+    ) {
+      this.queuedPartyAction = null;
+      this.clearDefeatedActiveTimeCommandOwner(entry.battler);
+      return null;
+    }
+
+    this.queuedPartyAction = null;
+    return this.startPartyActionSequence(entry);
+  }
+
+  startPartyActionSequence(entry) {
+    const battle = this.scene;
+    const battler = entry?.battler || null;
+
+    if (!battler || this.party().currentBattler() !== battler) {
+      return false;
+    }
+
+    this.setTurnState(BattleManager.TURN_ACTION);
+    battle.battleInputLocked = true;
+
+    switch (entry.type) {
+      case "attack":
+        battle.pendingAttackDamage = true;
+        battle.setActorState("attack", 0.4);
+        battle.setActionPhase("lunge", 0.2);
+        return true;
+
+      case "skill":
+        battle.setActorState("attack", 0.7);
+        battle.setActionPhase("skillUse", 0.25);
+        return true;
+
+      case "magick":
+        battle.setActorState("magick", 0.9);
+        battle.setActionPhase("magickCast", 0.4);
+        return true;
+
+      case "item":
+        battle.setActionPhase("itemUse", 0.35);
+        return true;
+
+      case "defend":
+        return this.resolveDefendAction(battler);
+
+      default:
+        battle.battleInputLocked = false;
+        this.setTurnState(BattleManager.TURN_COMMAND);
+        return false;
+    }
   }
 
   // =================================
@@ -1939,11 +2042,8 @@ class BattleManager {
 
       battle.selectingEnemyTarget = false;
       battle.enemyTargetAction = null;
-      battle.battleInputLocked = true;
-      battle.setActorState("attack", 0.7);
-      battle.setActionPhase("skillUse", 0.25);
       battle.skillsWindow.hide();
-      return;
+      return this.commitPartyAction("skill");
     }
 
     battle.enemyTargetAction = "skill";
@@ -2007,11 +2107,8 @@ class BattleManager {
       battle.pendingMagickTarget = null;
       battle.enemyTargetAction = null;
       battle.selectingEnemyTarget = false;
-      battle.battleInputLocked = true;
-      battle.setActorState("magick", 0.9);
-      battle.setActionPhase("magickCast", 0.4);
       battle.magickWindow.hide();
-      return;
+      return this.commitPartyAction("magick");
     }
 
     // Start on the first allowed group that actually contains a legal target.
@@ -2081,11 +2178,8 @@ class BattleManager {
 
       battle.enemyTargetAction = null;
       battle.selectingEnemyTarget = false;
-      battle.battleInputLocked = true;
-      battle.setActorState("magick", 0.9);
-      battle.setActionPhase("magickCast", 0.4);
       battle.magickWindow.hide();
-      return;
+      return this.commitPartyAction("magick");
     }
 
     battle.enemyTargetAction = "magick";
@@ -2114,11 +2208,9 @@ class BattleManager {
     // Close the item window now.
     battle.itemWindow.hide();
 
-    // Lock commands while the action plays.
-    battle.battleInputLocked = true;
-
-    // Begin the item action.
-    battle.setActionPhase("itemUse", 0.35);
+    // Commit now; if an enemy recovery beat is still resolving, execution
+    // waits in the battle-local action queue instead of stealing input.
+    return this.commitPartyAction("item");
   }
 
   // =================================
@@ -2153,11 +2245,7 @@ class BattleManager {
       battle.enemy = nextEnemy;
     }
 
-    battle.battleInputLocked = true;
-    battle.pendingAttackDamage = true;
-
-    battle.setActorState("attack", 0.4);
-    battle.setActionPhase("lunge", 0.2);
+    return this.commitPartyAction("attack");
   }
 
   performAttackHit() {
@@ -2691,25 +2779,32 @@ class BattleManager {
   }
 
   performDefend() {
-    const battle = this.scene;
     const battler = this.party().currentBattler();
 
     if (!this.battlerCanUseAction(battler, "defend")) {
       this.rejectRestrictedAction(battler, "Defend");
-      return;
+      return false;
+    }
+
+    return this.commitPartyAction("defend");
+  }
+
+  resolveDefendAction(battler) {
+    const battle = this.scene;
+
+    if (!battler || this.battlerIsDefeated(battler)) {
+      return false;
     }
 
     battler.startDefending();
-
     battle.addBattleMessage(`${battler.name} defends!`);
-
     this.endPartyTurn();
 
-    if (battle.outcome) {
-      return;
+    if (!battle.outcome) {
+      this.finishPartyAction();
     }
 
-    this.finishPartyAction();
+    return true;
   }
 
   startNextPartyRound(unlockInputAtRoundStart = false) {
@@ -2780,8 +2875,15 @@ class BattleManager {
     }
 
     if (this.usesActiveTimeAuthority()) {
+      const commandOwner = this.party().currentBattler();
       this.releaseActiveTimeBattler(enemy);
       this.scene.scheduleActiveTimeClaimDelay?.(0.45);
+
+      if (commandOwner && !this.battlerIsDefeated(commandOwner)) {
+        this.setTurnState(BattleManager.TURN_COMMAND);
+        this.scene.battleInputLocked = false;
+      }
+
       return;
     }
 

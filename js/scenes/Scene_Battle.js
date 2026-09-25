@@ -205,9 +205,8 @@ class Scene_Battle extends Scene_Base {
       return;
     }
 
-    // Active ATB may temporarily interrupt an open command/selector with an
-    // enemy action. Keep the player's current selection state intact, but do
-    // not accept input until the interrupting action chain releases control.
+    // Input locks belong to committed player actions and battle transitions.
+    // Enemy actions never confiscate an already-open player command surface.
     if (this.battleInputLocked) {
       return;
     }
@@ -276,9 +275,7 @@ class Scene_Battle extends Scene_Base {
             const skill = this.pendingSkill;
             if (skill) {
               this.pendingSkillTarget = target;
-              this.battleInputLocked = true;
-              this.setActorState("attack", 0.7);
-              this.setActionPhase("skillUse", 0.25);
+              this.battleManager.commitPartyAction("skill");
             }
           } else if (this.enemyTargetAction === "magick") {
             this.enemyTargetAction = null;
@@ -287,10 +284,7 @@ class Scene_Battle extends Scene_Base {
 
             if (magick) {
               this.pendingMagickTarget = target;
-              this.battleInputLocked = true;
-
-              this.setActorState("magick", 0.9);
-              this.setActionPhase("magickCast", 0.4);
+              this.battleManager.commitPartyAction("magick");
             }
           }
         }
@@ -401,12 +395,12 @@ class Scene_Battle extends Scene_Base {
     );
   }
 
-  isChoosingActiveTimeCommand() {
+  isChoosingActiveTimeSubmenu() {
     if (!Scene_Battle.prototype.atbWaitEnabled.call(this) || this.outcome) {
       return false;
     }
 
-    const battler = this.timeManager?.activeBattler || null;
+    const battler = this.partyController?.currentBattler?.() || null;
 
     if (!battler || this.enemies.includes(battler)) {
       return false;
@@ -416,11 +410,19 @@ class Scene_Battle extends Scene_Base {
       return false;
     }
 
-    return this.battleInputLocked === false;
+    if (this.battleInputLocked !== false) {
+      return false;
+    }
+
+    const selectorOpen = [this.skillsWindow, this.magickWindow, this.itemWindow]
+      .filter(Boolean)
+      .some((window) => window.isOpen?.() === true);
+
+    return this.selectingEnemyTarget === true || selectorOpen;
   }
 
   battleTimeDeltaTime(deltaTime) {
-    return Scene_Battle.prototype.isChoosingActiveTimeCommand.call(this)
+    return Scene_Battle.prototype.isChoosingActiveTimeSubmenu.call(this)
       ? 0
       : deltaTime;
   }
