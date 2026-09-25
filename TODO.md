@@ -308,3 +308,5 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add Party Recruitment Foundation with hero-only New Game start, recruited/met actor tracking, event-side recruitment, and save/load roster preservation.
 - [ ] Build companion join presentation / onboarding flow for story scenes.
 - [ ] Add reserve-roster management once the recruitable cast grows beyond the active battle-party cap.
+
+- [x] Pass 94: Add Essence slot scroll affordance, Item Arrange overflow cue, and Battle HUD breathing-room cleanup

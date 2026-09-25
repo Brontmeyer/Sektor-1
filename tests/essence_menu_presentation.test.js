@@ -211,6 +211,28 @@ function testCatalogScrollsByRowsAndUsesContextualArrows() {
   assert.equal(values.includes("▼"), false);
 }
 
+function testEquippedEssencesHeadingSpacingAndSlotScrollAffordance() {
+  const harness = createHarness();
+  const { window, actor } = harness;
+  actor.essenceSlotCount = () => 7;
+
+  window.show();
+  window.slotIndex = 6;
+  window.ensureSlotSelectionVisible();
+  window.draw();
+
+  const text = textCalls(harness);
+  const heading = text.find((call) => call.text === "EQUIPPED ESSENCES");
+  const firstVisibleSlot = text.find((call) => call.text.includes("Slot 5"));
+  const values = text.map((call) => call.text);
+
+  assert.ok(heading);
+  assert.ok(firstVisibleSlot);
+  assert.equal(firstVisibleSlot.y - heading.y >= 38, true);
+  assert.equal(values.includes("▲"), true);
+  assert.equal(values.includes("▼"), false);
+}
+
 function testCatalogPreviewPreservesDuplicateSlotRules() {
   const harness = createHarness();
   const { window, actor } = harness;
@@ -255,6 +277,7 @@ function run() {
   testEssenceUsesSharedActorSummaryAndRealProgressionData();
   testCatalogUsesTwoDimensionalHeldNavigation();
   testCatalogScrollsByRowsAndUsesContextualArrows();
+  testEquippedEssencesHeadingSpacingAndSlotScrollAffordance();
   testCatalogPreviewPreservesDuplicateSlotRules();
   testEssenceUsesSharedHeldDirectionAndSummaryContracts();
 

@@ -1391,6 +1391,15 @@ class Window_Inventory {
       context.textAlign = "left";
     });
 
+    this.drawScrollIndicators(
+      context,
+      columns.rightX + columns.rightWidth - 2,
+      rhythm.scrollTopY,
+      columns.rightBodyY + columns.rightBodyHeight - 18,
+      false,
+      previewEntries.length > previewVisible,
+    );
+
     context.restore();
     this.drawArrangeOverlay(context, columns);
   }

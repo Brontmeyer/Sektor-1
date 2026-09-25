@@ -103,6 +103,29 @@ function testLayoutSeparatesNamesCommandReserveAndStableStats() {
   assert.equal(layout.hintY() < hud.y, true);
 }
 
+function testIdleBattleHudSuppressesTopRightCommandLegend() {
+  const Graphics = { width: 1600, height: 900 };
+  const { BattleHudLayout, BattleRenderer } = loadPresentation({
+    Graphics,
+    Input: { actionLabel: (action) => action },
+  });
+  const scene = {
+    outcome: null,
+    selectingEnemyTarget: false,
+    skillsWindow: { isOpen: () => false },
+    magickWindow: { isOpen: () => false },
+    itemWindow: { isOpen: () => false },
+    commandWindow: { hasSideCommandOpen: () => false },
+  };
+  scene.hudLayout = new BattleHudLayout(scene);
+  const renderer = new BattleRenderer(scene);
+
+  assert.equal(renderer.shouldDrawBattleHint(), false);
+
+  scene.commandWindow.hasSideCommandOpen = () => true;
+  assert.equal(renderer.shouldDrawBattleHint(), true);
+}
+
 function testBannerIsCompactAndDoesNotSpanTheScreen() {
   const Graphics = { width: 1600, height: 900 };
   const { BattleHudLayout } = loadPresentation({ Graphics });
@@ -176,6 +199,20 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
     ["Aboo", "Sarah", "G Prime", "Tyler"],
     "battle HUD roster must follow visual formation order",
   );
+
+  for (const battler of formation.filter((entry) => !entry.isDefeated())) {
+    const rowIndex = formation.indexOf(battler);
+    const row = scene.hudLayout.partyRowBounds(rowIndex);
+    const expectedCenterY = row.y + row.height / 2;
+    const nameCall = textCalls.find((call) => call[2] === battler.name);
+
+    assert.ok(nameCall, `expected ${battler.name} to render`);
+    assert.equal(
+      nameCall[4],
+      expectedCenterY,
+      `${battler.name} should sit on the centerline of battle row ${rowIndex + 1}`,
+    );
+  }
 
   assert.equal(text.includes("VALOR"), true);
   assert.equal(text.includes("READY"), true);
@@ -261,6 +298,7 @@ function testHudLayoutLoadsBeforeRendererAndBattleScene() {
 
 function run() {
   testLayoutSeparatesNamesCommandReserveAndStableStats();
+  testIdleBattleHudSuppressesTopRightCommandLegend();
   testBannerIsCompactAndDoesNotSpanTheScreen();
   testTacticalHelpIsCompactAndCenteredAboveHud();
   testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve();

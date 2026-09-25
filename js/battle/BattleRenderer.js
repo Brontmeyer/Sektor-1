@@ -37,7 +37,10 @@ class BattleRenderer {
 
     this.drawBattleBanner(context);
     this.drawTacticalHelp(context);
-    this.drawBattleHint(context);
+
+    if (this.shouldDrawBattleHint()) {
+      this.drawBattleHint(context);
+    }
 
     // -----------------------------
     // Battle windows
@@ -355,6 +358,20 @@ class BattleRenderer {
     }
 
     return manager.effectiveAllowedScopes(definition).length > 1;
+  }
+
+  shouldDrawBattleHint() {
+    if (this.scene.outcome || this.scene.selectingEnemyTarget) {
+      return true;
+    }
+
+    if (this.hasOpenSelectionWindow()) {
+      return true;
+    }
+
+    const commandWindow = this.scene.commandWindow;
+
+    return commandWindow?.hasSideCommandOpen?.() === true;
   }
 
   battleHint() {
@@ -784,16 +801,21 @@ class BattleRenderer {
     context.textAlign = "left";
     context.textBaseline = "middle";
 
-    context.font = "16px Arial";
-    context.fillStyle = isActive ? "#ffd75a" : "#ffffff";
-    context.fillText(actor.name, nameRow.x + namePadding, centerY - 7);
-
     let status =
       typeof actor.statusSummary === "function" ? actor.statusSummary(2) : "";
 
     if (isDefeated && !status) {
       status = "DEFEATED";
     }
+
+    // A one-line actor name sits on the same vertical centerline as its
+    // corresponding battle-command row. Actors with visible status text keep
+    // the compact two-line name/status stack centered around that line.
+    const nameY = status ? centerY - 7 : centerY;
+
+    context.font = "16px Arial";
+    context.fillStyle = isActive ? "#ffd75a" : "#ffffff";
+    context.fillText(actor.name, nameRow.x + namePadding, nameY);
 
     if (status) {
       context.font = "11px Arial";

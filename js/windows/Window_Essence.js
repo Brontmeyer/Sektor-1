@@ -8,6 +8,9 @@ class Window_Essence {
     this.slotIndex = 0;
     this.catalogIndex = 0;
 
+    this.slotRowHeight = 58;
+    this.slotViewport = new Window_ListViewport(3);
+
     this.catalogColumns = 2;
     this.catalogVisibleRows = 7;
     this.catalogRowHeight = 40;
@@ -77,6 +80,7 @@ class Window_Essence {
     this.slotIndex = 0;
     this.mode = "slots";
     this.catalogIndex = 0;
+    this.slotViewport.reset(0, this.slotCount());
     this.catalogViewport.reset(0, this.catalogRowCount());
   }
 
@@ -95,16 +99,34 @@ class Window_Essence {
       : Input.isActionTriggered(action);
   }
 
+  slotCount() {
+    return this.actor()?.essenceSlotCount?.() || 0;
+  }
+
+  slotVisibleRows() {
+    const bounds = this.listBounds;
+    const headingBottomY = bounds.y + 54;
+    const bodyHeight = Math.max(0, bounds.y + bounds.height - headingBottomY - 22);
+
+    return Math.max(1, Math.floor(bodyHeight / this.slotRowHeight));
+  }
+
+  ensureSlotSelectionVisible() {
+    this.slotViewport.maxVisibleRows = this.slotVisibleRows();
+    this.slotViewport.ensureVisible(this.slotIndex, this.slotCount());
+  }
+
   moveSlot(offset) {
-    const actor = this.actor();
-    const count = actor?.essenceSlotCount?.() || 0;
+    const count = this.slotCount();
 
     if (count <= 0) {
       this.slotIndex = 0;
+      this.ensureSlotSelectionVisible();
       return false;
     }
 
     this.slotIndex = (this.slotIndex + offset + count) % count;
+    this.ensureSlotSelectionVisible();
     return true;
   }
 
@@ -289,6 +311,7 @@ class Window_Essence {
     this.mode = "slots";
     this.slotIndex = 0;
     this.refreshLayout();
+    this.ensureSlotSelectionVisible();
   }
 
   hide() {
@@ -423,22 +446,24 @@ class Window_Essence {
     context.textBaseline = "alphabetic";
     context.fillStyle = "#ffffff";
     context.font = "600 20px sans-serif";
-    context.fillText("EQUIPPED ESSENCE", bounds.x + 20, bounds.y + 34);
+    context.fillText("EQUIPPED ESSENCES", bounds.x + 20, bounds.y + 34);
 
     if (!actor) {
       context.font = "17px sans-serif";
-      context.fillText("No active actor.", bounds.x + 20, bounds.y + 72);
+      context.fillText("No active actor.", bounds.x + 20, bounds.y + 78);
       return;
     }
 
-    const slotCount = actor.essenceSlotCount?.() || 0;
-    const rowHeight = 58;
-    const firstY = bounds.y + 62;
+    const slotCount = this.slotCount();
+    this.ensureSlotSelectionVisible();
+    const range = this.slotViewport.visibleRange(this.slotIndex, slotCount);
+    const rowHeight = this.slotRowHeight;
+    const firstY = bounds.y + 78;
 
-    for (let slot = 0; slot < slotCount; slot++) {
+    for (let slot = range.start; slot < range.end; slot++) {
       const essence = actor.equippedEssenceAt(slot);
       const selected = slot === this.slotIndex;
-      const rowY = firstY + slot * rowHeight;
+      const rowY = firstY + (slot - range.start) * rowHeight;
 
       if (selected) {
         this.drawSelection(
@@ -460,11 +485,34 @@ class Window_Essence {
       context.fillStyle = essence ? "#ffffff" : "#9aa8b8";
       context.fillText(
         essence?.name?.() || "Empty",
-        bounds.x + 128,
+        bounds.x + 140,
         rowY,
       );
     }
 
+    this.drawSlotScrollIndicators(context, slotCount);
+
+  }
+
+  drawSlotScrollIndicators(context, totalEntries) {
+    const bounds = this.listBounds;
+    const arrowX = bounds.x + bounds.width - 18;
+
+    context.save();
+    context.fillStyle = "#ffffff";
+    context.font = "17px sans-serif";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+
+    if (this.slotViewport.hasPrevious()) {
+      context.fillText("▲", arrowX, bounds.y + 58);
+    }
+
+    if (this.slotViewport.hasNext(totalEntries)) {
+      context.fillText("▼", arrowX, bounds.y + bounds.height - 44);
+    }
+
+    context.restore();
   }
 
   drawCatalogScrollIndicators(context, totalRows) {
