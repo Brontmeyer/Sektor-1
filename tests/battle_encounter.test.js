@@ -249,6 +249,14 @@ function testBattleSceneConstructionAndExit() {
       BattleEffects: EmptySystem,
       BattleAnimationController: EmptySystem,
       BattleManager,
+      BattleTimeManager: class {
+        constructor(scene) {
+          this.scene = scene;
+        }
+
+        initialize() {}
+        update() {}
+      },
       BattleHudLayout: class {
         constructor(scene) {
           this.scene = scene;

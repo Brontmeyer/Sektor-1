@@ -41,4 +41,10 @@ UIResourcePalette.RESOURCES = Object.freeze({
     readyText: "#f0c4ff",
     readyFill: "#d98cff",
   }),
+  time: Object.freeze({
+    text: "#ffd166",
+    fill: "#e9b949",
+    readyText: "#ffe29a",
+    readyFill: "#ffd166",
+  }),
 });

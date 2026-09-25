@@ -29,6 +29,10 @@ function testCanonicalResourcePalette() {
   assert.equal(Palette.fill("valor"), "#c06cff");
   assert.equal(Palette.text("valor", { ready: true }), "#f0c4ff");
   assert.equal(Palette.fill("valor", { ready: true }), "#d98cff");
+  assert.equal(Palette.text("time"), "#ffd166");
+  assert.equal(Palette.fill("time"), "#e9b949");
+  assert.equal(Palette.text("time", { ready: true }), "#ffe29a");
+  assert.equal(Palette.fill("time", { ready: true }), "#ffd166");
   assert.equal(Palette.valueText(), "#ffffff");
 }
 

@@ -1381,6 +1381,8 @@ class BattleManager {
       battler.tickStatusDurations({ mode: "turn" });
     }
 
+    this.scene.timeManager?.reset?.(battler);
+
     const outcome = this.detectBattleOutcome();
 
     if (outcome) {
@@ -2610,6 +2612,8 @@ class BattleManager {
     ) {
       enemy.tickStatusDurations({ mode: "turn" });
     }
+
+    this.scene.timeManager?.reset?.(enemy);
 
     const outcome = this.detectBattleOutcome();
 

@@ -172,11 +172,22 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
     },
   };
   const { BattleHudLayout, BattleRenderer } = loadPresentation(globals);
+  const timeValues = new Map([
+    [party[0], 25],
+    [party[1], 100],
+    [party[2], 60],
+    [party[3], 0],
+  ]);
   const scene = {
     outcome: null,
     pendingEnemyTurn: false,
     battleManager: { currentTurnState: () => "command" },
     partyController: { currentBattler: () => party[1] },
+    timeManager: {
+      value: (battler) => timeValues.get(battler) || 0,
+      maximum: () => 100,
+      isReady: (battler) => (timeValues.get(battler) || 0) >= 100,
+    },
   };
   scene.hudLayout = new BattleHudLayout(scene);
   const renderer = new BattleRenderer(scene);
@@ -215,6 +226,7 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
   }
 
   assert.equal(text.includes("VALOR"), true);
+  assert.equal(text.includes("TIME"), true);
   assert.equal(text.includes("READY"), true);
   assert.equal(text.includes("DEFEATED"), true);
   assert.equal(
@@ -274,13 +286,27 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
   );
   assert.equal(
     textCalls.some(
+      (call) => call[1] === "#ffd166" && call[2] === "TIME",
+    ),
+    true,
+    "Time should use the shared warm-gold battle resource color",
+  );
+  assert.equal(
+    textCalls.some(
+      (call) => call[1] === "#ffe29a" && call[2] === "TIME",
+    ),
+    true,
+    "Ready Time should brighten within the same color family",
+  );
+  assert.equal(
+    textCalls.some(
       (call) => call[1] === "#ffffff" && call[2] === "READY",
     ),
     true,
     "Valor Ready value should remain neutral white",
   );
 
-  for (const call of textCalls.filter((call) => /^(HP|MP|VALOR)/.test(call[2]))) {
+  for (const call of textCalls.filter((call) => /^(HP|MP|VALOR|TIME)/.test(call[2]))) {
     assert.equal(call[3] >= statsX, true);
   }
 }

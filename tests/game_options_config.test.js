@@ -219,6 +219,7 @@ function testBattleSpeedAndMessageSpeedUseSeparateClocks() {
 
   const fake = {
     outcome: "escape",
+    updateBattleTime(value) { calls.push(["time", value]); },
     updateBattlerStates(value) { calls.push(["states", value]); },
     updateActionPhase(value) { calls.push(["phase", value]); },
     updateBattlerVisuals(value) { calls.push(["visuals", value]); },

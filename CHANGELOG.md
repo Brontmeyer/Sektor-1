@@ -12,6 +12,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Active Time Battle Foundation v1: battle-local Time gauges now fill continuously for actors and enemies from Agility, Battle Speed, and existing Haste / Slow / Stop rules; the battle HUD presents TIME beside VALOR with Ready feedback, and completed actions reset that battler's clock. The existing round scheduler remains authoritative until the dedicated ATB turn-authority pass.
+- Added dedicated Battle Time regression coverage for both battle sides, Agility pacing, Haste / Slow, Stop, defeat clearing, full-gauge clamping/readiness, action reset hooks, Battle Speed-scaled scene integration, and script load order.
 - Added scroll-affordance coverage to ESSENCE slot presentation and ITEM Arrange previews so growing lists expose overflow with the same contextual chevron language used by other long selectors.
 - Added Party Recruitment Foundation: New Game now begins with the configured protagonist only, while the full actor registry remains available for future companions. `Game_Party` now owns recruited/met actor state, recruitment/dismissal helpers, active battle-party synchronization, and save-safe roster restoration.
 - Added the `recruitActor` map-event command plus a Map001 Sarah recruitment fixture so story events can add companions through data instead of hard-coded startup membership.

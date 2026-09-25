@@ -769,12 +769,14 @@ class BattleRenderer {
     const namePadding = 10;
     const statPadding = 12;
     const statContentWidth = statRow.width - statPadding * 2;
-    const hpWidth = statContentWidth * 0.34;
-    const mpWidth = statContentWidth * 0.28;
-    const valorWidth = statContentWidth - hpWidth - mpWidth;
+    const hpWidth = statContentWidth * 0.3;
+    const mpWidth = statContentWidth * 0.24;
+    const valorWidth = statContentWidth * 0.24;
+    const timeWidth = statContentWidth - hpWidth - mpWidth - valorWidth;
     const hpX = statRow.x + statPadding;
     const mpX = hpX + hpWidth;
     const valorX = mpX + mpWidth;
+    const timeX = valorX + valorWidth;
 
     context.save();
 
@@ -889,8 +891,39 @@ class BattleRenderer {
       valorMaximum,
       valorX,
       centerY + 8,
-      Math.max(46, valorWidth - 12),
+      Math.max(42, valorWidth - 14),
       UIResourcePalette.fill("valor", { ready: valorReady }),
+    );
+
+    const timeManager = this.scene.timeManager;
+    const rawTime = Math.max(0, Number(timeManager?.value?.(actor)) || 0);
+    const timeMaximum = Math.max(
+      1,
+      Number(timeManager?.maximum?.()) || 100,
+    );
+    const timeReady = timeManager?.isReady?.(actor) === true;
+    const timeValueText = timeReady
+      ? "READY"
+      : `${Math.round(rawTime)}/${Math.round(timeMaximum)}`;
+
+    context.fillStyle = UIResourcePalette.text("time", {
+      ready: timeReady,
+    });
+    context.fillText("TIME", timeX, centerY - 5);
+    context.fillStyle = UIResourcePalette.valueText();
+    context.fillText(
+      timeValueText,
+      timeX + context.measureText("TIME ").width,
+      centerY - 5,
+    );
+    this.drawHudGauge(
+      context,
+      rawTime,
+      timeMaximum,
+      timeX,
+      centerY + 8,
+      Math.max(42, timeWidth - 10),
+      UIResourcePalette.fill("time", { ready: timeReady }),
     );
 
     context.restore();

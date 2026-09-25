@@ -283,6 +283,7 @@ Current battle modules include:
 BattleAnimationController.js
 BattleEffects.js
 BattleManager.js
+BattleTimeManager.js
 BattlePartyController.js
 BattleRenderer.js
 BattleTargetManager.js
@@ -297,6 +298,10 @@ The battle layer should coordinate combat without turning one file into a contai
 It also owns battle-relative effect routing that requires knowledge of both sides of the encounter. Reflect is resolved here because redirecting a Magick requires identifying the Reflect holder's side, choosing a living battler on the opposing side, preserving the original cast cost, and presenting the redirected result without turning reflection into a second cast. Forced-action control is coordinated here for the same reason: Berserk can begin a party action without player input, while Confuse may need a legal random target drawn from one or both battle sides. Battle-local fractional turn progress also lives here so party and enemy scheduling consume one shared Haste/Slow speed contract rather than implementing separate timing rules. Valor & Escape Rules v1 adds two more battle-relative responsibilities: it derives hostile damage provenance from source/target sides before actor Valor reacts, and it owns normal Escape probability plus battle-local retry pressure. `Scene_Battle` only requests the attempt and performs the existing scene handoff after a successful escape outcome.
 
 It should orchestrate battle systems rather than permanently absorbing every specialized mechanic into itself.
+
+## BattleTimeManager
+
+`BattleTimeManager` owns the battle-local Active Time clock introduced by ATB Foundation v1. It tracks normalized Time progress for current actors and enemies, derives fill rate from Agility plus the shared Haste / Slow multiplier contract, freezes Stop through the existing turn-progression halt flag, clears defeated battlers, clamps Ready gauges, and exposes read-only values to `BattleRenderer`. `Scene_Battle` supplies Battle Speed-scaled delta time. Time is deliberately absent from persistent actor/save state. In v1 the manager does not decide who acts; the existing `BattleManager` / `BattlePartyController` round scheduler remains authoritative until the dedicated ATB turn-authority pass.
 
 ## BattlePartyController
 
@@ -328,7 +333,7 @@ A Magick's mechanical resolution and its visual presentation should remain separ
 
 ## BattleRenderer
 
-`BattleRenderer` presents the visual battle state. `BattleHudLayout` is the presentation-only geometry owner for the bottom HUD, four stable party rows, fixed name / command-reserve / resource columns, compact transient banner bounds, and contextual hint placement. This keeps layout arithmetic reusable without giving the HUD ownership of turn state, targeting legality, or resource mutation. Battle UI / Presentation Polish v1 keeps this ownership intact while tightening the HUD/command proportions, centering a smaller Tactical Help region above the HUD, reducing transient-banner dimensions, and deriving all control-copy from named Input actions. `BattleRenderer` applies transparency, fades, selection accents, and target-cursor styling only after authoritative scene/manager state has already been resolved.
+`BattleRenderer` presents the visual battle state. `BattleHudLayout` is the presentation-only geometry owner for the bottom HUD, four stable party rows, fixed name / command-reserve / resource columns, compact transient banner bounds, and contextual hint placement. Active Time Battle Foundation v1 adds TIME as the fourth HUD resource lane beside HP / MP / VALOR; the renderer reads that battle-local value from `BattleTimeManager` and never advances or resets the clock itself. This keeps layout arithmetic reusable without giving the HUD ownership of turn state, targeting legality, or resource mutation. Battle UI / Presentation Polish v1 keeps this ownership intact while tightening the HUD/command proportions, centering a smaller Tactical Help region above the HUD, reducing transient-banner dimensions, and deriving all control-copy from named Input actions. `BattleRenderer` applies transparency, fades, selection accents, and target-cursor styling only after authoritative scene/manager state has already been resolved.
 
 Battle Presentation & Feedback v1 established the presentation boundary and contextual control hints. Battle Presentation & Feedback v2 keeps that boundary while simplifying the screen after playtesting: there is no permanent encounter/active header and no permanently visible combat-message strip. `Scene_Battle` owns a short transient banner queue for meaningful action/state names, while `BattleRenderer` only draws the current banner when one exists. Ordinary Attack is communicated by animation and floating results rather than a redundant banner.
 

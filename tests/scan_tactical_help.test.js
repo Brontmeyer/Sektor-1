@@ -285,6 +285,7 @@ function testHKeyTogglesHelpWithoutSpendingBattleInput() {
   let commandUpdates = 0;
   const fake = {
     outcome: null,
+    updateBattleTime() {},
     updateBattlerStates() {},
     updateActionPhase() {},
     updateBattlerVisuals() {},

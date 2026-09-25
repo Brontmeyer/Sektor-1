@@ -255,6 +255,7 @@ function testVictoryUpdatePresentsResultsBeforeContinue() {
   const Scene_Battle = classes.Scene_Battle;
   const scene = {
     outcome: "victory",
+    updateBattleTime() {},
     updateBattlerStates() {},
     updateActionPhase() {},
     updateBattlerVisuals() {},

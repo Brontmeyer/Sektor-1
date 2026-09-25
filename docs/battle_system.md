@@ -60,6 +60,16 @@ TURN_ACTION
 TURN_END
 ```
 
+## Active Time Foundation
+
+Active Time Battle Foundation v1 adds a battle-local Time clock without yet replacing the proven side-round scheduler. `BattleTimeManager` owns a normalized `0..100` gauge for every current actor and enemy. The gauge is runtime-only and is not written to actor data or save files.
+
+Time fills continuously from a battler's Agility. Existing status metadata is reused rather than duplicated: Haste accelerates Time through `turnSpeedMultiplier()`, Slow reduces it, and Stop freezes the gauge through `haltsTurnProgression()`. Defeated battlers hold no Time. `Scene_Battle` feeds the manager the same Battle Speed-scaled delta time already used by battle animation/action timing, so Slow / Normal / Fast configuration changes Time pacing consistently.
+
+At `100`, a battler is marked Ready and the gauge clamps until reset. Completed party and enemy turns reset their own Time gauge. During this foundation pass, readiness is intentionally observational: the existing party/enemy turn queues remain authoritative. The next ATB pass can replace those queues with unified readiness authority after the clock, status interaction, HUD, and regression surface have been proven independently.
+
+The actor HUD presents `TIME` beside HP / MP / VALOR. Enemies own the same hidden clock so the future scheduler can treat both sides symmetrically.
+
 During the party phase, living party members act through the party turn queue. When one party member finishes an action, control advances to the next available battler. When the party has finished acting, battle advances to the enemy phase.
 
 The current action sequences are timed phases rather than instantaneous state changes.

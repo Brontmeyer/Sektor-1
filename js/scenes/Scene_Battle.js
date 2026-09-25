@@ -106,6 +106,7 @@ class Scene_Battle extends Scene_Base {
     this.battleEffects = new BattleEffects(this);
     this.animationController = new BattleAnimationController(this);
     this.battleManager = new BattleManager(this);
+    this.timeManager = new BattleTimeManager(this);
     this.formationManager = new BattleFormationManager(this);
     this.partyController = new BattlePartyController(this);
     this.hudLayout = new BattleHudLayout(this);
@@ -120,6 +121,7 @@ class Scene_Battle extends Scene_Base {
 
     this.partyController.initializePartyTurnQueue();
     this.initializePartyBattleData();
+    this.timeManager.initialize();
 
     const formation = this.getFormationType();
     if (formation === BattleFormationManager.BACK_ATTACK) {
@@ -152,6 +154,7 @@ class Scene_Battle extends Scene_Base {
       deltaTime,
     );
 
+    this.updateBattleTime(battleDeltaTime);
     this.updateBattlerStates(battleDeltaTime);
     this.updateActionPhase(battleDeltaTime);
     this.updateBattlerVisuals(battleDeltaTime);
@@ -462,6 +465,10 @@ class Scene_Battle extends Scene_Base {
 
   currentBattler() {
     return this.battleManager.currentBattler();
+  }
+
+  updateBattleTime(deltaTime) {
+    return this.timeManager.update(deltaTime);
   }
 
   updateBattlerStates(deltaTime) {
