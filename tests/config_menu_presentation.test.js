@@ -74,7 +74,7 @@ function testConfigUsesUnifiedHeaderContentAndGoldFocusLanguage() {
   assert.equal(drawn.some((text) => text.includes("Window Color")), true);
   assert.equal(drawn.some((text) => text.includes("Controls")), true);
   assert.equal(
-    drawn.includes("Changes battle animation and action pacing."),
+    drawn.includes("Changes battle animation, action, and Time gauge pacing."),
     true,
   );
 }

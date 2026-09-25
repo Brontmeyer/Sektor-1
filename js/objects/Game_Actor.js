@@ -4,11 +4,11 @@ class Game_Actor extends Game_Battler {
   static NAME_MAX_LENGTH = 16;
 
   static isAllowedNameCharacter(character) {
-    return /^[\p{L}\p{N}]$/u.test(String(character || ""));
+    return /^\p{L}$/u.test(String(character || ""));
   }
 
   static isAllowedNameSeparator(character) {
-    return /[ '-]/.test(String(character || ""));
+    return character === " ";
   }
 
   static normalizeName(value) {
@@ -25,11 +25,7 @@ class Game_Actor extends Game_Battler {
       }
     }
 
-    text = text
-      .replace(/\s+/g, " ")
-      .replace(/[ '-]{2,}/g, (match) => match.includes(" ") ? " " : match.charAt(0))
-      .replace(/^[ '-]+|[ '-]+$/g, "")
-      .trim();
+    text = text.replace(/\s+/g, " ").trim();
 
     return Array.from(text).slice(0, Game_Actor.NAME_MAX_LENGTH).join("");
   }

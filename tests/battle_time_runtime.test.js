@@ -115,6 +115,23 @@ function testStopFreezesAndDefeatClearsTime() {
   assert.equal(manager.value(defeated), 0);
 }
 
+function testStopDurationStillExpiresWhileVisibleTimeIsFrozen() {
+  const { manager, party, battler } = makeFixture();
+  const stopped = battler("Stopped", 10);
+  party.push(stopped);
+  manager.initialize();
+  manager.setValue(stopped, 42);
+  stopped.addStatus("stop");
+
+  manager.update(10);
+
+  assert.equal(manager.value(stopped), 42);
+  assert.equal(stopped.hasStatus("stop"), false);
+
+  manager.update(1);
+  assert.equal(manager.value(stopped) > 42, true);
+}
+
 function testTimeClampsAtReadyAndCanResetAfterAction() {
   const { manager, party, battler } = makeFixture();
   const actor = battler("Ready", 50);
@@ -128,6 +145,66 @@ function testTimeClampsAtReadyAndCanResetAfterAction() {
   manager.reset(actor);
   assert.equal(manager.value(actor), 0);
   assert.equal(manager.isReady(actor), false);
+}
+
+function testReadyBattlersQueueAcrossBothSidesAndClaimInReadyOrder() {
+  const { manager, party, enemies, battler } = makeFixture();
+  const actor = battler("Actor", 10);
+  const enemy = battler("Enemy", 10);
+  party.push(actor);
+  enemies.push(enemy);
+  manager.initialize();
+
+  manager.setValue(enemy, 100);
+  manager.setValue(actor, 100);
+
+  assert.deepEqual(
+    Array.from(manager.queuedBattlers()).map((entry) => entry.name),
+    ["Enemy", "Actor"],
+  );
+
+  assert.equal(manager.claimNextReadyBattler(), enemy);
+  assert.equal(manager.claimNextReadyBattler(), null);
+  assert.equal(manager.releaseActiveBattler(enemy), true);
+  manager.reset(enemy);
+  assert.equal(manager.claimNextReadyBattler(), actor);
+}
+
+function testStoppedReadyBattlerWaitsWithoutBlockingOtherReadyBattlers() {
+  const { manager, party, enemies, battler } = makeFixture();
+  const stopped = battler("Stopped", 10);
+  const enemy = battler("Enemy", 10);
+  party.push(stopped);
+  enemies.push(enemy);
+  manager.initialize();
+
+  manager.setValue(stopped, 100);
+  manager.setValue(enemy, 100);
+  stopped.addStatus("stop");
+
+  assert.equal(manager.claimNextReadyBattler(), enemy);
+  assert.equal(manager.releaseActiveBattler(enemy), true);
+  manager.reset(enemy);
+  assert.equal(manager.claimNextReadyBattler(), null);
+
+  manager.update(10);
+  assert.equal(stopped.hasStatus("stop"), false);
+  assert.equal(manager.claimNextReadyBattler(), stopped);
+}
+
+function testDefeatedQueuedBattlerIsDiscardedBeforeClaim() {
+  const { manager, party, enemies, battler } = makeFixture();
+  const actor = battler("Actor", 10);
+  const enemy = battler("Enemy", 10);
+  party.push(actor);
+  enemies.push(enemy);
+  manager.initialize();
+
+  manager.setValue(enemy, 100);
+  manager.setValue(actor, 100);
+  enemy.hp = 0;
+
+  assert.equal(manager.claimNextReadyBattler(), actor);
 }
 
 function testSceneUsesBattleSpeedScaledDeltaForTime() {
@@ -173,7 +250,11 @@ function run() {
   testAgilityChangesContinuousFillRate();
   testHasteAndSlowModifyTimeFill();
   testStopFreezesAndDefeatClearsTime();
+  testStopDurationStillExpiresWhileVisibleTimeIsFrozen();
   testTimeClampsAtReadyAndCanResetAfterAction();
+  testReadyBattlersQueueAcrossBothSidesAndClaimInReadyOrder();
+  testStoppedReadyBattlerWaitsWithoutBlockingOtherReadyBattlers();
+  testDefeatedQueuedBattlerIsDiscardedBeforeClaim();
   testSceneUsesBattleSpeedScaledDeltaForTime();
   testCompletedTurnsResetTheirBattleLocalClock();
   testTimeManagerLoadsBeforeBattleScene();

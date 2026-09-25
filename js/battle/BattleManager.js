@@ -521,6 +521,87 @@ class BattleManager {
   }
 
   // =================================
+  // Active Time Authority
+  // =================================
+
+  usesActiveTimeAuthority() {
+    return this.scene?.usesActiveTimeAuthority?.() === true;
+  }
+
+  updateActiveTimeAuthority() {
+    const battle = this.scene;
+
+    if (!this.usesActiveTimeAuthority() || battle.outcome) {
+      return null;
+    }
+
+    if (battle.timeManager?.activeBattler) {
+      return battle.timeManager.activeBattler;
+    }
+
+    if (battle.actionPhase && battle.actionPhase !== "none") {
+      return null;
+    }
+
+    const battler = battle.timeManager?.claimNextReadyBattler?.() || null;
+
+    if (!battler) {
+      return null;
+    }
+
+    return this.activateReadyBattler(battler);
+  }
+
+  activateReadyBattler(battler) {
+    const battle = this.scene;
+
+    if (!battler) {
+      return null;
+    }
+
+    if (battle.enemies.includes(battler)) {
+      battle.enemy = battler;
+      battle.battleInputLocked = true;
+      this.setTurnState(BattleManager.TURN_ACTION);
+      battle.performEnemyTurn(battler);
+      return battler;
+    }
+
+    if (!$gameParty.battleMembers().includes(battler)) {
+      battle.timeManager?.releaseActiveBattler?.(battler);
+      return null;
+    }
+
+    this.party().setActiveBattler?.(battler);
+
+    const canAct = this.beginPartyTurn();
+
+    if (!canAct) {
+      this.endPartyTurn();
+      this.finishPartyAction();
+      return battler;
+    }
+
+    if (this.startForcedPartyAction()) {
+      return battler;
+    }
+
+    this.setTurnState(BattleManager.TURN_COMMAND);
+    battle.battleInputLocked = false;
+    return battler;
+  }
+
+  releaseActiveTimeBattler(battler) {
+    const battle = this.scene;
+
+    battle.timeManager?.releaseActiveBattler?.(battler);
+    this.party().clearActiveBattler?.(battler);
+    this.setTurnState(BattleManager.TURN_START);
+    battle.battleInputLocked = true;
+    return true;
+  }
+
+  // =================================
   // Party Methods
   // =================================
 
@@ -1356,6 +1437,10 @@ class BattleManager {
       return false;
     }
 
+    if (this.usesActiveTimeAuthority()) {
+      battler.stopDefending?.();
+    }
+
     this.processTurnStartStatuses(battler);
 
     if (this.scene.outcome || !this.battlerCanAct(battler)) {
@@ -1410,6 +1495,12 @@ class BattleManager {
   finishPartyAction() {
     const battle = this.scene;
     const party = this.party();
+
+    if (this.usesActiveTimeAuthority()) {
+      const battler = party.currentBattler();
+      this.releaseActiveTimeBattler(battler);
+      return;
+    }
 
     if (party.hasNextBattler()) {
       party.nextBattler();
@@ -2622,6 +2713,11 @@ class BattleManager {
       return;
     }
 
+    if (this.usesActiveTimeAuthority()) {
+      this.releaseActiveTimeBattler(enemy);
+      return;
+    }
+
     this.advanceEnemyTurn(unlockInputAtRoundStart);
   }
 
@@ -2890,7 +2986,11 @@ class BattleManager {
     const battle = this.scene;
 
     if (!enemy || this.battlerIsDefeated(enemy)) {
-      this.advanceEnemyTurn(true, 0.2);
+      if (enemy && this.usesActiveTimeAuthority()) {
+        this.completeEnemyTurn(enemy, true);
+      } else {
+        this.advanceEnemyTurn(true, 0.2);
+      }
       return;
     }
 
@@ -2907,7 +3007,11 @@ class BattleManager {
     }
 
     if (this.battlerIsDefeated(enemy)) {
-      this.advanceEnemyTurn(true);
+      if (this.usesActiveTimeAuthority()) {
+        this.completeEnemyTurn(enemy, true);
+      } else {
+        this.advanceEnemyTurn(true);
+      }
       return;
     }
 

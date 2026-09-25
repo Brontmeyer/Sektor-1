@@ -119,9 +119,16 @@ class Scene_Battle extends Scene_Base {
   start() {
     super.start();
 
-    this.partyController.initializePartyTurnQueue();
     this.initializePartyBattleData();
     this.timeManager.initialize();
+
+    if (this.usesActiveTimeAuthority()) {
+      this.partyController.clearActiveBattler();
+      this.battleManager.setTurnState(BattleManager.TURN_START);
+      this.battleInputLocked = true;
+    } else {
+      this.partyController.initializePartyTurnQueue();
+    }
 
     const formation = this.getFormationType();
     if (formation === BattleFormationManager.BACK_ATTACK) {
@@ -130,15 +137,17 @@ class Scene_Battle extends Scene_Base {
       this.showBattleBanner("PINCER ATTACK", 1.2);
     }
 
-    const canAct = this.battleManager.beginPartyTurn();
+    if (!this.usesActiveTimeAuthority()) {
+      const canAct = this.battleManager.beginPartyTurn();
 
-    if (!canAct) {
-      this.battleManager.skipPartyTurn();
-      return;
-    }
+      if (!canAct) {
+        this.battleManager.skipPartyTurn();
+        return;
+      }
 
-    if (!this.battleManager.startForcedPartyAction()) {
-      this.battleManager.setTurnState(BattleManager.TURN_COMMAND);
+      if (!this.battleManager.startForcedPartyAction()) {
+        this.battleManager.setTurnState(BattleManager.TURN_COMMAND);
+      }
     }
 
     DebugManager.log(`Battle started: ${this.encounter.name}.`);
@@ -155,6 +164,7 @@ class Scene_Battle extends Scene_Base {
     );
 
     this.updateBattleTime(battleDeltaTime);
+    Scene_Battle.prototype.updateActiveTimeAuthority.call(this);
     this.updateBattlerStates(battleDeltaTime);
     this.updateActionPhase(battleDeltaTime);
     this.updateBattlerVisuals(battleDeltaTime);
@@ -467,8 +477,24 @@ class Scene_Battle extends Scene_Base {
     return this.battleManager.currentBattler();
   }
 
+  usesActiveTimeAuthority() {
+    return true;
+  }
+
   updateBattleTime(deltaTime) {
     return this.timeManager.update(deltaTime);
+  }
+
+  updateActiveTimeAuthority() {
+    if (
+      this.outcome ||
+      !Scene_Battle.prototype.usesActiveTimeAuthority.call(this) ||
+      !this.battleManager?.updateActiveTimeAuthority
+    ) {
+      return null;
+    }
+
+    return this.battleManager.updateActiveTimeAuthority();
   }
 
   updateBattlerStates(deltaTime) {

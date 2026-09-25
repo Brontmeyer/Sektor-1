@@ -60,17 +60,15 @@ TURN_ACTION
 TURN_END
 ```
 
-## Active Time Foundation
+## Active Time Battle
 
-Active Time Battle Foundation v1 adds a battle-local Time clock without yet replacing the proven side-round scheduler. `BattleTimeManager` owns a normalized `0..100` gauge for every current actor and enemy. The gauge is runtime-only and is not written to actor data or save files.
+Active Time Battle uses a battle-local `0..100` Time clock for every current actor and enemy. The gauge is runtime-only and is not written to actor data or save files.
 
-Time fills continuously from a battler's Agility. Existing status metadata is reused rather than duplicated: Haste accelerates Time through `turnSpeedMultiplier()`, Slow reduces it, and Stop freezes the gauge through `haltsTurnProgression()`. Defeated battlers hold no Time. `Scene_Battle` feeds the manager the same Battle Speed-scaled delta time already used by battle animation/action timing, so Slow / Normal / Fast configuration changes Time pacing consistently.
+Time fills continuously from a battler's Agility. Existing status metadata is reused rather than duplicated: Haste accelerates Time through `turnSpeedMultiplier()`, Slow reduces it, and Stop freezes the visible gauge through `haltsTurnProgression()`. A private halted-status clock advances Stop's existing turn duration at the battler's would-be Time cadence so removing side rounds cannot make Stop permanent. Defeated battlers hold no Time. `Scene_Battle` feeds the manager the same Battle Speed-scaled delta time already used by battle animation/action timing, so Slow / Normal / Fast configuration changes Time pacing consistently.
 
-At `100`, a battler is marked Ready and the gauge clamps until reset. Completed party and enemy turns reset their own Time gauge. During this foundation pass, readiness is intentionally observational: the existing party/enemy turn queues remain authoritative. The next ATB pass can replace those queues with unified readiness authority after the clock, status interaction, HUD, and regression surface have been proven independently.
+At `100`, a battler becomes Ready and enters `BattleTimeManager`'s shared readiness queue. Actors and enemies use the same queue, so live battle no longer alternates party-side and enemy-side rounds. Only one claimed battler owns action flow at a time: a ready actor receives the command window, while a ready enemy immediately delegates to existing enemy AI. Other battlers may continue filling to Ready and wait in queue. Completing, skipping, or spending an action resets only that battler's Time gauge and releases authority so the next queued battler can act.
 
-The actor HUD presents `TIME` beside HP / MP / VALOR. Enemies own the same hidden clock so the future scheduler can treat both sides symmetrically.
-
-During the party phase, living party members act through the party turn queue. When one party member finishes an action, control advances to the next available battler. When the party has finished acting, battle advances to the enemy phase.
+The actor HUD presents `TIME` beside HP / MP / VALOR. Enemy Time remains hidden but follows the same clock and readiness rules. The current command/selector behavior is intentionally wait-like while one battler owns action flow; a future Config pass can expose explicit Wait / Active behavior without changing readiness ownership.
 
 The current action sequences are timed phases rather than instantaneous state changes.
 

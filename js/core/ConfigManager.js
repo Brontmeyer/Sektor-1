@@ -47,7 +47,7 @@ class ConfigManager {
         label: "Battle Speed",
         values: ["slow", "normal", "fast"],
         labels: { slow: "Slow", normal: "Normal", fast: "Fast" },
-        description: "Changes battle animation and action pacing.",
+        description: "Changes battle animation, action, and Time gauge pacing.",
       },
       {
         key: "battleMessageSpeed",

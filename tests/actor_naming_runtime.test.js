@@ -79,9 +79,14 @@ function testActorNamesAreRuntimeIdentityWithCanonicalFallback() {
   assert.equal(actor.name, "Rook");
   assert.equal(actor.rename("!@#$%^&*()"), false);
   assert.equal(actor.name, "Rook");
+  assert.equal(actor.rename("1323532547648569"), false);
+  assert.equal(actor.name, "Rook");
 
-  assert.equal(actor.rename("Anne-Marie"), true);
-  assert.equal(actor.name, "Anne-Marie");
+  assert.equal(actor.rename("Anne-Marie 7"), true);
+  assert.equal(actor.name, "AnneMarie");
+
+  assert.equal(actor.rename("Élodie Prime"), true);
+  assert.equal(actor.name, "Élodie Prime");
 
   assert.equal(actor.rename("ABCDEFGHIJKLMNOPQRSTUV"), true);
   assert.equal(Array.from(actor.name).length, actor.nameMaxLength());

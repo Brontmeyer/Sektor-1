@@ -131,11 +131,11 @@ function testSymbolsAreIgnoredUntilAValidNameCharacterIsTyped() {
   harness.type("!", "@", "#");
   assert.equal(harness.window.value, "Tyler");
 
-  harness.type("R", "_", "o", "-", "o", "k");
-  assert.equal(harness.window.value, "Ro-ok");
+  harness.type("R", "_", "o", "-", "o", "k", "2");
+  assert.equal(harness.window.value, "Rook");
 
   harness.trigger("Enter");
-  assert.equal(harness.actor.name, "Ro-ok");
+  assert.equal(harness.actor.name, "Rook");
 }
 
 function run() {

@@ -12,6 +12,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Promoted Active Time Battle into unified turn authority: actors and enemies now enter one shared readiness queue when TIME reaches 100, the next ready battler owns the action, and completed actions reset only that battler before the battle returns to waiting for the next readiness event. Legacy side-round helpers remain isolated for regression compatibility but no longer schedule live battles.
+- Added ATB authority regression coverage for cross-side readiness order, actor command ownership, enemy activation, action release, and defeated queued battlers.
 - Added Active Time Battle Foundation v1: battle-local Time gauges now fill continuously for actors and enemies from Agility, Battle Speed, and existing Haste / Slow / Stop rules; the battle HUD presents TIME beside VALOR with Ready feedback, and completed actions reset that battler's clock. The existing round scheduler remains authoritative until the dedicated ATB turn-authority pass.
 - Added dedicated Battle Time regression coverage for both battle sides, Agility pacing, Haste / Slow, Stop, defeat clearing, full-gauge clamping/readiness, action reset hooks, Battle Speed-scaled scene integration, and script load order.
 - Added scroll-affordance coverage to ESSENCE slot presentation and ITEM Arrange previews so growing lists expose overflow with the same contextual chevron language used by other long selectors.
@@ -21,6 +23,7 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Tightened actor naming to the intended story-name contract: runtime names and name entry now accept Unicode letters plus single spaces only, ignoring digits, punctuation, symbols, apostrophes, and hyphens while preserving the existing 16-character limit and canonical defaults.
 - Polished late menu/battle presentation: ESSENCE now labels the slot panel as EQUIPPED ESSENCES with extra breathing room under the heading, actor Essence slots can scroll when future actors gain more slots than the panel can show, ITEM Arrange preview shows overflow affordance when its list is longer than the visible preview, the idle battle HUD no longer draws the top-right command legend above the party frame, and one-line party names now sit on their battle-row centerlines instead of riding against the top edge.
 
 - Added Actor Naming + New Game Identity Foundation: new games now open a project-styled name-entry scene with Tyler selected as the canonical default, `Game_Actor` owns validated mutable display names while stable actor IDs remain authoritative, Save Runtime v11 persists custom names without a version bump, event dialogue may resolve `{actor:<id>}` tokens to the current runtime name, and the validated `nameActor` event command can reuse the same naming scene for future companion introductions.

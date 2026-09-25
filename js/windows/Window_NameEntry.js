@@ -29,7 +29,6 @@ class Window_NameEntry {
     }
 
     if (
-      !/\s/.test(raw) &&
       !Game_Actor.isAllowedNameCharacter(raw) &&
       !Game_Actor.isAllowedNameSeparator(raw)
     ) {
@@ -40,7 +39,7 @@ class Window_NameEntry {
 
     if (
       Game_Actor.isAllowedNameSeparator(raw) &&
-      (!currentValue || /[\s'-]$/.test(currentValue))
+      (!currentValue || /\s$/.test(currentValue))
     ) {
       return false;
     }
@@ -50,7 +49,7 @@ class Window_NameEntry {
       this.replaceOnType = false;
     }
 
-    if (/\s/.test(raw)) {
+    if (Game_Actor.isAllowedNameSeparator(raw)) {
       if (!this.value || /\s$/.test(this.value)) {
         return false;
       }
@@ -293,7 +292,7 @@ class Window_NameEntry {
     context.fillStyle = "#aebbd0";
     context.font = "14px sans-serif";
     context.fillText(
-      "Type to replace  •  Backspace: Delete  •  Esc: Default  •  Enter: Confirm",
+      "Letters + spaces only  •  Backspace: Delete  •  Esc: Default  •  Enter: Confirm",
       bounds.x + 28,
       bounds.y + bounds.height - 34,
     );

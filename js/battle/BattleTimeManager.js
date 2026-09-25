@@ -1,12 +1,11 @@
 "use strict";
 
 /**
- * Battle-local Active Time foundation.
+ * Battle-local Active Time clock and readiness queue.
  *
- * Pass 95 deliberately keeps Time separate from the existing round scheduler.
- * The gauge fills continuously for actors and enemies and exposes readiness,
- * while Pass 96 can promote that readiness into battle-turn authority without
- * making presentation or persistent actor data own the clock.
+ * Pass 97 promotes the proven Time gauges into one shared readiness authority
+ * for actors and enemies. BattleManager still owns action legality/effects, but
+ * side-round queues no longer decide who acts in live battles.
  */
 class BattleTimeManager {
   static MAX_TIME = 100;
@@ -16,6 +15,9 @@ class BattleTimeManager {
   constructor(scene) {
     this.scene = scene;
     this.progress = new Map();
+    this.haltedProgress = new Map();
+    this.readyQueue = [];
+    this.activeBattler = null;
   }
 
   battlers() {
@@ -30,9 +32,13 @@ class BattleTimeManager {
 
   initialize() {
     this.progress.clear();
+    this.haltedProgress.clear();
+    this.readyQueue = [];
+    this.activeBattler = null;
 
     for (const battler of this.battlers()) {
       this.progress.set(battler, 0);
+      this.haltedProgress.set(battler, 0);
     }
   }
 
@@ -62,15 +68,98 @@ class BattleTimeManager {
       : 0;
 
     this.progress.set(battler, normalized);
+
+    if (normalized >= this.maximum()) {
+      this.enqueueReady(battler);
+    } else {
+      this.removeReady(battler);
+    }
+
     return normalized;
   }
 
   reset(battler) {
-    return this.setValue(battler, 0);
+    if (!battler) {
+      return 0;
+    }
+
+    this.removeReady(battler);
+    this.progress.set(battler, 0);
+    this.haltedProgress.set(battler, 0);
+    return 0;
   }
 
   isReady(battler) {
     return this.value(battler) >= this.maximum();
+  }
+
+  enqueueReady(battler) {
+    if (
+      !battler ||
+      battler === this.activeBattler ||
+      this.readyQueue.includes(battler) ||
+      this.battlerIsDefeated(battler)
+    ) {
+      return false;
+    }
+
+    this.readyQueue.push(battler);
+    return true;
+  }
+
+  removeReady(battler) {
+    const index = this.readyQueue.indexOf(battler);
+
+    if (index < 0) {
+      return false;
+    }
+
+    this.readyQueue.splice(index, 1);
+    return true;
+  }
+
+  queuedBattlers() {
+    return [...this.readyQueue];
+  }
+
+  claimNextReadyBattler() {
+    if (this.activeBattler) {
+      return null;
+    }
+
+    const currentBattlers = new Set(this.battlers());
+    const candidates = this.readyQueue.length;
+
+    for (let attempt = 0; attempt < candidates; attempt++) {
+      const battler = this.readyQueue.shift();
+
+      if (
+        !currentBattlers.has(battler) ||
+        this.battlerIsDefeated(battler) ||
+        !this.isReady(battler)
+      ) {
+        continue;
+      }
+
+      if (this.battlerHaltsTime(battler)) {
+        this.readyQueue.push(battler);
+        continue;
+      }
+
+      this.activeBattler = battler;
+      return battler;
+    }
+
+    return null;
+  }
+
+  releaseActiveBattler(battler = this.activeBattler) {
+    if (!this.activeBattler || battler !== this.activeBattler) {
+      return false;
+    }
+
+    this.activeBattler = null;
+    return true;
   }
 
   battlerIsDefeated(battler) {
@@ -107,12 +196,8 @@ class BattleTimeManager {
     return Number.isFinite(agility) ? Math.max(0, agility) : 0;
   }
 
-  fillPerSecond(battler) {
-    if (
-      !battler ||
-      this.battlerIsDefeated(battler) ||
-      this.battlerHaltsTime(battler)
-    ) {
+  unhaltedFillPerSecond(battler) {
+    if (!battler || this.battlerIsDefeated(battler)) {
       return 0;
     }
 
@@ -121,6 +206,40 @@ class BattleTimeManager {
       this.agility(battler) * BattleTimeManager.AGILITY_FILL_PER_SECOND;
 
     return Math.max(0, base * this.turnSpeedMultiplier(battler));
+  }
+
+  fillPerSecond(battler) {
+    if (this.battlerHaltsTime(battler)) {
+      return 0;
+    }
+
+    return this.unhaltedFillPerSecond(battler);
+  }
+
+  updateHaltedStatusClock(battler, deltaTime) {
+    if (
+      !battler ||
+      !this.battlerHaltsTime(battler) ||
+      typeof battler.tickStatusDurations !== "function"
+    ) {
+      return 0;
+    }
+
+    const seconds = Math.max(0, Number(deltaTime) || 0);
+    let progress = Math.max(0, Number(this.haltedProgress.get(battler)) || 0);
+    progress += this.unhaltedFillPerSecond(battler) * seconds;
+
+    while (progress >= this.maximum() && this.battlerHaltsTime(battler)) {
+      progress -= this.maximum();
+      battler.tickStatusDurations({ mode: "haltedRound" });
+    }
+
+    if (!this.battlerHaltsTime(battler)) {
+      progress = 0;
+    }
+
+    this.haltedProgress.set(battler, progress);
+    return progress;
   }
 
   updateBattler(battler, deltaTime) {
@@ -132,7 +251,13 @@ class BattleTimeManager {
       return this.reset(battler);
     }
 
-    if (this.isReady(battler) || this.battlerHaltsTime(battler)) {
+    if (this.battlerHaltsTime(battler)) {
+      this.updateHaltedStatusClock(battler, deltaTime);
+      return this.value(battler);
+    }
+
+    if (this.isReady(battler)) {
+      this.enqueueReady(battler);
       return this.value(battler);
     }
 

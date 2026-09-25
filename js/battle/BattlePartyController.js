@@ -107,6 +107,20 @@ class BattlePartyController {
     return this.activeBattler;
   }
 
+  setActiveBattler(battler) {
+    this.activeBattler = battler || null;
+    return this.activeBattler;
+  }
+
+  clearActiveBattler(battler = this.activeBattler) {
+    if (battler && this.activeBattler && battler !== this.activeBattler) {
+      return false;
+    }
+
+    this.activeBattler = null;
+    return true;
+  }
+
   nextBattler() {
     while (this.hasNextBattler()) {
       this.currentPartyTurn++;
