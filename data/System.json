@@ -2,5 +2,8 @@
   "gameTitle": "Sektor 1",
   "startMapId": 1,
   "battleView": "side",
-  "debugMode": true
+  "debugMode": true,
+  "startingActorIds": [
+    1
+  ]
 }

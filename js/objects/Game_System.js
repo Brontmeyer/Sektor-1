@@ -6,7 +6,12 @@ class Game_System {
       .filter((actorData) => actorData !== null)
       .map((actorData) => new Game_Actor(actorData.id));
 
-    this.party = new Game_Party(this.actors);
+    const startingActorIds = this.startingActorIds();
+    const startingActors = startingActorIds
+      .map((actorId) => this.actor(actorId))
+      .filter((actor) => actor !== null);
+
+    this.party = new Game_Party(startingActors);
 
     this.selfSwitches = new Game_SelfSwitches();
     this.switches = new Game_Switches();
@@ -24,12 +29,45 @@ class Game_System {
     return this.actors.find((actor) => actor.actorId === id) || null;
   }
 
+  startingActorIds() {
+    const configured = Array.isArray(DatabaseManager.system?.startingActorIds)
+      ? DatabaseManager.system.startingActorIds
+      : [1];
+    const ids = configured
+      .map((actorId) => Number(actorId))
+      .filter(
+        (actorId, index, source) =>
+          Number.isInteger(actorId) &&
+          actorId > 0 &&
+          source.indexOf(actorId) === index &&
+          Boolean(DatabaseManager.actor?.(actorId)),
+      );
+
+    return ids.length > 0 ? ids : [1];
+  }
+
   actorName(actorId) {
     return this.actor(actorId)?.name || "";
   }
 
   renameActor(actorId, name) {
     return this.actor(actorId)?.rename?.(name) === true;
+  }
+
+  recruitActor(actorId) {
+    return this.party?.addActorToParty?.(actorId) === true;
+  }
+
+  dismissActor(actorId) {
+    return this.party?.removeActorFromParty?.(actorId) === true;
+  }
+
+  hasMetActor(actorId) {
+    return this.party?.hasMetActor?.(actorId) === true;
+  }
+
+  isActorRecruited(actorId) {
+    return this.party?.isActorRecruited?.(actorId) === true;
   }
 
   updatePlayTime(deltaTime) {

@@ -59,6 +59,12 @@ class Scene_Menu extends Scene_Base {
   }
 
   beginActorSelection(command) {
+    const members = $gameParty?.battleFormationMembers?.() || [];
+
+    if (members.length === 1) {
+      return this.openActorDestination(command, members[0]);
+    }
+
     if (!this.partyWindow.activate("actor")) {
       this.saveMessage = "No active party member is available.";
       this.saveMessageTimer = 2;

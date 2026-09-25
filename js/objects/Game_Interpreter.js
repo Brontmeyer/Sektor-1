@@ -73,6 +73,10 @@ class Game_Interpreter {
         return this.commandChoice(command);
       case "nameActor":
         return this.commandNameActor(command);
+      case "recruitActor":
+        return this.commandRecruitActor(command);
+      case "removeActor":
+        return this.commandRemoveActor(command);
 
       case "ifSwitch":
         return this.commandIfSwitch(command);
@@ -128,6 +132,7 @@ class Game_Interpreter {
     return [
       "choice",
       "nameActor",
+      "recruitActor",
       "shop",
       "battle",
       "gainItemMessage",
@@ -284,6 +289,47 @@ class Game_Interpreter {
         this.resolveActorReferences(command.prompt || "Choose this character's name."),
     });
     return false;
+  }
+
+  commandRecruitActor(command) {
+    const actorId = Number(command.actorId);
+    const actor = globalThis.$gameSystem?.actor?.(actorId);
+
+    if (!actor) {
+      console.error(`Cannot recruit unknown actor ${command.actorId}.`);
+      return true;
+    }
+
+    const added = $gameParty?.addActorToParty?.(actorId) === true;
+    const message = String(command.message || "").trim();
+
+    if (message && !this.messageWindow.isOpen()) {
+      this.messageWindow.show(
+        this.resolveActorReferences(message),
+        this.resolveActorReferences(command.speaker || "System"),
+      );
+      this.index++;
+      return false;
+    }
+
+    DebugManager.log(
+      added
+        ? `${actor.name} joined the party.`
+        : `${actor.name} is already recruited.`,
+    );
+    return true;
+  }
+
+  commandRemoveActor(command) {
+    const actorId = Number(command.actorId);
+
+    if (actorId === $gameParty?.leader?.()?.actorId) {
+      console.warn("The party leader cannot be removed from the party.");
+      return true;
+    }
+
+    $gameParty?.removeActorFromParty?.(actorId);
+    return true;
   }
 
   commandIfSwitch(command) {

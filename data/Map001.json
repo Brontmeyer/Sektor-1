@@ -3,12 +3,10 @@
   "name": "Sektor 1 Test Zone",
   "width": 2400,
   "height": 1600,
-
   "playerStart": {
     "x": 610,
     "y": 300
   },
-
   "obstacles": [
     {
       "x": 300,
@@ -40,26 +38,25 @@
       "width": 50,
       "height": 550
     },
-        {
-      "x": 850,
-      "y": 550,
-      "width": 50,
-      "height": 200
+    {
+      "x": 400,
+      "y": 650,
+      "width": 450,
+      "height": 50
     },
     {
       "x": 350,
       "y": 550,
       "width": 50,
-      "height": 200
+      "height": 150
     },
-        {
-      "x": 400,
-      "y": 700,
-      "width": 450,
-      "height": 50
+    {
+      "x": 850,
+      "y": 550,
+      "width": 50,
+      "height": 150
     }
   ],
-
   "transfers": [
     {
       "x": 555,
@@ -71,7 +68,6 @@
       "targetY": 300
     }
   ],
-
   "events": [
     {
       "_comment": "ID 1: Test NPC",
@@ -289,7 +285,7 @@
       "id": 5,
       "name": "Armor Store Test Merchant",
       "x": 420,
-      "y": 400,
+      "y": 300,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -321,7 +317,7 @@
       "id": 6,
       "name": "Accessory Store Test Merchant",
       "x": 420,
-      "y": 300,
+      "y": 400,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -613,6 +609,163 @@
               "code": "text",
               "speaker": "Test Lock",
               "text": "The test lock is already open."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "ID 15: Super Sexy Sarah recruitment fixture",
+      "id": 15,
+      "name": "Super Sexy Sarah Recruiter",
+      "x": 510,
+      "y": 600,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "_comment": "Recruit Super Sexy Sarah once.",
+          "conditions": {},
+          "commands": [
+            {
+              "code": "text",
+              "speaker": "Super Sexy Sarah",
+              "text": "I am coming with you, {actor:1}."
+            },
+            {
+              "code": "recruitActor",
+              "actorId": 2,
+              "speaker": "System",
+              "message": "{actor:2} joined the party."
+            },
+            {
+              "code": "setSelfSwitch",
+              "letter": "A",
+              "value": true
+            }
+          ]
+        },
+        {
+          "_comment": "After Super Sexy Sarah has joined.",
+          "conditions": {
+            "selfSwitches": [
+              {
+                "letter": "A",
+                "value": true
+              }
+            ]
+          },
+          "commands": [
+            {
+              "code": "text",
+              "speaker": "Super Sexy Sarah",
+              "text": "I am with you."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "ID 16: Aboo recruitment fixture",
+      "id": 16,
+      "name": "Aboo Recruiter",
+      "x": 610,
+      "y": 600,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "_comment": "Recruit Aboo once.",
+          "conditions": {},
+          "commands": [
+            {
+              "code": "text",
+              "speaker": "Aboo",
+              "text": "I am coming with you, {actor:1}."
+            },
+            {
+              "code": "recruitActor",
+              "actorId": 3,
+              "speaker": "System",
+              "message": "{actor:3} joined the party."
+            },
+            {
+              "code": "setSelfSwitch",
+              "letter": "A",
+              "value": true
+            }
+          ]
+        },
+        {
+          "_comment": "After Aboo has joined.",
+          "conditions": {
+            "selfSwitches": [
+              {
+                "letter": "A",
+                "value": true
+              }
+            ]
+          },
+          "commands": [
+            {
+              "code": "text",
+              "speaker": "Aboo",
+              "text": "I am with you."
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "_comment": "ID 17: G Prime recruitment fixture",
+      "id": 17,
+      "name": "G Prime Recruiter",
+      "x": 710,
+      "y": 600,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "_comment": "Recruit G Prime once.",
+          "conditions": {},
+          "commands": [
+            {
+              "code": "text",
+              "speaker": "G Prime",
+              "text": "I am coming with you, {actor:1}."
+            },
+            {
+              "code": "recruitActor",
+              "actorId": 4,
+              "speaker": "System",
+              "message": "{actor:4} joined the party."
+            },
+            {
+              "code": "setSelfSwitch",
+              "letter": "A",
+              "value": true
+            }
+          ]
+        },
+        {
+          "_comment": "After G Prime has joined.",
+          "conditions": {
+            "selfSwitches": [
+              {
+                "letter": "A",
+                "value": true
+              }
+            ]
+          },
+          "commands": [
+            {
+              "code": "text",
+              "speaker": "G Prime",
+              "text": "I am with you."
             }
           ]
         }

@@ -22,9 +22,26 @@ class Window_NameEntry {
   }
 
   appendCharacter(character) {
-    const raw = String(character ?? "");
+    const raw = Array.from(String(character ?? "").normalize("NFKC"))[0] || "";
 
     if (raw.length === 0 || /[\u0000-\u001f\u007f]/.test(raw)) {
+      return false;
+    }
+
+    if (
+      !/\s/.test(raw) &&
+      !Game_Actor.isAllowedNameCharacter(raw) &&
+      !Game_Actor.isAllowedNameSeparator(raw)
+    ) {
+      return false;
+    }
+
+    const currentValue = this.replaceOnType ? "" : this.value;
+
+    if (
+      Game_Actor.isAllowedNameSeparator(raw) &&
+      (!currentValue || /[\s'-]$/.test(currentValue))
+    ) {
       return false;
     }
 

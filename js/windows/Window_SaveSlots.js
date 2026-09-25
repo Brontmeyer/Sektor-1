@@ -170,7 +170,24 @@ class Window_SaveSlots {
       : saveData.actor
         ? [saveData.actor]
         : [];
-    const leader = actors[0] || {};
+    const actorById = new Map(
+      actors
+        .map((actor) => [Number(actor?.actorId), actor])
+        .filter(([actorId, actor]) => Number.isInteger(actorId) && actor),
+    );
+    const partyActorIds = Array.isArray(saveData.party?.actorIds)
+      ? saveData.party.actorIds
+          .map((actorId) => Number(actorId))
+          .filter((actorId, index, source) =>
+            Number.isInteger(actorId) &&
+            actorById.has(actorId) &&
+            source.indexOf(actorId) === index,
+          )
+      : [];
+    const displayParty = partyActorIds.length > 0
+      ? partyActorIds.map((actorId) => actorById.get(actorId)).filter(Boolean)
+      : actors;
+    const leader = displayParty[0] || actors[0] || {};
     const metadata = saveData.metadata || {};
     const mapName =
       metadata.mapName ||
@@ -186,7 +203,7 @@ class Window_SaveSlots {
       level: metadata.level ?? leader.level ?? "?",
       location: mapName,
       timestamp: metadata.timestamp || null,
-      party: actors.slice(0, 4),
+      party: displayParty.slice(0, 4),
       runes: Number.isFinite(runes) ? runes : null,
       playTimeSeconds: Math.max(0, Number(metadata.playTimeSeconds) || 0),
     };

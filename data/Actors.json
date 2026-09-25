@@ -9,10 +9,12 @@
     "battleSpriteHeight": 166,
     "battleSpriteFrames": 4,
     "battleSpriteRows": 5,
+
     "level": 1,
     "exp": 0,
     "maxHp": 500,
     "maxMp": 100,
+
     "strength": 10,
     "vitality": 10,
     "dexterity": 10,
@@ -20,6 +22,7 @@
     "magic": 10,
     "spirit": 10,
     "luck": 10,
+
     "attack": 10,
     "attackPercent": 100,
     "defense": 8,
@@ -27,6 +30,7 @@
     "magicAttack": 10,
     "magicDefense": 8,
     "magicDefensePercent": 0,
+
     "growth": {
       "maxHp": 10,
       "maxMp": 3,
@@ -42,30 +46,26 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": [
-      1,
-      10
-    ],
-    "initialSkillIds": [
-      1,
-      6
-    ],
+    "initialMagickIds": [1, 10],
+    "initialSkillIds": [1, 6],
     "essenceSlots": 3,
     "maxValor": 100
   },
   {
-    "_comment": "Sarah",
+    "_comment": "Super SexySarah",
     "id": 2,
-    "name": "Sarah",
+    "name": "Super Sexy Sarah",
     "sideBattleSprite": "Player_Battle.png",
     "battleSpriteWidth": 190,
     "battleSpriteHeight": 166,
     "battleSpriteFrames": 4,
     "battleSpriteRows": 5,
+
     "level": 1,
     "exp": 0,
     "maxHp": 500,
     "maxMp": 100,
+
     "strength": 10,
     "vitality": 10,
     "dexterity": 10,
@@ -73,6 +73,7 @@
     "magic": 10,
     "spirit": 10,
     "luck": 10,
+
     "attack": 10,
     "attackPercent": 100,
     "defense": 8,
@@ -80,6 +81,7 @@
     "magicAttack": 10,
     "magicDefense": 8,
     "magicDefensePercent": 0,
+
     "growth": {
       "maxHp": 10,
       "maxMp": 3,
@@ -95,13 +97,8 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": [
-      1,
-      10
-    ],
-    "initialSkillIds": [
-      2
-    ],
+    "initialMagickIds": [1, 10],
+    "initialSkillIds": [2],
     "essenceSlots": 3,
     "maxValor": 100
   },
@@ -147,13 +144,8 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": [
-      1,
-      10
-    ],
-    "initialSkillIds": [
-      3
-    ],
+    "initialMagickIds": [1, 10],
+    "initialSkillIds": [3],
     "essenceSlots": 3,
     "maxValor": 100
   },
@@ -199,13 +191,8 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-    "initialMagickIds": [
-      1,
-      10
-    ],
-    "initialSkillIds": [
-      4
-    ],
+    "initialMagickIds": [1, 10],
+    "initialSkillIds": [4],
     "essenceSlots": 3,
     "maxValor": 100
   }

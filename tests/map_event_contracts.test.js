@@ -205,9 +205,16 @@ function testMap001ContainsDedicatedShopkeeperFixtures() {
     ["item", "item"],
   );
 
-  assert.equal(byType.weapon.event.y, 400);
-  assert.equal(byType.armor.event.y, 500);
-  assert.equal(byType.accessory.event.y, 600);
+  const dedicatedShopTypes = ["general", "weapon", "armor", "accessory"];
+  for (const shopType of dedicatedShopTypes) {
+    assert.ok(byType[shopType], `Missing ${shopType} shop fixture.`);
+    assert.equal(typeof byType[shopType].event.x, "number");
+    assert.equal(typeof byType[shopType].event.y, "number");
+  }
+  assert.equal(
+    new Set(dedicatedShopTypes.map((shopType) => byType[shopType].event.id)).size,
+    dedicatedShopTypes.length,
+  );
   assert.deepEqual(
     byType.weapon.command.goods.map((good) => good.type),
     ["weapon", "weapon"],

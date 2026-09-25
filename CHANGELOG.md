@@ -10,6 +10,12 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ## Unreleased
 
+### Added
+
+- Added Party Recruitment Foundation: New Game now begins with the configured protagonist only, while the full actor registry remains available for future companions. `Game_Party` now owns recruited/met actor state, recruitment/dismissal helpers, active battle-party synchronization, and save-safe roster restoration.
+- Added the `recruitActor` map-event command plus a Map001 Sarah recruitment fixture so story events can add companions through data instead of hard-coded startup membership.
+- Added recruitment regression coverage for hero-only New Game state, runtime recruitment/removal, event-side recruitment, and save/load restoration into a fresh hero-only party.
+
 ### Fixed
 
 - Added Actor Naming + New Game Identity Foundation: new games now open a project-styled name-entry scene with Tyler selected as the canonical default, `Game_Actor` owns validated mutable display names while stable actor IDs remain authoritative, Save Runtime v11 persists custom names without a version bump, event dialogue may resolve `{actor:<id>}` tokens to the current runtime name, and the validated `nameActor` event command can reuse the same naming scene for future companion introductions.

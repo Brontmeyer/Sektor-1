@@ -302,3 +302,9 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Write docs/roadmap.md
 
 `docs/ideas.md` remains a sandbox for unapproved concepts and does not represent canonical game design.
+
+## Party / Story Progression
+
+- [x] Add Party Recruitment Foundation with hero-only New Game start, recruited/met actor tracking, event-side recruitment, and save/load roster preservation.
+- [ ] Build companion join presentation / onboarding flow for story scenes.
+- [ ] Add reserve-roster management once the recruitable cast grows beyond the active battle-party cap.

@@ -212,14 +212,14 @@ function testValorScreenSwitchesActorsAndKeepsArtSelectionVertical() {
   const window = new harness.Window_Valor(harness.party);
   window.show();
 
-  assert.equal(window.actor.name, "Tyler");
+  assert.equal(window.actor.name, harness.partyActors[0].name);
   press(harness, window, "right");
-  assert.equal(window.actor.name, "Sarah");
+  assert.equal(window.actor.name, harness.partyActors[1].name);
   assert.equal(window.currentArt().name, "Rallyheart");
   assert.equal(window.index, 0);
 
   press(harness, window, "left");
-  assert.equal(window.actor.name, "Tyler");
+  assert.equal(window.actor.name, harness.partyActors[0].name);
 
   const source = read("js/windows/Window_Valor.js");
   assert.match(source, /actorNavigation\.update\(\)/);

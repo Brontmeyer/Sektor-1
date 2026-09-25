@@ -4,7 +4,7 @@ class DatabaseValidator {
   static validate(database) {
     const errors = [];
 
-    this.validateSystem(database.system, database.mapInfos, errors);
+    this.validateSystem(database.system, database.mapInfos, errors, database.actors);
 
     for (const [name, records] of [
       ["Actors", database.actors],
@@ -114,7 +114,7 @@ class DatabaseValidator {
     }
   }
 
-  static validateSystem(system, mapInfos, errors) {
+  static validateSystem(system, mapInfos, errors, actors = null) {
     if (!system || typeof system !== "object") {
       errors.push("System.json must contain an object.");
       return;
@@ -122,6 +122,31 @@ class DatabaseValidator {
 
     if (!Number.isInteger(system.startMapId)) {
       errors.push("System.startMapId must be an integer.");
+    }
+
+    if (system.startingActorIds !== undefined) {
+      if (!Array.isArray(system.startingActorIds) || system.startingActorIds.length === 0) {
+        errors.push("System.startingActorIds must be a non-empty array when provided.");
+      } else {
+        const seenActorIds = new Set();
+
+        for (const actorId of system.startingActorIds) {
+          if (!Number.isInteger(actorId) || actorId <= 0) {
+            errors.push("System.startingActorIds entries must be positive integers.");
+            continue;
+          }
+
+          if (seenActorIds.has(actorId)) {
+            errors.push(`System.startingActorIds must not contain duplicate actor ID ${actorId}.`);
+          }
+
+          seenActorIds.add(actorId);
+
+          if (Array.isArray(actors) && !actors[actorId]) {
+            errors.push(`System.startingActorIds references unknown actor ID ${actorId}.`);
+          }
+        }
+      }
     }
 
     if (!["side", "front"].includes(system.battleView)) {
@@ -702,6 +727,8 @@ class DatabaseValidator {
       text: ["code", "text", "speaker"],
       choice: ["code", "speaker", "prompt", "choices"],
       nameActor: ["code", "actorId", "prompt"],
+      recruitActor: ["code", "actorId", "message", "speaker"],
+      removeActor: ["code", "actorId"],
       ifSwitch: ["code", "id", "value", "trueCommands", "falseCommands"],
       ifKeyItem: ["code", "itemId", "consume", "trueCommands", "falseCommands"],
       setSwitch: ["code", "id", "value"],
@@ -791,6 +818,27 @@ class DatabaseValidator {
           errors,
         );
         validateOptionalString("prompt");
+        break;
+
+      case "recruitActor":
+        this.validateDatabaseReference(
+          `${label}.actorId`,
+          command.actorId,
+          database?.actors,
+          "actor",
+          errors,
+        );
+        validateOptionalString("message");
+        break;
+
+      case "removeActor":
+        this.validateDatabaseReference(
+          `${label}.actorId`,
+          command.actorId,
+          database?.actors,
+          "actor",
+          errors,
+        );
         break;
 
       case "ifSwitch":

@@ -3,11 +3,32 @@
 class Game_Actor extends Game_Battler {
   static NAME_MAX_LENGTH = 16;
 
+  static isAllowedNameCharacter(character) {
+    return /^[\p{L}\p{N}]$/u.test(String(character || ""));
+  }
+
+  static isAllowedNameSeparator(character) {
+    return /[ '-]/.test(String(character || ""));
+  }
+
   static normalizeName(value) {
-    const text = String(value ?? "")
-      .normalize("NFKC")
-      .replace(/[\u0000-\u001f\u007f]/g, "")
+    const normalized = String(value ?? "").normalize("NFKC");
+    let text = "";
+
+    for (const character of Array.from(normalized)) {
+      if (this.isAllowedNameCharacter(character)) {
+        text += character;
+      } else if (/\s/.test(character)) {
+        text += " ";
+      } else if (this.isAllowedNameSeparator(character)) {
+        text += character;
+      }
+    }
+
+    text = text
       .replace(/\s+/g, " ")
+      .replace(/[ '-]{2,}/g, (match) => match.includes(" ") ? " " : match.charAt(0))
+      .replace(/^[ '-]+|[ '-]+$/g, "")
       .trim();
 
     return Array.from(text).slice(0, Game_Actor.NAME_MAX_LENGTH).join("");
@@ -380,7 +401,7 @@ class Game_Actor extends Game_Battler {
   // =====================================
   // Equipment Management
   // =====================================
-  
+
   weapon() {
     if (this.weaponId <= 0) {
       return null;

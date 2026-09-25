@@ -125,10 +125,24 @@ function testWhitespaceAndMaximumLengthStayPresentationSafe() {
   assert.doesNotThrow(() => harness.window.draw());
 }
 
+function testSymbolsAreIgnoredUntilAValidNameCharacterIsTyped() {
+  const harness = createHarness();
+
+  harness.type("!", "@", "#");
+  assert.equal(harness.window.value, "Tyler");
+
+  harness.type("R", "_", "o", "-", "o", "k");
+  assert.equal(harness.window.value, "Ro-ok");
+
+  harness.trigger("Enter");
+  assert.equal(harness.actor.name, "Ro-ok");
+}
+
 function run() {
   testTypingReplacesDefaultAndLetterEDoesNotConfirm();
   testBackspaceAndEscapeRestoreDefaultWithoutLeavingNameScreen();
   testWhitespaceAndMaximumLengthStayPresentationSafe();
+  testSymbolsAreIgnoredUntilAValidNameCharacterIsTyped();
   console.log("Name entry presentation regression tests passed.");
 }
 

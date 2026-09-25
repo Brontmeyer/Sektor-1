@@ -457,3 +457,8 @@ See [`TODO.md`](TODO.md) for the current development checklist.
 ------------------------------------------------------------------------
 
 Built with ❤️ by **Sarah & Tyler**
+
+
+## Party Recruitment Foundation
+
+New Game starts with the configured protagonist only. Additional actors live in the runtime actor registry and join the playable roster through event commands such as `recruitActor`, allowing story scenes to grow the party over time while save/load preserves recruited and met companions.

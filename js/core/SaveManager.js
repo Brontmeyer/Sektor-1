@@ -132,6 +132,18 @@ class SaveManager {
         battleRows: this.isPlainObject(data.party?.battleRows)
           ? data.party.battleRows
           : {},
+        actorIds: Array.isArray(data.party?.actorIds)
+          ? data.party.actorIds
+          : Array.isArray(data.actors)
+            ? data.actors.map((actor) => actor?.actorId).filter((actorId) => Number.isInteger(Number(actorId)))
+            : [],
+        metActorIds: Array.isArray(data.party?.metActorIds)
+          ? data.party.metActorIds
+          : Array.isArray(data.party?.actorIds)
+            ? data.party.actorIds
+            : Array.isArray(data.actors)
+              ? data.actors.map((actor) => actor?.actorId).filter((actorId) => Number.isInteger(Number(actorId)))
+              : [],
         battleFormationActorIds: Array.isArray(
           data.party?.battleFormationActorIds,
         )
@@ -182,6 +194,13 @@ class SaveManager {
       return ["Save data must be an object."];
     }
 
+    const actorExists = (actorId) =>
+      Boolean(
+        globalThis.$gameSystem?.actor?.(actorId) ||
+          $gameParty?.actorById?.(actorId) ||
+          DatabaseManager.actor?.(actorId),
+      );
+
     if (saveData.version !== this.currentVersion()) {
       errors.push(
         `Unsupported save version ${saveData.version}; expected ${this.currentVersion()}.`,
@@ -219,8 +238,8 @@ class SaveManager {
           errors.push(`Actor ${actorId} name must be a non-empty string when provided.`);
         }
 
-        if (!$gameParty?.actorById?.(actorId)) {
-          errors.push(`Saved actor ${actorId} does not exist in the current party roster.`);
+        if (!actorExists(actorId)) {
+          errors.push(`Saved actor ${actorId} does not exist in the actor database.`);
         }
 
         const numericFields = [
@@ -427,6 +446,36 @@ class SaveManager {
       }
 
       if (
+        saveData.party.actorIds !== undefined &&
+        !Array.isArray(saveData.party.actorIds)
+      ) {
+        errors.push("Party actorIds must be an array.");
+      } else if (Array.isArray(saveData.party.actorIds)) {
+        for (const rawActorId of saveData.party.actorIds) {
+          const actorId = Number(rawActorId);
+
+          if (!Number.isInteger(actorId) || actorId <= 0 || !actorExists(actorId)) {
+            errors.push(`Party actorIds references unknown actor ${rawActorId}.`);
+          }
+        }
+      }
+
+      if (
+        saveData.party.metActorIds !== undefined &&
+        !Array.isArray(saveData.party.metActorIds)
+      ) {
+        errors.push("Party metActorIds must be an array.");
+      } else if (Array.isArray(saveData.party.metActorIds)) {
+        for (const rawActorId of saveData.party.metActorIds) {
+          const actorId = Number(rawActorId);
+
+          if (!Number.isInteger(actorId) || actorId <= 0 || !actorExists(actorId)) {
+            errors.push(`Party metActorIds references unknown actor ${rawActorId}.`);
+          }
+        }
+      }
+
+      if (
         saveData.party.battleActorIds !== undefined &&
         !Array.isArray(saveData.party.battleActorIds)
       ) {
@@ -450,7 +499,7 @@ class SaveManager {
           const actorId = Number(rawActorId);
           const row = String(rawRow || "").toLowerCase();
 
-          if (!Number.isInteger(actorId) || actorId <= 0 || !$gameParty?.actorById?.(actorId)) {
+          if (!Number.isInteger(actorId) || actorId <= 0 || !actorExists(actorId)) {
             errors.push(`Party battleRows references unknown actor ${rawActorId}.`);
             continue;
           }
@@ -697,6 +746,14 @@ class SaveManager {
   }
 
   static restoreParty(partyData) {
+    if (Array.isArray(partyData.actorIds) && typeof $gameParty.setRecruitedActorIds === "function") {
+      $gameParty.setRecruitedActorIds(partyData.actorIds);
+    }
+
+    if (Array.isArray(partyData.metActorIds) && typeof $gameParty.setMetActorIds === "function") {
+      $gameParty.setMetActorIds(partyData.metActorIds);
+    }
+
     $gameParty.items = this.normalizeInventory(
       partyData.items,
       (id) => DatabaseManager.item(id),
@@ -815,7 +872,9 @@ class SaveManager {
       }
 
       for (const actorData of saveData.actors) {
-        const actor = $gameParty.actorById(Number(actorData.actorId));
+        const actor =
+          globalThis.$gameSystem?.actor?.(Number(actorData.actorId)) ||
+          $gameParty.actorById(Number(actorData.actorId));
 
         if (!actor) {
           return this.fail(`Cannot restore unknown actor ${actorData.actorId}.`);
@@ -879,9 +938,12 @@ class SaveManager {
       }
 
       const leader = $gameParty.leader();
-      const actors = $gameParty.members();
+      const actors = Array.isArray(globalThis.$gameSystem?.actors)
+        ? globalThis.$gameSystem.actors
+        : $gameParty.members();
+      const recruitedActors = $gameParty.members();
 
-      if (!leader || actors.length === 0) {
+      if (!leader || recruitedActors.length === 0) {
         return this.fail("Cannot save: the party has no actors.");
       }
 
@@ -905,6 +967,14 @@ class SaveManager {
           armors: { ...$gameParty.armors },
           accessories: { ...$gameParty.accessories },
           gil: typeof $gameParty.gil === "function" ? $gameParty.gil() : 0,
+          actorIds:
+            typeof $gameParty.recruitedActorIds === "function"
+              ? $gameParty.recruitedActorIds()
+              : $gameParty.members().map((actor) => actor.actorId),
+          metActorIds:
+            typeof $gameParty.metActorIds === "function"
+              ? $gameParty.metActorIds()
+              : $gameParty.members().map((actor) => actor.actorId),
           battleActorIds: $gameParty.battleActorIds(),
           battleFormationActorIds:
             typeof $gameParty.battleFormationActorIds === "function"

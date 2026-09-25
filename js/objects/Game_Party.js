@@ -16,6 +16,7 @@ class Game_Party {
     this._battleActorIds = [];
     this._battleFormationActorIds = [];
     this._battleRows = {};
+    this._metActorIds = [];
 
     for (const actor of initialActors) {
       this.addActor(actor);
@@ -36,6 +37,14 @@ class Game_Party {
     return [...this._actors];
   }
 
+  recruitedActorIds() {
+    return this._actors.map((actor) => actor.actorId);
+  }
+
+  metActorIds() {
+    return [...this._metActorIds];
+  }
+
   leader() {
     return this._actors[0] || null;
   }
@@ -43,6 +52,46 @@ class Game_Party {
   actorById(actorId) {
     const id = Number(actorId);
     return this._actors.find((actor) => actor.actorId === id) || null;
+  }
+
+  normalizeActorId(actorOrId) {
+    const id = Number(actorOrId?.actorId ?? actorOrId);
+    return Number.isInteger(id) && id > 0 ? id : 0;
+  }
+
+  actorRegistryLookup(actorId) {
+    const id = this.normalizeActorId(actorId);
+
+    if (!id) {
+      return null;
+    }
+
+    return globalThis.$gameSystem?.actor?.(id) || null;
+  }
+
+  markActorMet(actorOrId) {
+    const actorId = this.normalizeActorId(actorOrId);
+
+    if (!actorId) {
+      return false;
+    }
+
+    if (!this._metActorIds.includes(actorId)) {
+      this._metActorIds.push(actorId);
+      this._metActorIds.sort((a, b) => a - b);
+    }
+
+    return true;
+  }
+
+  hasMetActor(actorOrId) {
+    const actorId = this.normalizeActorId(actorOrId);
+    return actorId > 0 && this._metActorIds.includes(actorId);
+  }
+
+  isActorRecruited(actorOrId) {
+    const actorId = this.normalizeActorId(actorOrId);
+    return actorId > 0 && this.actorById(actorId) !== null;
   }
 
   addActor(actor) {
@@ -56,6 +105,7 @@ class Game_Party {
     }
 
     this._actors.push(actor);
+    this.markActorMet(actor.actorId);
     this._battleRows[actor.actorId] = this.normalizeBattleRow(
       this._battleRows[actor.actorId],
     );
@@ -66,6 +116,24 @@ class Game_Party {
     }
 
     return true;
+  }
+
+  addActorToParty(actorOrId) {
+    const actor = actorOrId instanceof Game_Actor
+      ? actorOrId
+      : this.actorRegistryLookup(actorOrId);
+
+    if (!actor) {
+      console.error(`Cannot recruit unknown actor ID: ${actorOrId}`);
+      return false;
+    }
+
+    if (this.isActorRecruited(actor.actorId)) {
+      this.markActorMet(actor.actorId);
+      return false;
+    }
+
+    return this.addActor(actor);
   }
 
   removeActor(actorId) {
@@ -86,6 +154,77 @@ class Game_Party {
     delete this._battleRows[id];
 
     return true;
+  }
+
+  removeActorFromParty(actorId) {
+    return this.removeActor(actorId);
+  }
+
+  setMetActorIds(actorIds = []) {
+    const ids = Array.isArray(actorIds)
+      ? actorIds
+          .map((actorId) => this.normalizeActorId(actorId))
+          .filter((actorId, index, source) => actorId > 0 && source.indexOf(actorId) === index)
+      : [];
+
+    for (const actor of this._actors) {
+      if (!ids.includes(actor.actorId)) {
+        ids.push(actor.actorId);
+      }
+    }
+
+    this._metActorIds = ids.sort((a, b) => a - b);
+    return true;
+  }
+
+  setRecruitedActorIds(actorIds = []) {
+    const ids = Array.isArray(actorIds)
+      ? actorIds
+          .map((actorId) => this.normalizeActorId(actorId))
+          .filter((actorId, index, source) => actorId > 0 && source.indexOf(actorId) === index)
+      : [];
+    const recruitedActors = [];
+
+    for (const actorId of ids) {
+      const actor = this.actorRegistryLookup(actorId) || this.actorById(actorId);
+
+      if (actor && !recruitedActors.includes(actor)) {
+        recruitedActors.push(actor);
+      }
+    }
+
+    if (recruitedActors.length === 0) {
+      const leader = this.actorRegistryLookup(1) || this._actors[0] || null;
+
+      if (leader) {
+        recruitedActors.push(leader);
+      }
+    }
+
+    const previousRows = { ...this._battleRows };
+    this._actors = [];
+    this._battleRows = {};
+
+    for (const actor of recruitedActors) {
+      this._actors.push(actor);
+      this._battleRows[actor.actorId] = this.normalizeBattleRow(previousRows[actor.actorId]);
+      this.markActorMet(actor.actorId);
+    }
+
+    this._battleActorIds = this._battleActorIds.filter((actorId) => this.actorById(actorId));
+
+    for (const actor of this._actors) {
+      if (this._battleActorIds.length >= 4) {
+        break;
+      }
+
+      if (!this._battleActorIds.includes(actor.actorId)) {
+        this._battleActorIds.push(actor.actorId);
+      }
+    }
+
+    this.setBattleFormationActorIds(this._battleFormationActorIds);
+    return this._actors.length > 0;
   }
 
   battleActorIds() {

@@ -169,6 +169,19 @@ function createHarness() {
   } = context.__classes;
   const partyActors = [1, 2, 3, 4].map((actorId) => new Game_Actor(actorId));
   const party = new Game_Party(partyActors);
+
+  // Pass 93 allows New Game to start with only the protagonist.
+  // These navigation tests intentionally exercise multi-actor cycling, so the
+  // fixture party must explicitly recruit the reserve actors it wants to test.
+  if (typeof party.addActorToParty === "function") {
+    for (const actor of partyActors.slice(1)) {
+      party.addActorToParty(actor.actorId);
+    }
+  } else if (typeof party.addActor === "function") {
+    for (const actor of partyActors.slice(1)) {
+      party.addActor(actor);
+    }
+  }
   context.$gameParty = party;
 
   return {
@@ -317,8 +330,14 @@ function testMagickUsesDirectionsForGridAfterActorHandoff() {
 
   drawCalls.length = 0;
   window.draw();
+
+  const expectedActorName = partyActors[1].name;
   assert.equal(
-    drawCalls.some((call) => call[0] === "fillText" && call[1] === "Sarah"),
+    drawCalls.some(
+      (call) =>
+        call[0] === "fillText" &&
+        String(call[1]).includes(expectedActorName),
+    ),
     true,
   );
 }

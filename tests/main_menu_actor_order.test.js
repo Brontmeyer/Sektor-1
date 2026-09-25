@@ -286,6 +286,8 @@ function testSceneMenuUsesSharedActorSelectionContract() {
   }
 
   assert.match(scene, /beginActorSelection\(command\)/);
+  assert.match(scene, /members\.length === 1/);
+  assert.match(scene, /openActorDestination\(command, members\[0\]\)/);
   assert.match(scene, /beginOrderSelection\(\)/);
   assert.match(scene, /partyWindow\.activate\("actor"\)/);
   assert.match(scene, /this\.orderWindow = new Window_Order\(\$gameParty\)/);

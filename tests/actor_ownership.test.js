@@ -96,8 +96,9 @@ function testGameSystemBuildsActorsFromDatabaseAndInitialMagick() {
   );
   assert.deepEqual(
     Array.from(system.party.members(), (actor) => actor.actorId),
-    [1, 2, 3, 4],
+    [1],
   );
+  assert.deepEqual(Array.from(system.party.battleActorIds()), [1]);
   assert.equal(Object.hasOwn(system, "actor2"), false);
   assert.equal(Object.hasOwn(system, "actor3"), false);
   assert.equal(Object.hasOwn(system, "actor4"), false);
@@ -138,7 +139,7 @@ function testPartyOwnedDefaultItemTargetAndExplicitInventoryClear() {
   assert.equal(party.weaponCount(1), 0);
   assert.equal(party.armorCount(1), 0);
   assert.equal(party.accessoryCount(1), 0);
-  assert.equal(party.members().length, 4);
+  assert.equal(party.members().length, 1);
   assert.equal(typeof party.clear, "undefined");
 }
 
