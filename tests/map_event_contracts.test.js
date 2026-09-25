@@ -326,8 +326,20 @@ function createRuntimeHarness() {
   const switches = new Game_Switches();
   const selfSwitches = new Game_SelfSwitches();
   const party = new Game_Party();
+  const messageWindow = {
+    open: false,
+    text: "",
+    source: "",
+    isOpen() { return this.open; },
+    show(text, source) {
+      this.text = text;
+      this.source = source;
+      this.open = true;
+    },
+    close() { this.open = false; },
+  };
   const interpreter = new Game_Interpreter(
-    { isOpen() { return false; }, show() {} },
+    messageWindow,
     { isOpen() { return false; }, hasResult() { return false; } },
   );
 
@@ -336,7 +348,14 @@ function createRuntimeHarness() {
   context.$gameSelfSwitches = selfSwitches;
   context.$gameParty = party;
 
-  return { variables, switches, selfSwitches, party, interpreter };
+  return {
+    variables,
+    switches,
+    selfSwitches,
+    party,
+    interpreter,
+    messageWindow,
+  };
 }
 
 function testAddVariableNormalizesArithmeticInputs() {
@@ -375,6 +394,36 @@ function testSwitchCommandsRejectTruthyStringBooleans() {
   assert.equal(selfSwitches.value(1, 7, "A"), false);
 }
 
+
+function testTreasureCapacityBlocksWholeChestWithoutConsumingIt() {
+  const { party, selfSwitches, interpreter, messageWindow } = createRuntimeHarness();
+
+  assert.equal(party.gainItem(1, 98), true);
+  interpreter.setup(
+    [
+      { code: "gainItemMessage", itemId: 1, amount: 1, source: "Chest" },
+      { code: "gainItemMessage", itemId: 1, amount: 1, source: "Chest" },
+      { code: "setSelfSwitch", letter: "A", value: true },
+    ],
+    { mapId: 1, id: 77 },
+  );
+
+  interpreter.update();
+
+  assert.equal(party.itemCount(1), 98);
+  assert.equal(messageWindow.isOpen(), true);
+  assert.match(messageWindow.text, /inventory limit of 99/i);
+  assert.equal(selfSwitches.value(1, 77, "A"), false);
+  assert.equal(interpreter.isRunning(), true);
+
+  messageWindow.close();
+  interpreter.update();
+
+  assert.equal(interpreter.isRunning(), false);
+  assert.equal(selfSwitches.value(1, 77, "A"), false);
+  assert.equal(party.itemCount(1), 98);
+}
+
 function testItemGainNormalizesQuantitiesAndRejectsInvalidInput() {
   const { party, interpreter } = createRuntimeHarness();
 
@@ -405,6 +454,7 @@ async function run() {
   await testDatabaseManagerValidatesMapsBeforeReturningThem();
   testAddVariableNormalizesArithmeticInputs();
   testSwitchCommandsRejectTruthyStringBooleans();
+  testTreasureCapacityBlocksWholeChestWithoutConsumingIt();
   testItemGainNormalizesQuantitiesAndRejectsInvalidInput();
 
   console.log("Map/event contract regression tests passed.");

@@ -14,6 +14,7 @@ class Game_Interpreter {
     this.running = false;
 
     this.lastBattleResult = null;
+    this.abortAfterMessage = false;
   }
 
   setup(commands, event = null) {
@@ -24,11 +25,17 @@ class Game_Interpreter {
     this.index = 0;
 
     this.lastBattleResult = null;
+    this.abortAfterMessage = false;
     this.running = this.commands.length > 0;
   }
 
   update() {
     if (!this.running) {
+      return;
+    }
+
+    if (this.abortAfterMessage && !this.messageWindow.isOpen()) {
+      this.finish();
       return;
     }
 
@@ -433,6 +440,88 @@ class Game_Interpreter {
   // Items, Equipment, and Experience
   // =================================
 
+  rewardMerchandise(command) {
+    const definitions = {
+      gainItemMessage: { type: "item", idKey: "itemId" },
+      gainWeaponMessage: { type: "weapon", idKey: "weaponId" },
+      gainArmorMessage: { type: "armor", idKey: "armorId" },
+      gainAccessoryMessage: { type: "accessory", idKey: "accessoryId" },
+    };
+    const definition = definitions[command?.code];
+
+    if (!definition) {
+      return null;
+    }
+
+    const id = Number(command[definition.idKey]);
+    const amount = Number(command.amount ?? 1);
+
+    if (!Number.isSafeInteger(id) || id <= 0 || !Number.isSafeInteger(amount) || amount <= 0) {
+      return null;
+    }
+
+    return { type: definition.type, id, amount };
+  }
+
+  isTreasureReward(command) {
+    return (
+      this.rewardMerchandise(command) !== null &&
+      typeof command?.source === "string" &&
+      /chest/i.test(command.source)
+    );
+  }
+
+  treasureCapacityFailure(startIndex = this.index) {
+    const requested = new Map();
+
+    for (let index = startIndex; index < this.commands.length; index++) {
+      const command = this.commands[index];
+
+      if (!this.isTreasureReward(command)) {
+        break;
+      }
+
+      const reward = this.rewardMerchandise(command);
+      const key = `${reward.type}:${reward.id}`;
+      const entry = requested.get(key) || { ...reward, amount: 0 };
+      entry.amount += reward.amount;
+      requested.set(key, entry);
+    }
+
+    for (const reward of requested.values()) {
+      const capacity = $gameParty.merchandiseCapacity?.(reward.type, reward.id) ?? 0;
+
+      if (capacity < reward.amount) {
+        return { ...reward, capacity };
+      }
+    }
+
+    return null;
+  }
+
+  blockTreasureIfInventoryFull(command) {
+    if (!this.isTreasureReward(command)) {
+      return false;
+    }
+
+    const failure = this.treasureCapacityFailure(this.index);
+
+    if (!failure) {
+      return false;
+    }
+
+    const record = $gameParty.merchandiseRecord?.(failure.type, failure.id);
+    const name = record?.name || "That treasure";
+    const limit = $gameParty.inventoryLimit?.() ?? 99;
+    this.messageWindow.show(
+      `${name} would exceed the inventory limit of ${limit}. Make room and try again.`,
+      command.source || "Chest",
+    );
+    this.abortAfterMessage = true;
+    this.index++;
+    return true;
+  }
+
   commandGainItem(command) {
     const amount = Number(command.amount ?? 1);
 
@@ -451,6 +540,10 @@ class Game_Interpreter {
       return false;
     }
 
+    if (this.blockTreasureIfInventoryFull(command)) {
+      return false;
+    }
+
     const item = DatabaseManager.item(command.itemId);
 
     if (!item) {
@@ -466,9 +559,19 @@ class Game_Interpreter {
       return true;
     }
 
-    $gameParty.gainItem(command.itemId, amount);
+    const gained = $gameParty.gainItem(command.itemId, amount);
 
     const source = command.source || "System";
+
+    if (!gained) {
+      const limit = $gameParty.inventoryLimit?.() ?? 99;
+      this.messageWindow.show(
+        `${item.name} could not be obtained because the inventory limit is ${limit}.`,
+        source,
+      );
+      this.index++;
+      return false;
+    }
 
     let message = "";
 
@@ -518,6 +621,10 @@ class Game_Interpreter {
       return false;
     }
 
+    if (this.blockTreasureIfInventoryFull(command)) {
+      return false;
+    }
+
     const armor = DatabaseManager.armor(command.armorId);
 
     if (!armor) {
@@ -534,9 +641,19 @@ class Game_Interpreter {
       return true;
     }
 
-    $gameParty.gainArmor(command.armorId, amount);
+    const gained = $gameParty.gainArmor(command.armorId, amount);
 
     const source = command.source || "System";
+
+    if (!gained) {
+      const limit = $gameParty.inventoryLimit?.() ?? 99;
+      this.messageWindow.show(
+        `${armor.name} could not be obtained because the inventory limit is ${limit}.`,
+        source,
+      );
+      this.index++;
+      return false;
+    }
 
     let message = "";
 
@@ -580,6 +697,10 @@ class Game_Interpreter {
       return false;
     }
 
+    if (this.blockTreasureIfInventoryFull(command)) {
+      return false;
+    }
+
     const weapon = DatabaseManager.weapon(command.weaponId);
 
     if (!weapon) {
@@ -596,9 +717,19 @@ class Game_Interpreter {
       return true;
     }
 
-    $gameParty.gainWeapon(command.weaponId, amount);
+    const gained = $gameParty.gainWeapon(command.weaponId, amount);
 
     const source = command.source || "System";
+
+    if (!gained) {
+      const limit = $gameParty.inventoryLimit?.() ?? 99;
+      this.messageWindow.show(
+        `${weapon.name} could not be obtained because the inventory limit is ${limit}.`,
+        source,
+      );
+      this.index++;
+      return false;
+    }
 
     let message = "";
 
@@ -640,6 +771,10 @@ class Game_Interpreter {
       return false;
     }
 
+    if (this.blockTreasureIfInventoryFull(command)) {
+      return false;
+    }
+
     const accessory = DatabaseManager.accessory(command.accessoryId);
 
     if (!accessory) {
@@ -654,9 +789,19 @@ class Game_Interpreter {
       return true;
     }
 
-    $gameParty.gainAccessory(command.accessoryId, amount);
+    const gained = $gameParty.gainAccessory(command.accessoryId, amount);
 
     const source = command.source || "System";
+
+    if (!gained) {
+      const limit = $gameParty.inventoryLimit?.() ?? 99;
+      this.messageWindow.show(
+        `${accessory.name} could not be obtained because the inventory limit is ${limit}.`,
+        source,
+      );
+      this.index++;
+      return false;
+    }
     const quantity =
       amount === 1 ? `a ${accessory.name}` : `${amount} ${accessory.name}s`;
     const verb = source === "Chest" ? "found" : "obtained";
@@ -767,6 +912,7 @@ class Game_Interpreter {
 
   finish() {
     this.running = false;
+    this.abortAfterMessage = false;
 
     this.commands = [];
 

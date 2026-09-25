@@ -281,7 +281,7 @@ async function testV11LoadRestoresSkillStateValorAccessoryRowsFormationAndNormal
   assert.equal(SaveManager.save(1), true);
 
   const saveData = rawSave(localStorage, SaveManager);
-  saveData.party.items = { 1: "3", 2: "bad", 999: 4 };
+  saveData.party.items = { 1: "198", 2: "bad", 999: 4 };
   saveData.party.accessories = { 1: "1", 2: "2", 999: 4 };
   localStorage.setItem(SaveManager.saveKey(1), JSON.stringify(saveData));
 
@@ -312,7 +312,7 @@ async function testV11LoadRestoresSkillStateValorAccessoryRowsFormationAndNormal
   assert.equal(second.valor, 88);
   assert.equal(second.hasStatus("sadness"), true);
   assert.equal(second.hasStatus("barrier"), false);
-  assert.equal(party.itemCount(1), 3);
+  assert.equal(party.itemCount(1), 99);
   assert.equal(party.itemCount(2), 0);
   assert.equal(party.itemCount(999), 0);
   assert.equal(party.gil(), 120);

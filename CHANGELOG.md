@@ -12,6 +12,7 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added a canonical per-record inventory ceiling of **99** across items, weapons, armor, and accessories. `Game_Party` now owns remaining-capacity checks used by direct gains and merchant transactions; shops limit quantity to remaining room, cap-full goods stay visible but unavailable, battle drops truncate to available room, treasure events refuse an over-cap chest before consuming its self-switch, and save restoration clamps legacy over-cap stacks back to 99.
 - Added independent randomized starting TIME offsets for standard encounters. Every current actor and enemy now begins from its own battle-local RNG roll inside a conservative `0..75` opening band, reducing same-stat synchronization without allowing a standard encounter to spawn already Ready. Formation-specific opening overrides remain future work.
 - Added a battle-local committed player-action queue bridge: if the player finishes choosing an action during an enemy recovery beat, that action waits behind the current enemy resolution and executes before another Ready battler is claimed. TIME continues progressing in the background while action execution remains serialized.
 - Added ATB Mode configuration with **Active** / **Wait** behavior. Active preserves continuous Time-gauge progression through player decisions; Wait selectively freezes Time in deep selectors and target selection while leaving the main command bar live. Config Runtime v4 migrates older settings and defaults existing players to Active so the pre-option pacing is preserved.
@@ -27,6 +28,7 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Fixed an ATB input-authority crash exposed by Confirm (`E`) during idle/no-owner battle frames. Legacy animation-idle code can no longer unlock input under ATB, the scene accepts command input only when a live party battler actually owns `TURN_COMMAND`, and `BattleManager` defensively ignores ownerless command execution instead of dereferencing a missing battler.
 - Refined ATB command ownership from hands-on playtesting: enemy actions no longer hide or lock an already-open player command surface, and Wait mode now pauses TIME only in deep selectors / target selection rather than on the main command bar. Ready enemies may still resolve while the main command is open, while a committed player action joins the execution queue instead of overlapping the enemy recovery beat.
 - Simplified the battle TIME HUD to label + gauge only, removing redundant numeric / READY text, and reordered the persistent battle command list to **Attack / Magick / Skills / Item**.
 - Tightened actor naming to the intended story-name contract: runtime names and name entry now accept Unicode letters plus single spaces only, ignoring digits, punctuation, symbols, apostrophes, and hyphens while preserving the existing 16-character limit and canonical defaults.

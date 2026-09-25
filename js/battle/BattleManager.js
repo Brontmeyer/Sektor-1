@@ -352,9 +352,24 @@ class BattleManager {
         $gameParty.gainGil(rewards.currency);
       }
 
+      const acceptedDrops = [];
+
       for (const drop of rewards.drops) {
-        $gameParty.gainItem(drop.itemId, drop.quantity);
+        const capacity =
+          typeof $gameParty.itemCapacity === "function"
+            ? $gameParty.itemCapacity(drop.itemId)
+            : 99;
+        const quantity = Math.min(
+          Math.max(0, Number(drop.quantity) || 0),
+          Math.max(0, capacity),
+        );
+
+        if (quantity > 0 && $gameParty.gainItem(drop.itemId, quantity)) {
+          acceptedDrops.push({ ...drop, quantity });
+        }
       }
+
+      rewards.drops = acceptedDrops;
     }
 
     const partyResults = partyMembers.map((actor) => {
@@ -1874,6 +1889,13 @@ class BattleManager {
     const battle = this.scene;
     const battler = this.party().currentBattler();
     const command = commandOverride || battle.commandWindow.currentCommand();
+
+    if (!battler) {
+      DebugManager.log(
+        `Ignored battle command "${command}" because no party battler owns input.`,
+      );
+      return false;
+    }
 
     DebugManager.log(`${battler.name} selected "${command}".`);
 

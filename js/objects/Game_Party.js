@@ -1,6 +1,8 @@
 "use strict";
 
 class Game_Party {
+  static MAX_INVENTORY_QUANTITY = 99;
+
   constructor(initialActors = []) {
     this.items = {};
     this._gil = 0;
@@ -471,6 +473,23 @@ class Game_Party {
   }
 
   // =================================
+  // Inventory Capacity
+  // =================================
+
+  inventoryLimit() {
+    return Game_Party.MAX_INVENTORY_QUANTITY;
+  }
+
+  remainingInventoryCapacity(currentAmount = 0) {
+    const owned = Math.max(0, Math.floor(Number(currentAmount) || 0));
+    return Math.max(0, this.inventoryLimit() - owned);
+  }
+
+  itemCapacity(itemId) {
+    return this.remainingInventoryCapacity(this.itemCount(itemId));
+  }
+
+  // =================================
   // Items
   // =================================
 
@@ -484,14 +503,20 @@ class Game_Party {
 
     const numericAmount = Number(amount);
 
-    if (!Number.isFinite(numericAmount) || numericAmount === 0) {
+    if (!Number.isSafeInteger(numericAmount) || numericAmount === 0) {
       console.error(`Invalid item amount: ${amount}`);
       return false;
     }
 
-    const currentAmount = Number(this.itemCount(itemId));
-    const safeCurrentAmount = Number.isFinite(currentAmount) ? currentAmount : 0;
-    const newAmount = safeCurrentAmount + numericAmount;
+    const currentAmount = Math.max(0, Math.floor(Number(this.itemCount(itemId)) || 0));
+    const newAmount = currentAmount + numericAmount;
+
+    if (numericAmount > 0 && newAmount > this.inventoryLimit()) {
+      DebugManager.log(
+        `${item.name} is at the inventory limit (${this.inventoryLimit()}).`,
+      );
+      return false;
+    }
 
     if (newAmount <= 0) {
       delete this.items[itemId];
@@ -666,13 +691,23 @@ class Game_Party {
 
     const numericAmount = Number(amount);
 
-    if (!Number.isFinite(numericAmount) || numericAmount === 0) {
+    if (!Number.isSafeInteger(numericAmount) || numericAmount === 0) {
       console.error(`Invalid equipment amount: ${amount}`);
       return false;
     }
 
-    const newAmount =
-      this.equipmentCount(collection, equipmentId) + numericAmount;
+    const currentAmount = Math.max(
+      0,
+      Math.floor(Number(this.equipmentCount(collection, equipmentId)) || 0),
+    );
+    const newAmount = currentAmount + numericAmount;
+
+    if (numericAmount > 0 && newAmount > this.inventoryLimit()) {
+      DebugManager.log(
+        `${equipment.name} is at the inventory limit (${this.inventoryLimit()}).`,
+      );
+      return false;
+    }
 
     if (newAmount <= 0) {
       delete collection[equipmentId];
@@ -781,6 +816,24 @@ class Game_Party {
       default:
         return 0;
     }
+  }
+
+  merchandiseCapacity(type, id) {
+    if (!this.merchandiseRecord(type, id)) {
+      return 0;
+    }
+
+    return this.remainingInventoryCapacity(this.merchandiseCount(type, id));
+  }
+
+  canGainMerchandise(type, id, amount = 1) {
+    const quantity = Number(amount);
+
+    return (
+      Number.isSafeInteger(quantity) &&
+      quantity > 0 &&
+      this.merchandiseCapacity(type, id) >= quantity
+    );
   }
 
   gainMerchandise(type, id, amount = 1) {
@@ -1018,6 +1071,19 @@ class Game_Party {
 
     if (!Number.isSafeInteger(unitPrice) || unitPrice < 0) {
       return { success: false, reason: "invalidPrice" };
+    }
+
+    const capacity = this.merchandiseCapacity(type, id);
+
+    if (capacity < quantity) {
+      return {
+        success: false,
+        reason: "inventoryFull",
+        capacity,
+        owned: this.merchandiseCount(type, id),
+        limit: this.inventoryLimit(),
+        requested: quantity,
+      };
     }
 
     const totalPrice = unitPrice * quantity;

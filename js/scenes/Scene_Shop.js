@@ -45,6 +45,13 @@ class Scene_Shop extends Scene_Base {
         return;
       }
 
+      if (purchase.reason === "inventoryFull") {
+        this.shopWindow.setMessage(
+          `${record?.name || "That item"} is at the inventory limit (${purchase.limit ?? 99}).`,
+        );
+        return;
+      }
+
       this.shopWindow.setMessage("That purchase could not be completed.");
       return;
     }

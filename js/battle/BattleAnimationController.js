@@ -70,8 +70,11 @@ class BattleAnimationController {
       }
     }
 
-    // Unlock battle input when both battlers are idle and visually aligned.
+    // The old round scheduler unlocked input from animation state. Under ATB,
+    // BattleManager owns command authority, so an idle battlefield must never
+    // expose Confirm input when no actor actually owns a command turn.
     if (
+      scene.usesActiveTimeAuthority?.() !== true &&
       scene.battleInputLocked &&
       !scene.pendingEnemyTurn &&
       scene.actionPhase === "none" &&

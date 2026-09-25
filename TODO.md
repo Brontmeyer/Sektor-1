@@ -87,6 +87,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Promote Time readiness into unified ATB turn authority so actors and enemies act from one readiness queue instead of party/enemy side rounds
 - [x] Add ATB Mode configuration (Wait / Active) now that unified readiness authority is stable
 - [x] Decouple ATB command input from enemy execution so open player commands remain interactive, committed actions queue behind current resolution, and Wait pauses only deep selection states
+- [x] Harden ATB command authority so Confirm input is ignored unless a live party battler owns the command state
 - [x] Randomize standard-encounter starting TIME independently per battler to break synchronized same-stat openings
 - [x] Implement Battle Presentation & Feedback v2 from hands-on playtest feedback
 - [x] Replace persistent top header/message panels with compact transient action/state banners
@@ -319,3 +320,4 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Pass 97: Promote TIME readiness into unified actor/enemy turn authority and restrict actor naming to letters/spaces
 - [x] Pass 98: Add ATB Active/Wait configuration, serialize queued enemy actions, simplify TIME HUD text, and reorder battle commands
 - [x] Pass 99: Decouple ATB input/execution, preserve player command control during enemy actions, refine Wait semantics, and randomize standard starting TIME
+- [x] Pass 100: Harden ATB Confirm ownership and enforce the global 99-copy inventory ceiling across shops, treasure, rewards, and save restoration

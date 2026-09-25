@@ -359,6 +359,10 @@ class Scene_Battle extends Scene_Base {
     // HANDLE COMMAND WINDOW INPUT
     // -----------------------------
 
+    if (!Scene_Battle.prototype.canAcceptCommandInput.call(this)) {
+      return;
+    }
+
     this.commandWindow.update();
 
     if (Input.isActionTriggered("confirm")) {
@@ -369,6 +373,19 @@ class Scene_Battle extends Scene_Base {
     if (Input.isActionTriggered("cancel")) {
       this.cancelCommandSelection();
     }
+  }
+
+  canAcceptCommandInput() {
+    const battler = this.partyController?.currentBattler?.() || null;
+    const turnState = this.battleManager?.currentTurnState?.() || null;
+
+    return (
+      !this.outcome &&
+      this.battleInputLocked === false &&
+      battler !== null &&
+      $gameParty.battleMembers().includes(battler) &&
+      (turnState === null || turnState === BattleManager.TURN_COMMAND)
+    );
   }
 
   battleDeltaTime(deltaTime) {

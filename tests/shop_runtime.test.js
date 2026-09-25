@@ -117,6 +117,58 @@ function testFailedPurchaseDoesNotMutateGilOrInventory() {
   assert.equal(party.gil(), 49);
 }
 
+function testInventoryLimitBlocksDirectAndRepeatedShopPurchases() {
+  const Game_Party = loadGameParty();
+  const party = new Game_Party();
+
+  party.gainGil(10000);
+  assert.equal(party.inventoryLimit(), 99);
+  assert.equal(party.gainItem(1, 99), true);
+  assert.equal(party.itemCount(1), 99);
+  assert.equal(party.itemCapacity(1), 0);
+  assert.equal(party.gainItem(1, 1), false);
+  assert.equal(party.itemCount(1), 99);
+
+  const blocked = party.purchaseMerchandise("item", 1, 1);
+  assert.equal(blocked.success, false);
+  assert.equal(blocked.reason, "inventoryFull");
+  assert.equal(blocked.limit, 99);
+  assert.equal(party.itemCount(1), 99);
+  assert.equal(party.gil(), 10000);
+
+  party.loseItem(1, 1);
+  assert.equal(party.itemCount(1), 98);
+  assert.equal(party.purchaseMerchandise("item", 1, 2).reason, "inventoryFull");
+  assert.equal(party.purchaseMerchandise("item", 1, 1).success, true);
+  assert.equal(party.itemCount(1), 99);
+}
+
+function testShopBuyQuantityHonorsRemainingInventoryCapacity() {
+  const { party, triggered, Window_Shop } = createShopUiHarness();
+  const window = new Window_Shop({
+    name: "Test Merchant",
+    goods: [{ type: "item", id: 1 }],
+  });
+
+  party.gainGil(10000);
+  party.gainItem(1, 99);
+
+  triggered.add("Enter");
+  window.update();
+  triggered.clear();
+  assert.equal(window.state, "buy");
+  assert.equal(window.buyQuantityMax(window.currentEntry()), 0);
+
+  triggered.add("Enter");
+  window.update();
+  triggered.clear();
+  assert.equal(window.state, "buy");
+  assert.match(window.message, /inventory limit/i);
+
+  party.loseItem(1, 1);
+  assert.equal(window.buyQuantityMax(window.currentEntry()), 1);
+}
+
 function testSellingReturnsHalfPriceWithoutCorruptingInventory() {
   const Game_Party = loadGameParty();
   const party = new Game_Party();
@@ -572,6 +624,8 @@ function testShopEventValidationChecksGoodsAndDuplicates() {
 function run() {
   testPurchasesUseCanonicalPricesAndPartyInventory();
   testFailedPurchaseDoesNotMutateGilOrInventory();
+  testInventoryLimitBlocksDirectAndRepeatedShopPurchases();
+  testShopBuyQuantityHonorsRemainingInventoryCapacity();
   testSellingReturnsHalfPriceWithoutCorruptingInventory();
   testShopWindowSupportsCommandEntryAndScrollableBuyPresentation();
   testSellMenuProtectsEquippedCopiesAndUsesQuantityConfirmation();

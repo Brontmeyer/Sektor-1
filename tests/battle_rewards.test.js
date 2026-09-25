@@ -229,10 +229,30 @@ function testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce() {
   assert.equal(firstEssence.resonance, 1500);
 }
 
+
+function testVictoryDropsRespectRemainingInventoryCapacity() {
+  const { BattleManager, party, firstEnemy, secondEnemy, scene } = createBattleHarness();
+
+  assert.equal(party.gainItem(1, 98), true);
+  firstEnemy.setHp(0);
+  secondEnemy.setHp(0);
+
+  const manager = new BattleManager(scene);
+  manager.rewardRandom = () => 0.1;
+  const result = manager.finalizeBattle(BattleManager.OUTCOME_VICTORY);
+
+  assert.equal(party.itemCount(1), 99);
+  assert.deepEqual(
+    Array.from(result.rewards.drops, (drop) => ({ ...drop })),
+    [{ itemId: 1, name: "Potion", quantity: 1 }],
+  );
+}
+
 function run() {
   testCurrencyApi();
   testRewardSchemaValidation();
   testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce();
+  testVictoryDropsRespectRemainingInventoryCapacity();
 
   console.log("Battle reward regression tests passed.");
 }

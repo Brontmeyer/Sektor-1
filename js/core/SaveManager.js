@@ -739,7 +739,11 @@ class SaveManager {
         continue;
       }
 
-      normalized[id] = Math.floor(amount);
+      const inventoryLimit =
+        typeof globalThis.$gameParty?.inventoryLimit === "function"
+          ? globalThis.$gameParty.inventoryLimit()
+          : 99;
+      normalized[id] = Math.min(inventoryLimit, Math.floor(amount));
     }
 
     return normalized;

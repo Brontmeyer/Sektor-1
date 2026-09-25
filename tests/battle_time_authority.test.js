@@ -12,6 +12,7 @@ const read = (relativePath) =>
 function loadBattleManager() {
   const context = vm.createContext({
     console,
+    DebugManager: { log() {} },
     BattleEnemyAI: class BattleEnemyAI {},
   });
 
@@ -253,6 +254,37 @@ function testEnemyCompletionAddsCadenceBeforeNextReadyClaim() {
   assert.equal(claims, 1);
 }
 
+
+function testConfirmWithoutAtbCommandOwnerIsIgnoredSafely() {
+  const harness = makeHarness(null);
+  harness.scene.commandWindow = {
+    currentCommand() { return "Attack"; },
+    commandActionKey() { return "attack"; },
+  };
+  harness.partyController.clearActiveBattler();
+
+  assert.doesNotThrow(() => harness.manager.executeCommand("Attack"));
+  assert.equal(harness.manager.executeCommand("Attack"), false);
+}
+
+function testAtbInputAuthorityIsNotUnlockedByLegacyAnimationIdleState() {
+  const sceneSource = read("js/scenes/Scene_Battle.js");
+  const animationSource = read("js/battle/BattleAnimationController.js");
+
+  assert.match(
+    sceneSource,
+    /if \(!Scene_Battle\.prototype\.canAcceptCommandInput\.call\(this\)\) \{\s*return;/,
+  );
+  assert.match(
+    sceneSource,
+    /canAcceptCommandInput\(\)[\s\S]*?battler !== null[\s\S]*?BattleManager\.TURN_COMMAND/,
+  );
+  assert.match(
+    animationSource,
+    /scene\.usesActiveTimeAuthority\?\.\(\) !== true[\s\S]*?scene\.battleInputLocked/,
+  );
+}
+
 function testLiveSceneStartsIdleUntilSomeoneIsReady() {
   const source = read("js/scenes/Scene_Battle.js");
 
@@ -270,6 +302,8 @@ function run() {
   testEnemyCompletionRestoresReservedPlayerCommand();
   testPlayerActionChosenDuringEnemyRecoveryQueuesThenExecutesFirst();
   testEnemyCompletionAddsCadenceBeforeNextReadyClaim();
+  testConfirmWithoutAtbCommandOwnerIsIgnoredSafely();
+  testAtbInputAuthorityIsNotUnlockedByLegacyAnimationIdleState();
   testLiveSceneStartsIdleUntilSomeoneIsReady();
   console.log("Battle Time authority regression tests passed.");
 }

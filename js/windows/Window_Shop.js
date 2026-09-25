@@ -302,13 +302,29 @@ class Window_Shop {
       return 0;
     }
 
+    const inventoryLimit =
+      typeof $gameParty?.inventoryLimit === "function"
+        ? $gameParty.inventoryLimit()
+        : 99;
+    const capacity =
+      typeof $gameParty?.merchandiseCapacity === "function"
+        ? $gameParty.merchandiseCapacity(entry.type, entry.id)
+        : Math.max(0, inventoryLimit - (Number(entry.owned) || 0));
     const price = Math.max(0, Number(entry.price) || 0);
+
+    if (capacity <= 0) {
+      return 0;
+    }
+
     if (price === 0) {
-      return 99;
+      return Math.min(inventoryLimit, capacity);
     }
 
     const runes = Math.max(0, Number($gameParty?.gil?.() || 0));
-    return Math.max(0, Math.min(99, Math.floor(runes / price)));
+    return Math.max(
+      0,
+      Math.min(inventoryLimit, capacity, Math.floor(runes / price)),
+    );
   }
 
   sellQuantityMax(entry = this.currentSellEntry()) {
@@ -491,7 +507,15 @@ class Window_Shop {
     }
 
     if (max <= 0) {
-      this.message = `Not enough Runes. Need ${entry.price}, have ${$gameParty?.gil?.() ?? 0}.`;
+      const capacity =
+        typeof $gameParty?.merchandiseCapacity === "function"
+          ? $gameParty.merchandiseCapacity(entry.type, entry.id)
+          : Math.max(0, 99 - (Number(entry.owned) || 0));
+
+      this.message =
+        capacity <= 0
+          ? `${entry.name} is already at the inventory limit.`
+          : `Not enough Runes. Need ${entry.price}, have ${$gameParty?.gil?.() ?? 0}.`;
       return;
     }
 
@@ -977,17 +1001,22 @@ class Window_Shop {
       const entry = entries[i];
       const y = listTop + (i - range.start) * rowHeight;
       const selected = i === this.buyIndex;
+      const enabled = this.buyQuantityMax(entry) > 0;
 
       if (selected) {
         this.drawSelection(context, bounds.x + 12, y - 14, bounds.width - 24, 28);
       }
 
-      context.fillStyle = selected ? this.themeColor("focus", "#ffd75a") : "#ffffff";
+      context.fillStyle = enabled
+        ? selected
+          ? this.themeColor("focus", "#ffd75a")
+          : "#ffffff"
+        : this.themeColor("muted", "#8897ac");
       context.font = selected ? "600 17px sans-serif" : "17px sans-serif";
       context.fillText(`${selected ? "▶ " : "  "}${entry.name}`, bounds.x + 18, y);
 
       context.textAlign = "right";
-      context.fillStyle = "#ffffff";
+      context.fillStyle = enabled ? "#ffffff" : this.themeColor("muted", "#8897ac");
       context.font = "16px sans-serif";
       context.fillText(String(entry.price), bounds.x + bounds.width - 18, y);
       context.textAlign = "left";
