@@ -114,11 +114,23 @@ class Game_Enemy extends Game_Battler {
     );
   }
 
-  knowsSkill(skillId) {
-    const id = Number(skillId);
+  knowsEnemySkill(enemySkillId) {
+    const id = Number(enemySkillId);
     return this.allActionDefinitions().some(
-      (action) => action.type === "skill" && Number(action.skillId) === id,
+      (action) =>
+        action.type === "enemySkill" && Number(action.enemySkillId) === id,
     );
+  }
+
+  canUseEnemySkill(enemySkillId) {
+    const id = Number(enemySkillId);
+    const skill = DatabaseManager.enemySkill?.(id) || null;
+
+    if (!skill || !this.knowsEnemySkill(id)) {
+      return false;
+    }
+
+    return this.canUseSkillDefinition(skill) && this.canPaySkillCost(skill);
   }
 
   banish() {

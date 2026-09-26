@@ -6,6 +6,7 @@ Canonical game data belongs in the appropriate database files:
 - `data/Accessories.json`
 - `data/Magick.json`
 - `data/Skills.json`
+- `data/EnemySkill.json`
 - `data/Valor.json`
 - `data/Essences.json`
 - `data/Statuses.json`
@@ -216,9 +217,10 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add the first Skill resource specialization through Valor Arts Runtime v1
 - [ ] Define additional Skill costs/resources beyond Valor when approved designs require them
 - [x] Expand Skills beyond physical-damage techniques with reusable percentage-heal and status-application effects required by Character Valor Arts v1
-- [x] Add enemy Skill actions through the shared Skills runtime with the first canonical enemy technique
+- [x] Add enemy Skill actions through the shared Skill-effect runtime with the first canonical enemy technique
+- [x] Separate enemy-only techniques into `EnemySkill.json` / `enemySkillId` while keeping shared effect resolution
 - [x] Define Valor Arts Runtime v1 within the Skills namespace (legacy foundation)
-- [x] Separate Valor Arts into canonical `Valor.json` / actor-owned `valorArtIds` with v13 save migration
+- [x] Separate Valor Arts into canonical `Valor.json` / actor-owned `valorArtIds` with v14 save migration
 - [x] Refactor player-facing Valor progression into its dedicated menu/system while reusing the established Skill action engine
 - [x] Design the first canonical character-specific Valor Arts
 - [ ] Design long-term Valor Art unlock/progression rules and final per-level Art sets (target: two Arts for Levels 1-3, one master Art for Level 4)

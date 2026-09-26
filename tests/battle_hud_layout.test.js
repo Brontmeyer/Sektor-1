@@ -90,6 +90,7 @@ function testLayoutSeparatesNamesCommandReserveAndStableStats() {
   const names = layout.nameColumnBounds();
   const command = layout.commandBounds();
   const stats = layout.statsBounds();
+  const selector = layout.selectorBounds();
   const rows = Array.from({ length: 4 }, (_, index) =>
     layout.partyRowBounds(index),
   );
@@ -98,6 +99,10 @@ function testLayoutSeparatesNamesCommandReserveAndStableStats() {
   assert.equal(command.x, names.x + names.width);
   assert.equal(stats.x, command.x + command.width);
   assert.equal(stats.x + stats.width, hud.x + hud.width);
+  assert.equal(selector.x, stats.x);
+  assert.equal(selector.y, hud.y);
+  assert.equal(selector.height, hud.height);
+  assert.equal(selector.width < stats.width, true);
   assert.equal(rows.every((row) => row.height === rows[0].height), true);
   assert.equal(rows[1].y > rows[0].y, true);
   assert.equal(layout.hintY() < hud.y, true);

@@ -12,6 +12,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Pass 105 battle selector placement and Enemy Skill data separation: Magick / Skills / Item child selectors now occupy a compact HUD-side overlay beside the persistent command panel instead of covering the battlefield, the ready-only SURGE chip aligns to Attack's left edge, and long selector lists retain scrolling inside the bounded HUD region.
+- Added canonical `data/EnemySkill.json` with Goo Rush as Enemy Skill ID 1. Enemy action records now use `type: "enemySkill"` + `enemySkillId`, `DatabaseManager` exposes dedicated Enemy Skill accessors, and actor `Skills.json` / `skillIds` remain a separate ownership namespace while compatible effect resolution stays shared.
+
 - Added Pass 104 Valor data separation and development workflow polish: canonical Valor Arts now live in dedicated `data/Valor.json`, actors own learned `valorArtIds` independently from ordinary Skills, Save Runtime v14 persists that ownership and migrates legacy v13-and-older Valor Art IDs out of `skillIds`, the development MAIN MENU restores Load for fast QA access, and ROSTER prevents ordinary player input from moving the configured protagonist into reserve.
 - Refined battle command hierarchy so the main Attack / Magick / Skills / Item panel remains visible as the actor's decision anchor while child selectors and targeting are open. Magick, Skills, and Item selectors anchor above that panel, while the ready-only Surge Art selector is compact enough for the intended two-Art-per-level contract and sits directly above Attack.
 

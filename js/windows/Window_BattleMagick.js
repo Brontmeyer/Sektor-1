@@ -7,11 +7,11 @@ class Window_BattleMagick {
     this.index = 0;
 
     this.width = 360;
-    this.height = 260;
+    this.height = 156;
 
-    this.padding = 20;
-    this.lineHeight = 40;
-    this.listViewport = new Window_ListViewport(5);
+    this.padding = 14;
+    this.lineHeight = 32;
+    this.listViewport = new Window_ListViewport(3);
 
     this.x = 290;
     this.y = Graphics.height - this.height - 40;
@@ -19,10 +19,23 @@ class Window_BattleMagick {
   }
 
   refreshLayout() {
+    const bounds = this.scene?.hudLayout?.selectorBounds?.() || null;
     const command = this.scene?.hudLayout?.commandBounds?.() || null;
+
+    if (bounds) {
+      this.x = bounds.x;
+      this.y = bounds.y;
+      this.width = bounds.width;
+      this.height = bounds.height;
+      return true;
+    }
+
     if (!command) return false;
-    this.x = command.x;
-    this.y = Math.max(10, command.y - this.height);
+
+    this.x = command.x + command.width;
+    this.y = command.y;
+    this.width = 360;
+    this.height = command.height;
     return true;
   }
 
@@ -110,7 +123,7 @@ class Window_BattleMagick {
     context.textAlign = "right";
 
     if (this.listViewport.hasPrevious()) {
-      context.fillText("▲", this.x + this.width - 8, this.y + 76);
+      context.fillText("▲", this.x + this.width - 8, this.y + 58);
     }
 
     if (this.listViewport.hasNext(totalEntries)) {
@@ -165,13 +178,13 @@ class Window_BattleMagick {
 
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.font = "22px Arial";
+    context.font = "19px Arial";
     context.fillStyle = "#ffffff";
 
-    context.fillText("Magick", this.x + this.padding, this.y + 30);
+    context.fillText("Magick", this.x + this.padding, this.y + 24);
 
     if (magickList.length === 0) {
-      context.fillText("(No magick)", this.x + this.padding, this.y + 80);
+      context.fillText("(No magick)", this.x + this.padding, this.y + 62);
 
       context.restore();
       return;
@@ -185,7 +198,7 @@ class Window_BattleMagick {
       const selected = i === this.index;
       const prefix = selected ? "▶ " : "   ";
       const visibleRow = i - range.start;
-      const drawY = this.y + 75 + visibleRow * this.lineHeight;
+      const drawY = this.y + 58 + visibleRow * this.lineHeight;
 
       const usable = this.actor().canUseMagick(magick.id);
 

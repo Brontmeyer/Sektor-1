@@ -1,0 +1,22 @@
+[
+  null,
+  {
+    "_comment": "ID 1: Test Slime - Goo Rush",
+    "id": 1,
+    "name": "Goo Rush",
+    "description": "A lurching body-check that deals physical damage and may leave the target Slowed.",
+    "type": "skill",
+    "category": "physical",
+    "effect": "damage",
+    "powerMultiplier": 1.2,
+    "status": {
+      "slow": 0.35
+    },
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
+  }
+]

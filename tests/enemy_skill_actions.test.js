@@ -14,12 +14,13 @@ const actors = readData("Actors.json");
 const enemies = readData("Enemies.json");
 const magick = readData("Magick.json");
 const canonicalSkills = readData("Skills.json");
+const canonicalEnemySkills = readData("EnemySkill.json");
 const canonicalValorArts = readData("Valor.json");
 const statuses = readData("Statuses.json");
 
-const testSkills = clone(canonicalSkills);
-testSkills[6] = {
-  id: 6,
+const testEnemySkills = clone(canonicalEnemySkills);
+testEnemySkills[2] = {
+  id: 2,
   name: "Gel Mend",
   description: "Test-only enemy support technique.",
   type: "skill",
@@ -29,8 +30,8 @@ testSkills[6] = {
   target: ["ally"],
   scope: ["single"],
 };
-testSkills[7] = {
-  id: 7,
+testEnemySkills[3] = {
+  id: 3,
   name: "Sticky Field",
   description: "Test-only enemy control technique.",
   type: "skill",
@@ -51,7 +52,8 @@ function createFixture({ partyCount = 2, enemyCount = 2 } = {}) {
     actors,
     enemies,
     magickData: magick,
-    skills: testSkills,
+    skills: canonicalSkills,
+    enemySkills: testEnemySkills,
     statuses,
     actor(id) {
       return actors[id] || null;
@@ -63,7 +65,10 @@ function createFixture({ partyCount = 2, enemyCount = 2 } = {}) {
       return magick[id] || null;
     },
     skill(id) {
-      return testSkills[id] || null;
+      return canonicalSkills[id] || null;
+    },
+    enemySkill(id) {
+      return testEnemySkills[id] || null;
     },
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
@@ -144,13 +149,14 @@ function createFixture({ partyCount = 2, enemyCount = 2 } = {}) {
 }
 
 function testCanonicalEnemySkillIsSeparateFromValorArts() {
-  const skill = canonicalSkills[5];
-  const action = enemies[1].actions.find((entry) => entry.type === "skill");
+  const skill = canonicalEnemySkills[1];
+  const action = enemies[1].actions.find((entry) => entry.type === "enemySkill");
 
   assert.equal(skill.name, "Goo Rush");
-  assert.equal(action.skillId, 5);
+  assert.equal(action.enemySkillId, 1);
   assert.equal(action.scope, "single");
-  assert.equal(canonicalSkills.slice(1, 5).every((entry) => entry === null), true);
+  assert.equal(canonicalSkills[5], null);
+  assert.equal(canonicalSkills[6].name, "Scan");
   assert.deepEqual(
     canonicalValorArts.filter(Boolean).map((art) => art.type),
     ["valor", "valor", "valor", "valor"],
@@ -182,8 +188,8 @@ function testEnemySupportSkillUsesMeaningfulAllyTargeting() {
   const injuredAlly = fixture.enemies[1];
   caster.actions = [
     {
-      type: "skill",
-      skillId: 6,
+      type: "enemySkill",
+      enemySkillId: 2,
       weight: 1,
       targetGroup: "ally",
       targetStrategy: "lowestHpRate",
@@ -196,7 +202,7 @@ function testEnemySupportSkillUsesMeaningfulAllyTargeting() {
   const action = fixture.manager.enemyAI.selectAction(caster, () => 0);
   const target = fixture.manager.enemyAI.selectTarget(caster, action, () => 0);
 
-  assert.equal(action.skillId, 6);
+  assert.equal(action.enemySkillId, 2);
   assert.equal(target, injuredAlly);
   assert.equal(fixture.manager.performEnemySkillAction(caster, action, () => 0), true);
   assert.ok(injuredAlly.hp > hpBefore);
@@ -207,8 +213,8 @@ function testEnemyAllTargetControlSkillUsesSharedStatusRuntime() {
   const caster = fixture.enemies[0];
   caster.actions = [
     {
-      type: "skill",
-      skillId: 7,
+      type: "enemySkill",
+      enemySkillId: 3,
       weight: 1,
       targetGroup: "enemy",
       targetStrategy: "first",
@@ -222,13 +228,13 @@ function testEnemyAllTargetControlSkillUsesSharedStatusRuntime() {
   assert.equal(fixture.party[1].hasStatus("slow"), true);
 }
 
-function testEnemyCannotUseValorDatabaseIdAsSkillAction() {
+function testEnemyCannotUseActorSkillDatabaseIdAsEnemySkillAction() {
   const fixture = createFixture({ partyCount: 1, enemyCount: 1 });
   const enemy = fixture.enemies[0];
   enemy.actions = [
     {
-      type: "skill",
-      skillId: 1,
+      type: "enemySkill",
+      enemySkillId: 6,
       weight: 1,
       targetGroup: "enemy",
       targetStrategy: "first",
@@ -236,8 +242,8 @@ function testEnemyCannotUseValorDatabaseIdAsSkillAction() {
     },
   ];
 
-  assert.equal(enemy.knowsSkill(1), true);
-  assert.equal(enemy.canUseSkill(1), false);
+  assert.equal(enemy.knowsEnemySkill(6), true);
+  assert.equal(enemy.canUseEnemySkill(6), false);
   const action = fixture.manager.enemyAI.selectAction(enemy, () => 0);
   assert.equal(action.type, "attack");
   assert.equal(action.fallback, true);
@@ -248,7 +254,7 @@ function run() {
   testEnemyExecutesSharedDamageAndStatusSkillRuntime();
   testEnemySupportSkillUsesMeaningfulAllyTargeting();
   testEnemyAllTargetControlSkillUsesSharedStatusRuntime();
-  testEnemyCannotUseValorDatabaseIdAsSkillAction();
+  testEnemyCannotUseActorSkillDatabaseIdAsEnemySkillAction();
 
   console.log("Enemy Skill action regression tests passed.");
 }

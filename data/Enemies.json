@@ -46,8 +46,8 @@
         "targetStrategy": "random"
       },
       {
-        "type": "skill",
-        "skillId": 5,
+        "type": "enemySkill",
+        "enemySkillId": 1,
         "weight": 2,
         "targetGroup": "enemy",
         "targetStrategy": "random",
@@ -126,8 +126,8 @@
             "targetStrategy": "random"
           },
           {
-            "type": "skill",
-            "skillId": 5,
+            "type": "enemySkill",
+            "enemySkillId": 1,
             "weight": 2,
             "targetGroup": "enemy",
             "targetStrategy": "random",
@@ -155,8 +155,8 @@
             "targetStrategy": "random"
           },
           {
-            "type": "skill",
-            "skillId": 5,
+            "type": "enemySkill",
+            "enemySkillId": 1,
             "weight": 4,
             "targetGroup": "enemy",
             "targetStrategy": "random",
@@ -192,8 +192,8 @@
             "targetStrategy": "random"
           },
           {
-            "type": "skill",
-            "skillId": 5,
+            "type": "enemySkill",
+            "enemySkillId": 1,
             "weight": 5,
             "targetGroup": "enemy",
             "targetStrategy": "random",

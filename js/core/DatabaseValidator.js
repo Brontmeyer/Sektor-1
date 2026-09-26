@@ -16,6 +16,7 @@ class DatabaseValidator {
       ["Accessories", database.accessories],
       ["Magick", database.magickData],
       ["Skills", database.skills],
+      ["EnemySkill", database.enemySkills],
       ["Valor", database.valorArts],
       ["Essences", database.essences],
       ["Statuses", database.statuses],
@@ -36,13 +37,14 @@ class DatabaseValidator {
       database.items,
       errors,
       database.magickData,
-      database.skills,
+      database.enemySkills,
     );
     this.validateItems(database.items, errors);
     this.validateWeapons(database.weapons, errors);
     this.validateArmors(database.armors, errors);
     this.validateAccessories(database.accessories, errors);
     this.validateSkills(database.skills, database.statuses, errors);
+    this.validateSkills(database.enemySkills, database.statuses, errors);
     this.validateValorArts(database.valorArts, database.statuses, errors);
     this.validateMagick(database.magickData, database.statuses, errors);
     this.validateStatuses(database.statuses, errors);
@@ -1414,9 +1416,9 @@ class DatabaseValidator {
     label,
     errors,
     magickDatabase = null,
-    skillsDatabase = null,
+    enemySkillsDatabase = null,
   ) {
-    const validActionTypes = new Set(["attack", "magick", "skill"]);
+    const validActionTypes = new Set(["attack", "magick", "enemySkill"]);
     const validTargetStrategies = new Set([
       "first",
       "random",
@@ -1446,7 +1448,7 @@ class DatabaseValidator {
         [
           "type",
           "magickId",
-          "skillId",
+          "enemySkillId",
           "weight",
           "targetGroup",
           "targetStrategy",
@@ -1473,14 +1475,14 @@ class DatabaseValidator {
         );
       }
 
-      if (["magick", "skill"].includes(action.type)) {
+      if (["magick", "enemySkill"].includes(action.type)) {
         const isMagick = action.type === "magick";
-        const idKey = isMagick ? "magickId" : "skillId";
-        const database = isMagick ? magickDatabase : skillsDatabase;
+        const idKey = isMagick ? "magickId" : "enemySkillId";
+        const database = isMagick ? magickDatabase : enemySkillsDatabase;
         const id = action[idKey];
         const idValid = Number.isInteger(id) && id > 0;
         const ability = idValid && Array.isArray(database) ? database[id] : null;
-        const labelName = isMagick ? "Magick" : "Skill";
+        const labelName = isMagick ? "Magick" : "Enemy Skill";
 
         if (!idValid) {
           errors.push(`${actionLabel}.${idKey} must be a positive integer.`);
@@ -1512,9 +1514,9 @@ class DatabaseValidator {
           errors.push(`${actionLabel}.scope must be allowed by ${ability.name}.`);
         }
 
-        const unrelatedIdKey = isMagick ? "skillId" : "magickId";
+        const unrelatedIdKey = isMagick ? "enemySkillId" : "magickId";
         if (action[unrelatedIdKey] !== undefined) {
-          const unrelatedLabel = isMagick ? "Skill" : "Magick";
+          const unrelatedLabel = isMagick ? "Enemy Skill" : "Magick";
           errors.push(
             `${actionLabel}.${unrelatedIdKey} is only valid for ${unrelatedLabel} actions.`,
           );
@@ -1524,18 +1526,20 @@ class DatabaseValidator {
           errors.push(`${actionLabel}.magickId is only valid for Magick actions.`);
         }
 
-        if (action.skillId !== undefined) {
-          errors.push(`${actionLabel}.skillId is only valid for Skill actions.`);
+        if (action.enemySkillId !== undefined) {
+          errors.push(
+            `${actionLabel}.enemySkillId is only valid for Enemy Skill actions.`,
+          );
         }
         if (action.targetGroup !== undefined) {
           errors.push(
-            `${actionLabel}.targetGroup is only valid for Magick or Skill actions.`,
+            `${actionLabel}.targetGroup is only valid for Magick or Enemy Skill actions.`,
           );
         }
 
         if (action.scope !== undefined) {
           errors.push(
-            `${actionLabel}.scope is only valid for Magick or Skill actions.`,
+            `${actionLabel}.scope is only valid for Magick or Enemy Skill actions.`,
           );
         }
       }
@@ -1583,7 +1587,7 @@ class DatabaseValidator {
     items,
     errors = null,
     magickDatabase = null,
-    skillsDatabase = null,
+    enemySkillsDatabase = null,
   ) {
     // Keep the direct helper backward-compatible with older tests/tools that
     // passed only (enemies, errors). Full database validation supplies Items
@@ -1673,7 +1677,7 @@ class DatabaseValidator {
             `${label} actions`,
             errors,
             magickDatabase,
-            skillsDatabase,
+            enemySkillsDatabase,
           );
         }
       }
@@ -1752,7 +1756,7 @@ class DatabaseValidator {
                 `${phaseLabel}.actions`,
                 errors,
                 magickDatabase,
-                skillsDatabase,
+                enemySkillsDatabase,
               );
             }
           });

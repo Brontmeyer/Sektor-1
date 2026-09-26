@@ -15,6 +15,7 @@ const enemies = readData("Enemies.json");
 const items = readData("Items.json");
 const magick = readData("Magick.json");
 const skills = readData("Skills.json");
+const enemySkills = readData("EnemySkill.json");
 const statuses = readData("Statuses.json");
 
 function createFixture({ partyCount = 2, enemyCount = 2 } = {}) {
@@ -23,6 +24,7 @@ function createFixture({ partyCount = 2, enemyCount = 2 } = {}) {
     enemies,
     magickData: magick,
     skills,
+    enemySkills,
     statuses,
     actor(id) {
       return actors[id] || null;
@@ -41,6 +43,12 @@ function createFixture({ partyCount = 2, enemyCount = 2 } = {}) {
     },
     skillName(id) {
       return skills[id]?.name || `Unknown Skill ${id}`;
+    },
+    enemySkill(id) {
+      return enemySkills[id] || null;
+    },
+    enemySkillName(id) {
+      return enemySkills[id]?.name || `Unknown Enemy Skill ${id}`;
     },
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
@@ -145,10 +153,10 @@ function testEnemyLoadsDataDrivenActionsAndSharedMagickRuntime() {
   assert.equal(enemy.knowsMagick(10), true);
   assert.equal(enemy.knowsMagick(1), true);
   assert.equal(enemy.knowsMagick(13), false);
-  assert.equal(enemy.knowsSkill(5), true);
-  assert.equal(enemy.knowsSkill(1), false);
+  assert.equal(enemy.knowsEnemySkill(1), true);
+  assert.equal(enemy.knowsEnemySkill(2), false);
   assert.equal(enemy.canUseMagick(10), true);
-  assert.equal(enemy.canUseSkill(5), true);
+  assert.equal(enemy.canUseEnemySkill(1), true);
   assert.equal(enemy.isValidMagickTarget(magick[10], actor), true);
 }
 
@@ -158,8 +166,8 @@ function testWeightedSelectionAndHpCondition() {
 
   assert.equal(fixture.manager.enemyAI.selectAction(enemy, () => 0).type, "attack");
   assert.equal(
-    fixture.manager.enemyAI.selectAction(enemy, () => 0.6).skillId,
-    5,
+    fixture.manager.enemyAI.selectAction(enemy, () => 0.6).enemySkillId,
+    1,
   );
   assert.equal(
     fixture.manager.enemyAI.selectAction(enemy, () => 0.8).magickId,
@@ -261,10 +269,10 @@ function testEnemyActionSchemaValidation() {
   invalidEnemies[1].actions[3].condition.value = 2;
   const errors = [];
 
-  invalidEnemies[1].actions[1].skillId = 999;
+  invalidEnemies[1].actions[1].enemySkillId = 999;
   invalidEnemies[1].actions.push({
-    type: "skill",
-    skillId: 1,
+    type: "enemySkill",
+    enemySkillId: 999,
     weight: 1,
     targetGroup: "enemy",
     targetStrategy: "first",
@@ -276,13 +284,13 @@ function testEnemyActionSchemaValidation() {
     items,
     errors,
     magick,
-    skills,
+    enemySkills,
   );
 
   assert.equal(errors.some((error) => error.includes("actions[0].weight")), true);
-  assert.equal(errors.some((error) => error.includes("valid Skill")), true);
+  assert.equal(errors.some((error) => error.includes("valid Enemy Skill")), true);
   assert.equal(errors.some((error) => error.includes("valid Magick")), true);
-  assert.equal(errors.filter((error) => error.includes("valid Skill")).length >= 2, true);
+  assert.equal(errors.filter((error) => error.includes("valid Enemy Skill")).length >= 2, true);
   assert.equal(
     errors.some((error) => error.includes("condition.value")),
     true,

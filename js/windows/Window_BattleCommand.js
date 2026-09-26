@@ -251,7 +251,7 @@ class Window_BattleCommand {
     const selected = this.sideCommand === Window_BattleCommand.SIDE_SURGE;
     const width = Math.max(104, this.sideWidth + 12);
     const height = this.sideHeight;
-    const x = this.x + (this.width - width) / 2;
+    const x = this.x;
     const y = this.y - height;
 
     if (

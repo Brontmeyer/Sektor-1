@@ -16,15 +16,31 @@ function testGameSystemOwnsPersistentSharedDiscoveryState() {
     console,
     DatabaseManager: {
       actors,
-      system: { protagonistActorId: 1, unidentifiedActorName: "Unknown", startingActorIds: [1] },
-      actor(id) { return actors[id] || null; },
+      system: {
+        protagonistActorId: 1,
+        unidentifiedActorName: "Unknown",
+        startingActorIds: [1],
+      },
+      actor(id) {
+        return actors[id] || null;
+      },
     },
     Game_Actor: class {
-      constructor(id) { this.actorId = id; this.name = actors[id]?.name || ""; }
-      static normalizeName(value) { return String(value || "").trim(); }
-      rename(name) { this.name = String(name); return true; }
+      constructor(id) {
+        this.actorId = id;
+        this.name = actors[id]?.name || "";
+      }
+      static normalizeName(value) {
+        return String(value || "").trim();
+      }
+      rename(name) {
+        this.name = String(name);
+        return true;
+      }
     },
-    Game_Party: class { constructor() {} },
+    Game_Party: class {
+      constructor() {}
+    },
     Game_SelfSwitches: class {},
     Game_Switches: class {},
     Game_Variables: class {},
@@ -59,7 +75,11 @@ function testGameMapDiscoversNearbyLocationsAndBuildsSnapshot() {
   const context = vm.createContext({
     console,
     DebugManager: { log() {} },
-    Game_Event: class { constructor(data) { Object.assign(this, data); } },
+    Game_Event: class {
+      constructor(data) {
+        Object.assign(this, data);
+      }
+    },
     Graphics: { context: {} },
     $gameSystem: {
       discoverLocation(mapId, locationId) {
@@ -95,13 +115,15 @@ function testGameMapDiscoversNearbyLocationsAndBuildsSnapshot() {
 
   const snapshot = map.areaMapSnapshot(player);
   assert.equal(snapshot.mapId, 1);
-  assert.equal(snapshot.name, "Sektor 1 Test Zone");
+  assert.equal(snapshot.name, mapData.name);
   assert.equal(
-    snapshot.locations.find((location) => location.id === "merchant-row").discovered,
+    snapshot.locations.find((location) => location.id === "merchant-row")
+      .discovered,
     true,
   );
   assert.equal(
-    snapshot.locations.find((location) => location.id === "north-passage").discovered,
+    snapshot.locations.find((location) => location.id === "north-passage")
+      .discovered,
     false,
   );
 }
@@ -112,13 +134,23 @@ function testAreaMapWindowShowsOnlyDiscoveredLocationsAndSupportsSelection() {
   const context = vm.createContext({
     console,
     UIThemePalette: {
-      primary() { return "#fff"; },
-      secondary() { return "#aaa"; },
+      primary() {
+        return "#fff";
+      },
+      secondary() {
+        return "#aaa";
+      },
     },
     Input: {
-      isActionTriggered(action) { return triggered.has(action); },
-      isActionRepeated(action) { return triggered.has(action); },
-      actionLabel() { return "Q"; },
+      isActionTriggered(action) {
+        return triggered.has(action);
+      },
+      isActionRepeated(action) {
+        return triggered.has(action);
+      },
+      actionLabel() {
+        return "Q";
+      },
     },
     Graphics: {
       width: 1280,
@@ -132,9 +164,15 @@ function testAreaMapWindowShowsOnlyDiscoveredLocationsAndSupportsSelection() {
         textBaseline: "",
         save() {},
         restore() {},
-        fillRect(...args) { calls.push(["fillRect", ...args]); },
-        strokeRect(...args) { calls.push(["strokeRect", ...args]); },
-        fillText(...args) { calls.push(["fillText", ...args]); },
+        fillRect(...args) {
+          calls.push(["fillRect", ...args]);
+        },
+        strokeRect(...args) {
+          calls.push(["strokeRect", ...args]);
+        },
+        fillText(...args) {
+          calls.push(["fillText", ...args]);
+        },
         beginPath() {},
         moveTo() {},
         lineTo() {},
@@ -156,9 +194,23 @@ function testAreaMapWindowShowsOnlyDiscoveredLocationsAndSupportsSelection() {
     player: { x: 100, y: 100 },
     obstacles: [],
     locations: [
-      { id: "a", name: "Alpha", type: "landmark", x: 100, y: 100, discovered: true },
+      {
+        id: "a",
+        name: "Alpha",
+        type: "landmark",
+        x: 100,
+        y: 100,
+        discovered: true,
+      },
       { id: "b", name: "Beta", type: "exit", x: 200, y: 200, discovered: true },
-      { id: "c", name: "Secret", type: "landmark", x: 300, y: 300, discovered: false },
+      {
+        id: "c",
+        name: "Secret",
+        type: "landmark",
+        x: 300,
+        y: 300,
+        discovered: false,
+      },
     ],
   });
 
@@ -175,9 +227,18 @@ function testAreaMapWindowShowsOnlyDiscoveredLocationsAndSupportsSelection() {
   const text = calls
     .filter((call) => call[0] === "fillText")
     .map((call) => String(call[1]));
-  assert.equal(text.some((value) => value.includes("Alpha")), true);
-  assert.equal(text.some((value) => value.includes("Beta")), true);
-  assert.equal(text.some((value) => value.includes("Secret")), false);
+  assert.equal(
+    text.some((value) => value.includes("Alpha")),
+    true,
+  );
+  assert.equal(
+    text.some((value) => value.includes("Beta")),
+    true,
+  );
+  assert.equal(
+    text.some((value) => value.includes("Secret")),
+    false,
+  );
 }
 
 function testAreaMapIsAFirstClassMainMenuDestination() {
@@ -188,8 +249,14 @@ function testAreaMapIsAFirstClassMainMenuDestination() {
 
   assert.match(command, /"Order",\s*"ROSTER",\s*"Map",\s*"Valor"/);
   assert.match(sceneMenu, /case "Map":\s*SceneManager\.push\(Scene_AreaMap/);
-  assert.match(sceneMap, /areaMap: this\.map\?\.areaMapSnapshot\?\.\(this\.player\)/);
-  assert.match(sceneMap, /enabled: this\.map\?\.areaMapEnabled\?\.\(\) === true/);
+  assert.match(
+    sceneMap,
+    /areaMap: this\.map\?\.areaMapSnapshot\?\.\(this\.player\)/,
+  );
+  assert.match(
+    sceneMap,
+    /enabled: this\.map\?\.areaMapEnabled\?\.\(\) === true/,
+  );
   assert.match(html, /js\/windows\/Window_AreaMap\.js/);
   assert.match(html, /js\/scenes\/Scene_AreaMap\.js/);
   assert.equal(

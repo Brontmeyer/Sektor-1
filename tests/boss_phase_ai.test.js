@@ -15,6 +15,7 @@ const enemies = readData("Enemies.json");
 const items = readData("Items.json");
 const magick = readData("Magick.json");
 const skills = readData("Skills.json");
+const enemySkills = readData("EnemySkill.json");
 const statuses = readData("Statuses.json");
 
 function createFixture() {
@@ -23,6 +24,7 @@ function createFixture() {
     enemies,
     magickData: magick,
     skills,
+    enemySkills,
     statuses,
     actor(id) {
       return actors[id] || null;
@@ -41,6 +43,12 @@ function createFixture() {
     },
     skillName(id) {
       return skills[id]?.name || `Unknown Skill ${id}`;
+    },
+    enemySkill(id) {
+      return enemySkills[id] || null;
+    },
+    enemySkillName(id) {
+      return enemySkills[id]?.name || `Unknown Enemy Skill ${id}`;
     },
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
@@ -118,14 +126,14 @@ function testBossStartsInOpeningPhaseAndUsesOnlyItsActionPool() {
   assert.equal(boss.currentPhase().id, "opening");
   assert.deepEqual(
     boss.actionDefinitions().map((action) => action.type),
-    ["attack", "skill", "magick"],
+    ["attack", "enemySkill", "magick"],
   );
   assert.equal(boss.actionDefinitions().some((action) => action.magickId === 1), false);
 
   // Knowledge spans every configured phase even though AI selection only sees
   // the active phase's action pool.
   assert.equal(boss.knowsMagick(1), true);
-  assert.equal(boss.knowsSkill(5), true);
+  assert.equal(boss.knowsEnemySkill(1), true);
 
   const usable = manager.enemyAI.usableActions(boss);
   assert.equal(usable.some((action) => action.magickId === 1), false);
@@ -192,8 +200,8 @@ function testPhaseSchemaValidationRejectsAmbiguousOrMalformedBossData() {
   invalid[2].phases[2].hpRateAtOrBelow = 0.7;
   invalid[2].phases[1].actions[0].weight = 0;
   invalid[2].phases[1].actions.push({
-    type: "skill",
-    skillId: 1,
+    type: "enemySkill",
+    enemySkillId: 999,
     weight: 1,
     targetGroup: "enemy",
     targetStrategy: "first",
@@ -206,7 +214,7 @@ function testPhaseSchemaValidationRejectsAmbiguousOrMalformedBossData() {
     items,
     errors,
     magick,
-    skills,
+    enemySkills,
   );
 
   assert.equal(
@@ -230,7 +238,7 @@ function testPhaseSchemaValidationRejectsAmbiguousOrMalformedBossData() {
     true,
   );
   assert.equal(
-    errors.some((error) => error.includes("must reference valid Skill")),
+    errors.some((error) => error.includes("must reference valid Enemy Skill")),
     true,
   );
 }

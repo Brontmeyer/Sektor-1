@@ -186,6 +186,10 @@ function testSurgeChipAppearsOnlyWhenReadyAndOpensAboveAttack() {
     .filter((call) => call[0] === "fillText")
     .map((call) => String(call[1]));
   assert.equal(text.includes("SURGE"), true);
+  const surgeRect = drawContext.calls.find(
+    (call) => call[0] === "strokeRect" && call[1] === window.x && call[2] < window.y,
+  );
+  assert.notEqual(surgeRect, undefined, "Surge aligns with the Attack/command left edge");
 
   window.index = 0;
   trigger("ArrowUp");
@@ -450,8 +454,9 @@ function testMagickAndItemSelectorsAlsoSupportPreservedReopen() {
   assert.equal(itemWindow.index, 1);
 }
 
-function testBattleSelectorsAnchorAbovePersistentCommandWindow() {
+function testBattleSelectorsUseHudSideRegionWhileSurgeStaysAboveCommand() {
   const commandBounds = { x: 190, y: 540, width: 220, height: 156 };
+  const selectorBounds = { x: 410, y: 540, width: 360, height: 156 };
   const actor = {
     knownSkills: () => [{ id: 6, name: "Scan", type: "skill" }],
     selectedValorArts: () => [
@@ -464,7 +469,10 @@ function testBattleSelectorsAnchorAbovePersistentCommandWindow() {
     canUseMagick: () => true,
   };
   const scene = {
-    hudLayout: { commandBounds: () => commandBounds },
+    hudLayout: {
+      commandBounds: () => commandBounds,
+      selectorBounds: () => selectorBounds,
+    },
     partyController: { currentBattler: () => actor },
   };
   const globals = {
@@ -486,8 +494,10 @@ function testBattleSelectorsAnchorAbovePersistentCommandWindow() {
 
   const skills = new Skills(scene);
   skills.show({ mode: "skills" });
-  assert.equal(skills.x, commandBounds.x);
-  assert.equal(skills.y + skills.height, commandBounds.y);
+  assert.equal(skills.x, selectorBounds.x);
+  assert.equal(skills.y, selectorBounds.y);
+  assert.equal(skills.width, selectorBounds.width);
+  assert.equal(skills.height, selectorBounds.height);
 
   skills.show({ mode: "surge" });
   assert.equal(skills.x, commandBounds.x);
@@ -497,13 +507,15 @@ function testBattleSelectorsAnchorAbovePersistentCommandWindow() {
 
   const magick = new Magick(scene);
   magick.show();
-  assert.equal(magick.x, commandBounds.x);
-  assert.equal(magick.y + magick.height, commandBounds.y);
+  assert.equal(magick.x, selectorBounds.x);
+  assert.equal(magick.y, selectorBounds.y);
+  assert.equal(magick.height, selectorBounds.height);
 
   const item = new Item(scene);
   item.show();
-  assert.equal(item.x, commandBounds.x);
-  assert.equal(item.y + item.height, commandBounds.y);
+  assert.equal(item.x, selectorBounds.x);
+  assert.equal(item.y, selectorBounds.y);
+  assert.equal(item.height, selectorBounds.height);
 }
 
 function run() {
@@ -516,7 +528,7 @@ function run() {
   testTargetCancelReturnsToOriginatingSelectorWithCursorPreserved();
   testSelectorShowCanPreserveCursorForTargetCancel();
   testMagickAndItemSelectorsAlsoSupportPreservedReopen();
-  testBattleSelectorsAnchorAbovePersistentCommandWindow();
+  testBattleSelectorsUseHudSideRegionWhileSurgeStaysAboveCommand();
 
   console.log("Battle command navigation regression tests passed.");
 }

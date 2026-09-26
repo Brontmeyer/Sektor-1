@@ -40,6 +40,7 @@ function projectDatabase() {
     accessories: readData("Accessories.json"),
     magickData: readData("Magick.json"),
     skills: readData("Skills.json"),
+    enemySkills: readData("EnemySkill.json"),
     valorArts: readData("Valor.json"),
     essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),

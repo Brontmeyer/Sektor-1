@@ -14,6 +14,7 @@ const enemies = readData("Enemies.json");
 const statuses = readData("Statuses.json");
 const magick = readData("Magick.json");
 const canonicalSkills = readData("Skills.json");
+const canonicalEnemySkills = readData("EnemySkill.json");
 const canonicalValorArts = readData("Valor.json");
 
 const testSkills = [
@@ -144,11 +145,12 @@ function createHarness() {
 
 function testCanonicalSkillsDatabaseIsSeparateFromValorArts() {
   const skills = canonicalSkills.filter(Boolean);
-  const enemyTechnique = canonicalSkills[5];
+  const enemyTechnique = canonicalEnemySkills[1];
 
   assert.equal(skills.every((skill) => skill.type === "skill"), true);
   assert.equal(enemyTechnique.name, "Goo Rush");
-  assert.deepEqual(canonicalSkills.slice(1, 5), [null, null, null, null]);
+  assert.equal(canonicalSkills[5], null);
+  assert.equal(canonicalSkills[6].name, "Scan");
   assert.deepEqual(
     canonicalValorArts.filter(Boolean).map((art) => art.id),
     [1, 2, 3, 4],

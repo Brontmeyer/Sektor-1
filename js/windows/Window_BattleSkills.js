@@ -8,11 +8,11 @@ class Window_BattleSkills {
     this.mode = "skills";
 
     this.width = 360;
-    this.height = 260;
+    this.height = 156;
 
-    this.padding = 20;
-    this.lineHeight = 40;
-    this.listViewport = new Window_ListViewport(5);
+    this.padding = 14;
+    this.lineHeight = 32;
+    this.listViewport = new Window_ListViewport(3);
 
     this.x = 290;
     this.y = Graphics.height - this.height - 40;
@@ -37,12 +37,14 @@ class Window_BattleSkills {
       return true;
     }
 
-    this.width = Math.max(320, Math.min(380, command.width + 150));
-    this.height = 260;
-    this.lineHeight = 40;
-    this.padding = 20;
-    this.x = command.x;
-    this.y = Math.max(10, command.y - this.height);
+    const bounds = this.scene?.hudLayout?.selectorBounds?.() || null;
+
+    this.width = bounds?.width || 360;
+    this.height = bounds?.height || command.height;
+    this.lineHeight = 32;
+    this.padding = 14;
+    this.x = bounds?.x ?? command.x + command.width;
+    this.y = bounds?.y ?? command.y;
     return true;
   }
 
@@ -137,7 +139,7 @@ class Window_BattleSkills {
     context.textAlign = "right";
 
     if (this.listViewport.hasPrevious()) {
-      context.fillText("▲", this.x + this.width - 8, this.y + 76);
+      context.fillText("▲", this.x + this.width - 8, this.y + 58);
     }
 
     if (this.listViewport.hasNext(totalEntries)) {
@@ -188,19 +190,19 @@ class Window_BattleSkills {
 
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.font = "22px Arial";
+    context.font = "19px Arial";
     context.fillStyle = "#ffffff";
     context.fillText(
       this.mode === "surge" ? `Surge · Level ${this.actor()?.selectedValorLevel?.() || 1}` : "Skills",
       this.x + this.padding,
-      this.y + 30,
+      this.y + 24,
     );
 
     if (skills.length === 0) {
       context.fillText(
         this.mode === "surge" ? "(No Arts at set level)" : "(No skills)",
         this.x + this.padding,
-        this.y + 80,
+        this.y + 62,
       );
       context.restore();
       return;
@@ -212,7 +214,7 @@ class Window_BattleSkills {
       const skill = skills[i];
       const prefix = i === this.index ? "▶ " : "   ";
       const row = i - range.start;
-      const listStartY = this.mode === "surge" ? this.y + 58 : this.y + 75;
+      const listStartY = this.mode === "surge" ? this.y + 58 : this.y + 58;
       const drawY = listStartY + row * this.lineHeight;
       const selected = i === this.index;
       const usable = this.mode === "surge"

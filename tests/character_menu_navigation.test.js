@@ -42,6 +42,17 @@ function createHarness() {
   const accessories = readData("Accessories.json");
   const magick = readData("Magick.json");
   const skills = readData("Skills.json");
+  skills[5] = {
+    id: 5,
+    name: "Test Technique",
+    description: "Navigation-only test Skill.",
+    type: "skill",
+    category: "physical",
+    effect: "damage",
+    powerMultiplier: 1,
+    target: ["enemy"],
+    scope: ["single"],
+  };
   const essences = readData("Essences.json");
   const statuses = readData("Statuses.json");
 

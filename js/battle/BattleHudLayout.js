@@ -57,6 +57,18 @@ class BattleHudLayout {
     };
   }
 
+  selectorBounds() {
+    const stats = this.statsBounds();
+    const width = Math.min(380, Math.max(300, stats.width * 0.48));
+
+    return {
+      x: stats.x,
+      y: stats.y,
+      width,
+      height: stats.height,
+    };
+  }
+
   partyRowBounds(index) {
     const hud = this.hudBounds();
     const safeIndex = Math.max(

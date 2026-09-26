@@ -3,7 +3,7 @@
 class BattleEnemyAI {
   static ACTION_ATTACK = "attack";
   static ACTION_MAGICK = "magick";
-  static ACTION_SKILL = "skill";
+  static ACTION_ENEMY_SKILL = "enemySkill";
 
   constructor(manager) {
     this.manager = manager;
@@ -92,8 +92,8 @@ class BattleEnemyAI {
       return DatabaseManager.magick(action.magickId);
     }
 
-    if (action?.type === BattleEnemyAI.ACTION_SKILL) {
-      return DatabaseManager.skill?.(action.skillId) || null;
+    if (action?.type === BattleEnemyAI.ACTION_ENEMY_SKILL) {
+      return DatabaseManager.enemySkill?.(action.enemySkillId) || null;
     }
 
     return null;
@@ -130,7 +130,7 @@ class BattleEnemyAI {
       return enemy.isValidMagickTarget(ability, target);
     }
 
-    if (action.type === BattleEnemyAI.ACTION_SKILL) {
+    if (action.type === BattleEnemyAI.ACTION_ENEMY_SKILL) {
       return enemy.isValidSkillTarget(ability, target);
     }
 
@@ -228,13 +228,13 @@ class BattleEnemyAI {
       return scopes.includes(scope) && this.targetCandidates(enemy, action).length > 0;
     }
 
-    if (action.type === BattleEnemyAI.ACTION_SKILL) {
+    if (action.type === BattleEnemyAI.ACTION_ENEMY_SKILL) {
       const skill = this.actionAbility(action);
 
       if (
         !skill ||
         !this.manager.battlerCanUseAction(enemy, "skill") ||
-        !enemy.canUseSkill(action.skillId)
+        !enemy.canUseEnemySkill?.(action.enemySkillId)
       ) {
         return false;
       }

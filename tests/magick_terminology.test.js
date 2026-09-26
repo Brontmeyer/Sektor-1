@@ -30,6 +30,7 @@ function walkFiles(relativeDir, predicate = () => true) {
 function testMagickAndSkillsHaveSeparateCanonicalNamespaces() {
   assert.equal(exists("data/Magick.json"), true);
   assert.equal(exists("data/Skills.json"), true);
+  assert.equal(exists("data/EnemySkill.json"), true);
   assert.equal(exists("js/windows/Window_Magick.js"), true);
   assert.equal(exists("js/windows/Window_BattleMagick.js"), true);
   assert.equal(exists("js/windows/Window_Skills.js"), true);
@@ -48,6 +49,7 @@ function testMagickAndSkillsHaveSeparateCanonicalNamespaces() {
 function testCanonicalDataKeepsMagickAndSkillsDistinct() {
   const magick = readJson("data/Magick.json");
   const skills = readJson("data/Skills.json");
+  const enemySkills = readJson("data/EnemySkill.json");
   const actors = readJson("data/Actors.json");
   const essences = readJson("data/Essences.json");
 
@@ -58,6 +60,9 @@ function testCanonicalDataKeepsMagickAndSkillsDistinct() {
   assert.equal(Array.isArray(skills), true);
   assert.equal(skills[0], null);
   assert.equal(skills.filter(Boolean).every((entry) => entry.type === "skill"), true);
+  assert.equal(enemySkills.filter(Boolean).every((entry) => entry.type === "skill"), true);
+  assert.equal(enemySkills[1].name, "Goo Rush");
+  assert.equal(skills.some((entry) => entry?.name === "Goo Rush"), false);
 
   for (const actor of actors.filter(Boolean)) {
     assert.equal(Array.isArray(actor.initialMagickIds), true);
@@ -83,6 +88,8 @@ function testRuntimeExposesSeparateMagickAndSkillApis() {
   assert.match(databaseManager, /static magickName\(id\)/);
   assert.match(databaseManager, /static skill\(id\)/);
   assert.match(databaseManager, /static skillName\(id\)/);
+  assert.match(databaseManager, /static enemySkill\(id\)/);
+  assert.match(databaseManager, /static enemySkillName\(id\)/);
 
   assert.match(actor, /learnMagick\(/);
   assert.match(actor, /this\.magickIds/);

@@ -17,6 +17,7 @@ class DatabaseManager {
     this.accessories = await this.loadJSON("data/Accessories.json");
     this.magickData = await this.loadJSON("data/Magick.json");
     this.skills = await this.loadJSON("data/Skills.json");
+    this.enemySkills = await this.loadJSON("data/EnemySkill.json");
     this.valorArts = await this.loadJSON("data/Valor.json");
     this.essences = await this.loadJSON("data/Essences.json");
     this.statuses = await this.loadJSON("data/Statuses.json");
@@ -180,6 +181,18 @@ class DatabaseManager {
 
   static skillName(id) {
     return this.indexedRecordName(this.skills, id, "Skill");
+  }
+
+  // =================================
+  // Enemy Skills
+  // =================================
+
+  static enemySkill(id) {
+    return this.indexedRecord(this.enemySkills, id);
+  }
+
+  static enemySkillName(id) {
+    return this.indexedRecordName(this.enemySkills, id, "Enemy Skill");
   }
 
   // =================================

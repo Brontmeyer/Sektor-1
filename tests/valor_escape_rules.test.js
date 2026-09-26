@@ -13,6 +13,7 @@ const actors = readData("Actors.json");
 const enemies = readData("Enemies.json");
 const magick = readData("Magick.json");
 const skills = readData("Skills.json");
+const enemySkills = readData("EnemySkill.json");
 const statuses = readData("Statuses.json");
 
 function createFixture({ canEscape = true, partySize = 2 } = {}) {
@@ -22,6 +23,7 @@ function createFixture({ canEscape = true, partySize = 2 } = {}) {
     enemies,
     magickData: magick,
     skills,
+    enemySkills,
     statuses,
     actor(id) {
       return actors[id] || null;
@@ -37,6 +39,9 @@ function createFixture({ canEscape = true, partySize = 2 } = {}) {
     },
     skill(id) {
       return skills[id] || null;
+    },
+    enemySkill(id) {
+      return enemySkills[id] || null;
     },
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
@@ -177,7 +182,7 @@ function testPassiveValorRequiresHostileBattleActionDamage() {
   tyler.setValor(0);
   const skillSuccess = fixture.manager.performSkillDamageTarget(
     enemy,
-    skills[5],
+    enemySkills[1],
     tyler,
     () => 0,
   );

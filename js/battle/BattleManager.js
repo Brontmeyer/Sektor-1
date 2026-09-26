@@ -3012,9 +3012,9 @@ class BattleManager {
 
   performEnemySkillAction(enemy, action, random = Math.random) {
     const battle = this.scene;
-    const skill = DatabaseManager.skill?.(action?.skillId) || null;
+    const skill = DatabaseManager.enemySkill?.(action?.enemySkillId) || null;
 
-    if (!enemy || !skill || !enemy.canUseSkill?.(skill.id)) {
+    if (!enemy || !skill || !enemy.canUseEnemySkill?.(skill.id)) {
       return false;
     }
 
@@ -3273,7 +3273,7 @@ class BattleManager {
       return;
     }
 
-    if (action.type === "skill") {
+    if (action.type === "enemySkill") {
       this.performEnemySkillAction(enemy, action, random);
       return;
     }

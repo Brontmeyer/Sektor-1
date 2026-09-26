@@ -71,6 +71,7 @@ data/Items.json
 data/MapInfos.json
 data/Magick.json
 data/Skills.json
+data/EnemySkill.json
 data/Valor.json
 data/Statuses.json
 data/System.json
@@ -86,6 +87,7 @@ The current major gameplay databases are:
 ```text
 data/Magick.json
 data/Skills.json
+data/EnemySkill.json
 data/Valor.json
 data/Essences.json
 data/Statuses.json
@@ -475,7 +477,7 @@ Windows present available commands and Magick to the player. `Window_BattleComma
 
 ## Skills
 
-`Skills.json` defines non-Magick techniques. Character Valor Arts v1 supplies the first four actor-owned records, and Enemy Skills & AI Integration v1 adds the first canonical enemy technique without creating a second Skill database. The validated metadata supports `physical`, `support`, and `control` categories; `damage`, `heal`, `inflictStatus`, and explicit `valor` effects; positive `powerMultiplier` for physical damage; bounded `healPercent` for percentage healing; positive `valorGain` for deliberate gauge support; validated status-chance maps; relative `self` / `ally` / `enemy` targeting; and `single` / `all` scope.
+`Skills.json` defines actor-owned non-Magick techniques. Enemy-only techniques live in the separate `EnemySkill.json` catalog, while Valor Arts live in `Valor.json`. All three may reuse compatible Skill-effect resolution without sharing ownership namespaces. The validated metadata supports `physical`, `support`, and `control` categories; `damage`, `heal`, `inflictStatus`, and explicit `valor` effects; positive `powerMultiplier` for physical damage; bounded `healPercent` for percentage healing; positive `valorGain` for deliberate gauge support; validated status-chance maps; relative `self` / `ally` / `enemy` targeting; and `single` / `all` scope.
 
 `Game_Actor` owns learned Skill IDs independently from learned Magick. `Game_Battler` owns shared Skill legality, action-restriction checks, physical-power lookup, percentage-healing calculation, reusable status application, relative target validity, and generic `canPaySkillCost()` / `paySkillCost()` hooks. `BattleTargetManager` treats `self` as the ally-side selection group while `isValidSkillTarget()` still restricts self-only techniques to the acting battler and excludes full-HP battlers from healing-Skill target sets. `BattleManager` dispatches the validated Skill effect type while reusing existing physical damage, HP, status, defeat, and Valor contracts instead of branching on Skill or actor names.
 
@@ -585,7 +587,7 @@ Future Essence work will connect the completed Essence design to gameplay system
 
 ## Enemy AI and Boss Systems
 
-Enemy Actions & AI v1 is active, with Enemy Skills & AI Integration v1 extending the same action vocabulary to canonical Skills. `Enemies.json` supplies validated Attack, Magick, and Skill action definitions; `BattleEnemyAI` owns weighted/conditional decision-making and target strategy; `BattleManager` executes chosen Magick and Skill effects through their existing shared runtimes. `Game_Enemy` derives known Magick/Skills from its complete configured action data, ordinary enemy Skills remain cost-neutral, and actor-owned Valor Arts are explicitly unusable by enemies. Unusable configured actions are filtered before selection, and legal basic Attack remains the safe fallback.
+Enemy Actions & AI v1 is active, with Enemy Skills Data Separation v1 giving enemy-only techniques their own canonical namespace. `Enemies.json` supplies validated Attack, Magick, and Enemy Skill action definitions; `enemySkillId` resolves only through `EnemySkill.json`. `BattleEnemyAI` owns weighted/conditional decision-making and target strategy, while `BattleManager` executes chosen Magick and Enemy Skill effects through the existing shared effect machinery. `Game_Enemy` derives known Magick/Enemy Skills from its complete configured action data, ordinary Enemy Skills remain cost-neutral, and actor-owned Skills/Valor Arts are not enemy action records. Unusable configured actions are filtered before selection, and legal basic Attack remains the safe fallback.
 
 Boss / Phase AI v1 extends `Game_Enemy` with optional validated `phases` data instead of creating a boss-only AI engine. Each phase has a stable ID/name, a strictly descending `hpRateAtOrBelow` threshold, its own normal enemy-action list, and an optional entry message. `Game_Enemy` owns the battle-local `phaseIndex` and advances it monotonically: healing never reverts a phase, while a large HP drop can skip directly to the deepest eligible phase. `BattleEnemyAI` continues to call `actionDefinitions()` and therefore automatically sees only the active phase pool. `BattleManager` refreshes the phase at enemy-turn start and owns presentation of the one-time transition message. Phase state is battle-local and requires no Save Runtime field.
 

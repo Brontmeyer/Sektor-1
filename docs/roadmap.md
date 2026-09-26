@@ -56,6 +56,7 @@ Completed canonical battle-data foundations include:
 - `Magick.json` v1
 - 54 initial Magick abilities
 - Skills Runtime v1 with separate `Skills.json`, actor ownership, battle execution, menu presentation, and v8 persistence
+- Enemy Skills Data Separation v1 with dedicated `EnemySkill.json` / `enemySkillId` action references and shared Skill-effect resolution
 - Valor Arts Runtime v2 with dedicated `Valor.json` / `valorArtIds`, actor-owned ready-state cost payment, one prepared level, preserved gauge on level changes, and ready-only Surge selection using shared battle effect dispatch
 - Character Valor Arts v1 with one canonical starter Art per current actor plus reusable healing/status Skill effects
 - Restore Magick

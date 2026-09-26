@@ -4,21 +4,7 @@
   null,
   null,
   null,
-  {
-    "_comment": "ID 5: Test Slime - Goo Rush",
-    "id": 5,
-    "name": "Goo Rush",
-    "description": "A lurching body-check that deals physical damage and may leave the target Slowed.",
-    "type": "skill",
-    "category": "physical",
-    "effect": "damage",
-    "powerMultiplier": 1.2,
-    "status": {
-      "slow": 0.35
-    },
-    "target": ["enemy"],
-    "scope": ["single"]
-  },
+  null,
   {
     "_comment": "ID 6: Tyler - Scan",
     "id": 6,
@@ -27,7 +13,11 @@
     "type": "skill",
     "category": "support",
     "effect": "scan",
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   }
 ]
