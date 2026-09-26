@@ -145,7 +145,11 @@ function testItemAndEquipmentContracts() {
   const accessoryErrors = [];
 
   items[1].effect.type = "mystery";
+  items[1].target = ["enemy"];
+  items[1].scope = ["single"];
   items[2].effect.value = 0;
+  items[2].target = ["somewhere"];
+  items[2].scope = ["wide"];
   weapons[1].attackPercent = "90";
   armors[1].defense = -1;
   accessories[1].bonuses.attack = -1;
@@ -162,6 +166,14 @@ function testItemAndEquipmentContracts() {
   );
   assert.equal(
     itemErrors.some((error) => error.includes("effect.value")),
+    true,
+  );
+  assert.equal(
+    itemErrors.some((error) => error.includes('target has unsupported value "somewhere"')),
+    true,
+  );
+  assert.equal(
+    itemErrors.some((error) => error.includes('scope has unsupported value "wide"')),
     true,
   );
   assert.equal(

@@ -88,6 +88,11 @@ class Window_BattleItem {
     return items[this.index] || null;
   }
 
+  currentDescription() {
+    const entry = this.currentItem();
+    return typeof entry?.description === "string" ? entry.description.trim() : "";
+  }
+
   show({ preserveIndex = false } = {}) {
     const entries = this.items();
 

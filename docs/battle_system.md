@@ -145,7 +145,7 @@ Escape remains governed by the encounter's existing `canEscape` contract, but es
 
 Targeting is coordinated through `BattleTargetManager`.
 
-Target cancel is hierarchical. Backing out of Attack targeting returns to the main command list. Backing out of Skill or Magick targeting reopens the selector that launched targeting and always preserves that selector's current cursor/viewport position. Game Options / Config Foundation v1 separately controls **fresh** selector entry: `Initial` resets Skills/Magick/Item lists to the first entry, while `Memory` preserves the selector's last valid cursor within the current battle. Hierarchical cancel restoration is not disabled by the global preference. Custom Controls / Input Mapping v1 does not change those navigation rules: battle input now asks for named actions (`confirm`, `cancel`, directions, `help`, `scope`) and the renderer resolves current binding labels for hints, so remapping keys changes input presentation without changing battle semantics.
+Target cancel is hierarchical. Backing out of Attack targeting returns to the main command list. Backing out of Skill, Magick, or Item targeting reopens the selector that launched targeting and always preserves that selector's current cursor/viewport position. Game Options / Config Foundation v1 separately controls **fresh** selector entry: `Initial` resets Skills/Magick/Item lists to the first entry, while `Memory` preserves the selector's last valid cursor within the current battle. Hierarchical cancel restoration is not disabled by the global preference. Custom Controls / Input Mapping v1 does not change those navigation rules: battle input now asks for named actions (`confirm`, `cancel`, directions, `help`, `scope`) and the renderer resolves current binding labels for hints, so remapping keys changes input presentation without changing battle semantics.
 
 The battle system currently supports concepts including:
 
@@ -157,6 +157,7 @@ The battle system currently supports concepts including:
 - Four-direction spatial target movement without selection wraparound at screen/formation edges
 - Magick and Skills that permit more than one target group
 - Magick and Skills that permit more than one target scope
+- Battle Items that target either living battle side by default and may narrow legal groups through item data
 - Self-only Skill targeting through the ally-side selector while only the caster remains legal
 - Formation-aware All-target buckets
 
@@ -475,11 +476,11 @@ Where multiple multipliers legitimately apply, the battle engine should use the 
 
 # 🎒 Items
 
-Items use their own battle selection window and action sequence.
+Items use their own battle selection window and action sequence. Selecting an Item no longer commits it immediately: the chosen record becomes pending, the shared spatial target selector opens, and inventory is consumed only after the player confirms a legal battler and the effect successfully resolves. Cancel returns to the Item selector with its cursor preserved.
 
-The current flow stores the selected item, closes the item window, locks battle input while the action resolves, and proceeds through the item action phases.
+Battle Items are deliberately not ally-only. When an ordinary item omits `target` metadata, its default legal groups are both `ally` and `enemy`; the selector starts on a legal ally for convenience but can cross to enemies using the same four-direction target navigation as Magick and Skills. Optional validated `target` metadata (`self`, `ally`, `enemy`) can narrow an item's legal battlers, while battle Item scope is currently single-target. This contract leaves room for offensive consumables and future restorative-vs-undead interactions without creating a second targeting engine. Defeated battlers remain illegal unless a future item effect explicitly adds revival semantics.
 
-Item effects should ultimately follow the same architectural principle as Magick and statuses: content data describes the item, while reusable runtime systems interpret its behavior.
+Item effects should ultimately follow the same architectural principle as Magick and statuses: content data describes the item, while reusable runtime systems interpret its behavior. The current canonical effect family remains HP restoration; additional effect families such as direct-damage consumables are future content/runtime expansion rather than hard-coded targeting exceptions.
 
 ---
 
@@ -542,7 +543,7 @@ Battle resolution and battle presentation are separate responsibilities.
 
 `BattleAnimationController` coordinates visual action timing and animations.
 
-`BattleRenderer` draws the battle state. Skills, Magick, and Item selectors are treated as one rendered selection-window group so opening any selector suppresses the command window and cannot leave an input-active menu invisible.
+`BattleRenderer` draws the battle state. Skills, Magick, and Item selectors are treated as one rendered selection-window group while the actor's main command panel remains visible as the decision anchor. The existing slim contextual hint strip doubles as battle context help: while Magick, Skills, Item, or Surge selection is open, it presents the highlighted entry's canonical description alongside current controls; that description remains available during target selection through the pending action definition.
 
 Battle Presentation & Feedback v1 established contextual control hints and the read-only presentation boundary. Battle Presentation & Feedback v2 simplifies the top of the battlefield after hands-on playtesting: there is no permanent encounter/active header and no persistent battle-message panel. Meaningful actions and state events instead use a compact transient banner: Magick names, Skill names, Item names, Back Attack, Pincer Attack, boss-phase transitions, and similar state announcements. Basic Attack is intentionally excluded because animation plus floating damage already communicates it. A short queue preserves a boss/formation announcement before an immediately following action banner can replace it.
 

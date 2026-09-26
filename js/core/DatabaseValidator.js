@@ -1791,6 +1791,8 @@ class DatabaseValidator {
     }
 
     const validEffectTypes = new Set(["healHp"]);
+    const validTargets = new Set(["self", "ally", "enemy"]);
+    const validScopes = new Set(["single"]);
 
     for (let index = 1; index < items.length; index++) {
       const item = items[index];
@@ -1818,6 +1820,8 @@ class DatabaseValidator {
           "effect",
           "keyItem",
           "sellable",
+          "target",
+          "scope",
         ],
         errors,
       );
@@ -1836,6 +1840,30 @@ class DatabaseValidator {
 
       if (item.sellable !== undefined && typeof item.sellable !== "boolean") {
         errors.push(`${label} sellable must be true or false when provided.`);
+      }
+
+      if (item.target !== undefined) {
+        if (!Array.isArray(item.target) || item.target.length === 0) {
+          errors.push(`${label} target must be a non-empty array when provided.`);
+        } else {
+          for (const target of item.target) {
+            if (!validTargets.has(target)) {
+              errors.push(`${label} target has unsupported value "${target}".`);
+            }
+          }
+        }
+      }
+
+      if (item.scope !== undefined) {
+        if (!Array.isArray(item.scope) || item.scope.length === 0) {
+          errors.push(`${label} scope must be a non-empty array when provided.`);
+        } else {
+          for (const scope of item.scope) {
+            if (!validScopes.has(scope)) {
+              errors.push(`${label} scope has unsupported value "${scope}".`);
+            }
+          }
+        }
       }
 
       this.validateFiniteNumber(`${label} price`, item.price, errors, {

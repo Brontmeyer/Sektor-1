@@ -108,7 +108,15 @@ class BattleTargetManager {
       }
     }
 
-    return groups.length > 0 ? groups : ["enemy"];
+    if (groups.length > 0) {
+      return groups;
+    }
+
+    // Battle items are permissive by default: unless their data narrows the
+    // target contract, the player may aim them at either battle side. This
+    // keeps future offensive items and restorative-vs-undead interactions on
+    // the same selector path instead of hard-coding Items as ally-only.
+    return definition.type === "item" ? ["ally", "enemy"] : ["enemy"];
   }
 
   navigableTargetGroups(definition = this.currentActionDefinition()) {
@@ -130,7 +138,12 @@ class BattleTargetManager {
   }
 
   currentActionDefinition() {
-    return this.scene.pendingSkill || this.scene.pendingMagick || null;
+    return (
+      this.scene.pendingSkill ||
+      this.scene.pendingMagick ||
+      this.scene.pendingItem ||
+      null
+    );
   }
 
   currentMagick() {
@@ -155,6 +168,10 @@ class BattleTargetManager {
 
       if (definition.type === "magick" && caster?.isValidMagickTarget) {
         return caster.isValidMagickTarget(definition, battler);
+      }
+
+      if (definition.type === "item" && caster?.isValidItemTarget) {
+        return caster.isValidItemTarget(definition, battler);
       }
     }
 

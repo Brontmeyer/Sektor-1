@@ -90,6 +90,7 @@ function baseScene() {
     enemyTargetAction: null,
     pendingSkill: null,
     pendingMagick: null,
+    pendingItem: null,
     battleBanner: null,
     battleManager: { currentTurnState: () => "command" },
     partyController: { currentBattler: () => ({ name: "Tyler" }) },
@@ -227,20 +228,32 @@ function testContextualHintsMatchBattleState() {
 
   scene.selectingEnemyTarget = true;
   scene.enemyTargetAction = "skill";
-  scene.pendingSkill = { id: 1, scope: ["single", "all"] };
+  scene.pendingSkill = {
+    id: 1,
+    scope: ["single", "all"],
+    description: "Analyze one enemy.",
+  };
   scene.targetManager.allowedScopes = () => ["single", "all"];
   scene.targetManager.effectiveAllowedScopes = () => ["single", "all"];
 
   assert.match(renderer.battleHint(), /Single Enemies/);
   assert.match(renderer.battleHint(), /R: Scope/);
   assert.match(renderer.battleHint(), /Confirm/);
+  assert.match(renderer.battleHint(), /Analyze one enemy\./);
 
   scene.selectingEnemyTarget = false;
   scene.skillsWindow.isOpen = () => true;
+  scene.skillsWindow.currentDescription = () => "Analyze one enemy.";
   assert.match(renderer.battleHint(), /Choose/);
   assert.match(renderer.battleHint(), /Back/);
+  assert.match(renderer.battleHint(), /Analyze one enemy\./);
 
   scene.skillsWindow.isOpen = () => false;
+  scene.itemWindow.isOpen = () => true;
+  scene.itemWindow.currentDescription = () => "Restores a small amount of HP.";
+  assert.match(renderer.battleHint(), /Restores a small amount of HP\./);
+
+  scene.itemWindow.isOpen = () => false;
   scene.battleManager.currentTurnState = () => "action";
   assert.match(renderer.battleHint(), /Command/);
   assert.match(renderer.battleHint(), /Defend/);

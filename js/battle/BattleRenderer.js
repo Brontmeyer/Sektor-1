@@ -343,12 +343,13 @@ class BattleRenderer {
   canToggleTargetScope() {
     if (
       !this.scene.selectingEnemyTarget ||
-      !["skill", "magick"].includes(this.scene.enemyTargetAction)
+      !["skill", "magick", "item"].includes(this.scene.enemyTargetAction)
     ) {
       return false;
     }
 
-    const definition = this.scene.pendingSkill || this.scene.pendingMagick;
+    const definition =
+      this.scene.pendingSkill || this.scene.pendingMagick || this.scene.pendingItem;
     const manager = this.scene.targetManager;
 
     if (
@@ -360,6 +361,45 @@ class BattleRenderer {
     }
 
     return manager.effectiveAllowedScopes(definition).length > 1;
+  }
+
+  currentBattleSelectionDescription() {
+    if (this.scene.selectingEnemyTarget) {
+      const definition =
+        this.scene.pendingSkill ||
+        this.scene.pendingMagick ||
+        this.scene.pendingItem ||
+        null;
+      return typeof definition?.description === "string"
+        ? definition.description.trim()
+        : "";
+    }
+
+    for (const window of this.selectionWindows()) {
+      if (window?.isOpen?.() !== true) {
+        continue;
+      }
+
+      if (typeof window.currentDescription === "function") {
+        return window.currentDescription();
+      }
+
+      const entry =
+        window.currentSkill?.() ||
+        window.currentMagick?.() ||
+        window.currentItem?.() ||
+        null;
+      return typeof entry?.description === "string"
+        ? entry.description.trim()
+        : "";
+    }
+
+    return "";
+  }
+
+  withBattleSelectionDescription(hint) {
+    const description = this.currentBattleSelectionDescription();
+    return description ? `${hint}   •   ${description}` : hint;
   }
 
   shouldDrawBattleHint() {
@@ -414,11 +454,20 @@ class BattleRenderer {
           ? `${left} / ${right}: Group`
           : `${up} ${down} ${left} ${right}: Target`;
 
-      return `${scope}   ${moveHint}   ${confirm}: Confirm   ${cancel}: Back${scopeHint}   ${this.tacticalHelpControlHint()}`;
+      return this.withBattleSelectionDescription(
+        `${scope}   ${moveHint}   ${confirm}: Confirm   ${cancel}: Back${scopeHint}   ${this.tacticalHelpControlHint()}`,
+      );
     }
 
     if (this.hasOpenSelectionWindow()) {
-      return `${up} / ${down}: Choose   ${confirm}: Select   ${cancel}: Back   ${this.tacticalHelpControlHint()}`;
+      const skillsWindow = this.scene.skillsWindow;
+      const pageHint =
+        skillsWindow?.isOpen?.() === true && skillsWindow?.mode === "surge"
+          ? ""
+          : `   ${left} / ${right}: Page`;
+      return this.withBattleSelectionDescription(
+        `${up} / ${down}: Choose${pageHint}   ${confirm}: Select   ${cancel}: Back   ${this.tacticalHelpControlHint()}`,
+      );
     }
 
     const commandOwner = this.scene.partyController?.currentBattler?.() || null;

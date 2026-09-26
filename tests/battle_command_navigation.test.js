@@ -322,6 +322,8 @@ function testTargetCancelReturnsToOriginatingSelectorWithCursorPreserved() {
     pendingSkillTarget: {},
     pendingMagick: { id: 10 },
     pendingMagickTarget: {},
+    pendingItem: { id: 1 },
+    pendingItemTarget: {},
     targetGroup: "ally",
     targetScope: "all",
     skillsWindow: { show(options) { shown.push(["skills", options]); } },
@@ -339,6 +341,8 @@ function testTargetCancelReturnsToOriginatingSelectorWithCursorPreserved() {
   assert.equal(fake.pendingSkillTarget, null);
   assert.equal(fake.pendingMagick, null);
   assert.equal(fake.pendingMagickTarget, null);
+  assert.equal(fake.pendingItem, null);
+  assert.equal(fake.pendingItemTarget, null);
   assert.equal(fake.targetGroup, "enemy");
   assert.equal(fake.targetScope, "single");
 
@@ -348,6 +352,17 @@ function testTargetCancelReturnsToOriginatingSelectorWithCursorPreserved() {
   assert.equal(shown.length, 1);
   assert.equal(shown[0][0], "skills");
   assert.equal(shown[0][1].preserveIndex, true);
+
+  shown.length = 0;
+  fake.enemyTargetAction = "item";
+  fake.pendingItem = { id: 1 };
+  fake.pendingItemTarget = {};
+  assert.equal(prototype.cancelTargetSelection.call(fake), "item");
+  assert.equal(shown.length, 1);
+  assert.equal(shown[0][0], "item");
+  assert.equal(shown[0][1].preserveIndex, true);
+  assert.equal(fake.pendingItem, null);
+  assert.equal(fake.pendingItemTarget, null);
 }
 
 function loadSelector(relativePath, className, globals) {

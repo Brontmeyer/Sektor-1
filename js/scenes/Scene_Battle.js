@@ -115,6 +115,7 @@ class Scene_Battle extends Scene_Base {
 
     // PENDING ITEM ACTION
     this.pendingItem = null;
+    this.pendingItemTarget = null;
   }
 
   start() {
@@ -224,10 +225,11 @@ class Scene_Battle extends Scene_Base {
     // -----------------------------
 
     if (this.selectingEnemyTarget) {
-      const definition = this.pendingSkill || this.pendingMagick;
+      const definition =
+        this.pendingSkill || this.pendingMagick || this.pendingItem;
 
       if (
-        ["magick", "skill"].includes(this.enemyTargetAction) &&
+        ["magick", "skill", "item"].includes(this.enemyTargetAction) &&
         Input.isActionTriggered("scope")
       ) {
         if (definition) {
@@ -293,6 +295,15 @@ class Scene_Battle extends Scene_Base {
             if (magick) {
               this.pendingMagickTarget = target;
               this.battleManager.commitPartyAction("magick");
+            }
+          } else if (this.enemyTargetAction === "item") {
+            this.enemyTargetAction = null;
+
+            const item = this.pendingItem;
+
+            if (item) {
+              this.pendingItemTarget = target;
+              this.battleManager.commitPartyAction("item");
             }
           }
         }
@@ -483,6 +494,8 @@ class Scene_Battle extends Scene_Base {
     this.pendingSkillTarget = null;
     this.pendingMagick = null;
     this.pendingMagickTarget = null;
+    this.pendingItem = null;
+    this.pendingItemTarget = null;
     this.targetGroup = "enemy";
     this.targetScope = "single";
 

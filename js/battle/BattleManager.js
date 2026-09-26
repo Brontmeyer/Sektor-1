@@ -690,6 +690,7 @@ class BattleManager {
     battle.pendingMagick = null;
     battle.pendingMagickTarget = null;
     battle.pendingItem = null;
+    battle.pendingItemTarget = null;
     battle.skillsWindow?.hide?.();
     battle.magickWindow?.hide?.();
     battle.itemWindow?.hide?.();
@@ -2256,15 +2257,77 @@ class BattleManager {
       return;
     }
 
-    // Store the item for the effect phase.
+    const targetGroups = battle.targetManager.allowedTargetGroups(item);
+    const scopes = battle.targetManager.allowedScopes(item);
+
+    if (targetGroups.length === 0) {
+      console.warn(`Item ${item.name} has no valid target groups.`);
+      return;
+    }
+
+    // Choosing an item does not consume or commit it. The selected item stays
+    // pending until the player confirms a legal battler target.
     battle.pendingItem = item;
+    battle.pendingItemTarget = null;
+    battle.targetScope = scopes.includes("single")
+      ? "single"
+      : scopes[0] || "single";
 
-    // Close the item window now.
+    // Items default to the party side for convenience, but may cross to any
+    // legal enemy target. Explicit target metadata can narrow either side.
+    const preferredGroups = ["ally", "enemy"].filter((group) =>
+      targetGroups.includes(group),
+    );
+    let selectedTarget = null;
+
+    for (const group of preferredGroups) {
+      battle.targetGroup = group;
+      selectedTarget =
+        group === "enemy"
+          ? battle.targetManager.selectFirstSelectableEnemy(item)
+          : battle.targetManager.selectFirstSelectableAlly(item);
+
+      if (selectedTarget) {
+        break;
+      }
+    }
+
+    if (!selectedTarget) {
+      battle.addBattleMessage(`${item.name} has no valid targets.`);
+      battle.pendingItem = null;
+      battle.pendingItemTarget = null;
+      return;
+    }
+
+    battle.targetManager.normalizeScope(item);
+
+    if (this.battlerForcesRandomTarget(battler)) {
+      const candidates = targetGroups.flatMap((group) =>
+        battle.targetManager.selectableBattlers(group, item),
+      );
+      const target = this.randomBattleTarget(candidates);
+
+      if (!target || !this.selectForcedTarget(target)) {
+        battle.addBattleMessage(`${item.name} has no valid targets.`);
+        battle.pendingItem = null;
+        battle.pendingItemTarget = null;
+        return;
+      }
+
+      battle.pendingItemTarget = target;
+      battle.addBattleMessage(
+        `${battler.name} is confused and targets ${target.name} with ${item.name}!`,
+      );
+      battle.enemyTargetAction = null;
+      battle.selectingEnemyTarget = false;
+      battle.itemWindow.hide();
+      return this.commitPartyAction("item");
+    }
+
+    battle.enemyTargetAction = "item";
+    battle.selectingEnemyTarget = true;
     battle.itemWindow.hide();
-
-    // Commit now; if an enemy recovery beat is still resolving, execution
-    // waits in the battle-local action queue instead of stealing input.
-    return this.commitPartyAction("item");
+    return true;
   }
 
   // =================================
@@ -2815,35 +2878,41 @@ class BattleManager {
   performItemEffect() {
     const battle = this.scene;
     const item = battle.pendingItem;
+    const target = battle.pendingItemTarget;
     const battler = this.party().currentBattler();
 
-    if (!battler) {
-      return;
-    }
-
-    if (!item) {
-      return;
-    }
-
-    battle.showBattleBanner?.(item.name, 0.9, "item");
-    const hpBefore = battler.hp;
-
-    const success = $gameParty.useItem(item.id, battler);
-
-    if (!success) {
+    if (!battler || !item || !target) {
       battle.pendingItem = null;
+      battle.pendingItemTarget = null;
       return false;
     }
 
-    const healing = battler.hp - hpBefore;
+    if (battler.isValidItemTarget?.(item, target) !== true) {
+      battle.pendingItem = null;
+      battle.pendingItemTarget = null;
+      return false;
+    }
+
+    battle.showBattleBanner?.(item.name, 0.9, "item");
+    const hpBefore = target.hp;
+    const success = $gameParty.useItem(item.id, target);
+
+    if (!success) {
+      battle.pendingItem = null;
+      battle.pendingItemTarget = null;
+      return false;
+    }
+
+    const healing = target.hp - hpBefore;
 
     battle.addBattleMessage(
-      `${battler.name} uses ${item.name}! ` +
-        `${battler.name} recovers ${healing} HP!`,
+      `${battler.name} uses ${item.name} on ${target.name}! ` +
+        `${target.name} recovers ${healing} HP!`,
     );
 
-    // The pending item has now been used.
+    // Consumption happens only after a legal target accepts the effect.
     battle.pendingItem = null;
+    battle.pendingItemTarget = null;
     return true;
   }
 

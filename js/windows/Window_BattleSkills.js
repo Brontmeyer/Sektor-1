@@ -72,6 +72,11 @@ class Window_BattleSkills {
     return this.skillList()[this.index] || null;
   }
 
+  currentDescription() {
+    const entry = this.currentSkill();
+    return typeof entry?.description === "string" ? entry.description.trim() : "";
+  }
+
   skillLabel(skill) {
     return skill?.name || "";
   }

@@ -89,6 +89,11 @@ class Window_BattleMagick {
     return magickList[this.index] || null;
   }
 
+  currentDescription() {
+    const entry = this.currentMagick();
+    return typeof entry?.description === "string" ? entry.description.trim() : "";
+  }
+
   show({ preserveIndex = false } = {}) {
     const entries = this.magickList();
 

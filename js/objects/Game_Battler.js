@@ -1668,6 +1668,54 @@ class Game_Battler {
     return true;
   }
 
+  isValidItemTarget(item, target) {
+    if (!item || !target) {
+      return false;
+    }
+
+    // Items intentionally default to either battle side. Individual item data
+    // can narrow this to self / ally / enemy without changing battle code.
+    const allowedTargets = Array.isArray(item.target)
+      ? item.target
+      : ["ally", "enemy"];
+    let targetGroupAllowed = false;
+
+    if (allowedTargets.includes("self") && target === this) {
+      targetGroupAllowed = true;
+    }
+
+    if (allowedTargets.includes("ally") && this.isSameBattleSide(target)) {
+      targetGroupAllowed = true;
+    }
+
+    if (allowedTargets.includes("enemy") && this.isOpposingBattleSide(target)) {
+      targetGroupAllowed = true;
+    }
+
+    if (!targetGroupAllowed) {
+      return false;
+    }
+
+    const defeated =
+      typeof target.isDefeated === "function"
+        ? target.isDefeated()
+        : typeof target.isDead === "function" && target.isDead();
+
+    if (defeated) {
+      return false;
+    }
+
+    if (
+      item.effect?.type === "healHp" &&
+      typeof target.isFullHp === "function" &&
+      target.isFullHp()
+    ) {
+      return false;
+    }
+
+    return true;
+  }
+
   isValidMagickTarget(magick, target) {
     if (!magick || !target) {
       return false;
