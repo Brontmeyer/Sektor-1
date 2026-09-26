@@ -12,7 +12,7 @@ const read = (relativePath) =>
 function testSharedGeometryProducesOneHeaderContract() {
   const context = vm.createContext({ Graphics: { width: 1280, height: 720 } });
   vm.runInContext(
-    `${read("js/windows/CharacterMenuLayout.js")}\nglobalThis.__Layout = CharacterMenuLayout;`,
+    `${read("js/windows/MenuScreenLayout.js")}\n${read("js/windows/CharacterMenuLayout.js")}\nglobalThis.__Layout = CharacterMenuLayout;`,
     context,
   );
 

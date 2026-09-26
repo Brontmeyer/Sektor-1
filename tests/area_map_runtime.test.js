@@ -182,7 +182,7 @@ function testAreaMapWindowShowsOnlyDiscoveredLocationsAndSupportsSelection() {
   });
 
   vm.runInContext(
-    `${read("js/windows/Window_AreaMap.js")}\nglobalThis.__WindowAreaMap = Window_AreaMap;`,
+    `${read("js/windows/MenuScreenLayout.js")}\n${read("js/windows/Window_AreaMap.js")}\nglobalThis.__WindowAreaMap = Window_AreaMap;`,
     context,
   );
 

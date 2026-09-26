@@ -22,8 +22,7 @@ class Scene_Options extends Scene_Base {
     const context = Graphics.context;
 
     context.save();
-    context.fillStyle = "#0b0e13";
-    context.fillRect(0, 0, Graphics.width, Graphics.height);
+    MenuScreenLayout.drawBackdrop(context);
     context.restore();
 
     this.optionsWindow.draw();

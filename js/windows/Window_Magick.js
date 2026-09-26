@@ -410,8 +410,6 @@ class Window_Magick {
 
     const context = Graphics.context;
     context.save();
-    context.fillStyle = "#0b0e13";
-    context.fillRect(0, 0, Graphics.width, Graphics.height);
 
     this.drawActorPanel(context);
     this.drawMagickInfoPanel(context);

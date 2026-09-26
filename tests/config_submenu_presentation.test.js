@@ -12,7 +12,7 @@ const read = (relativePath) =>
 function testConfigFamilySharesOneHeaderAndContentGeometry() {
   const context = vm.createContext({ Graphics: { width: 1280, height: 720 } });
   vm.runInContext(
-    `${read("js/windows/ConfigMenuLayout.js")}\nglobalThis.__Layout = ConfigMenuLayout;`,
+    `${read("js/windows/MenuScreenLayout.js")}\n${read("js/windows/ConfigMenuLayout.js")}\nglobalThis.__Layout = ConfigMenuLayout;`,
     context,
   );
 
@@ -43,8 +43,8 @@ function testConfigControlsAndWindowColorUseTheSharedFamilyLanguage() {
   assert.match(colors, /subtitle: "APPEARANCE"/);
   assert.match(colors, /ConfigMenuLayout\.split\(this\.contentBounds, 0\.5, 8\)/);
 
-  assert.match(controlsScene, /fillStyle = "#0b0e13"/);
-  assert.match(colorScene, /fillStyle = "#0b0e13"/);
+  assert.match(controlsScene, /MenuScreenLayout\.drawBackdrop\(context\)/);
+  assert.match(colorScene, /MenuScreenLayout\.drawBackdrop\(context\)/);
   assert.doesNotMatch(controlsScene, /createLinearGradient|fillText\("CONTROLS"/);
   assert.doesNotMatch(colorScene, /fillText\("WINDOW COLOR"/);
 

@@ -2,11 +2,12 @@
 
 class ConfigMenuLayout {
   static calculate() {
-    const margin = Math.max(12, Math.min(22, Math.floor(Graphics.width * 0.014)));
-    const gap = 8;
-    const width = Graphics.width - margin * 2;
-    const height = Graphics.height - margin * 2;
-    const headerHeight = 70;
+    const screen = MenuScreenLayout.metrics();
+    const margin = screen.margin;
+    const gap = screen.gap;
+    const width = screen.width;
+    const height = screen.height;
+    const headerHeight = screen.headerHeight;
     const titleWidth = Math.max(250, Math.min(320, Math.floor(width * 0.255)));
 
     return {

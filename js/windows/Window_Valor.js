@@ -366,8 +366,6 @@ class Window_Valor {
 
     const context = Graphics.context;
     context.save();
-    context.fillStyle = "#0b0e13";
-    context.fillRect(0, 0, Graphics.width, Graphics.height);
 
     const arts = this.knownArts();
     const selectedArt = this.currentArt(arts);

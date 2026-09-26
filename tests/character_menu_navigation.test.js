@@ -148,6 +148,7 @@ function createHarness() {
     "js/windows/Window_TextLayout.js",
     "js/windows/Window_ActorNavigator.js",
     "js/windows/Window_ActorSummary.js",
+    "js/windows/MenuScreenLayout.js",
     "js/windows/CharacterMenuLayout.js",
     "js/windows/Window_EquipSelect.js",
     "js/windows/Window_Equipment.js",

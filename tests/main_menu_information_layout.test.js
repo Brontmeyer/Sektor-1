@@ -53,7 +53,7 @@ function loadMenuWindows() {
 
   vm.runInContext(
     `${read("js/core/UIResourcePalette.js")}\n` +
-      `${read("js/windows/MainMenuLayout.js")}\n` +
+      `${read("js/windows/MenuScreenLayout.js")}\n${read("js/windows/MainMenuLayout.js")}\n` +
       `${read("js/windows/Window_MainMenuParty.js")}\n` +
       `${read("js/windows/Window_MenuCommand.js")}\n` +
       `globalThis.__classes = { MainMenuLayout, Window_MainMenuParty, Window_MenuCommand };`,
@@ -192,7 +192,7 @@ function testLayoutKeepsPartyAndUtilityAreasSeparate() {
   assert.equal(layout.utility.y > layout.commands.y, true);
   assert.equal(
     layout.utility.y,
-    layout.commands.y + layout.commands.height + 10,
+    layout.commands.y + layout.commands.height + 8,
   );
   assert.equal(layout.location.y > layout.utility.y, true);
   assert.equal(

@@ -522,6 +522,7 @@ Battle-presentation directions and current status:
 - ✅ UI Style Integration Prototype v1 with soft-framed semantic battle/menu panels, selection surfaces, and gauge framing
 - ✅ Menu Window Softening & Frame Polish v1 with centralized rounded clipping, depth/shadow, inset highlights, and softened gauges/selections
 - ✅ Main Menu Information & Command Layout v1 with four active-party information cards, singular destination naming, live currency/location presentation, and reserved Order / Valor / ROSTER destinations
+- ✅ Menu Screen Layout Consistency v1 with one shared full-screen safe inset/gap/backdrop, a common compact title-bar height for MAIN MENU / ROSTER / SAVE-LOAD / AREA MAP, and aligned outer bounds across Config and character-menu families
 - ✅ Main Menu Refinement & Command Availability Foundation v1 with restored Load, RUNES labeling, tighter party-card proportions, generic command state policy, and validated future Save/Load area gates
 - ✅ Main Menu Actor Selection & Order Foundation v1 with shared active-party focus, explicit actor handoff, persistent front/back row state, portrait-offset row language, story-aware ROSTER visibility, and Save Runtime v11
 - ✅ Actor Naming + New Game Identity Foundation v1 with canonical default names, reusable runtime renaming, new-game protagonist name entry, Save Runtime v11 persistence, `{actor:<id>}` dialogue tokens, and a validated `nameActor` event hook for future recruit introductions

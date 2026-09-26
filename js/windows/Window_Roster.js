@@ -14,18 +14,19 @@ class Window_Roster {
   }
 
   refreshLayout() {
-    const margin = 18;
-    const gap = 14;
-    const headerHeight = 70;
+    const screen = MenuScreenLayout.metrics();
+    const margin = screen.margin;
+    const gap = screen.gap;
+    const headerHeight = screen.headerHeight;
     const footerHeight = 86;
     const contentY = margin + headerHeight + gap;
-    const contentHeight = Graphics.height - contentY - footerHeight - gap - margin;
-    const columnWidth = (Graphics.width - margin * 2 - gap) / 2;
+    const contentHeight = screen.bottom - contentY - footerHeight - gap;
+    const columnWidth = (screen.width - gap) / 2;
 
     this.headerBounds = {
       x: margin,
       y: margin,
-      width: Graphics.width - margin * 2,
+      width: screen.width,
       height: headerHeight,
     };
     this.activeBounds = {
@@ -43,7 +44,7 @@ class Window_Roster {
     this.footerBounds = {
       x: margin,
       y: contentY + contentHeight + gap,
-      width: Graphics.width - margin * 2,
+      width: screen.width,
       height: footerHeight,
     };
   }
@@ -432,8 +433,6 @@ class Window_Roster {
     this.clampIndices();
 
     context.save();
-    context.fillStyle = UIThemePalette?.backdrop?.() || "#0b0e13";
-    context.fillRect(0, 0, Graphics.width, Graphics.height);
     this.drawHeader(context);
     this.drawColumn(context, this.activeBounds, "ACTIVE PARTY", active, "active", this.activeViewport);
     this.drawColumn(context, this.reserveBounds, "RESERVE", reserve, "reserve", this.reserveViewport);

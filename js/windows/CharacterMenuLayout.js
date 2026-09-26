@@ -2,10 +2,11 @@
 
 class CharacterMenuLayout {
   static calculate(options = {}) {
-    const margin = Math.max(12, Math.min(22, Math.floor(Graphics.width * 0.014)));
-    const gap = 8;
-    const width = Graphics.width - margin * 2;
-    const height = Graphics.height - margin * 2;
+    const screen = MenuScreenLayout.metrics();
+    const margin = screen.margin;
+    const gap = screen.gap;
+    const width = screen.width;
+    const height = screen.height;
     const headerHeight = Math.max(150, Math.min(174, Math.floor(height * 0.245)));
     const infoWidth = Math.max(260, Math.min(320, Math.floor(width * 0.255)));
     const descriptionHeight = options.description === false ? 0 : 56;

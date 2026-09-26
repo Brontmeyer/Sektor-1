@@ -65,6 +65,7 @@ function createHarness() {
   const context = vm.createContext(globals);
   const source = [
     "js/windows/Window_ActorSummary.js",
+    "js/windows/MenuScreenLayout.js",
     "js/windows/Window_SaveSlots.js",
   ].map(read).join("\n");
 

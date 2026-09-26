@@ -11,11 +11,12 @@ class Window_SaveSlots {
   }
 
   refreshLayout() {
-    const margin = Math.max(10, Math.min(18, Math.floor(Graphics.width * 0.012)));
-    const gap = 8;
-    const width = Graphics.width - margin * 2;
-    const height = Graphics.height - margin * 2;
-    const headerHeight = 58;
+    const screen = MenuScreenLayout.metrics();
+    const margin = screen.margin;
+    const gap = screen.gap;
+    const width = screen.width;
+    const height = screen.height;
+    const headerHeight = screen.headerHeight;
 
     this.x = margin;
     this.y = margin;
@@ -515,8 +516,6 @@ class Window_SaveSlots {
 
     const context = Graphics.context;
     context.save();
-    context.fillStyle = "#0b0e13";
-    context.fillRect(0, 0, Graphics.width, Graphics.height);
     this.drawHeader(context);
     this.drawSlots(context);
     context.restore();

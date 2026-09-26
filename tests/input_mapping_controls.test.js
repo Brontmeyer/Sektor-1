@@ -171,7 +171,7 @@ function loadControlsHarness() {
 
   vm.runInContext(
     `${read("js/core/ConfigManager.js")}\n${read("js/core/Input.js")}\n` +
-      `${read("js/windows/ConfigMenuLayout.js")}\n` +
+      `${read("js/windows/MenuScreenLayout.js")}\n${read("js/windows/ConfigMenuLayout.js")}\n` +
       `${read("js/windows/Window_Controls.js")}\n` +
       `globalThis.__classes = { ConfigManager, Input, Window_Controls };`,
     context,

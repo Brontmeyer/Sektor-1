@@ -167,7 +167,7 @@ function colorEditorHarness() {
 
   vm.runInContext(
     `${read("js/core/ConfigManager.js")}\n` +
-      `${read("js/windows/ConfigMenuLayout.js")}\n` +
+      `${read("js/windows/MenuScreenLayout.js")}\n${read("js/windows/ConfigMenuLayout.js")}\n` +
       `${read("js/windows/Window_WindowColor.js")}\n` +
       `${read("js/scenes/Scene_WindowColor.js")}\n` +
       `globalThis.__classes = { ConfigManager, Window_WindowColor, Scene_WindowColor };`,

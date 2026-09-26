@@ -25,15 +25,7 @@ class Scene_AreaMap extends Scene_Base {
   }
 
   drawBackground(context) {
-    context.fillStyle = "#0b0e13";
-    context.fillRect(0, 0, Graphics.width, Graphics.height);
-
-    const gradient = context.createLinearGradient(0, 0, Graphics.width, 0);
-    gradient.addColorStop(0, "rgba(46, 52, 62, 0.2)");
-    gradient.addColorStop(0.5, "rgba(11, 14, 19, 0)");
-    gradient.addColorStop(1, "rgba(35, 39, 48, 0.14)");
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, Graphics.width, Graphics.height);
+    MenuScreenLayout.drawBackdrop(context);
   }
 
   draw() {

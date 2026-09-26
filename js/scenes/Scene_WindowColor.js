@@ -16,8 +16,7 @@ class Scene_WindowColor extends Scene_Base {
     const context = Graphics.context;
 
     context.save();
-    context.fillStyle = "#0b0e13";
-    context.fillRect(0, 0, Graphics.width, Graphics.height);
+    MenuScreenLayout.drawBackdrop(context);
     context.restore();
 
     this.windowColorWindow.draw();

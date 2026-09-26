@@ -167,7 +167,7 @@ function testEquipmentStatsUseFullPanelWithoutPermanentHintFooter() {
   };
   const context = vm.createContext(globals);
   vm.runInContext(
-    `${read("js/windows/CharacterMenuLayout.js")}\n${read("js/windows/Window_Equipment.js")}\nglobalThis.__Window = Window_Equipment;`,
+    `${read("js/windows/MenuScreenLayout.js")}\n${read("js/windows/CharacterMenuLayout.js")}\n${read("js/windows/Window_Equipment.js")}\nglobalThis.__Window = Window_Equipment;`,
     context,
   );
   const window = new context.__Window(null);

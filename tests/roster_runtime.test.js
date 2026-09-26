@@ -104,7 +104,7 @@ function testRosterWindowFullPartySwapFlow() {
   });
 
   vm.runInContext(
-    `${read("js/windows/Window_ListViewport.js")}\n${read("js/windows/Window_Roster.js")}\nglobalThis.__Roster = Window_Roster;`,
+    `${read("js/windows/Window_ListViewport.js")}\n${read("js/windows/MenuScreenLayout.js")}\n${read("js/windows/Window_Roster.js")}\nglobalThis.__Roster = Window_Roster;`,
     context,
   );
 

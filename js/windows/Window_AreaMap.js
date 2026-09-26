@@ -82,19 +82,20 @@ class Window_AreaMap {
   }
 
   layout() {
-    const margin = 28;
-    const gap = 16;
-    const headerHeight = 54;
-    const contentY = margin + headerHeight + 12;
-    const contentHeight = Graphics.height - contentY - margin;
+    const screen = MenuScreenLayout.metrics();
+    const margin = screen.margin;
+    const gap = screen.gap;
+    const headerHeight = screen.headerHeight;
+    const contentY = margin + headerHeight + gap;
+    const contentHeight = screen.bottom - contentY;
     const sideWidth = 360;
-    const mapWidth = Graphics.width - margin * 2 - gap - sideWidth;
+    const mapWidth = screen.width - gap - sideWidth;
 
     return {
       header: {
         x: margin,
         y: margin,
-        width: Graphics.width - margin * 2,
+        width: screen.width,
         height: headerHeight,
       },
       map: {

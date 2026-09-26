@@ -141,6 +141,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add Status Menu Presentation v1 with shared actor summary, Main / Element / Effect pages, actor-safe page switching, live elemental/status runtime presentation, and Equip footer-overlap cleanup
 - [x] Add Essence Menu Presentation & List Navigation v1 with shared stacked-vitals actor summary, slot/catalog equipment flow, two-column held-repeat catalog navigation, progression/Mastery Ready preview, and Magick Awakening presentation
 - [x] Implement Main Menu Information & Command Layout v1 with four active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels
+- [x] Unify field-menu outer geometry through shared `MenuScreenLayout`: full-screen safe inset/gap/backdrop, aligned outer bounds, and one compact title-bar height across MAIN MENU / ROSTER / SAVE-LOAD / AREA MAP while preserving character/config internal layouts
 - [x] Implement Main Menu Refinement & Command Availability Foundation v1 with RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and map-based Save restrictions; Load remains outside the final in-game main menu; development temporarily restores it for QA
 - [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
 - [x] Add canonical persistent play-time tracking with main-menu HH:MM:SS and Save/Load persistence
