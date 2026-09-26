@@ -12,7 +12,7 @@ class Window_BattleSkills {
 
     this.padding = 14;
     this.lineHeight = 32;
-    this.listViewport = new Window_ListViewport(3);
+    this.listViewport = new Window_ListViewport(4);
 
     this.x = 290;
     this.y = Graphics.height - this.height - 40;
@@ -152,7 +152,7 @@ class Window_BattleSkills {
     context.textAlign = "right";
 
     if (this.listViewport.hasPrevious()) {
-      context.fillText("▲", this.x + this.width - 8, this.y + 58);
+      context.fillText("▲", this.x + this.width - 8, this.y + 14);
     }
 
     if (this.listViewport.hasNext(totalEntries)) {
@@ -185,16 +185,16 @@ class Window_BattleSkills {
         this.width,
         this.height,
         {
-          fallbackFill: "rgba(7, 10, 15, 0.94)",
+          fallbackFill: "rgba(7, 10, 15, 0.84)",
           fallbackStroke: "rgba(151, 196, 229, 0.6)",
           lineWidth: 1.5,
-          assetAlpha: 0.5,
+          assetAlpha: 0.38,
           sourceMargin: 12,
           destMargin: 10,
         },
       );
     } else {
-      context.fillStyle = "rgba(7, 10, 15, 0.94)";
+      context.fillStyle = "rgba(7, 10, 15, 0.84)";
       context.fillRect(this.x, this.y, this.width, this.height);
       context.strokeStyle = "rgba(151, 196, 229, 0.6)";
       context.lineWidth = 1.5;
@@ -205,17 +205,19 @@ class Window_BattleSkills {
     context.textBaseline = "middle";
     context.font = "19px Arial";
     context.fillStyle = "#ffffff";
-    context.fillText(
-      this.mode === "surge" ? `Surge · Level ${this.actor()?.selectedValorLevel?.() || 1}` : "Skills",
-      this.x + this.padding,
-      this.y + 24,
-    );
+    if (this.mode === "surge") {
+      context.fillText(
+        `Surge · Level ${this.actor()?.selectedValorLevel?.() || 1}`,
+        this.x + this.padding,
+        this.y + 24,
+      );
+    }
 
     if (skills.length === 0) {
       context.fillText(
         this.mode === "surge" ? "(No Arts at set level)" : "(No skills)",
         this.x + this.padding,
-        this.y + 62,
+        this.mode === "surge" ? this.y + 62 : this.y + 28,
       );
       context.restore();
       return;
@@ -227,7 +229,7 @@ class Window_BattleSkills {
       const skill = skills[i];
       const prefix = i === this.index ? "▶ " : "   ";
       const row = i - range.start;
-      const listStartY = this.mode === "surge" ? this.y + 58 : this.y + 58;
+      const listStartY = this.mode === "surge" ? this.y + 58 : this.y + 24;
       const drawY = listStartY + row * this.lineHeight;
       const selected = i === this.index;
       const usable = this.mode === "surge"

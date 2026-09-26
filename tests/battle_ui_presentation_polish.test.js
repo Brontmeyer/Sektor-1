@@ -61,7 +61,8 @@ function testCompactBattleHudGeometry() {
   const banner = layout.bannerBounds(200);
 
   assert.equal(hud.height, 156);
-  assert.equal(help.height, 54);
+  assert.equal(help.height, 64);
+  assert.equal(help.width > hud.width * 0.7, true);
   assert.equal(help.width < hud.width, true);
   assert.equal(help.x > hud.x, true);
   assert.equal(help.x + help.width < hud.x + hud.width, true);

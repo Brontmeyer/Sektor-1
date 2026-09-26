@@ -510,7 +510,7 @@ function testBattleSelectorsPageWithLeftAndRight() {
     triggered.add("right");
     window.update();
     triggered.clear();
-    assert.equal(window.index, 3, "Right advances one visible page");
+    assert.equal(window.index, 4, "Right advances one visible page");
 
     triggered.add("right");
     window.update();
@@ -520,7 +520,7 @@ function testBattleSelectorsPageWithLeftAndRight() {
     triggered.add("left");
     window.update();
     triggered.clear();
-    assert.equal(window.index, 3, "Left returns one visible page");
+    assert.equal(window.index, 2, "Left returns one visible page from the clamped final entry");
   }
 }
 

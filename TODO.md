@@ -151,6 +151,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Separate player-facing multi-level Valor progression from the ordinary Skill menu while reusing the shared Skill action runtime
 - [x] Implement ROSTER (Remote Operative Selection Tactical Engagement Registry) for active/reserve party switching, full-party replacement flow, and story-aware main-menu visibility
 - [x] Polish Tactical Help bar size/transparency during the battle UI presentation pass
+- [x] Promote battle descriptions into an automatic two-line context panel, reuse it for scanned target readouts, remove redundant normal selector headings, and expand normal battle selectors to four visible rows
 
 ---
 

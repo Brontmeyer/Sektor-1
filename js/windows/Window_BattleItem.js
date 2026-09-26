@@ -11,7 +11,7 @@ class Window_BattleItem {
 
     this.padding = 14;
     this.lineHeight = 32;
-    this.listViewport = new Window_ListViewport(3);
+    this.listViewport = new Window_ListViewport(4);
 
     this.x = 290;
     this.y = Graphics.height - this.height - 40;
@@ -127,7 +127,7 @@ class Window_BattleItem {
     context.textAlign = "right";
 
     if (this.listViewport.hasPrevious()) {
-      context.fillText("▲", this.x + this.width - 8, this.y + 58);
+      context.fillText("▲", this.x + this.width - 8, this.y + 14);
     }
 
     if (this.listViewport.hasNext(totalEntries)) {
@@ -164,16 +164,16 @@ class Window_BattleItem {
         this.width,
         this.height,
         {
-          fallbackFill: "rgba(7, 10, 15, 0.94)",
+          fallbackFill: "rgba(7, 10, 15, 0.84)",
           fallbackStroke: "rgba(151, 196, 229, 0.6)",
           lineWidth: 1.5,
-          assetAlpha: 0.5,
+          assetAlpha: 0.38,
           sourceMargin: 12,
           destMargin: 10,
         },
       );
     } else {
-      context.fillStyle = "rgba(7, 10, 15, 0.94)";
+      context.fillStyle = "rgba(7, 10, 15, 0.84)";
       context.fillRect(this.x, this.y, this.width, this.height);
       context.strokeStyle = "rgba(151, 196, 229, 0.6)";
       context.lineWidth = 1.5;
@@ -185,10 +185,8 @@ class Window_BattleItem {
     context.font = "19px Arial";
     context.fillStyle = "#ffffff";
 
-    context.fillText("Items", this.x + this.padding, this.y + 24);
-
     if (items.length === 0) {
-      context.fillText("(No items)", this.x + this.padding, this.y + 62);
+      context.fillText("(No items)", this.x + this.padding, this.y + 28);
 
       context.restore();
       return;
@@ -202,7 +200,7 @@ class Window_BattleItem {
       const selected = i === this.index;
       const prefix = selected ? "▶ " : "   ";
       const visibleRow = i - range.start;
-      const drawY = this.y + 58 + visibleRow * this.lineHeight;
+      const drawY = this.y + 24 + visibleRow * this.lineHeight;
 
       if (selected) {
         const drawn =

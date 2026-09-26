@@ -12,6 +12,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Pass 110 Battle Context Panel v2: Magick / Skills / Item selectors drop redundant category headings and use a slightly wider, more translucent HUD-side surface with four visible rows. A dedicated two-line translucent context panel now appears automatically above the HUD while choosing an action or target, showing the highlighted Magick / Skill / Item / Surge name plus its canonical description without squeezing prose into the control-hint strip. During target selection the same panel becomes the target readout: allies show live HP / MP / status, unscanned enemies keep tactical values unknown, and scanned enemies show live HP / MP plus Weak / Resist / Immune data from the existing battle-local Scan authority.
+
 - Added Pass 109 battle context help and battler-aware Item targeting: Magick, Skills, Items, and Surge now surface the highlighted entry's description through the existing slim battle hint strip without adding another large battlefield window. Selector hints also expose Left / Right page navigation where applicable.
 - Battle Items now enter spatial target selection before committing or consuming inventory. Items target either living battle side by default, begin on a legal ally for convenience, can cross to legal enemies through the shared `BattleTargetManager`, and may narrow their legal `target` groups through validated optional item metadata. Item consumption occurs only after a legal target accepts the effect; target cancel restores the Item selector and its cursor.
 

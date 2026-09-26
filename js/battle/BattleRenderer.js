@@ -226,6 +226,25 @@ class BattleRenderer {
       : `${help}: Help`;
   }
 
+  contextPanelForced() {
+    if (this.scene.selectingEnemyTarget) {
+      return true;
+    }
+
+    return this.hasOpenSelectionWindow();
+  }
+
+  shouldDrawContextPanel() {
+    if (this.scene.outcome) {
+      return false;
+    }
+
+    return (
+      this.contextPanelForced() ||
+      this.scene.scanManager?.isHelpVisible?.() === true
+    );
+  }
+
   tacticalAffinityText(values, unknown = "??") {
     if (values === null) {
       return unknown;
@@ -238,22 +257,96 @@ class BattleRenderer {
     return values.join(", ");
   }
 
-  drawTacticalHelp(context) {
-    const manager = this.scene.scanManager;
+  currentBattleSelectionEntry() {
+    for (const window of this.selectionWindows()) {
+      if (window?.isOpen?.() !== true) {
+        continue;
+      }
 
-    if (!manager?.isHelpVisible?.() || this.scene.outcome) {
+      return (
+        window.currentSkill?.() ||
+        window.currentMagick?.() ||
+        window.currentItem?.() ||
+        null
+      );
+    }
+
+    return null;
+  }
+
+  targetContextLines() {
+    const target =
+      this.scene.targetManager?.getSelectedTarget?.() ||
+      (this.scene.targetGroup === "enemy"
+        ? this.scene.scanManager?.currentEnemyTarget?.() || null
+        : null);
+
+    if (!target) {
+      return {
+        primary: "Choose a target.",
+        secondary: "",
+        known: false,
+      };
+    }
+
+    if (this.scene.targetGroup === "enemy") {
+      const profile = this.scene.scanManager?.tacticalProfile?.(target) || null;
+
+      if (!profile) {
+        return {
+          primary: target.name || "Enemy",
+          secondary: "Tactical data unavailable.",
+          known: false,
+        };
+      }
+
+      const hpText = profile.scanned
+        ? `${Math.floor(profile.hp)}/${Math.floor(profile.maxHp)}`
+        : "??/??";
+      const mpText = profile.scanned
+        ? `${Math.floor(profile.mp)}/${Math.floor(profile.maxMp)}`
+        : "??/??";
+      const weakText = this.tacticalAffinityText(profile.weak);
+      const resistText = this.tacticalAffinityText(profile.resist);
+      const immuneText = this.tacticalAffinityText(profile.immune);
+
+      return {
+        primary: `${profile.name}   HP ${hpText}   MP ${mpText}`,
+        secondary: profile.scanned
+          ? `Weak ${weakText}   Resist ${resistText}   Immune ${immuneText}`
+          : "Tactical data unknown. Use Scan to reveal HP, MP, and affinities.",
+        known: profile.scanned,
+      };
+    }
+
+    const hp = Math.max(0, Number(target.hp) || 0);
+    const maxHp = Math.max(0, Number(target.maxHp) || 0);
+    const mp = Math.max(0, Number(target.mp) || 0);
+    const maxMp = Math.max(0, Number(target.maxMp) || 0);
+    const status = String(target.statusSummary?.() || "").trim();
+
+    return {
+      primary: `${target.name || "Ally"}   HP ${Math.floor(hp)}/${Math.floor(maxHp)}   MP ${Math.floor(mp)}/${Math.floor(maxMp)}`,
+      secondary: status ? `Status ${status}` : "Status Normal",
+      known: true,
+    };
+  }
+
+  drawTacticalHelp(context) {
+    if (!this.shouldDrawContextPanel()) {
+      return;
+    }
+
+    if (typeof this.scene.hudLayout?.tacticalHelpBounds !== "function") {
       return;
     }
 
     const bounds = this.scene.hudLayout.tacticalHelpBounds();
-    const target = manager.currentEnemyTarget();
-    const profile = target ? manager.tacticalProfile(target) : null;
-    const paddingX = 14;
+    const paddingX = 16;
     const left = bounds.x + paddingX;
-    const right = bounds.x + bounds.width - paddingX;
-    const lineOneY = bounds.y + 18;
-    const lineTwoY = bounds.y + 38;
     const maxWidth = bounds.width - paddingX * 2;
+    const lineOneY = bounds.y + 21;
+    const lineTwoY = bounds.y + 45;
 
     context.save();
     if (
@@ -262,81 +355,99 @@ class BattleRenderer {
     ) {
       UIAssetManager.drawPanel(
         context,
-        "menuPanel",
+        "battlePanel",
         bounds.x,
         bounds.y,
         bounds.width,
         bounds.height,
         {
-          fallbackFill: "rgba(7, 10, 15, 0.76)",
-          fallbackStroke: "rgba(151, 196, 229, 0.48)",
-          lineWidth: 1,
-          assetAlpha: 0.28,
+          fallbackFill: "rgba(7, 10, 15, 0.7)",
+          fallbackStroke: "rgba(151, 196, 229, 0.5)",
+          lineWidth: 1.25,
+          assetAlpha: 0.32,
           sourceMargin: 12,
           destMargin: 8,
         },
       );
     } else {
-      context.fillStyle = "rgba(7, 10, 15, 0.76)";
+      context.fillStyle = "rgba(7, 10, 15, 0.7)";
       context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-      context.strokeStyle = "rgba(151, 196, 229, 0.48)";
-      context.lineWidth = 1;
+      context.strokeStyle = "rgba(151, 196, 229, 0.5)";
+      context.lineWidth = 1.25;
       context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
     }
-    context.textBaseline = "middle";
-
-    context.font = "12px Arial";
-    context.textAlign = "right";
-    context.fillStyle = "#9eacbc";
-    context.fillText(`${Input.actionLabel("help")}: Hide`, right, lineOneY);
 
     context.textAlign = "left";
+    context.textBaseline = "middle";
 
-    if (!profile) {
-      context.font = "bold 13px Arial";
-      context.fillStyle = "#ffd75a";
-      context.fillText("TACTICAL", left, lineOneY);
-      context.font = "12px Arial";
-      context.fillStyle = "#d6dde6";
-      const message = "Target an enemy to inspect tactical information.";
-      const displayMessage =
-        context.measureText(message).width <= maxWidth
-          ? message
-          : Window_TextLayout.ellipsize(context, message, maxWidth);
-      context.fillText(displayMessage, left, lineTwoY);
+    if (this.scene.selectingEnemyTarget) {
+      const targetContext = this.targetContextLines();
+      context.font = "bold 14px Arial";
+      context.fillStyle = targetContext.known ? "#ffffff" : "#d6dde6";
+      const primary =
+        context.measureText(targetContext.primary).width <= maxWidth
+          ? targetContext.primary
+          : Window_TextLayout.ellipsize(
+              context,
+              targetContext.primary,
+              maxWidth,
+            );
+      context.fillText(primary, left, lineOneY);
+
+      context.font = "13px Arial";
+      context.fillStyle = targetContext.known ? "#d6dde6" : "#aeb8c5";
+      const secondary =
+        context.measureText(targetContext.secondary).width <= maxWidth
+          ? targetContext.secondary
+          : Window_TextLayout.ellipsize(
+              context,
+              targetContext.secondary,
+              maxWidth,
+            );
+      context.fillText(secondary, left, lineTwoY);
       context.restore();
       return;
     }
 
-    const hpText = profile.scanned
-      ? `${Math.floor(profile.hp)}/${Math.floor(profile.maxHp)}`
-      : "??/??";
-    const mpText = profile.scanned
-      ? `${Math.floor(profile.mp)}/${Math.floor(profile.maxMp)}`
-      : "??/??";
-    const weakText = this.tacticalAffinityText(profile.weak);
-    const resistText = this.tacticalAffinityText(profile.resist);
-    const immuneText = this.tacticalAffinityText(profile.immune);
-    const resourceDetail = `${profile.name}   HP ${hpText}   MP ${mpText}`;
-    const affinityDetail = `Weak ${weakText}   Resist ${resistText}   Immune ${immuneText}`;
-    const hintWidth = context.measureText(`${Input.actionLabel("help")}: Hide`).width;
-    const lineOneMaxWidth = Math.max(120, maxWidth - hintWidth - 20);
-    const displayResource =
-      context.measureText(resourceDetail).width <= lineOneMaxWidth
-        ? resourceDetail
-        : Window_TextLayout.ellipsize(context, resourceDetail, lineOneMaxWidth);
-    const displayAffinity =
-      context.measureText(affinityDetail).width <= maxWidth
-        ? affinityDetail
-        : Window_TextLayout.ellipsize(context, affinityDetail, maxWidth);
+    const entry = this.currentBattleSelectionEntry();
 
-    context.font = "bold 13px Arial";
-    context.fillStyle = profile.scanned ? "#ffffff" : "#c0c8d3";
-    context.fillText(displayResource, left, lineOneY);
+    if (entry) {
+      const name = String(entry.name || "").trim();
+      const description =
+        typeof entry.description === "string" ? entry.description.trim() : "";
 
-    context.font = "12px Arial";
-    context.fillStyle = profile.scanned ? "#d6dde6" : "#9ea8b5";
-    context.fillText(displayAffinity, left, lineTwoY);
+      context.font = "bold 14px Arial";
+      context.fillStyle = "#ffd75a";
+      const displayName =
+        context.measureText(name).width <= maxWidth
+          ? name
+          : Window_TextLayout.ellipsize(context, name, maxWidth);
+      context.fillText(displayName, left, lineOneY);
+
+      context.font = "13px Arial";
+      context.fillStyle = "#e3e8ef";
+      const detail = description || "No description available.";
+      const displayDetail =
+        context.measureText(detail).width <= maxWidth
+          ? detail
+          : Window_TextLayout.ellipsize(context, detail, maxWidth);
+      context.fillText(displayDetail, left, lineTwoY);
+      context.restore();
+      return;
+    }
+
+    context.font = "13px Arial";
+    context.fillStyle = "#d6dde6";
+    const message = "Target an enemy to inspect tactical information.";
+    const displayMessage =
+      context.measureText(message).width <= maxWidth
+        ? message
+        : Window_TextLayout.ellipsize(context, message, maxWidth);
+    context.fillText(
+      displayMessage,
+      left,
+      bounds.y + bounds.height / 2,
+    );
     context.restore();
   }
 
@@ -361,45 +472,6 @@ class BattleRenderer {
     }
 
     return manager.effectiveAllowedScopes(definition).length > 1;
-  }
-
-  currentBattleSelectionDescription() {
-    if (this.scene.selectingEnemyTarget) {
-      const definition =
-        this.scene.pendingSkill ||
-        this.scene.pendingMagick ||
-        this.scene.pendingItem ||
-        null;
-      return typeof definition?.description === "string"
-        ? definition.description.trim()
-        : "";
-    }
-
-    for (const window of this.selectionWindows()) {
-      if (window?.isOpen?.() !== true) {
-        continue;
-      }
-
-      if (typeof window.currentDescription === "function") {
-        return window.currentDescription();
-      }
-
-      const entry =
-        window.currentSkill?.() ||
-        window.currentMagick?.() ||
-        window.currentItem?.() ||
-        null;
-      return typeof entry?.description === "string"
-        ? entry.description.trim()
-        : "";
-    }
-
-    return "";
-  }
-
-  withBattleSelectionDescription(hint) {
-    const description = this.currentBattleSelectionDescription();
-    return description ? `${hint}   •   ${description}` : hint;
   }
 
   shouldDrawBattleHint() {
@@ -454,9 +526,7 @@ class BattleRenderer {
           ? `${left} / ${right}: Group`
           : `${up} ${down} ${left} ${right}: Target`;
 
-      return this.withBattleSelectionDescription(
-        `${scope}   ${moveHint}   ${confirm}: Confirm   ${cancel}: Back${scopeHint}   ${this.tacticalHelpControlHint()}`,
-      );
+      return `${scope}   ${moveHint}   ${confirm}: Confirm   ${cancel}: Back${scopeHint}`;
     }
 
     if (this.hasOpenSelectionWindow()) {
@@ -465,9 +535,7 @@ class BattleRenderer {
         skillsWindow?.isOpen?.() === true && skillsWindow?.mode === "surge"
           ? ""
           : `   ${left} / ${right}: Page`;
-      return this.withBattleSelectionDescription(
-        `${up} / ${down}: Choose${pageHint}   ${confirm}: Select   ${cancel}: Back   ${this.tacticalHelpControlHint()}`,
-      );
+      return `${up} / ${down}: Choose${pageHint}   ${confirm}: Select   ${cancel}: Back`;
     }
 
     const commandOwner = this.scene.partyController?.currentBattler?.() || null;

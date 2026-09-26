@@ -206,7 +206,10 @@ function testTacticalHelpRendersUnknownThenScannedDetails() {
     .map((call) => call[2]);
   assert.equal(texts.some((text) => String(text).includes("Test Slime")), true);
   assert.equal(texts.some((text) => String(text).includes("HP ??/??")), true);
-  assert.equal(texts.some((text) => String(text).includes("Weak ??")), true);
+  assert.equal(
+    texts.some((text) => String(text).includes("Tactical data unknown")),
+    true,
+  );
 
   manager.scan(target);
   context2d.calls.length = 0;
@@ -320,11 +323,13 @@ function testHelpGeometrySitsAboveHudAndHintsAdvertiseToggle() {
   const help = scene.hudLayout.tacticalHelpBounds();
 
   assert.equal(help.y + help.height < hud.y, true);
-  assert.match(renderer.battleHint(), /H: Help/);
+  assert.equal(renderer.shouldDrawContextPanel(), true);
+  assert.equal(scene.hudLayout.hintY() < help.y, true);
+  assert.doesNotMatch(renderer.battleHint(), /H: Help/);
 
   manager.setHelpVisible(true);
+  assert.equal(renderer.shouldDrawContextPanel(), true);
   assert.equal(scene.hudLayout.hintY() < help.y, true);
-  assert.match(renderer.battleHint(), /H: Hide Help/);
 }
 
 function testScanSchemaIsNarrowAndValidated() {
