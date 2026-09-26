@@ -32,6 +32,11 @@ class Game_System {
     // so frame cadence never loses time; presentation and save metadata use
     // whole elapsed seconds.
     this._playTimeSeconds = 0;
+
+    // Shared world-discovery state. Map data owns the canonical location
+    // definitions; Game_System owns only what the player has discovered so
+    // Area Map and future World Map presentation can consume one contract.
+    this._areaDiscoveries = {};
   }
 
   actor(actorId) {
@@ -99,6 +104,89 @@ class Game_System {
 
   isActorRecruited(actorId) {
     return this.party?.isActorRecruited?.(actorId) === true;
+  }
+
+  normalizeLocationId(locationId) {
+    return String(locationId ?? "").trim();
+  }
+
+  discoveredLocationIds(mapId) {
+    const id = Number(mapId);
+    if (!Number.isInteger(id) || id <= 0) {
+      return [];
+    }
+
+    const values = this._areaDiscoveries?.[id];
+    return Array.isArray(values) ? [...values] : [];
+  }
+
+  isLocationDiscovered(mapId, locationId) {
+    const id = this.normalizeLocationId(locationId);
+    return id !== "" && this.discoveredLocationIds(mapId).includes(id);
+  }
+
+  discoverLocation(mapId, locationId) {
+    const id = Number(mapId);
+    const key = this.normalizeLocationId(locationId);
+
+    if (!Number.isInteger(id) || id <= 0 || !key) {
+      return false;
+    }
+
+    const current = this.discoveredLocationIds(id);
+    if (current.includes(key)) {
+      return false;
+    }
+
+    current.push(key);
+    this._areaDiscoveries[id] = current;
+    return true;
+  }
+
+  areaDiscoveryState() {
+    const result = {};
+
+    for (const [rawMapId, rawLocations] of Object.entries(
+      this._areaDiscoveries || {},
+    )) {
+      const mapId = Number(rawMapId);
+      if (!Number.isInteger(mapId) || mapId <= 0 || !Array.isArray(rawLocations)) {
+        continue;
+      }
+
+      const locations = [...new Set(
+        rawLocations
+          .map((locationId) => this.normalizeLocationId(locationId))
+          .filter((locationId) => locationId !== ""),
+      )];
+
+      if (locations.length > 0) {
+        result[mapId] = locations;
+      }
+    }
+
+    return result;
+  }
+
+  restoreAreaDiscoveryState(state) {
+    this._areaDiscoveries = {};
+
+    if (!state || typeof state !== "object" || Array.isArray(state)) {
+      return false;
+    }
+
+    for (const [rawMapId, rawLocations] of Object.entries(state)) {
+      const mapId = Number(rawMapId);
+      if (!Number.isInteger(mapId) || mapId <= 0 || !Array.isArray(rawLocations)) {
+        continue;
+      }
+
+      for (const locationId of rawLocations) {
+        this.discoverLocation(mapId, locationId);
+      }
+    }
+
+    return true;
   }
 
   updatePlayTime(deltaTime) {

@@ -208,6 +208,18 @@ function testStartupDefersNamingUntilStoryEvent() {
     ),
     true,
   );
+  assert.deepEqual(namingEvent.pages[0].conditions.selfSwitches, [
+    { letter: "A", value: false },
+  ]);
+  assert.equal(
+    namingEvent.pages[0].commands.some(
+      (command) =>
+        command.code === "setSelfSwitch" &&
+        command.letter === "A" &&
+        command.value === true,
+    ),
+    true,
+  );
   assert.match(index, /js\/windows\/Window_NameEntry\.js/);
   assert.match(index, /js\/scenes\/Scene_NameEntry\.js/);
 }

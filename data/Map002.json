@@ -3,12 +3,36 @@
   "name": "Second Test Zone",
   "width": 1800,
   "height": 1200,
-
   "playerStart": {
     "x": 610,
     "y": 300
   },
-
+  "areaMap": {
+    "_comment": "Second-zone Area Map fixture using the shared discovery contract.",
+    "enabled": true,
+    "locations": [
+      {
+        "id": "second-zone-landing",
+        "name": "Second Zone Landing",
+        "type": "landmark",
+        "x": 626,
+        "y": 316,
+        "discoverRadius": 140,
+        "initiallyDiscovered": true,
+        "description": "The arrival point in the second test zone."
+      },
+      {
+        "id": "return-passage",
+        "name": "Return Passage",
+        "type": "exit",
+        "x": 630,
+        "y": 125,
+        "discoverRadius": 105,
+        "initiallyDiscovered": false,
+        "description": "The passage back to Sektor 1 Test Zone."
+      }
+    ]
+  },
   "obstacles": [
     {
       "x": 300,
@@ -59,14 +83,12 @@
       "height": 150
     }
   ],
-
   "transfers": [
     {
       "x": 555,
       "y": 50,
       "width": 150,
       "height": 150,
-
       "targetMapId": 1,
       "targetX": 610,
       "targetY": 300

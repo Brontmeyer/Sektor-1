@@ -3,11 +3,8 @@
 class Game_Map {
   constructor(mapData) {
     this.id = mapData.id;
-
     this.name = mapData.name;
-
     this.width = mapData.width;
-
     this.height = mapData.height;
 
     this.playerStart = {
@@ -16,14 +13,93 @@ class Game_Map {
     };
 
     this.obstacles = mapData.obstacles || [];
-
     this.transfers = mapData.transfers || [];
+    this.menuAccess = mapData.menuAccess || {};
+    this.areaMap = this.normalizeAreaMap(mapData.areaMap);
 
     this.events = (mapData.events || []).map(
       (eventData) => new Game_Event(eventData, this.id),
     );
 
     DebugManager.log(`Map loaded: ${this.name}`);
+  }
+
+  normalizeAreaMap(areaMap) {
+    const source = areaMap && typeof areaMap === "object" ? areaMap : {};
+    const locations = Array.isArray(source.locations)
+      ? source.locations.map((location) => ({ ...location }))
+      : [];
+
+    return {
+      enabled: source.enabled !== false && locations.length > 0,
+      locations,
+    };
+  }
+
+  areaMapEnabled() {
+    return this.areaMap?.enabled === true && this.areaMap.locations.length > 0;
+  }
+
+  areaMapLocations() {
+    return this.areaMapEnabled() ? this.areaMap.locations : [];
+  }
+
+  playerMapPoint(player) {
+    return {
+      x: Number(player?.x || 0) + Number(player?.width || 0) / 2,
+      y: Number(player?.y || 0) + Number(player?.height || 0) / 2,
+    };
+  }
+
+  updateAreaDiscovery(player) {
+    if (!this.areaMapEnabled() || !globalThis.$gameSystem) {
+      return [];
+    }
+
+    const point = this.playerMapPoint(player);
+    const discovered = [];
+
+    for (const location of this.areaMapLocations()) {
+      const radius = Math.max(0, Number(location.discoverRadius) || 0);
+      const dx = Number(location.x) - point.x;
+      const dy = Number(location.y) - point.y;
+      const withinRadius = Math.sqrt(dx * dx + dy * dy) <= radius;
+
+      if (location.initiallyDiscovered !== true && !withinRadius) {
+        continue;
+      }
+
+      if ($gameSystem.discoverLocation?.(this.id, location.id) === true) {
+        discovered.push(location.id);
+        DebugManager.log(`Discovered area-map location: ${location.name}`);
+      }
+    }
+
+    return discovered;
+  }
+
+  areaMapSnapshot(player) {
+    if (!this.areaMapEnabled()) {
+      return null;
+    }
+
+    this.updateAreaDiscovery(player);
+    const point = this.playerMapPoint(player);
+
+    return {
+      mapId: this.id,
+      name: this.name,
+      width: this.width,
+      height: this.height,
+      player: point,
+      obstacles: this.obstacles.map((obstacle) => ({ ...obstacle })),
+      transfers: this.transfers.map((transfer) => ({ ...transfer })),
+      locations: this.areaMapLocations().map((location) => ({
+        ...location,
+        discovered:
+          $gameSystem?.isLocationDiscovered?.(this.id, location.id) === true,
+      })),
+    };
   }
 
   getCollisionObstacles() {
@@ -37,9 +113,7 @@ class Game_Map {
     context.fillStyle = "#2f2f2f";
     context.fillRect(-cameraX, -cameraY, this.width, this.height);
 
-    // Temporary grid so we can see movement
-    // through the world.
-
+    // Temporary grid so we can see movement through the world.
     const gridSize = 64;
 
     context.strokeStyle = "#444444";
@@ -71,7 +145,6 @@ class Game_Map {
     }
 
     // Temporary transfer-zone visualization.
-
     context.fillStyle = "rgba(0, 150, 255, 0.5)";
 
     for (const transfer of this.transfers) {

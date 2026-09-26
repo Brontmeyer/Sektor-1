@@ -259,7 +259,7 @@ Completed systems and design rules should be documented rather than duplicated h
 
 # 🌎 World
 
-- [ ] Area Map foundation for current-zone landmarks, exits, and discovered locations
+- [x] Area Map foundation for current-zone landmarks, exits, and discovered locations
 - [ ] World Map built on the shared location/discovery contract once multiple regions exist
 - [ ] Towns
 - [ ] Dungeons
@@ -277,7 +277,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v11 with persistent learned Skills/Valor/equipment/Essence/party-row/visual-formation state, v10 formation-order migration, v9 row-default migration, and preserved v1-v8 starter-Art migrations
+- [x] Save Runtime v12 with persistent area-location discovery plus learned Skills/Valor/equipment/Essence/party-row/visual-formation state, v11 discovery migration, v10 formation-order migration, v9 row-default migration, and preserved v1-v8 starter-Art migrations
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies
@@ -322,3 +322,5 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Pass 98: Add ATB Active/Wait configuration, serialize queued enemy actions, simplify TIME HUD text, and reorder battle commands
 - [x] Pass 99: Decouple ATB input/execution, preserve player command control during enemy actions, refine Wait semantics, and randomize standard starting TIME
 - [x] Pass 100: Harden ATB Confirm ownership and enforce the global 99-copy inventory ceiling across shops, treasure, rewards, and save restoration
+
+- [x] Pass 102: Add Area Map Foundation v1, persistent location discovery, one-shot protagonist naming, and unidentified companion-introduction fixtures

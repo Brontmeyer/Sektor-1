@@ -96,6 +96,7 @@ function testCommandNamingContractAndNoCommandHeading() {
     "Equip",
     "Status",
     "Order",
+    "Map",
     "Valor",
     "Config",
     "ROSTER",
@@ -215,6 +216,7 @@ function testSceneUsesMainMenuHeadingAndHonestPlaceholderDestinations() {
   assert.match(scene, /case "Skill":/);
   assert.match(scene, /case "Config":/);
   assert.match(scene, /case "Order":/);
+  assert.match(scene, /case "Map":/);
   assert.match(scene, /case "Valor":/);
   assert.match(scene, /case "ROSTER":/);
   assert.match(scene, /case "Load":/);
@@ -223,6 +225,7 @@ function testSceneUsesMainMenuHeadingAndHonestPlaceholderDestinations() {
   assert.equal(scene.includes('fillText("GIL"'), false);
   assert.match(map, /SceneManager\.push\([\s\S]*Scene_Menu/);
   assert.match(map, /mapAccess: this\.map\?\.menuAccess \|\| \{\}/);
+  assert.match(map, /areaMap: this\.map\?\.areaMapSnapshot/);
 }
 
 function testPlayerFacingCurrencyUsesRunesAcrossCurrentUi() {

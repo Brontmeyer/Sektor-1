@@ -6,6 +6,7 @@ class Scene_Menu extends Scene_Base {
 
     this.layout = MainMenuLayout.calculate(Graphics.width, Graphics.height);
     this.locationName = locationName || "Unknown Location";
+    this.areaMapContext = menuContext?.areaMap || null;
     this.menuAccess = new MenuAccessPolicy(menuContext);
 
     this.commandWindow = new Window_MenuCommand(
@@ -265,6 +266,10 @@ class Scene_Menu extends Scene_Base {
 
       case "Order":
         this.beginOrderSelection();
+        break;
+
+      case "Map":
+        SceneManager.push(Scene_AreaMap, this.areaMapContext);
         break;
 
       case "Config":

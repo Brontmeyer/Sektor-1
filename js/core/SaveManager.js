@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 11;
+    return 12;
   }
 
   static clearError() {
@@ -152,15 +152,22 @@ class SaveManager {
             ? data.party.battleActorIds
             : [],
       },
+      world: {
+        ...(this.isPlainObject(data.world) ? data.world : {}),
+        areaDiscoveries: this.isPlainObject(data.world?.areaDiscoveries)
+          ? data.world.areaDiscoveries
+          : {},
+      },
     });
 
     if (inferredVersion === this.currentVersion()) {
       return upgradeToCurrent(saveData);
     }
 
-    if ([10, 9].includes(inferredVersion)) {
+    if ([11, 10, 9].includes(inferredVersion)) {
       // v9+ already owns explicit Skill state, including deliberately forgotten
       // starter Arts. v10 adds row state; v11 adds visual formation ordering.
+      // v12 adds persistent area-location discovery state.
       // Preserve existing state exactly and default a missing formation order to
       // the saved active-party order.
       return upgradeToCurrent(saveData);
@@ -513,6 +520,46 @@ class SaveManager {
       const gil = Number(saveData.party.gil);
       if (!Number.isInteger(gil) || gil < 0) {
         errors.push("Party gil must be a non-negative integer.");
+      }
+    }
+
+    if (!this.isPlainObject(saveData.world)) {
+      errors.push("Save data must contain a world object.");
+    } else if (!this.isPlainObject(saveData.world.areaDiscoveries)) {
+      errors.push("Save world.areaDiscoveries must be an object.");
+    } else {
+      for (const [rawMapId, locationIds] of Object.entries(
+        saveData.world.areaDiscoveries,
+      )) {
+        const mapId = Number(rawMapId);
+
+        if (
+          !Number.isInteger(mapId) ||
+          mapId <= 0 ||
+          (Array.isArray(DatabaseManager.mapInfos) &&
+            !DatabaseManager.mapInfos.some((mapInfo) => mapInfo?.id === mapId))
+        ) {
+          errors.push(`Save world.areaDiscoveries references unknown map ${rawMapId}.`);
+          continue;
+        }
+
+        if (!Array.isArray(locationIds)) {
+          errors.push(`Save world.areaDiscoveries[${rawMapId}] must be an array.`);
+          continue;
+        }
+
+        const seen = new Set();
+        for (const rawLocationId of locationIds) {
+          const locationId = String(rawLocationId ?? "").trim();
+          if (!locationId) {
+            errors.push(`Save world.areaDiscoveries[${rawMapId}] contains an empty location ID.`);
+          } else if (seen.has(locationId)) {
+            errors.push(
+              `Save world.areaDiscoveries[${rawMapId}] contains duplicate location ID "${locationId}".`,
+            );
+          }
+          seen.add(locationId);
+        }
       }
     }
 
@@ -890,6 +937,9 @@ class SaveManager {
       this.restoreParty(saveData.party);
       $gameParty?.reconcileEquipmentOwnership?.();
       globalThis.$gameSystem?.setPlayTimeSeconds?.(saveData.metadata?.playTimeSeconds ?? 0);
+      globalThis.$gameSystem?.restoreAreaDiscoveryState?.(
+        saveData.world?.areaDiscoveries || {},
+      );
 
       if (saveData.switches) {
         this.restoreObjectData($gameSwitches, saveData.switches.data || {});
@@ -988,6 +1038,11 @@ class SaveManager {
             typeof $gameParty.battleRows === "function"
               ? $gameParty.battleRows()
               : {},
+        },
+
+        world: {
+          areaDiscoveries:
+            globalThis.$gameSystem?.areaDiscoveryState?.() || {},
         },
 
         switches: {

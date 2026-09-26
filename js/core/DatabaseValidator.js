@@ -289,6 +289,7 @@ class DatabaseValidator {
         "transfers",
         "events",
         "menuAccess",
+        "areaMap",
         "_comment",
       ],
       errors,
@@ -369,6 +370,14 @@ class DatabaseValidator {
       }
     }
 
+    this.validateAreaMap(
+      mapData.areaMap,
+      mapData.width,
+      mapData.height,
+      widthValid && heightValid,
+      errors,
+    );
+
     if (mapData.transfers !== undefined && !Array.isArray(mapData.transfers)) {
       errors.push("Map transfers must be an array when provided.");
     } else if (Array.isArray(mapData.transfers)) {
@@ -440,6 +449,111 @@ class DatabaseValidator {
           }
           eventIds.add(event.id);
         }
+      }
+    }
+  }
+
+  static validateAreaMap(areaMap, mapWidth, mapHeight, boundsValid, errors) {
+    if (areaMap === undefined) {
+      return;
+    }
+
+    if (!this.isPlainObject(areaMap)) {
+      errors.push("Map areaMap must be an object when provided.");
+      return;
+    }
+
+    this.validateKnownKeys(
+      "Map areaMap",
+      areaMap,
+      ["enabled", "locations", "_comment"],
+      errors,
+    );
+
+    if (areaMap.enabled !== undefined && typeof areaMap.enabled !== "boolean") {
+      errors.push("Map areaMap.enabled must be true or false when provided.");
+    }
+
+    if (areaMap.locations !== undefined && !Array.isArray(areaMap.locations)) {
+      errors.push("Map areaMap.locations must be an array when provided.");
+      return;
+    }
+
+    const locations = Array.isArray(areaMap.locations) ? areaMap.locations : [];
+    const ids = new Set();
+    const validTypes = new Set(["landmark", "exit"]);
+
+    for (let index = 0; index < locations.length; index++) {
+      const location = locations[index];
+      const label = `Map areaMap location ${index + 1}`;
+
+      if (!this.isPlainObject(location)) {
+        errors.push(`${label} must be an object.`);
+        continue;
+      }
+
+      this.validateKnownKeys(
+        label,
+        location,
+        [
+          "id",
+          "name",
+          "type",
+          "x",
+          "y",
+          "discoverRadius",
+          "initiallyDiscovered",
+          "description",
+          "_comment",
+        ],
+        errors,
+      );
+
+      const id = typeof location.id === "string" ? location.id.trim() : "";
+      if (!id) {
+        errors.push(`${label}.id must be a non-empty string.`);
+      } else if (ids.has(id)) {
+        errors.push(`Map areaMap contains duplicate location id "${id}".`);
+      } else {
+        ids.add(id);
+      }
+
+      if (typeof location.name !== "string" || location.name.trim() === "") {
+        errors.push(`${label}.name must be a non-empty string.`);
+      }
+
+      if (!validTypes.has(location.type)) {
+        errors.push(`${label}.type must be landmark or exit.`);
+      }
+
+      this.validateMapPoint(
+        label,
+        location,
+        mapWidth,
+        mapHeight,
+        boundsValid,
+        errors,
+      );
+
+      this.validateFiniteNumber(
+        `${label}.discoverRadius`,
+        location.discoverRadius ?? 0,
+        errors,
+        { min: 0 },
+      );
+
+      if (
+        location.initiallyDiscovered !== undefined &&
+        typeof location.initiallyDiscovered !== "boolean"
+      ) {
+        errors.push(`${label}.initiallyDiscovered must be true or false.`);
+      }
+
+      if (
+        location.description !== undefined &&
+        typeof location.description !== "string"
+      ) {
+        errors.push(`${label}.description must be a string when provided.`);
       }
     }
   }

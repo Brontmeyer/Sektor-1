@@ -7,6 +7,42 @@
     "x": 610,
     "y": 300
   },
+  "areaMap": {
+    "_comment": "Area Map foundation fixture. Locations are revealed by proximity or initiallyDiscovered.",
+    "enabled": true,
+    "locations": [
+      {
+        "id": "test-plaza",
+        "name": "Test Plaza",
+        "type": "landmark",
+        "x": 626,
+        "y": 316,
+        "discoverRadius": 140,
+        "initiallyDiscovered": true,
+        "description": "The central testing grounds."
+      },
+      {
+        "id": "merchant-row",
+        "name": "Merchant Row",
+        "type": "landmark",
+        "x": 386,
+        "y": 366,
+        "discoverRadius": 150,
+        "initiallyDiscovered": false,
+        "description": "A cluster of development merchants."
+      },
+      {
+        "id": "north-passage",
+        "name": "North Passage",
+        "type": "exit",
+        "x": 630,
+        "y": 125,
+        "discoverRadius": 105,
+        "initiallyDiscovered": false,
+        "description": "A passage leading to another area."
+      }
+    ]
+  },
   "obstacles": [
     {
       "x": 300,
@@ -630,19 +666,19 @@
           "commands": [
             {
               "code": "text",
-              "speaker": "Sarah",
-              "text": "I am coming with you, {actor:1}."
+              "speaker": "Girl",
+              "text": "My name is..."
+            },
+            {
+              "code": "nameActor",
+              "actorId": 2,
+              "prompt": "What is this companion's name?"
             },
             {
               "code": "recruitActor",
               "actorId": 2,
               "speaker": "System",
               "message": "{actor:2} joined the party."
-            },
-            {
-              "code": "nameActor",
-              "actorId": 2,
-              "prompt": "Choose this companion's name, or keep the default."
             },
             {
               "code": "setSelfSwitch",
@@ -652,7 +688,7 @@
           ]
         },
         {
-          "_comment": "After Sarah has joined.",
+          "_comment": "After this companion has joined.",
           "conditions": {
             "selfSwitches": [
               {
@@ -664,7 +700,7 @@
           "commands": [
             {
               "code": "text",
-              "speaker": "Sarah",
+              "speaker": "{actor:2}",
               "text": "I am with you."
             }
           ]
@@ -687,19 +723,19 @@
           "commands": [
             {
               "code": "text",
-              "speaker": "Aboo",
-              "text": "I am coming with you, {actor:1}."
+              "speaker": "Traveler",
+              "text": "My name is..."
+            },
+            {
+              "code": "nameActor",
+              "actorId": 3,
+              "prompt": "What is this companion's name?"
             },
             {
               "code": "recruitActor",
               "actorId": 3,
               "speaker": "System",
               "message": "{actor:3} joined the party."
-            },
-            {
-              "code": "nameActor",
-              "actorId": 3,
-              "prompt": "Choose this companion’s name, or keep the default."
             },
             {
               "code": "setSelfSwitch",
@@ -709,7 +745,7 @@
           ]
         },
         {
-          "_comment": "After Aboo has joined.",
+          "_comment": "After this companion has joined.",
           "conditions": {
             "selfSwitches": [
               {
@@ -721,7 +757,7 @@
           "commands": [
             {
               "code": "text",
-              "speaker": "Aboo",
+              "speaker": "{actor:3}",
               "text": "I am with you."
             }
           ]
@@ -744,19 +780,19 @@
           "commands": [
             {
               "code": "text",
-              "speaker": "G Prime",
-              "text": "I am coming with you, {actor:1}."
+              "speaker": "Figure",
+              "text": "My name is..."
+            },
+            {
+              "code": "nameActor",
+              "actorId": 4,
+              "prompt": "What is this companion's name?"
             },
             {
               "code": "recruitActor",
               "actorId": 4,
               "speaker": "System",
               "message": "{actor:4} joined the party."
-            },
-            {
-              "code": "nameActor",
-              "actorId": 4,
-              "prompt": "Choose this companion’s name, or keep the default."
             },
             {
               "code": "setSelfSwitch",
@@ -766,7 +802,7 @@
           ]
         },
         {
-          "_comment": "After G Prime has joined.",
+          "_comment": "After this companion has joined.",
           "conditions": {
             "selfSwitches": [
               {
@@ -778,7 +814,7 @@
           "commands": [
             {
               "code": "text",
-              "speaker": "G Prime",
+              "speaker": "{actor:4}",
               "text": "I am with you."
             }
           ]
@@ -822,8 +858,15 @@
       "solid": true,
       "pages": [
         {
-          "_comment": "Repeatable developer fixture for the event-driven protagonist naming scene.",
-          "conditions": {},
+          "_comment": "One-shot developer fixture matching story-driven protagonist naming.",
+          "conditions": {
+            "selfSwitches": [
+              {
+                "letter": "A",
+                "value": false
+              }
+            ]
+          },
           "commands": [
             {
               "code": "text",
@@ -839,6 +882,11 @@
               "code": "text",
               "speaker": "System",
               "text": "Your name is {actor:1}."
+            },
+            {
+              "code": "setSelfSwitch",
+              "letter": "A",
+              "value": true
             }
           ]
         }

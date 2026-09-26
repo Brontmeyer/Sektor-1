@@ -14,6 +14,7 @@ class Window_MenuCommand {
       "Equip",
       "Status",
       "Order",
+      "Map",
       "Valor",
       "Config",
       "ROSTER",

@@ -35,6 +35,7 @@ class Scene_Map extends Scene_Base {
 
     this.camera = new Camera(this.map);
     this.camera.follow(this.player);
+    this.map.updateAreaDiscovery?.(this.player);
 
     this.loading = false;
 
@@ -62,6 +63,14 @@ class Scene_Map extends Scene_Base {
         {
           debugMode: DatabaseManager.system?.debugMode === true,
           mapAccess: this.map?.menuAccess || {},
+          areaMap: this.map?.areaMapSnapshot?.(this.player) || null,
+          commandStates: {
+            Map: {
+              visible: true,
+              enabled: this.map?.areaMapEnabled?.() === true,
+              reason: "An area map is not available here.",
+            },
+          },
         },
       );
 
@@ -95,6 +104,7 @@ class Scene_Map extends Scene_Base {
 
       this.checkEventInteraction();
 
+      this.map.updateAreaDiscovery?.(this.player);
       this.checkTransfers();
     } else if (!isBusy) {
       // Dialogue/event just finished this frame.
@@ -102,6 +112,7 @@ class Scene_Map extends Scene_Base {
       // but don't reuse the same confirm/interact press.
 
       this.player.update(deltaTime);
+      this.map.updateAreaDiscovery?.(this.player);
     }
     this.camera.follow(this.player);
   }
@@ -183,6 +194,7 @@ class Scene_Map extends Scene_Base {
       this.camera = new Camera(this.map);
 
       this.camera.follow(this.player);
+      this.map.updateAreaDiscovery?.(this.player);
 
       DebugManager.log(`Transfer complete: ${this.map.name}`);
     } catch (error) {

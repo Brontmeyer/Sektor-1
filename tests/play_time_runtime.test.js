@@ -63,7 +63,7 @@ function testSaveManagerStoresAndRestoresPlayTimeWithoutVersionBump() {
   const source = read("js/core/SaveManager.js");
   assert.match(source, /playTimeSeconds: globalThis\.\$gameSystem\?\.playTimeSeconds\?\.\(\) \?\? 0/);
   assert.match(source, /setPlayTimeSeconds\?\.\(saveData\.metadata\?\.playTimeSeconds \?\? 0\)/);
-  assert.match(source, /currentVersion\(\) \{\s*return 11;/);
+  assert.match(source, /currentVersion\(\) \{\s*return 12;/);
 }
 
 function run() {

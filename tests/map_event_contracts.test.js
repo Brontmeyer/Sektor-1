@@ -121,6 +121,31 @@ function testOptionalMenuAccessContractIsValidated() {
   );
 }
 
+function testAreaMapContractIsValidated() {
+  const DatabaseValidator = loadValidator();
+  const database = databaseContext();
+  const valid = clone(readData("Map001.json"));
+
+  assert.equal(DatabaseValidator.validateMapData(valid, database, 1), true);
+
+  const malformed = clone(valid);
+  malformed.areaMap.locations[0].type = "secret";
+  malformed.areaMap.locations[1].id = malformed.areaMap.locations[0].id;
+  malformed.areaMap.locations[2].x = malformed.width;
+  malformed.areaMap.locations[2].discoverRadius = -1;
+
+  assert.throws(
+    () => DatabaseValidator.validateMapData(malformed, database, 1),
+    (error) => {
+      assert.match(error.message, /type must be landmark or exit/);
+      assert.match(error.message, /duplicate location id/);
+      assert.match(error.message, /\.x must be inside the map width/);
+      assert.match(error.message, /discoverRadius must be a finite number \(>= 0\)/);
+      return true;
+    },
+  );
+}
+
 function testNestedEventContractsRejectMalformedCommands() {
   const DatabaseValidator = loadValidator();
   const database = databaseContext();
@@ -447,9 +472,22 @@ function testMap001ContainsStoryDrivenNamingFixtures() {
   const protagonistEvent = map.events.find((event) => event?.id === 19);
 
   assert.ok(protagonistEvent, "Map001 should contain the protagonist naming fixture.");
+  const protagonistPage = protagonistEvent.pages[0];
   assert.equal(
-    protagonistEvent.pages[0].commands.some(
+    protagonistPage.commands.some(
       (command) => command.code === "nameActor" && command.actorId === 1,
+    ),
+    true,
+  );
+  assert.deepEqual(protagonistPage.conditions.selfSwitches, [
+    { letter: "A", value: false },
+  ]);
+  assert.equal(
+    protagonistPage.commands.some(
+      (command) =>
+        command.code === "setSelfSwitch" &&
+        command.letter === "A" &&
+        command.value === true,
     ),
     true,
   );
@@ -463,11 +501,22 @@ function testMap001ContainsStoryDrivenNamingFixtures() {
     const nameIndex = commands.findIndex(
       (command) => command.code === "nameActor" && command.actorId === actorId,
     );
+    const introduction = commands.find((command) => command.code === "text");
 
     assert.ok(recruitIndex >= 0, `Event ${eventId} should recruit actor ${actorId}.`);
     assert.ok(
-      nameIndex > recruitIndex,
-      `Event ${eventId} should offer actor ${actorId} naming after recruitment.`,
+      nameIndex >= 0 && nameIndex < recruitIndex,
+      `Event ${eventId} should name actor ${actorId} before the join message.`,
+    );
+    assert.equal(
+      introduction?.speaker === readData("Actors.json")[actorId]?.name,
+      false,
+      `Event ${eventId} should not reveal the canonical actor name before naming.`,
+    );
+    assert.equal(
+      event?.pages?.[1]?.commands?.[0]?.speaker,
+      `{actor:${actorId}}`,
+      `Event ${eventId} should use the runtime actor name after naming.`,
     );
   }
 }
@@ -478,6 +527,7 @@ async function run() {
   testMap001ContainsStoryDrivenNamingFixtures();
   testMapIdentityGeometryAndTransferContracts();
   testOptionalMenuAccessContractIsValidated();
+  testAreaMapContractIsValidated();
   testNestedEventContractsRejectMalformedCommands();
   testEventConditionsAndDuplicateIdsAreValidated();
   testMap001ContainsDedicatedShopkeeperFixtures();
