@@ -247,7 +247,7 @@ function testAreaMapIsAFirstClassMainMenuDestination() {
   const sceneMap = read("js/scenes/Scene_Map.js");
   const html = read("index.html");
 
-  assert.match(command, /"Order",\s*"ROSTER",\s*"Map",\s*"Valor"/);
+  assert.match(command, /"ROSTER",\s*"Valor",\s*"Config",\s*"Save",\s*"Load",\s*"Map"/);
   assert.match(sceneMenu, /case "Map":\s*SceneManager\.push\(Scene_AreaMap/);
   assert.match(
     sceneMap,

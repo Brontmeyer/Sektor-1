@@ -130,26 +130,35 @@ function createResultsWindow() {
   };
 }
 
-function testVictoryResultLinesExposeRewardProgression() {
+function testVictoryResultsSplitProgressionFromRunesAndDrops() {
   const { window } = createResultsWindow();
   const result = sampleResult();
 
   assert.equal(window.show(result), true);
   assert.equal(window.isOpen(), true);
+  assert.equal(window.pageIndex, 0);
+  assert.equal(window.pageTitle(), "EXP & RESONANCE");
 
-  const text = window.lines.map((line) => line.text).join("\n");
+  const progression = window.lines.map((line) => line.text).join("\n");
 
-  assert.equal(text.includes("Potion ×2"), true);
-  assert.equal(text.includes("Tyler   +100 EXP"), true);
-  assert.equal(text.includes("Level 2 → 3!"), true);
-  assert.equal(text.includes("Ember Essence +5 Resonance (1500/1500)"), true);
-  assert.equal(text.includes("Essence Level 3 → 4!"), true);
-  assert.equal(text.includes("Awakened: Meteor Barrage"), true);
-  assert.equal(text.includes("Ember Essence is MASTERY READY!"), true);
+  assert.equal(progression.includes("Potion ×2"), false);
+  assert.equal(progression.includes("Tyler   +100 EXP"), true);
+  assert.equal(progression.includes("Level 2 → 3!"), true);
+  assert.equal(progression.includes("Ember Essence +5 Resonance (1500/1500)"), true);
+  assert.equal(progression.includes("Essence Level 3 → 4!"), true);
+  assert.equal(progression.includes("Awakened: Meteor Barrage"), true);
+  assert.equal(progression.includes("Ember Essence is MASTERY READY!"), true);
   assert.equal(
-    text.includes("Defeated in battle — EXP awarded, no Essence Resonance"),
+    progression.includes("Defeated in battle — EXP awarded, no Essence Resonance"),
     true,
   );
+
+  assert.equal(window.advancePage(), true);
+  assert.equal(window.pageIndex, 1);
+  assert.equal(window.pageTitle(), "RUNES & ITEMS");
+  assert.equal(window.isFinalPage(), true);
+  assert.equal(window.lines.map((line) => line.text).join("\n").includes("Potion ×2"), true);
+  assert.equal(window.advancePage(), false);
 }
 
 function testResultsWindowRejectsNonVictoryAndScrollsOverflow() {
@@ -229,6 +238,7 @@ function testVictoryUpdatePresentsResultsBeforeContinue() {
   let resultUpdateCount = 0;
   let finishCount = 0;
   let confirm = false;
+  let pageAdvanceCount = 0;
 
   class Scene_Base {}
   class BattleManager {
@@ -270,6 +280,10 @@ function testVictoryUpdatePresentsResultsBeforeContinue() {
       update() {
         resultUpdateCount++;
       },
+      advancePage() {
+        pageAdvanceCount++;
+        return pageAdvanceCount === 1;
+      },
     },
     finishBattle() {
       finishCount++;
@@ -285,7 +299,14 @@ function testVictoryUpdatePresentsResultsBeforeContinue() {
   Scene_Battle.prototype.update.call(scene, 1 / 60);
   assert.equal(prepareCount, 2);
   assert.equal(resultUpdateCount, 2);
-  assert.equal(finishCount, 1);
+  assert.equal(pageAdvanceCount, 1);
+  assert.equal(finishCount, 0, "first confirmation advances to the Runes / Items page");
+
+  Scene_Battle.prototype.update.call(scene, 1 / 60);
+  assert.equal(prepareCount, 3);
+  assert.equal(resultUpdateCount, 3);
+  assert.equal(pageAdvanceCount, 2);
+  assert.equal(finishCount, 1, "second confirmation exits the victory results");
 }
 
 function testSceneDrawsResultsAfterBattleRenderer() {
@@ -320,7 +341,7 @@ function testResultsWindowLoadsBeforeBattleScene() {
 }
 
 function run() {
-  testVictoryResultLinesExposeRewardProgression();
+  testVictoryResultsSplitProgressionFromRunesAndDrops();
   testResultsWindowRejectsNonVictoryAndScrollsOverflow();
   testVictorySceneFinalizesOnceBeforeExit();
   testVictoryUpdatePresentsResultsBeforeContinue();

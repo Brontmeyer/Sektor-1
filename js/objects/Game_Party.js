@@ -974,6 +974,17 @@ class Game_Party {
     }, 0);
   }
 
+  unequippedMerchandiseCount(type, id) {
+    const owned = Math.max(0, Number(this.merchandiseCount(type, id)) || 0);
+
+    if (type === "item") {
+      return owned;
+    }
+
+    const equipped = Math.max(0, this.equippedMerchandiseCount(type, id));
+    return Math.max(0, owned - equipped);
+  }
+
   sellableMerchandiseCount(type, id) {
     const record = this.merchandiseRecord(type, id);
 
@@ -981,9 +992,7 @@ class Game_Party {
       return 0;
     }
 
-    const owned = Math.max(0, Number(this.merchandiseCount(type, id)) || 0);
-    const equipped = Math.max(0, this.equippedMerchandiseCount(type, id));
-    return Math.max(0, owned - equipped);
+    return this.unequippedMerchandiseCount(type, id);
   }
 
   actorEquipmentId(actor, type) {

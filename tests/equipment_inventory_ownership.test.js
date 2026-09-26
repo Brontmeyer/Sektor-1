@@ -88,6 +88,19 @@ function testCurrentActorKeepsAccessToItsOwnEquippedCopy() {
   assert.equal(party.canActorEquipMerchandise(actor, "armor", 1), true);
 }
 
+function testUnequippedInventoryCountExcludesCopiesWornByAnyActor() {
+  const { party } = createHarness();
+  const [first, second] = party.members();
+
+  party.gainWeapon(2, 3);
+  assert.equal(party.equipActorMerchandise(first, "weapon", 2), true);
+  assert.equal(party.equipActorMerchandise(second, "weapon", 2), true);
+  assert.equal(party.merchandiseCount("weapon", 2), 3);
+  assert.equal(party.equippedMerchandiseCount("weapon", 2), 2);
+  assert.equal(party.unequippedMerchandiseCount("weapon", 2), 1);
+  assert.equal(party.sellableMerchandiseCount("weapon", 2), 1);
+}
+
 function testLegacyOverEquippedStateIsReconciledToOwnedQuantity() {
   const { party } = createHarness();
   const members = party.members();
@@ -118,6 +131,7 @@ function testEquipMenuUsesPartyOwnershipAuthority() {
 function run() {
   testOnePhysicalCopyCannotBeSharedAcrossActors();
   testCurrentActorKeepsAccessToItsOwnEquippedCopy();
+  testUnequippedInventoryCountExcludesCopiesWornByAnyActor();
   testLegacyOverEquippedStateIsReconciledToOwnedQuantity();
   testEquipMenuUsesPartyOwnershipAuthority();
   console.log("Equipment inventory ownership regression tests passed.");

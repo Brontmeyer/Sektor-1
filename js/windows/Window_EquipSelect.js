@@ -326,25 +326,21 @@ class Window_EquipSelect {
         }
       }
 
-      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
       context.textAlign = "left";
-      context.fillText(`${selected ? "▶ " : "  "}${entry.name}`, this.x + 20, drawY);
 
-      let suffix = "";
+      if (selected) {
+        context.fillStyle = "#ffd75a";
+        context.fillText("▶", this.x + 20, drawY);
+      }
+
+      context.fillStyle = entry.id === equippedId ? "#ffd75a" : "#ffffff";
+      context.fillText(entry.name, this.x + 44, drawY);
 
       if (entry.id !== 0 && entry.count > 1) {
-        suffix += `x${entry.count}`;
-      }
-
-      if (entry.id === equippedId) {
-        suffix += `${suffix ? "  " : ""}Equipped`;
-      }
-
-      if (suffix) {
         context.fillStyle = "#aebbd0";
         context.font = "13px sans-serif";
         context.textAlign = "right";
-        context.fillText(suffix, this.x + this.width - 28, drawY);
+        context.fillText(`x${entry.count}`, this.x + this.width - 28, drawY);
         context.font = "18px sans-serif";
       }
 

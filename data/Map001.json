@@ -5,7 +5,7 @@
   "height": 1600,
   "playerStart": {
     "x": 610,
-    "y": 300
+    "y": 350
   },
   "areaMap": {
     "_comment": "Area Map foundation fixture. Locations are revealed by proximity or initiallyDiscovered.",
@@ -15,8 +15,8 @@
         "id": "test-plaza",
         "name": "Test Plaza",
         "type": "landmark",
-        "x": 626,
-        "y": 316,
+        "x": 630,
+        "y": 325,
         "discoverRadius": 140,
         "initiallyDiscovered": true,
         "description": "The central testing grounds."
@@ -25,9 +25,9 @@
         "id": "merchant-row",
         "name": "Merchant Row",
         "type": "landmark",
-        "x": 386,
-        "y": 366,
-        "discoverRadius": 150,
+        "x": 385,
+        "y": 325,
+        "discoverRadius": 105,
         "initiallyDiscovered": false,
         "description": "A cluster of development merchants."
       },
@@ -37,9 +37,29 @@
         "type": "exit",
         "x": 630,
         "y": 125,
-        "discoverRadius": 105,
+        "discoverRadius": 135,
         "initiallyDiscovered": false,
         "description": "A passage leading to another area."
+      },
+      {
+        "id": "party-recruitment",
+        "name": "Party Recruitment",
+        "type": "landmark",
+        "x": 630,
+        "y": 555,
+        "discoverRadius": 105,
+        "initiallyDiscovered": false,
+        "description": "Where you can recruit companions to your party."
+      },
+      {
+        "id": "battle-row",
+        "name": "Battle Row",
+        "type": "landmark",
+        "x": 850,
+        "y": 325,
+        "discoverRadius": 105,
+        "initiallyDiscovered": false,
+        "description": "Where you can engage in combat with test subjects."
       }
     ]
   },

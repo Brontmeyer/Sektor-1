@@ -66,6 +66,14 @@ class Window_BattleItem {
       }
     }
 
+    if (Input.isActionTriggered("left")) {
+      this.index = this.listViewport.pageSelection(this.index, -1, items.length);
+    }
+
+    if (Input.isActionTriggered("right")) {
+      this.index = this.listViewport.pageSelection(this.index, 1, items.length);
+    }
+
     this.listViewport.ensureVisible(this.index, items.length);
   }
 

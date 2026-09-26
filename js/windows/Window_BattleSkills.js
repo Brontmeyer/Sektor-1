@@ -95,6 +95,14 @@ class Window_BattleSkills {
       this.index = (this.index + 1) % skills.length;
     }
 
+    if (this.mode !== "surge" && Input.isActionTriggered("left")) {
+      this.index = this.listViewport.pageSelection(this.index, -1, skills.length);
+    }
+
+    if (this.mode !== "surge" && Input.isActionTriggered("right")) {
+      this.index = this.listViewport.pageSelection(this.index, 1, skills.length);
+    }
+
     this.listViewport.ensureVisible(this.index, skills.length);
   }
 

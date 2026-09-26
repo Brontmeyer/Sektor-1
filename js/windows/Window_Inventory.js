@@ -141,7 +141,23 @@ class Window_Inventory {
         .filter((id) => Number.isInteger(id) && id > 0)
         .sort((a, b) => a - b)
         .forEach((id) => {
-          const quantity = Math.max(0, Number(inventory[id]) || 0);
+          const owned = Math.max(0, Number(inventory[id]) || 0);
+          const quantity =
+            typeof $gameParty?.unequippedMerchandiseCount === "function"
+              ? Math.max(
+                  0,
+                  Number($gameParty.unequippedMerchandiseCount(definition.type, id)) || 0,
+                )
+              : Math.max(
+                  0,
+                  owned -
+                    (typeof $gameParty?.equippedMerchandiseCount === "function"
+                      ? Math.max(
+                          0,
+                          Number($gameParty.equippedMerchandiseCount(definition.type, id)) || 0,
+                        )
+                      : 0),
+                );
           const record = getter.call(DatabaseManager, id);
 
           if (quantity <= 0 || !record) {
@@ -345,6 +361,14 @@ class Window_Inventory {
     return this.visible;
   }
 
+  pageEnabled(index) {
+    if (index === 2) {
+      return this.keyItemIds().length > 0;
+    }
+
+    return index >= 0 && index < Window_Inventory.PAGE_COUNT;
+  }
+
   changePage(offset) {
     const amount = Number(offset);
 
@@ -352,10 +376,24 @@ class Window_Inventory {
       return false;
     }
 
-    this.pageIndex =
-      ((this.pageIndex + amount) % Window_Inventory.PAGE_COUNT +
-        Window_Inventory.PAGE_COUNT) %
-      Window_Inventory.PAGE_COUNT;
+    const direction = amount < 0 ? -1 : 1;
+    const moves = Math.abs(amount);
+    let nextPage = this.pageIndex;
+
+    for (let move = 0; move < moves; move++) {
+      for (let attempts = 0; attempts < Window_Inventory.PAGE_COUNT; attempts++) {
+        nextPage =
+          ((nextPage + direction) % Window_Inventory.PAGE_COUNT +
+            Window_Inventory.PAGE_COUNT) %
+          Window_Inventory.PAGE_COUNT;
+
+        if (this.pageEnabled(nextPage)) {
+          break;
+        }
+      }
+    }
+
+    this.pageIndex = nextPage;
     this.focusArea = Window_Inventory.FOCUS.TABS;
     this.pendingItemId = null;
     this.syncSelectionState();
@@ -407,6 +445,11 @@ class Window_Inventory {
     const inventoryEntries = this.inventoryDisplayEntries();
     const keyItems = this.keyItemIds();
     const options = this.arrangeOptions();
+
+    if (this.pageIndex === 2 && keyItems.length === 0) {
+      this.pageIndex = 1;
+      this.focusArea = Window_Inventory.FOCUS.TABS;
+    }
 
     this.targetIndex = Math.max(
       0,
@@ -951,8 +994,9 @@ class Window_Inventory {
       const x = Math.round(cellX);
       const width = Math.round(columns.rightX + (index + 1) * tabWidth) - x;
       const activePage = this.pageIndex === index;
+      const enabled = this.pageEnabled(index);
       const focused =
-        activePage && this.focusArea === Window_Inventory.FOCUS.TABS;
+        enabled && activePage && this.focusArea === Window_Inventory.FOCUS.TABS;
 
       if (focused) {
         this.drawSelection(
@@ -964,11 +1008,13 @@ class Window_Inventory {
         );
       }
 
-      context.fillStyle = focused
-        ? "#ffd75a"
-        : activePage
-          ? "#ffffff"
-          : "#aebbd0";
+      context.fillStyle = !enabled
+        ? "#6f7d92"
+        : focused
+          ? "#ffd75a"
+          : activePage
+            ? "#ffffff"
+            : "#aebbd0";
       context.font = focused ? "600 17px sans-serif" : "16px sans-serif";
       context.fillText(
         `${focused ? "▶ " : "  "}${label}`,
@@ -976,7 +1022,7 @@ class Window_Inventory {
         columns.tabTop + columns.tabHeight / 2,
       );
 
-      if (activePage && !focused) {
+      if (enabled && activePage && !focused) {
         context.strokeStyle = "rgba(127, 240, 213, 0.72)";
         context.lineWidth = 2;
         context.beginPath();

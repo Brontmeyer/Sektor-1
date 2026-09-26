@@ -49,7 +49,7 @@ Completed engine foundations include:
 - Battle Presentation & Feedback v1 with encounter/active-turn context, state-sensitive controls, bounded recent battle messages, and target-selection command suppression
 - Battle Formation & Party Layout v1 with four-actor vertical lanes, back-attack facing geometry, and left/right pincer flanks
 - Battle Command Navigation & Side Actions with a four-command core list, hidden-on-demand Escape/Defend side panels, ready-only Surge chip, and one-level target-cancel restoration
-- Battle Results Screen v1 for visible EXP, Runes, drop, level-up, and Essence progression feedback
+- Battle Results Screen v2 for project-styled sequential EXP/Resonance and Runes/Item feedback, including level-up and Essence progression detail
 
 Completed canonical battle-data foundations include:
 

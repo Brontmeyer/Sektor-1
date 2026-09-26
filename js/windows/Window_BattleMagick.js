@@ -66,6 +66,14 @@ class Window_BattleMagick {
       }
     }
 
+    if (Input.isActionTriggered("left")) {
+      this.index = this.listViewport.pageSelection(this.index, -1, magickList.length);
+    }
+
+    if (Input.isActionTriggered("right")) {
+      this.index = this.listViewport.pageSelection(this.index, 1, magickList.length);
+    }
+
     this.listViewport.ensureVisible(this.index, magickList.length);
   }
 

@@ -85,6 +85,9 @@ function createHarness() {
       maxMp: 40,
       statusDisplayEntries() { return []; },
       statusSummary() { return "Normal"; },
+      weaponId: 0,
+      armorId: 0,
+      accessoryId: 0,
       gainHp(amount) { this.hp = Math.min(this.maxHp, this.hp + amount); },
       isFullHp() { return this.hp >= this.maxHp; },
     };
@@ -92,6 +95,8 @@ function createHarness() {
 
   const firstActor = createActor(1, "Tyler", 100, 150);
   const secondActor = createActor(2, "Sarah", 40, 150);
+  firstActor.weaponId = 1;
+  secondActor.armorId = 1;
   const party = {
     members() { return [firstActor, secondActor]; },
     battleFormationMembers() { return [firstActor, secondActor]; },
@@ -113,11 +118,39 @@ function createHarness() {
     },
     $gameParty: {
       items: { 1: 3, 2: 1, 3: 1 },
-      weapons: { 1: 1 },
+      weapons: { 1: 2 },
       armors: { 1: 1 },
       accessories: { 1: 1 },
       itemIds() { return Object.keys(this.items).map(Number); },
       itemCount(id) { return this.items[id] || 0; },
+      merchandiseCount(type, id) {
+        const store = type === "weapon"
+          ? this.weapons
+          : type === "armor"
+            ? this.armors
+            : type === "accessory"
+              ? this.accessories
+              : this.items;
+        return store[id] || 0;
+      },
+      equippedMerchandiseCount(type, id) {
+        const field = type === "weapon"
+          ? "weaponId"
+          : type === "armor"
+            ? "armorId"
+            : type === "accessory"
+              ? "accessoryId"
+              : null;
+        return field
+          ? [firstActor, secondActor].filter((actor) => actor[field] === id).length
+          : 0;
+      },
+      unequippedMerchandiseCount(type, id) {
+        return Math.max(
+          0,
+          this.merchandiseCount(type, id) - this.equippedMerchandiseCount(type, id),
+        );
+      },
       useItem(itemId, target) {
         if (!this.itemCount(itemId)) {
           return false;
@@ -376,17 +409,22 @@ function testCancelMovesBackOneInteractionLevel() {
 }
 
 
-function testOwnedEquipmentAppearsInItemInventoryButCannotBeUsed() {
+function testOnlyUnequippedEquipmentAppearsInItemInventoryAndCannotBeUsed() {
   const harness = createHarness();
   harness.window.show();
   press(harness, "confirm");
 
   const texts = drawText(harness);
   assert.equal(includes(texts, "Steel Sword [WEAPON]"), true);
-  assert.equal(includes(texts, "Iron Armor [ARMOR]"), true);
+  assert.equal(includes(texts, "x1"), true);
+  assert.equal(includes(texts, "Iron Armor [ARMOR]"), false);
   assert.equal(includes(texts, "Power Wrist [ACC]"), true);
 
   const entries = harness.window.inventoryDisplayEntries();
+  const steel = entries.find((entry) => entry.type === "weapon");
+  assert.equal(steel?.quantity, 1, "only the unequipped Steel Sword copy is listed");
+  assert.equal(entries.some((entry) => entry.type === "armor"), false);
+
   const steelIndex = entries.findIndex((entry) => entry.type === "weapon");
   assert.equal(steelIndex >= 0, true);
   harness.window.itemIndex = steelIndex;
@@ -528,19 +566,21 @@ function testPopulatedItemPagesShareVisibleTextAnchorWithoutWhitespacePadding() 
   assert.doesNotMatch(source, /`\$\{focused \? "▶ " : "  "\}\$\{item\?\.name/);
 }
 
-function testEmptyKeyItemsStayOnTabInsteadOfEnteringDeadListFocus() {
+function testEmptyKeyItemsTabIsDisabledAndSkippedByNavigation() {
   const harness = createHarness();
   delete harness.gameParty.items[3];
   harness.window.show();
-  harness.window.changePage(2);
 
-  press(harness, "confirm");
-
-  assert.equal(harness.window.pageIndex, 2);
-  assert.equal(harness.window.focusArea, "tabs");
+  assert.equal(harness.window.pageEnabled(2), false);
+  press(harness, "right");
+  assert.equal(harness.window.pageIndex, 1);
+  press(harness, "right");
+  assert.equal(harness.window.pageIndex, 0, "navigation skips the disabled Key Items tab");
+  press(harness, "left");
+  assert.equal(harness.window.pageIndex, 1);
 
   const texts = drawText(harness);
-  assert.equal(includes(texts, "No key items owned."), true);
+  assert.equal(includes(texts, "Key Items"), true, "disabled tab remains visible");
 }
 
 function testSceneRoutesItemMenuToPartyBackedInventoryWindow() {
@@ -557,13 +597,13 @@ function run() {
   testArrangeApplyReturnsFocusToArrangeHeading();
   testKeyItemsKeepReferenceTabFlowAndPartyRowsShowHpAndMp();
   testCancelMovesBackOneInteractionLevel();
-  testOwnedEquipmentAppearsInItemInventoryButCannotBeUsed();
+  testOnlyUnequippedEquipmentAppearsInItemInventoryAndCannotBeUsed();
   testUseAndArrangeShareTheSameColumnGeometryWithoutPartyHeading();
   testItemTabsShareEqualGridAndPartyInventoryHeaderReplacesActorHeader();
   testItemHeaderKeepsOnlyDecisionUsefulInformation();
   testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter();
   testPopulatedItemPagesShareVisibleTextAnchorWithoutWhitespacePadding();
-  testEmptyKeyItemsStayOnTabInsteadOfEnteringDeadListFocus();
+  testEmptyKeyItemsTabIsDisabledAndSkippedByNavigation();
   testSceneRoutesItemMenuToPartyBackedInventoryWindow();
   console.log("Item menu presentation regression tests passed.");
 }

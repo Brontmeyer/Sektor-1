@@ -15,11 +15,11 @@ class Window_MenuCommand {
       "Status",
       "Order",
       "ROSTER",
-      "Map",
       "Valor",
       "Config",
       "Save",
       "Load",
+      "Map",
     ];
 
     this.commands = [];

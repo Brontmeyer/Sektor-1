@@ -51,6 +51,23 @@ class Window_ListViewport {
     };
   }
 
+  pageSelection(index, direction, totalEntries) {
+    const total = this.normalizeTotal(totalEntries);
+
+    if (total === 0) {
+      this.offset = 0;
+      return 0;
+    }
+
+    const current = Math.max(0, Math.min(this.normalizeIndex(index), total - 1));
+    const step = Math.max(1, this.maxVisibleRows);
+    const delta = Number(direction) < 0 ? -step : step;
+    const next = Math.max(0, Math.min(total - 1, current + delta));
+
+    this.ensureVisible(next, total);
+    return next;
+  }
+
   hasPrevious() {
     return this.offset > 0;
   }

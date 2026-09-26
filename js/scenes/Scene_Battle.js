@@ -194,6 +194,13 @@ class Scene_Battle extends Scene_Base {
         Input.isActionTriggered("confirm") ||
         Input.isActionTriggered("menu")
       ) {
+        if (
+          this.outcome === BattleManager.OUTCOME_VICTORY &&
+          this.resultsWindow?.advancePage?.() === true
+        ) {
+          return;
+        }
+
         this.finishBattle();
       }
 

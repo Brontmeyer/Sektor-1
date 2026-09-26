@@ -595,7 +595,7 @@ Essence Resonance caps at the canonical Mastery threshold (1500 with the current
 
 ## Battle Results Presentation
 
-On victory, `Scene_Battle` finalizes the authoritative result before leaving the scene and opens `Window_BattleResults`. The window is presentation-only: it reads `scene.result` and does not recalculate EXP, reroll drops, mutate Gil, or award Resonance. This preserves the idempotent reward contract established by `BattleManager.finalizeBattle()`.
+On victory, `Scene_Battle` finalizes the authoritative result before leaving the scene and opens `Window_BattleResults`. The window is presentation-only: it reads `scene.result` and does not recalculate EXP, reroll drops, mutate Runes, or award Resonance. Victory presentation is sequential: page 1 reports EXP, level changes, and Essence Resonance progression; page 2 reports Runes and accepted item drops. The first confirmation advances pages and only the final confirmation exits, preserving the idempotent reward contract established by `BattleManager.finalizeBattle()`.
 
 The initial results screen presents:
 

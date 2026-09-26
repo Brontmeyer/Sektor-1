@@ -454,6 +454,61 @@ function testMagickAndItemSelectorsAlsoSupportPreservedReopen() {
   assert.equal(itemWindow.index, 1);
 }
 
+function testBattleSelectorsPageWithLeftAndRight() {
+  const triggered = new Set();
+  const entries = Array.from({ length: 7 }, (_, index) => ({
+    id: index + 1,
+    name: `Entry ${index + 1}`,
+    type: "skill",
+    mpCost: 1,
+    effect: { type: "healHp", value: 1 },
+  }));
+  const actor = {
+    knownSkills: () => entries,
+    canUseSkill: () => true,
+    knownMagick: () => entries.map((entry) => ({ ...entry, type: "magick" })),
+    canUseMagick: () => true,
+  };
+  const globals = {
+    Graphics: { height: 720, context: createDrawContext() },
+    Input: {
+      isActionTriggered(action) { return triggered.has(action); },
+    },
+    $gameParty: {
+      battleLeader: () => actor,
+      itemIds: () => entries.map((entry) => entry.id),
+      itemCount: () => 1,
+    },
+    DatabaseManager: {
+      item: (id) => ({ ...entries[id - 1], type: "item" }),
+    },
+  };
+  const scene = { partyController: { currentBattler: () => actor } };
+  const Skills = loadSelector("js/windows/Window_BattleSkills.js", "Window_BattleSkills", globals);
+  const Magick = loadSelector("js/windows/Window_BattleMagick.js", "Window_BattleMagick", globals);
+  const Item = loadSelector("js/windows/Window_BattleItem.js", "Window_BattleItem", globals);
+
+  for (const window of [new Skills(scene), new Magick(scene), new Item(scene)]) {
+    window.show();
+    assert.equal(window.index, 0);
+
+    triggered.add("right");
+    window.update();
+    triggered.clear();
+    assert.equal(window.index, 3, "Right advances one visible page");
+
+    triggered.add("right");
+    window.update();
+    triggered.clear();
+    assert.equal(window.index, 6, "Right clamps at the final entry");
+
+    triggered.add("left");
+    window.update();
+    triggered.clear();
+    assert.equal(window.index, 3, "Left returns one visible page");
+  }
+}
+
 function testBattleSelectorsUseHudSideRegionWhileSurgeStaysAboveCommand() {
   const commandBounds = { x: 190, y: 540, width: 220, height: 156 };
   const selectorBounds = { x: 410, y: 540, width: 360, height: 156 };
@@ -528,6 +583,7 @@ function run() {
   testTargetCancelReturnsToOriginatingSelectorWithCursorPreserved();
   testSelectorShowCanPreserveCursorForTargetCancel();
   testMagickAndItemSelectorsAlsoSupportPreservedReopen();
+  testBattleSelectorsPageWithLeftAndRight();
   testBattleSelectorsUseHudSideRegionWhileSurgeStaysAboveCommand();
 
   console.log("Battle command navigation regression tests passed.");

@@ -1,16 +1,21 @@
 "use strict";
 
 class Window_BattleResults {
+  static PAGE_COUNT = 2;
+
   constructor(scene = null) {
     this.scene = scene;
     this.visible = false;
     this.result = null;
+    this.pageIndex = 0;
     this.lines = [];
+    this.progressionLines = [];
+    this.lootLines = [];
     this.scrollIndex = 0;
-    this.viewport = new Window_ListViewport(12);
+    this.viewport = new Window_ListViewport(11);
 
-    this.width = Math.min(920, Graphics.width - 80);
-    this.height = Math.min(620, Graphics.height - 80);
+    this.width = Math.min(980, Graphics.width - 48);
+    this.height = Math.min(650, Graphics.height - 48);
     this.x = Math.floor((Graphics.width - this.width) / 2);
     this.y = Math.floor((Graphics.height - this.height) / 2);
   }
@@ -21,9 +26,10 @@ class Window_BattleResults {
     }
 
     this.result = result;
-    this.lines = this.buildContentLines(result);
-    this.scrollIndex = 0;
-    this.viewport.reset(this.scrollIndex, this.lines.length);
+    this.pageIndex = 0;
+    this.progressionLines = this.buildProgressionLines(result);
+    this.lootLines = this.buildLootLines(result);
+    this.syncPageLines();
     this.visible = true;
     return true;
   }
@@ -34,6 +40,26 @@ class Window_BattleResults {
 
   isOpen() {
     return this.visible;
+  }
+
+  isFinalPage() {
+    return this.pageIndex >= Window_BattleResults.PAGE_COUNT - 1;
+  }
+
+  advancePage() {
+    if (!this.visible || this.isFinalPage()) {
+      return false;
+    }
+
+    this.pageIndex += 1;
+    this.syncPageLines();
+    return true;
+  }
+
+  syncPageLines() {
+    this.lines = this.pageIndex === 0 ? this.progressionLines : this.lootLines;
+    this.scrollIndex = 0;
+    this.viewport.reset(this.scrollIndex, this.lines.length);
   }
 
   update() {
@@ -52,27 +78,9 @@ class Window_BattleResults {
     }
   }
 
-  buildContentLines(result) {
+  buildProgressionLines(result) {
     const lines = [];
-    const drops = Array.isArray(result.rewards?.drops) ? result.rewards.drops : [];
     const party = Array.isArray(result.party) ? result.party : [];
-
-    lines.push({ kind: "section", text: "ITEM DROPS" });
-
-    if (drops.length === 0) {
-      lines.push({ kind: "muted", text: "No item drops" });
-    } else {
-      for (const drop of drops) {
-        const quantity = Number(drop?.quantity) || 0;
-        lines.push({
-          kind: "normal",
-          text: `${drop?.name || "Unknown Item"} ×${quantity}`,
-        });
-      }
-    }
-
-    lines.push({ kind: "spacer", text: "" });
-    lines.push({ kind: "section", text: "PARTY PROGRESSION" });
 
     for (const actor of party) {
       const actorName = actor?.name || "Unknown Actor";
@@ -139,9 +147,112 @@ class Window_BattleResults {
           });
         }
       }
+
+      lines.push({ kind: "spacer", text: "" });
+    }
+
+    if (lines.length > 0 && lines[lines.length - 1].kind === "spacer") {
+      lines.pop();
+    }
+
+    if (lines.length === 0) {
+      lines.push({ kind: "muted", text: "No party progression to report." });
     }
 
     return lines;
+  }
+
+  buildLootLines(result) {
+    const drops = Array.isArray(result.rewards?.drops) ? result.rewards.drops : [];
+
+    if (drops.length === 0) {
+      return [{ kind: "muted", text: "No item drops" }];
+    }
+
+    return drops.map((drop) => ({
+      kind: "normal",
+      text: `${drop?.name || "Unknown Item"} ×${Number(drop?.quantity) || 0}`,
+    }));
+  }
+
+  pageTitle() {
+    return this.pageIndex === 0 ? "EXP & RESONANCE" : "RUNES & ITEMS";
+  }
+
+  themeColor(role, fallback) {
+    return typeof UIThemePalette !== "undefined"
+      ? UIThemePalette.color(role, fallback)
+      : fallback;
+  }
+
+  drawPanel(context, bounds, role = "menuPanel") {
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      UIAssetManager.drawPanel(
+        context,
+        role,
+        bounds.x,
+        bounds.y,
+        bounds.width,
+        bounds.height,
+        {
+          fallbackFill: "rgba(18, 31, 104, 0.96)",
+          fallbackStroke: "rgba(137, 182, 235, 0.82)",
+          innerStroke: "rgba(232, 235, 255, 0.14)",
+          assetAlpha: 0.48,
+          sourceMargin: 12,
+          destMargin: 12,
+        },
+      );
+      return;
+    }
+
+    context.fillStyle = "rgba(18, 31, 104, 0.96)";
+    context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+    context.strokeStyle = "rgba(137, 182, 235, 0.82)";
+    context.lineWidth = 1.5;
+    context.strokeRect(bounds.x, bounds.y, bounds.width, bounds.height);
+  }
+
+  drawSummaryCard(context, bounds, label, value) {
+    this.drawPanel(context, bounds, "accentPanel");
+    context.save();
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = this.themeColor("secondary", "#aebbd0");
+    context.font = "600 15px sans-serif";
+    context.fillText(label, bounds.x + bounds.width / 2, bounds.y + 23);
+    context.fillStyle = this.themeColor("primary", "#ffffff");
+    context.font = "700 25px sans-serif";
+    context.fillText(value, bounds.x + bounds.width / 2, bounds.y + 54);
+    context.restore();
+  }
+
+  drawLine(context, line, x, y, maxWidth) {
+    if (line.kind === "spacer") {
+      return;
+    }
+
+    if (line.kind === "actor") {
+      context.font = "700 18px sans-serif";
+      context.fillStyle = this.themeColor("primary", "#ffffff");
+    } else if (line.kind === "highlight") {
+      context.font = "17px sans-serif";
+      context.fillStyle = this.themeColor("positive", "#7dff8a");
+    } else if (line.kind === "mastery") {
+      context.font = "700 17px sans-serif";
+      context.fillStyle = this.themeColor("focus", "#ffd75a");
+    } else if (line.kind === "muted") {
+      context.font = "16px sans-serif";
+      context.fillStyle = this.themeColor("muted", "#8897ac");
+    } else {
+      context.font = "16px sans-serif";
+      context.fillStyle = this.themeColor("primary", "#ffffff");
+    }
+
+    context.fillText(line.text, x, y, maxWidth);
   }
 
   draw() {
@@ -151,69 +262,114 @@ class Window_BattleResults {
 
     const context = Graphics.context;
     const rewards = this.result.rewards || {};
-    const contentX = this.x + 34;
-    const contentWidth = this.width - 68;
-    const summaryY = this.y + 105;
-    const contentY = this.y + 205;
-    const rowHeight = 28;
+    const outer = { x: this.x, y: this.y, width: this.width, height: this.height };
+    const inset = 16;
+    const header = {
+      x: this.x + inset,
+      y: this.y + inset,
+      width: this.width - inset * 2,
+      height: 72,
+    };
+    const summaryY = header.y + header.height + 10;
+    const summaryGap = 10;
+    const summaryWidth = Math.floor((header.width - summaryGap) / 2);
+    const summaryLeft = { x: header.x, y: summaryY, width: summaryWidth, height: 78 };
+    const summaryRight = {
+      x: header.x + summaryWidth + summaryGap,
+      y: summaryY,
+      width: header.width - summaryWidth - summaryGap,
+      height: 78,
+    };
+    const content = {
+      x: header.x,
+      y: summaryY + 88,
+      width: header.width,
+      height: this.y + this.height - (summaryY + 88) - 54,
+    };
 
     context.save();
-
-    context.fillStyle = "rgba(0, 0, 0, 0.72)";
+    context.fillStyle = "rgba(5, 8, 16, 0.72)";
     context.fillRect(0, 0, Graphics.width, Graphics.height);
+    this.drawPanel(context, outer);
+    this.drawPanel(context, header, "accentPanel");
+    this.drawPanel(context, content);
 
-    context.fillStyle = "rgba(8, 10, 18, 0.97)";
-    context.fillRect(this.x, this.y, this.width, this.height);
-    context.strokeStyle = "#ffffff";
-    context.lineWidth = 3;
-    context.strokeRect(this.x, this.y, this.width, this.height);
-
-    context.textAlign = "center";
     context.textBaseline = "middle";
-    context.font = "bold 34px Arial";
-    context.fillStyle = "#ffd866";
-    context.fillText("VICTORY", this.x + this.width / 2, this.y + 42);
+    context.textAlign = "left";
+    context.fillStyle = this.themeColor("focus", "#ffd75a");
+    context.font = "700 25px sans-serif";
+    context.fillText("VICTORY", header.x + 18, header.y + 26);
 
-    context.font = "18px Arial";
-    context.fillStyle = "#ffffff";
+    context.fillStyle = this.themeColor("primary", "#ffffff");
+    context.font = "600 18px sans-serif";
+    context.fillText(this.pageTitle(), header.x + 18, header.y + 52);
+
+    context.textAlign = "right";
+    context.fillStyle = this.themeColor("secondary", "#aebbd0");
+    context.font = "15px sans-serif";
     context.fillText(
       this.result.encounter?.name || "Battle Complete",
-      this.x + this.width / 2,
-      this.y + 76,
+      header.x + header.width - 18,
+      header.y + 26,
+    );
+    context.fillText(
+      `${this.pageIndex + 1} / ${Window_BattleResults.PAGE_COUNT}`,
+      header.x + header.width - 18,
+      header.y + 52,
     );
 
-    const summaryEntries = [
-      ["EXP", Number(rewards.exp) || 0],
-      ["RUNES", Number(rewards.currency) || 0],
-      ["RESONANCE", Number(rewards.resonance) || 0],
-    ];
-    const summaryGap = 16;
-    const summaryWidth =
-      (contentWidth - summaryGap * (summaryEntries.length - 1)) /
-      summaryEntries.length;
-
-    for (let index = 0; index < summaryEntries.length; index++) {
-      const [label, value] = summaryEntries[index];
-      const x = contentX + index * (summaryWidth + summaryGap);
-
-      context.fillStyle = "rgba(255, 255, 255, 0.06)";
-      context.fillRect(x, summaryY, summaryWidth, 70);
-      context.strokeStyle = "rgba(255, 255, 255, 0.35)";
-      context.lineWidth = 1;
-      context.strokeRect(x, summaryY, summaryWidth, 70);
-
-      context.font = "15px Arial";
-      context.fillStyle = "#cccccc";
-      context.fillText(label, x + summaryWidth / 2, summaryY + 20);
-      context.font = "bold 24px Arial";
-      context.fillStyle = "#ffffff";
-      context.fillText(`+${value}`, x + summaryWidth / 2, summaryY + 48);
+    if (this.pageIndex === 0) {
+      this.drawSummaryCard(
+        context,
+        summaryLeft,
+        "EXP",
+        `+${Number(rewards.exp) || 0}`,
+      );
+      this.drawSummaryCard(
+        context,
+        summaryRight,
+        "RESONANCE",
+        `+${Number(rewards.resonance) || 0}`,
+      );
+    } else {
+      const drops = Array.isArray(rewards.drops) ? rewards.drops : [];
+      const totalDrops = drops.reduce(
+        (total, drop) => total + Math.max(0, Number(drop?.quantity) || 0),
+        0,
+      );
+      this.drawSummaryCard(
+        context,
+        summaryLeft,
+        "RUNES",
+        `+${Number(rewards.currency) || 0}`,
+      );
+      this.drawSummaryCard(
+        context,
+        summaryRight,
+        "ITEM DROPS",
+        String(totalDrops),
+      );
     }
 
-    const range = this.viewport.visibleRange(
-      this.scrollIndex,
-      this.lines.length,
+    context.textAlign = "left";
+    context.fillStyle = this.themeColor("accent", "#7ff0d5");
+    context.font = "700 17px sans-serif";
+    context.fillText(
+      this.pageIndex === 0 ? "PARTY PROGRESSION" : "ITEM DROPS",
+      content.x + 18,
+      content.y + 27,
     );
+
+    const rowHeight = 27;
+    const contentX = content.x + 22;
+    const contentY = content.y + 62;
+    const contentWidth = content.width - 44;
+    this.viewport.maxVisibleRows = Math.max(
+      1,
+      Math.floor((content.height - 80) / rowHeight),
+    );
+    this.viewport.ensureVisible(this.scrollIndex, this.lines.length);
+    const range = this.viewport.visibleRange(this.scrollIndex, this.lines.length);
 
     context.textAlign = "left";
     context.textBaseline = "middle";
@@ -221,58 +377,27 @@ class Window_BattleResults {
     for (let lineIndex = range.start; lineIndex < range.end; lineIndex++) {
       const line = this.lines[lineIndex];
       const drawY = contentY + (lineIndex - range.start) * rowHeight;
-
-      if (line.kind === "section") {
-        context.font = "bold 18px Arial";
-        context.fillStyle = "#ffd866";
-      } else if (line.kind === "actor") {
-        context.font = "bold 18px Arial";
-        context.fillStyle = "#ffffff";
-      } else if (line.kind === "highlight") {
-        context.font = "17px Arial";
-        context.fillStyle = "#8fe388";
-      } else if (line.kind === "mastery") {
-        context.font = "bold 17px Arial";
-        context.fillStyle = "#ffcc66";
-      } else if (line.kind === "muted") {
-        context.font = "16px Arial";
-        context.fillStyle = "#aaaaaa";
-      } else {
-        context.font = "16px Arial";
-        context.fillStyle = "#dddddd";
-      }
-
-      if (line.kind !== "spacer") {
-        context.fillText(line.text, contentX, drawY, contentWidth);
-      }
+      this.drawLine(context, line, contentX, drawY, contentWidth);
     }
 
-    context.font = "16px Arial";
-    context.fillStyle = "#bbbbbb";
+    context.fillStyle = this.themeColor("secondary", "#aebbd0");
+    context.font = "15px sans-serif";
     context.textAlign = "left";
 
     if (this.viewport.hasPrevious()) {
-      context.fillText(
-        `▲ ${Input.actionLabel("up")}`,
-        contentX,
-        this.y + this.height - 30,
-      );
+      context.fillText("▲", content.x + content.width - 24, content.y + 26);
     }
 
     if (this.viewport.hasNext(this.lines.length)) {
-      context.fillText(
-        `▼ ${Input.actionLabel("down")}`,
-        contentX + 110,
-        this.y + this.height - 30,
-      );
+      context.fillText("▼", content.x + content.width - 24, content.y + content.height - 18);
     }
 
     context.textAlign = "right";
-    context.fillStyle = "#ffffff";
+    context.fillStyle = this.themeColor("primary", "#ffffff");
     context.fillText(
-      `${Input.actionLabel("confirm")}: Continue`,
-      this.x + this.width - 28,
-      this.y + this.height - 30,
+      `${Input.actionLabel("confirm")}: ${this.isFinalPage() ? "Continue" : "Next"}`,
+      this.x + this.width - 22,
+      this.y + this.height - 22,
     );
 
     context.restore();

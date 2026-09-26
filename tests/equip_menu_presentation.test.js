@@ -183,6 +183,16 @@ function testEquipmentStatsUseFullPanelWithoutPermanentHintFooter() {
   assert.doesNotMatch(source, /Input\.actionLabel/);
 }
 
+
+function testEquippedGearUsesYellowNameInsteadOfEquippedSuffix() {
+  const source = read("js/windows/Window_EquipSelect.js");
+
+  assert.match(source, /entry\.id === equippedId \? "#ffd75a" : "#ffffff"/);
+  assert.match(source, /context\.fillText\("▶", this\.x \+ 20, drawY\)/);
+  assert.doesNotMatch(source, /suffix[\s\S]*Equipped/);
+  assert.doesNotMatch(source, /fillText\([^\n]*Equipped/);
+}
+
 function testEssenceGrowthIsPresentationOnlyDefault() {
   const { selector } = createSelectorHarness();
   selector.show("weapon");
@@ -200,6 +210,7 @@ function run() {
   testEquipmentPreviewIncludesReferenceStyleStats();
   testSelectionListUsesHeldRepeatAndViewport();
   testEquipmentStatsUseFullPanelWithoutPermanentHintFooter();
+  testEquippedGearUsesYellowNameInsteadOfEquippedSuffix();
   testEssenceGrowthIsPresentationOnlyDefault();
   console.log("Equip menu presentation regression tests passed.");
 }

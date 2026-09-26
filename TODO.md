@@ -74,6 +74,7 @@ Completed systems and design rules should be documented rather than duplicated h
 
 - [x] Implement Battle Results Screen v1
 - [x] Present EXP, Runes, item drops, level-ups, Essence Resonance, awakened Magick abilities, and Mastery Ready transitions
+- [x] Implement Battle Results Presentation v2 with project-standard panels and sequential EXP/Resonance then Runes/Items pages
 - [x] Implement Battle Presentation & Feedback v1
 - [x] Present encounter name and active party battler during player-command flow
 - [x] Replace permanent test-battle footer copy with context-sensitive command/selection/target/outcome hints
@@ -123,6 +124,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add Skill Menu Presentation & List Navigation v1 with ordinary-technique filtering, actor summary/detail hierarchy, three-column scrolling grid, conditional arrows, shared held-direction repeat, and MAGICK/main-menu identity-layout consistency
 - [x] Add Equip Menu Presentation & Stat Preview v1 with shared actor summary, full Weapon/Armor/Accessories labels, description strip, held-repeat equipment browsing, live stat comparison, and square main-menu portrait consistency
 - [x] Add Item Menu Presentation & Inventory Navigation v1 with shared actor summary, Use/Arrange/Key Items tabs, target-aware field item use, supported sort previews, and key-item empty-state handling
+- [x] Refine ITEM equipment visibility to unequipped physical copies only and disable/skip Key Items until the first Key Item is owned
 - [x] Refine ITEM focus/vitals/layout after hands-on review and standardize character-menu header geometry through shared `CharacterMenuLayout` ownership
 - [x] Refine ITEM as party-owned inventory with a PARTY INVENTORY header, exact three-column tabs, and muted read-only equipment rows while preserving EQUIP ownership
 - [x] Lock ITEM Use / Arrange / Key Items to one shared content rhythm and add target-card breathing room before the center divider

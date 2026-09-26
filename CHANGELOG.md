@@ -12,6 +12,10 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Pass 106 inventory clarity, battle list paging, and Victory Results v2: ITEM now lists only unequipped Weapon / Armor / Accessory copies, empty Key Items stays visible but disabled and is skipped by tab navigation, battle Magick / Skills / Item selectors page by one visible window with Left / Right, and the victory flow now presents **EXP + Resonance** before **Runes + Item Drops** in the shared Sektor 1 panel language.
+- Added a shared `Game_Party.unequippedMerchandiseCount()` authority so ITEM and merchant Sell presentation agree on which physical equipment copies are actually free rather than worn by any actor.
+- Moved **Map** to the final MAIN MENU command slot during development, making it one wraparound Up press from the default Item position while preserving the temporary QA Load command.
+
 - Added Pass 105 battle selector placement and Enemy Skill data separation: Magick / Skills / Item child selectors now occupy a compact HUD-side overlay beside the persistent command panel instead of covering the battlefield, the ready-only SURGE chip aligns to Attack's left edge, and long selector lists retain scrolling inside the bounded HUD region.
 - Added canonical `data/EnemySkill.json` with Goo Rush as Enemy Skill ID 1. Enemy action records now use `type: "enemySkill"` + `enemySkillId`, `DatabaseManager` exposes dedicated Enemy Skill accessors, and actor `Skills.json` / `skillIds` remain a separate ownership namespace while compatible effect resolution stays shared.
 
@@ -40,6 +44,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added recruitment regression coverage for hero-only New Game state, runtime recruitment/removal, event-side recruitment, and save/load restoration into a fresh hero-only party.
 
 ### Fixed
+
+- Refined EQUIP candidate presentation so the currently equipped choice is identified by yellow item text instead of an `Equipped` suffix; the focus chevron remains gold while an ordinary selected item name stays white.
+- Prevented equipped physical copies from cluttering ITEM inventory quantities while preserving extra unequipped copies of the same record.
 
 - Kept actor command ownership visually stable during ATB enemy interruptions and child-menu navigation; an interrupting enemy action may resolve while input remains available, but it no longer makes the actor's main command panel disappear.
 

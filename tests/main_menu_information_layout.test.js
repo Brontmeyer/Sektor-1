@@ -97,11 +97,11 @@ function testCommandNamingContractAndNoCommandHeading() {
     "Status",
     "Order",
     "ROSTER",
-    "Map",
     "Valor",
     "Config",
     "Save",
     "Load",
+    "Map",
   ]);
 
   window.draw();
@@ -235,7 +235,7 @@ function testPlayerFacingCurrencyUsesRunesAcrossCurrentUi() {
   const shopScene = read("js/scenes/Scene_Shop.js");
 
   assert.match(sceneMenu, /fillText\("RUNES"/);
-  assert.match(battleResults, /\["RUNES"/);
+  assert.match(battleResults, /"RUNES"/);
   assert.match(shopWindow, /\["Runes"/);
   assert.match(shopWindow, /"Owned"/);
   assert.match(shopScene, /for \$\{purchase\.totalPrice\} Runes\./);
