@@ -96,13 +96,11 @@ function testCommandNamingContractAndNoCommandHeading() {
     "Equip",
     "Status",
     "Order",
+    "ROSTER",
     "Map",
     "Valor",
     "Config",
-    "ROSTER",
     "Save",
-    "Load",
-    "Exit",
   ]);
 
   window.draw();
@@ -219,7 +217,8 @@ function testSceneUsesMainMenuHeadingAndHonestPlaceholderDestinations() {
   assert.match(scene, /case "Map":/);
   assert.match(scene, /case "Valor":/);
   assert.match(scene, /case "ROSTER":/);
-  assert.match(scene, /case "Load":/);
+  assert.doesNotMatch(scene, /case "Load":/);
+  assert.doesNotMatch(scene, /case "Exit":/);
   assert.match(scene, /globalThis\.\$gameSystem\?\.formattedPlayTime\?\.\(\)/);
   assert.match(scene, /fillText\("RUNES"/);
   assert.equal(scene.includes('fillText("GIL"'), false);

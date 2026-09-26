@@ -439,7 +439,10 @@ class BattleRenderer {
       return `${command}${availability}   ${confirm}: Confirm   ${cancel}: Back   ${this.tacticalHelpControlHint()}`;
     }
 
-    return `${up} / ${down}: Command   ${left}: Escape   ${right}: Defend   ${confirm}: Select   ${this.tacticalHelpControlHint()}`;
+    const surgeHint = commandWindow?.canOpenSurge?.() === true
+      ? `   ${up} from Attack: Surge`
+      : "";
+    return `${up} / ${down}: Command   ${left}: Escape   ${right}: Defend${surgeHint}   ${confirm}: Select   ${this.tacticalHelpControlHint()}`;
   }
 
   drawBattleHint(context) {

@@ -14,13 +14,11 @@ class Window_MenuCommand {
       "Equip",
       "Status",
       "Order",
+      "ROSTER",
       "Map",
       "Valor",
       "Config",
-      "ROSTER",
       "Save",
-      "Load",
-      "Exit",
     ];
 
     this.commands = [];

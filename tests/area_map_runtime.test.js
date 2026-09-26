@@ -186,7 +186,7 @@ function testAreaMapIsAFirstClassMainMenuDestination() {
   const sceneMap = read("js/scenes/Scene_Map.js");
   const html = read("index.html");
 
-  assert.match(command, /"Order",\s*"Map",\s*"Valor"/);
+  assert.match(command, /"Order",\s*"ROSTER",\s*"Map",\s*"Valor"/);
   assert.match(sceneMenu, /case "Map":\s*SceneManager\.push\(Scene_AreaMap/);
   assert.match(sceneMap, /areaMap: this\.map\?\.areaMapSnapshot\?\.\(this\.player\)/);
   assert.match(sceneMap, /enabled: this\.map\?\.areaMapEnabled\?\.\(\) === true/);

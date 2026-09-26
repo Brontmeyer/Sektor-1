@@ -119,6 +119,7 @@ function createHarness() {
     "js/battle/BattleEnemyAI.js",
     "js/battle/BattleManager.js",
     "js/windows/Window_BattleCommand.js",
+    "js/windows/Window_ListViewport.js",
     "js/windows/Window_TextLayout.js",
     "js/windows/Window_BattleSkills.js",
     "js/windows/Window_Skills.js",
@@ -321,33 +322,42 @@ function testAllTargetValorArtConsumesOnlyOnce() {
   assert.equal(secondEnemy.hp < secondHp, true);
 }
 
-function testSkillsCommandTracksValorReadiness() {
+function testSurgeReadinessIsSeparateFromRegularSkillsCommand() {
   const { actor, Window_BattleCommand } = createHarness();
   actor.learnSkill(2);
   const scene = { partyController: { currentBattler: () => actor } };
   const window = new Window_BattleCommand(scene);
 
   assert.equal(window.isCommandEnabled("Skills"), false);
+  assert.equal(window.canOpenSurge(), false);
   actor.setValor(actor.maxValor);
-  assert.equal(window.isCommandEnabled("Skills"), true);
+  assert.equal(window.isCommandEnabled("Skills"), false);
+  assert.equal(window.canOpenSurge(), true);
+  assert.equal(window.isCommandEnabled("Surge"), true);
 }
 
-function testValorArtPresentationStaysInBattleSkillsButLeavesFieldSkillMenu() {
+function testValorArtsLiveInSurgeAndLeaveRegularSkillMenus() {
   const { actor, Window_BattleSkills, Window_Skills } = createHarness();
   const art = testSkills[2];
   const regular = testSkills[1];
 
-  assert.equal(
-    Window_BattleSkills.prototype.skillLabel(art),
-    "[VALOR] Test Valor Art",
-  );
-  assert.equal(
-    Window_BattleSkills.prototype.skillLabel(regular),
-    "Test Technique",
-  );
+  assert.equal(Window_BattleSkills.prototype.skillLabel(art), "Test Valor Art");
+  assert.equal(Window_BattleSkills.prototype.skillLabel(regular), "Test Technique");
 
   actor.learnSkill(1);
   actor.learnSkill(2);
+  const scene = { partyController: { currentBattler: () => actor } };
+  const battleWindow = new Window_BattleSkills(scene);
+
+  battleWindow.show({ mode: "skills" });
+  assert.equal(battleWindow.skillList().includes(regular), true);
+  assert.equal(battleWindow.skillList().includes(art), false);
+
+  actor.setValor(actor.maxValor);
+  battleWindow.show({ mode: "surge" });
+  assert.equal(battleWindow.skillList().includes(art), true);
+  assert.equal(battleWindow.skillList().includes(regular), false);
+
   const fieldWindow = Object.create(Window_Skills.prototype);
   fieldWindow.actorNavigation = { actor: () => actor };
   const fieldSkills = fieldWindow.skillList();
@@ -364,8 +374,8 @@ function run() {
   testValorArtMissStillSpendsCommittedGauge();
   testInvalidTargetDoesNotSpendValor();
   testAllTargetValorArtConsumesOnlyOnce();
-  testSkillsCommandTracksValorReadiness();
-  testValorArtPresentationStaysInBattleSkillsButLeavesFieldSkillMenu();
+  testSurgeReadinessIsSeparateFromRegularSkillsCommand();
+  testValorArtsLiveInSurgeAndLeaveRegularSkillMenus();
 
   console.log("Valor Arts runtime regression tests passed.");
 }

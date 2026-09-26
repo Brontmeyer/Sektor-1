@@ -157,6 +157,49 @@ function testSideCommandsStayHiddenUntilHorizontalInputRequestsThem() {
   assert.equal(text.includes("Defend"), true);
 }
 
+
+function testSurgeChipAppearsOnlyWhenReadyAndOpensAboveAttack() {
+  let ready = false;
+  const art = { id: 1, name: "Unbroken", valorArt: true };
+  const actor = {
+    isValorSurgeReady: () => ready,
+    selectedValorArts: () => [art],
+    canUseSkill: () => true,
+    canUseBattleAction: () => true,
+    isPlayerControlled: () => true,
+    knownSkills: () => [],
+  };
+  const { window, context, trigger, clear } = loadBattleCommand({ actor });
+  const drawContext = context.Graphics.context;
+
+  window.draw();
+  let text = drawContext.calls
+    .filter((call) => call[0] === "fillText")
+    .map((call) => String(call[1]));
+  assert.equal(text.some((value) => value.includes("SURGE")), false);
+
+  ready = true;
+  drawContext.calls.length = 0;
+  window.draw();
+  text = drawContext.calls
+    .filter((call) => call[0] === "fillText")
+    .map((call) => String(call[1]));
+  assert.equal(text.includes("SURGE"), true);
+
+  window.index = 0;
+  trigger("ArrowUp");
+  window.update();
+  clear();
+  assert.equal(window.currentCommand(), "Surge");
+  assert.equal(window.hasSideCommandOpen(), true);
+
+  trigger("ArrowDown");
+  window.update();
+  clear();
+  assert.equal(window.hasSideCommandOpen(), false);
+  assert.equal(window.currentCommand(), "Attack");
+}
+
 function testSideWindowsAreFlushWithMainCommandTopAndEdges() {
   const { window, context } = loadBattleCommand();
   const drawContext = context.Graphics.context;
@@ -258,6 +301,10 @@ function testSideCommandConfirmationDelegatesEscapeAndDefendPaths() {
   fake.commandWindow.currentCommand = () => "Defend";
   assert.equal(prototype.confirmCommandSelection.call(fake), "Defend");
   assert.equal(executed, "Defend");
+
+  fake.commandWindow.currentCommand = () => "Surge";
+  assert.equal(prototype.confirmCommandSelection.call(fake), "Surge");
+  assert.equal(executed, "Surge");
 }
 
 function testTargetCancelReturnsToOriginatingSelectorWithCursorPreserved() {
@@ -405,6 +452,7 @@ function testMagickAndItemSelectorsAlsoSupportPreservedReopen() {
 function run() {
   testMainCommandListContainsOnlyFourCoreCommands();
   testSideCommandsStayHiddenUntilHorizontalInputRequestsThem();
+  testSurgeChipAppearsOnlyWhenReadyAndOpensAboveAttack();
   testSideWindowsAreFlushWithMainCommandTopAndEdges();
   testBossEscapeSideActionRemainsFocusableButDisabled();
   testSideCommandConfirmationDelegatesEscapeAndDefendPaths();

@@ -27,6 +27,28 @@ class Window_Valor {
 
   onActorChanged() {
     this.index = 0;
+    this.selectSetLevelArt();
+  }
+
+  selectedLevel() {
+    return this.actor?.selectedValorLevel?.() || 1;
+  }
+
+  selectSetLevelArt() {
+    const arts = this.knownArts();
+    const level = this.selectedLevel();
+    const index = arts.findIndex(
+      (art) => this.actor?.valorArtLevel?.(art) === level,
+    );
+
+    this.index = index >= 0 ? index : 0;
+    return this.currentArt(arts);
+  }
+
+  setCurrentArtLevel() {
+    const art = this.currentArt();
+    const level = art ? this.actor?.valorArtLevel?.(art) : 0;
+    return level ? this.actor?.setValorLevel?.(level) === true : false;
   }
 
   directionRepeated(action) {
@@ -84,6 +106,8 @@ class Window_Valor {
       this.moveSelection(-1);
     } else if (this.directionRepeated("down")) {
       this.moveSelection(1);
+    } else if (Input.isActionTriggered("confirm")) {
+      this.setCurrentArtLevel();
     }
   }
 
@@ -91,6 +115,7 @@ class Window_Valor {
     this.visible = true;
     this.index = 0;
     this.refreshLayout();
+    this.selectSetLevelArt();
   }
 
   hide() {
@@ -138,7 +163,7 @@ class Window_Valor {
     this.drawPanel(context, bounds);
 
     context.save();
-    const subtitle = `VALOR LEVEL ${this.highestKnownLevel()}`;
+    const subtitle = `SET LEVEL ${this.selectedLevel()}`;
     const heading = CharacterMenuLayout.drawInfoHeading(context, bounds, {
       title: "VALOR",
       subtitle,
@@ -167,18 +192,23 @@ class Window_Valor {
     );
 
     const selectedArt = this.currentArt(arts);
-    const selectedLevel = selectedArt
+    const viewingLevel = selectedArt
       ? this.actor?.valorArtLevel?.(selectedArt) || 1
       : null;
 
     context.textAlign = "left";
     context.fillStyle = CharacterMenuLayout.themeColor("secondary", "#aebbd0");
-    context.fillText("Selected", labelX, valorY + 39);
-    context.fillText("Level", labelX, valorY + 63);
+    context.fillText("Viewing", labelX, valorY + 39);
+    context.fillText("Set Level", labelX, valorY + 63);
     context.textAlign = "right";
     context.fillStyle = CharacterMenuLayout.themeColor("primary", "#ffffff");
-    context.fillText(selectedArt?.name || "—", valueX, valorY + 39);
-    context.fillText(selectedLevel ? String(selectedLevel) : "—", valueX, valorY + 63);
+    context.fillText(
+      selectedArt ? `${selectedArt.name} · L${viewingLevel}` : "—",
+      valueX,
+      valorY + 39,
+    );
+    context.fillStyle = "#ffd75a";
+    context.fillText(String(this.selectedLevel()), valueX, valorY + 63);
     context.restore();
   }
 
@@ -234,9 +264,14 @@ class Window_Valor {
 
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.fillStyle = "#78f0d2";
+    const isSetLevel = level === this.selectedLevel();
+    context.fillStyle = isSetLevel ? "#ffd75a" : "#78f0d2";
     context.font = "600 18px sans-serif";
-    context.fillText(`LEVEL ${level}`, bounds.x + 12, headingY);
+    context.fillText(
+      `LEVEL ${level}${isSetLevel ? "  • SET" : ""}`,
+      bounds.x + 12,
+      headingY,
+    );
 
     context.strokeStyle = "rgba(210, 222, 242, 0.28)";
     context.lineWidth = 1;

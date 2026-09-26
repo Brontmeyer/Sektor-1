@@ -53,6 +53,7 @@ class Game_Actor extends Game_Battler {
 
     this.maxValor = actorData.maxValor;
     this.valor = 0;
+    this._selectedValorLevel = 1;
 
     this.weaponId = 0;
     this.armorId = 0;
@@ -115,6 +116,54 @@ class Game_Actor extends Game_Battler {
 
   isValorReady() {
     return this.maxValor > 0 && this.valor >= this.maxValor;
+  }
+
+  selectedValorLevel() {
+    const current = Number(this._selectedValorLevel);
+
+    if (
+      Number.isInteger(current) &&
+      current >= 1 &&
+      current <= 4 &&
+      this.valorArtsForLevel(current).length > 0
+    ) {
+      return current;
+    }
+
+    const fallback = this.knownValorArts()[0];
+    const fallbackLevel = fallback ? this.valorArtLevel(fallback) : 1;
+    this._selectedValorLevel = fallbackLevel;
+    return fallbackLevel;
+  }
+
+  canSetValorLevel(level) {
+    const resolved = Number(level);
+    return (
+      Number.isInteger(resolved) &&
+      resolved >= 1 &&
+      resolved <= 4 &&
+      this.valorArtsForLevel(resolved).length > 0
+    );
+  }
+
+  setValorLevel(level) {
+    const resolved = Number(level);
+
+    if (!this.canSetValorLevel(resolved)) {
+      return false;
+    }
+
+    // Changing the prepared Valor level never discards gauge already earned.
+    this._selectedValorLevel = resolved;
+    return true;
+  }
+
+  selectedValorArts() {
+    return this.valorArtsForLevel(this.selectedValorLevel());
+  }
+
+  isValorSurgeReady() {
+    return this.isValorReady() && this.selectedValorArts().length > 0;
   }
 
   setValor(value) {
@@ -644,7 +693,10 @@ class Game_Actor extends Game_Battler {
 
   canPaySkillCost(skill) {
     if (this.isValorArt(skill)) {
-      return this.isValorReady();
+      return (
+        this.isValorSurgeReady() &&
+        this.valorArtLevel(skill) === this.selectedValorLevel()
+      );
     }
 
     return super.canPaySkillCost(skill);

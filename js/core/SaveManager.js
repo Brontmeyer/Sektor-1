@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 12;
+    return 13;
   }
 
   static clearError() {
@@ -108,12 +108,19 @@ class SaveManager {
 
             const accessoryId = Number(source.accessoryId);
             const valor = Number(source.valor);
+            const selectedValorLevel = Number(source.selectedValorLevel);
 
             return {
               ...rest,
               accessoryId:
                 Number.isInteger(accessoryId) && accessoryId > 0 ? accessoryId : 0,
               valor: Number.isFinite(valor) && valor >= 0 ? valor : 0,
+              selectedValorLevel:
+                Number.isInteger(selectedValorLevel) &&
+                selectedValorLevel >= 1 &&
+                selectedValorLevel <= 4
+                  ? selectedValorLevel
+                  : 1,
               magickIds,
               skillIds,
               essenceProgress,
@@ -164,10 +171,10 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if ([11, 10, 9].includes(inferredVersion)) {
+    if ([12, 11, 10, 9].includes(inferredVersion)) {
       // v9+ already owns explicit Skill state, including deliberately forgotten
       // starter Arts. v10 adds row state; v11 adds visual formation ordering.
-      // v12 adds persistent area-location discovery state.
+      // v12 adds persistent area-location discovery state; v13 adds the prepared Valor level.
       // Preserve existing state exactly and default a missing formation order to
       // the saved active-party order.
       return upgradeToCurrent(saveData);
@@ -348,6 +355,15 @@ class SaveManager {
           errors.push(
             `Actor ${actorId} valor must be between 0 and ${Number.isFinite(maxValor) && maxValor > 0 ? maxValor : "its configured maximum"}.`,
           );
+        }
+
+        const selectedValorLevel = Number(actorData.selectedValorLevel ?? 1);
+        if (
+          !Number.isInteger(selectedValorLevel) ||
+          selectedValorLevel < 1 ||
+          selectedValorLevel > 4
+        ) {
+          errors.push(`Actor ${actorId} selectedValorLevel must be an integer from 1 to 4.`);
         }
 
         const progressIds = new Set();
@@ -637,6 +653,7 @@ class SaveManager {
       armorId: actor.armorId,
       accessoryId: actor.accessoryId,
       valor: actor.valor,
+      selectedValorLevel: actor.selectedValorLevel?.() || 1,
       magickIds: [...actor.magickIds],
       skillIds: [...actor.skillIds],
       statuses:
@@ -751,6 +768,10 @@ class SaveManager {
 
     if (typeof actor.setValor === "function") {
       actor.setValor(finite(actorData.valor, 0));
+    }
+
+    if (typeof actor.setValorLevel === "function") {
+      actor.setValorLevel(integer(actorData.selectedValorLevel, 1, 1));
     }
 
     if (typeof actor.restorePersistentStatusState === "function") {

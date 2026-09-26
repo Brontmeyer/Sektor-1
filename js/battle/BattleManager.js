@@ -1949,6 +1949,17 @@ class BattleManager {
       case "Skills":
         battle.skillsWindow.show({
           preserveIndex: this.battleCursorMemoryEnabled(),
+          mode: "skills",
+        });
+        break;
+
+      case "Surge":
+        if (battler.isValorSurgeReady?.() !== true) {
+          return false;
+        }
+        battle.skillsWindow.show({
+          preserveIndex: this.battleCursorMemoryEnabled(),
+          mode: "surge",
         });
         break;
 

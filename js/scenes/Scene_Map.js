@@ -70,6 +70,11 @@ class Scene_Map extends Scene_Base {
               enabled: this.map?.areaMapEnabled?.() === true,
               reason: "An area map is not available here.",
             },
+            ROSTER: {
+              visible: ($gameParty?.members?.() || []).length > 1,
+              enabled: true,
+              reason: "",
+            },
           },
         },
       );

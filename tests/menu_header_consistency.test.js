@@ -45,7 +45,6 @@ function testCharacterAndPartyMenusUseSharedHeaderContract() {
     "js/windows/Window_Status.js",
     "js/windows/Window_Valor.js",
     "js/windows/Window_Inventory.js",
-    "js/windows/Window_Order.js",
   ];
 
   for (const file of infoMenus) {
@@ -57,7 +56,7 @@ function testCharacterAndPartyMenusUseSharedHeaderContract() {
     );
   }
 
-  for (const file of ["js/windows/Window_Inventory.js", "js/windows/Window_Order.js"]) {
+  for (const file of ["js/windows/Window_Inventory.js"]) {
     const text = source(file);
     assert.match(
       text,

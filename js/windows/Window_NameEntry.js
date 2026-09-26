@@ -359,49 +359,33 @@ class Window_NameEntry {
   }
 
   drawPortrait(context, bounds) {
-    this.drawPanel(context, bounds, { assetAlpha: 0.34 });
+    const size = Math.min(bounds.width, bounds.height);
+    const x = bounds.x + (bounds.width - size) / 2;
+    const y = bounds.y + (bounds.height - size) / 2;
 
-    const image = this.portraitImage;
     if (
-      image &&
-      image.complete &&
-      image.loadFailed !== true &&
-      image.naturalWidth > 0 &&
-      image.naturalHeight > 0 &&
-      typeof context.drawImage === "function"
+      typeof Window_ActorSummary !== "undefined" &&
+      typeof Window_ActorSummary.drawPortraitPlaceholder === "function"
     ) {
-      const frames = Math.max(1, Number(this.actor?.battleSpriteFrames) || 1);
-      const rows = Math.max(1, Number(this.actor?.battleSpriteRows) || 1);
-      const sourceWidth = image.naturalWidth / frames;
-      const sourceHeight = image.naturalHeight / rows;
-      const scale = Math.min(
-        (bounds.width - 18) / sourceWidth,
-        (bounds.height - 18) / sourceHeight,
-      );
-      const width = sourceWidth * scale;
-      const height = sourceHeight * scale;
-
-      context.drawImage(
-        image,
-        0,
-        0,
-        sourceWidth,
-        sourceHeight,
-        bounds.x + (bounds.width - width) / 2,
-        bounds.y + bounds.height - height - 8,
-        width,
-        height,
+      Window_ActorSummary.drawPortraitPlaceholder(
+        context,
+        this.actor,
+        x,
+        y,
+        size,
       );
       return;
     }
 
+    this.drawPanel(context, { x, y, width: size, height: size }, { assetAlpha: 0.34 });
     context.textAlign = "center";
+    context.textBaseline = "middle";
     context.fillStyle = "#ffffff";
     context.font = "600 44px sans-serif";
     context.fillText(
       String(this.value || this.defaultValue || "?").trim().charAt(0).toUpperCase() || "?",
-      bounds.x + bounds.width / 2,
-      bounds.y + bounds.height / 2,
+      x + size / 2,
+      y + size / 2,
     );
   }
 

@@ -216,6 +216,7 @@ function testReferenceStyleKeyboardContractStaysVisibleInSource() {
   assert.match(source, /drawNameSlots/);
   assert.match(source, /drawKeyboard/);
   assert.match(source, /drawSideCommands/);
+  assert.match(source, /Window_ActorSummary\.drawPortraitPlaceholder/);
 }
 
 function run() {

@@ -136,15 +136,15 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add Status Menu Presentation v1 with shared actor summary, Main / Element / Effect pages, actor-safe page switching, live elemental/status runtime presentation, and Equip footer-overlap cleanup
 - [x] Add Essence Menu Presentation & List Navigation v1 with shared stacked-vitals actor summary, slot/catalog equipment flow, two-column held-repeat catalog navigation, progression/Mastery Ready preview, and Magick Awakening presentation
 - [x] Implement Main Menu Information & Command Layout v1 with four active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels
-- [x] Implement Main Menu Refinement & Command Availability Foundation v1 with restored Load, RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and future map-based Save/Load restrictions
+- [x] Implement Main Menu Refinement & Command Availability Foundation v1 with RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and map-based Save restrictions; Load remains outside the in-game main menu
 - [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
 - [x] Add canonical persistent play-time tracking with main-menu HH:MM:SS and Save/Load persistence
 - [x] Implement Main Menu Actor Selection & Order Foundation v1 with shared party-card focus, actor handoff, persistent front/back row state, portrait-position row language, and ROSTER hidden-by-default policy
 - [x] Extend Order with persistent active-party visual formation swapping (positions 1-4) without changing mechanical party/turn order
-- [x] Add Order Menu Presentation v1 as a dedicated full-screen formation editor while reusing the existing party-row and formation-slot runtime
+- [x] Streamline Order back into direct active-party-card control so selecting Order immediately edits rows and visual formation slots without an intermediate full-screen window
 - [x] Connect player front/back row state to battlefield geometry as presentation only; keep row/slot position free of damage, weapon, targeting, or stat advantages unless the design is explicitly revisited
 - [x] Separate player-facing multi-level Valor progression from the ordinary Skill menu while reusing the shared Skill action runtime
-- [ ] Implement ROSTER (Remote Organization & Strategic Team Evaluation Registry) for active/reserve party switching once reserve characters exist
+- [x] Implement ROSTER (Remote Operative Selection Tactical Engagement Registry) for active/reserve party switching, full-party replacement flow, and story-aware main-menu visibility
 - [x] Polish Tactical Help bar size/transparency during the battle UI presentation pass
 
 ---
@@ -219,7 +219,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Define Valor Arts Runtime v1 within the Skills namespace (legacy/current runtime foundation)
 - [x] Refactor player-facing Valor progression into its dedicated menu/system while reusing the established Skill action engine
 - [x] Design the first canonical character-specific Valor Arts
-- [ ] Design long-term Valor Art unlock/progression rules
+- [ ] Design long-term Valor Art unlock/progression rules and final per-level Art sets (target: two Arts for Levels 1-3, one master Art for Level 4)
 
 ---
 
@@ -238,7 +238,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Story recruitment commands so the game can begin with only the protagonist and add companions as they are met
 - [x] Optional companion renaming at recruitment while preserving stable actor IDs internally
 - [x] Reusable actor-name entry scene/event command plus runtime dialogue name tokens for future recruitment scenes
-- [ ] Party Switching
+- [x] Party Switching through ROSTER active/reserve management
 - [ ] Dual Techs
 - [x] Canonical character-specific Valor Arts v1
 - [ ] Additional character Valor Arts and progression
@@ -277,7 +277,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v12 with persistent area-location discovery plus learned Skills/Valor/equipment/Essence/party-row/visual-formation state, v11 discovery migration, v10 formation-order migration, v9 row-default migration, and preserved v1-v8 starter-Art migrations
+- [x] Save Runtime v13 with persistent selected Valor level plus v12 area-location discovery, learned Skills/Valor/equipment/Essence/party-row/visual-formation state, and preserved older migrations
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies
@@ -313,7 +313,7 @@ Completed systems and design rules should be documented rather than duplicated h
 
 - [x] Add Party Recruitment Foundation with hero-only New Game start, recruited/met actor tracking, event-side recruitment, and save/load roster preservation.
 - [ ] Build companion join presentation / onboarding flow for story scenes.
-- [ ] Add reserve-roster management once the recruitable cast grows beyond the active battle-party cap.
+- [x] Add reserve-roster management through ROSTER with a four-member active battle-party cap.
 
 - [x] Pass 94: Add Essence slot scroll affordance, Item Arrange overflow cue, and Battle HUD breathing-room cleanup
 - [x] Pass 95: Add Active Time Battle Foundation v1 and TIME HUD presentation without replacing the proven round scheduler
@@ -324,3 +324,5 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Pass 100: Harden ATB Confirm ownership and enforce the global 99-copy inventory ceiling across shops, treasure, rewards, and save restoration
 
 - [x] Pass 102: Add Area Map Foundation v1, persistent location discovery, one-shot protagonist naming, and unidentified companion-introduction fixtures
+
+- [x] Pass 103: Add ROSTER active/reserve management, direct main-menu Order control, selectable Valor levels with preserved gauge, battle Surge readiness, square Name portrait treatment, and nonblocking naming fixture collision

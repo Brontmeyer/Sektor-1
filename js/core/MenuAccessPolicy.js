@@ -6,8 +6,8 @@ class MenuAccessPolicy {
     this.mapAccess = this.normalizeMapAccess(mapAccess);
     this.commandStates = new Map();
 
-    // ROSTER is a story-learned system. Keep it completely hidden until the
-    // story/runtime explicitly publishes an unlocked state for it.
+    // ROSTER stays hidden while the protagonist is alone. Scene/runtime context
+    // publishes it once a supporting operative has joined the recruited roster.
     this.setCommandState("ROSTER", {
       visible: false,
       enabled: true,

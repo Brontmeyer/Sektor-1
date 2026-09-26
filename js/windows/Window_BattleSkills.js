@@ -5,6 +5,7 @@ class Window_BattleSkills {
     this.scene = scene;
     this.visible = false;
     this.index = 0;
+    this.mode = "skills";
 
     this.width = 360;
     this.height = 260;
@@ -28,7 +29,15 @@ class Window_BattleSkills {
       return [];
     }
 
-    return actor.knownSkills().filter((skill) => skill?.type === "skill");
+    if (this.mode === "surge") {
+      return typeof actor.selectedValorArts === "function"
+        ? actor.selectedValorArts()
+        : actor.knownSkills().filter((skill) => skill?.valorArt === true);
+    }
+
+    return actor
+      .knownSkills()
+      .filter((skill) => skill?.type === "skill" && skill?.valorArt !== true);
   }
 
   currentSkill() {
@@ -36,9 +45,7 @@ class Window_BattleSkills {
   }
 
   skillLabel(skill) {
-    return skill?.valorArt === true
-      ? `[VALOR] ${skill.name}`
-      : skill?.name || "";
+    return skill?.name || "";
   }
 
   update() {
@@ -63,10 +70,17 @@ class Window_BattleSkills {
     this.listViewport.ensureVisible(this.index, skills.length);
   }
 
-  show({ preserveIndex = false } = {}) {
+  show({ preserveIndex = false, mode = null } = {}) {
+    const nextMode = mode === "surge" ? "surge" : mode === "skills" ? "skills" : this.mode;
+    const modeChanged = nextMode !== this.mode;
+    this.mode = nextMode;
     const entries = this.skillList();
 
     this.visible = true;
+
+    if (modeChanged) {
+      preserveIndex = false;
+    }
 
     if (!preserveIndex) {
       this.index = 0;
@@ -148,10 +162,18 @@ class Window_BattleSkills {
     context.textBaseline = "middle";
     context.font = "22px Arial";
     context.fillStyle = "#ffffff";
-    context.fillText("Skills", this.x + this.padding, this.y + 30);
+    context.fillText(
+      this.mode === "surge" ? `Surge · Level ${this.actor()?.selectedValorLevel?.() || 1}` : "Skills",
+      this.x + this.padding,
+      this.y + 30,
+    );
 
     if (skills.length === 0) {
-      context.fillText("(No skills)", this.x + this.padding, this.y + 80);
+      context.fillText(
+        this.mode === "surge" ? "(No Arts at set level)" : "(No skills)",
+        this.x + this.padding,
+        this.y + 80,
+      );
       context.restore();
       return;
     }

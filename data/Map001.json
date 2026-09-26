@@ -848,14 +848,14 @@
       ]
     },
     {
-      "_comment": "ID 19: Protagonist naming fixture",
+      "_comment": "ID 19: Protagonist naming fixture; one-shot and nonblocking after/before use",
       "id": 19,
       "name": "Protagonist Name Tester",
       "x": 610,
       "y": 500,
       "width": 32,
       "height": 32,
-      "solid": true,
+      "solid": false,
       "pages": [
         {
           "_comment": "One-shot developer fixture matching story-driven protagonist naming.",

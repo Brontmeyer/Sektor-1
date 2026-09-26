@@ -186,14 +186,14 @@ function testValorScreenUsesSharedCharacterLanguageAndLimitInspiredLevels() {
   assert.equal(text.includes("HP"), true);
   assert.equal(text.includes("MP"), true);
   assert.equal(text.includes("VALOR"), true);
-  assert.equal(text.includes("VALOR LEVEL 1"), true);
+  assert.equal(text.includes("SET LEVEL 1"), true);
   assert.equal(text.includes("42.5 / 100"), true);
-  assert.equal(text.includes("Selected"), true);
-  assert.equal(text.includes("Unbroken"), true);
-  assert.equal(text.includes("Level"), true);
+  assert.equal(text.includes("Viewing"), true);
+  assert.equal(text.some((value) => value.includes("Unbroken")), true);
+  assert.equal(text.includes("Set Level"), true);
   assert.equal(text.includes("Arts"), false);
   assert.equal(text.includes("State"), false);
-  assert.equal(text.includes("LEVEL 1"), true);
+  assert.equal(text.some((value) => value.startsWith("LEVEL 1")), true);
   assert.equal(text.includes("LEVEL 2"), true);
   assert.equal(text.includes("LEVEL 3"), true);
   assert.equal(text.includes("LEVEL 4"), true);
@@ -228,6 +228,36 @@ function testValorScreenSwitchesActorsAndKeepsArtSelectionVertical() {
   assert.doesNotMatch(source, /planned for a focused pass/);
 }
 
+
+function testValorLevelSelectionPreservesEarnedGauge() {
+  const harness = createHarness();
+  const actor = harness.partyActors[0];
+  harness.skills[7] = {
+    id: 7,
+    name: "Test Level Two Art",
+    description: "Second-level test Art.",
+    type: "skill",
+    category: "physical",
+    effect: "damage",
+    powerMultiplier: 1,
+    valorArt: true,
+    valorLevel: 2,
+    target: ["enemy"],
+    scope: ["single"],
+  };
+  actor.skillIds.push(7);
+  actor.setValor(63.5);
+
+  assert.equal(actor.selectedValorLevel(), 1);
+  assert.equal(actor.setValorLevel(2), true);
+  assert.equal(actor.selectedValorLevel(), 2);
+  assert.equal(actor.valor, 63.5);
+  assert.deepEqual(
+    Array.from(actor.selectedValorArts(), (art) => art.name),
+    ["Test Level Two Art"],
+  );
+}
+
 function testSceneRoutesValorToDedicatedWindowAndLoadsItAfterSharedHelpers() {
   const scene = read("js/scenes/Scene_Menu.js");
   const index = read("index.html");
@@ -251,6 +281,7 @@ function run() {
   testActorOwnsValorProgressionGroupingWithoutDuplicatingSkillRuntime();
   testValorScreenUsesSharedCharacterLanguageAndLimitInspiredLevels();
   testValorScreenSwitchesActorsAndKeepsArtSelectionVertical();
+  testValorLevelSelectionPreservesEarnedGauge();
   testSceneRoutesValorToDedicatedWindowAndLoadsItAfterSharedHelpers();
   console.log("Valor menu presentation regression tests passed.");
 }

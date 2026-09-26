@@ -202,7 +202,7 @@ function rawSave(localStorage, SaveManager, slotId = 1) {
   return JSON.parse(localStorage.getItem(SaveManager.saveKey(slotId)));
 }
 
-function testV12SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesRowsFormationAndDiscovery() {
+function testV13SaveSerializesSkillStateValorLevelEquipmentCurrencyEssencesStatusesRowsFormationAndDiscovery() {
   const { localStorage, party, partyActors, SaveManager, gameSystem } = createHarness();
   const second = partyActors[1];
 
@@ -233,7 +233,7 @@ function testV12SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesRo
   const saveData = rawSave(localStorage, SaveManager);
   const savedSecond = saveData.actors.find((actor) => actor.actorId === 2);
 
-  assert.equal(saveData.version, 12);
+  assert.equal(saveData.version, 13);
   assert.equal(saveData.metadata.playTimeSeconds, 5025);
   assert.deepEqual(saveData.world.areaDiscoveries, {
     1: ["test-plaza", "merchant-row"],
@@ -245,6 +245,7 @@ function testV12SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesRo
   assert.equal(savedSecond.level, 4);
   assert.equal(savedSecond.hp, 222);
   assert.equal(savedSecond.valor, 67.5);
+  assert.equal(savedSecond.selectedValorLevel, 1);
   assert.deepEqual(Array.from(savedSecond.magickIds), [1, 10, 2]);
   assert.deepEqual(Array.from(savedSecond.skillIds), [2, 1]);
   assert.equal(Object.hasOwn(savedSecond, "skills"), false);
@@ -269,7 +270,7 @@ function testV12SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesRo
   assert.deepEqual(Array.from(savedSecond.equippedEssenceIds), [1, null, null]);
 }
 
-async function testV12LoadRestoresSkillStateValorAccessoryRowsFormationDiscoveryAndNormalizesInventory() {
+async function testV13LoadRestoresSkillStateValorLevelAccessoryRowsFormationDiscoveryAndNormalizesInventory() {
   const { localStorage, party, partyActors, SaveManager, gameSystem } = createHarness();
   const second = partyActors[1];
 
@@ -324,6 +325,7 @@ async function testV12LoadRestoresSkillStateValorAccessoryRowsFormationDiscovery
   assert.equal(second.maxHp, 900);
   assert.equal(second.hp, 300);
   assert.equal(second.valor, 88);
+  assert.equal(second.selectedValorLevel(), 1);
   assert.equal(second.hasStatus("sadness"), true);
   assert.equal(second.hasStatus("barrier"), false);
   assert.equal(party.itemCount(1), 99);
@@ -837,8 +839,8 @@ function testSaveStorageFailureReturnsFalse() {
 }
 
 async function run() {
-  testV12SaveSerializesSkillStateValorEquipmentCurrencyEssencesStatusesRowsFormationAndDiscovery();
-  await testV12LoadRestoresSkillStateValorAccessoryRowsFormationDiscoveryAndNormalizesInventory();
+  testV13SaveSerializesSkillStateValorLevelEquipmentCurrencyEssencesStatusesRowsFormationAndDiscovery();
+  await testV13LoadRestoresSkillStateValorLevelAccessoryRowsFormationDiscoveryAndNormalizesInventory();
   await testVersionElevenSaveMigratesEmptyAreaDiscoveryState();
   await testVersionTenSaveMigratesFormationWithoutReinjectingForgottenSkills();
   await testVersionNineSaveMigratesRowsWithoutReinjectingForgottenSkills();

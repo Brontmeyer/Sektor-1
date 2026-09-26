@@ -126,31 +126,30 @@ function testFutureStoryUnlocksCanHideOrDisableCommands() {
   assert.match(policy.state("Valor").reason, /not been unlocked/i);
 }
 
-function testLoadIsRestoredBesideSaveAndDisabledCommandsRenderMuted() {
+function testMainMenuOmitsLoadAndExitWhileDisabledSaveRendersMuted() {
   const Policy = loadPolicy();
   const policy = new Policy({
     commandStates: {
-      Load: { enabled: false, reason: "Loading is temporarily disabled." },
+      Save: { enabled: false, reason: "Saving is temporarily disabled." },
+      ROSTER: { visible: true, enabled: true },
     },
   });
   const { window, drawCalls } = loadWindow(policy);
 
+  assert.equal(window.commands.includes("Load"), false);
+  assert.equal(window.commands.includes("Exit"), false);
+  assert.equal(window.commands.includes("ROSTER"), true);
+
   const saveIndex = window.commands.indexOf("Save");
-  const loadIndex = window.commands.indexOf("Load");
-  const exitIndex = window.commands.indexOf("Exit");
-
-  assert.equal(loadIndex, saveIndex + 1);
-  assert.equal(exitIndex, loadIndex + 1);
-
-  window.index = loadIndex;
+  window.index = saveIndex;
   window.draw();
 
-  const loadDraw = drawCalls.find(
-    (call) => call[0] === "fillText" && String(call[2]).includes("Load"),
+  const saveDraw = drawCalls.find(
+    (call) => call[0] === "fillText" && String(call[2]).includes("Save"),
   );
 
-  assert.notEqual(loadDraw, undefined);
-  assert.equal(loadDraw[1], "rgba(180, 190, 210, 0.45)");
+  assert.notEqual(saveDraw, undefined);
+  assert.equal(saveDraw[1], "rgba(180, 190, 210, 0.45)");
   assert.equal(window.currentCommandState().enabled, false);
 }
 
@@ -170,7 +169,7 @@ function run() {
   testDebugModeKeepsSaveAndLoadPermissiveForDevelopment();
   testRosterIsHiddenByDefaultUntilExplicitStoryUnlock();
   testFutureStoryUnlocksCanHideOrDisableCommands();
-  testLoadIsRestoredBesideSaveAndDisabledCommandsRenderMuted();
+  testMainMenuOmitsLoadAndExitWhileDisabledSaveRendersMuted();
   testPolicyLoadsBeforeMenuConsumers();
 
   console.log("Menu command availability regression tests passed.");

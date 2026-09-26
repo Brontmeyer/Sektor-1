@@ -16,7 +16,7 @@ class Scene_Menu extends Scene_Base {
     this.partyWindow = new Window_MainMenuParty($gameParty, this.layout.party);
 
     this.inventoryWindow = new Window_Inventory($gameParty);
-    this.orderWindow = new Window_Order($gameParty);
+    this.rosterWindow = new Window_Roster($gameParty);
     this.statusWindow = new Window_Status($gameParty);
     this.valorWindow = new Window_Valor($gameParty);
     this.equipmentWindow = new Window_Equipment($gameParty);
@@ -83,9 +83,8 @@ class Scene_Menu extends Scene_Base {
       return false;
     }
 
-    this.pendingActorCommand = null;
-    this.orderWindow.show();
-    return true;
+    this.pendingActorCommand = "Order";
+    return this.partyWindow.activate("order");
   }
 
   endPartySelection() {
@@ -122,6 +121,10 @@ class Scene_Menu extends Scene_Base {
 
     if (result.type === "cancel") {
       this.endPartySelection();
+      return;
+    }
+
+    if (this.pendingActorCommand === "Order") {
       return;
     }
 
@@ -190,8 +193,8 @@ class Scene_Menu extends Scene_Base {
       return;
     }
 
-    if (this.orderWindow.isOpen()) {
-      this.orderWindow.update();
+    if (this.rosterWindow.isOpen()) {
+      this.rosterWindow.update();
       return;
     }
 
@@ -280,18 +283,8 @@ class Scene_Menu extends Scene_Base {
         this.saveSlotsWindow.show("save");
         break;
 
-      case "Load":
-        this.saveSlotsWindow.show("load");
-        break;
-
-      case "Exit":
-        SceneManager.pop();
-        break;
-
       case "ROSTER":
-        this.saveMessage = "ROSTER is planned for a focused pass.";
-        this.saveMessageTimer = 2;
-        DebugManager.log("ROSTER is planned but not implemented yet.");
+        this.rosterWindow.show();
         break;
 
       default:
@@ -304,7 +297,7 @@ class Scene_Menu extends Scene_Base {
     return (
       this.saveSlotsWindow.isOpen() ||
       this.inventoryWindow.isOpen() ||
-      this.orderWindow.isOpen() ||
+      this.rosterWindow.isOpen() ||
       this.magickWindow.isOpen() ||
       this.skillsWindow.isOpen() ||
       this.essenceWindow.isOpen() ||
@@ -362,6 +355,10 @@ class Scene_Menu extends Scene_Base {
   partySelectionHint() {
     if (!this.partyWindow.isActive()) {
       return "";
+    }
+
+    if (this.pendingActorCommand === "Order") {
+      return `ORDER: Up/Down move · Left/Right row · ${Input.actionLabel("confirm")}: Swap · ${Input.actionLabel("cancel")}: Back`;
     }
 
     return `${this.pendingActorCommand}: choose actor   ` +
@@ -455,8 +452,8 @@ class Scene_Menu extends Scene_Base {
       this.saveSlotsWindow.draw();
     } else if (this.inventoryWindow.isOpen()) {
       this.inventoryWindow.draw();
-    } else if (this.orderWindow.isOpen()) {
-      this.orderWindow.draw();
+    } else if (this.rosterWindow.isOpen()) {
+      this.rosterWindow.draw();
     } else if (this.magickWindow.isOpen()) {
       this.magickWindow.draw();
     } else if (this.skillsWindow.isOpen()) {

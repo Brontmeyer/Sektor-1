@@ -3,6 +3,7 @@
 class Window_BattleCommand {
   static SIDE_ESCAPE = "Escape";
   static SIDE_DEFEND = "Defend";
+  static SIDE_SURGE = "Surge";
 
   constructor(scene = null) {
     this.scene = scene;
@@ -55,14 +56,30 @@ class Window_BattleCommand {
       Magick: "magick",
       Item: "item",
       Defend: "defend",
+      Surge: "skill",
     };
 
     return actionKeys[command] || "";
   }
 
+  canOpenSurge() {
+    const actor = this.actor();
+
+    if (!actor || actor.isValorSurgeReady?.() !== true) {
+      return false;
+    }
+
+    const arts = actor.selectedValorArts?.() || [];
+    return arts.some((art) => actor.canUseSkill?.(art.id) !== false);
+  }
+
   isCommandEnabled(command) {
     if (command === Window_BattleCommand.SIDE_ESCAPE) {
       return this.scene?.encounter?.canEscape === true;
+    }
+
+    if (command === Window_BattleCommand.SIDE_SURGE) {
+      return this.canOpenSurge();
     }
 
     const actor = this.actor();
@@ -90,7 +107,9 @@ class Window_BattleCommand {
     if (command === "Skills") {
       const skills =
         typeof actor.knownSkills === "function" ? actor.knownSkills() : [];
-      return skills.some((skill) => actor.canUseSkill?.(skill.id));
+      return skills
+        .filter((skill) => skill?.valorArt !== true)
+        .some((skill) => actor.canUseSkill?.(skill.id));
     }
 
     return true;
@@ -109,8 +128,13 @@ class Window_BattleCommand {
       ![
         Window_BattleCommand.SIDE_ESCAPE,
         Window_BattleCommand.SIDE_DEFEND,
+        Window_BattleCommand.SIDE_SURGE,
       ].includes(command)
     ) {
+      return false;
+    }
+
+    if (command === Window_BattleCommand.SIDE_SURGE && !this.canOpenSurge()) {
       return false;
     }
 
@@ -174,11 +198,21 @@ class Window_BattleCommand {
     this.ensureEnabledSelection();
 
     if (this.hasSideCommandOpen()) {
+      if (
+        this.sideCommand === Window_BattleCommand.SIDE_SURGE &&
+        !this.canOpenSurge()
+      ) {
+        this.closeSide();
+        return;
+      }
+
       const returnTowardCenter =
         (this.sideCommand === Window_BattleCommand.SIDE_ESCAPE &&
-          (Input.isActionTriggered("right"))) ||
+          Input.isActionTriggered("right")) ||
         (this.sideCommand === Window_BattleCommand.SIDE_DEFEND &&
-          (Input.isActionTriggered("left")));
+          Input.isActionTriggered("left")) ||
+        (this.sideCommand === Window_BattleCommand.SIDE_SURGE &&
+          Input.isActionTriggered("down"));
 
       if (returnTowardCenter) {
         this.closeSide();
@@ -198,7 +232,12 @@ class Window_BattleCommand {
     }
 
     if (Input.isActionTriggered("up")) {
-      this.moveSelection(-1);
+      if (this.index === 0 && this.canOpenSurge()) {
+        this.openSide(Window_BattleCommand.SIDE_SURGE);
+      } else {
+        this.moveSelection(-1);
+      }
+      return;
     }
 
     if (Input.isActionTriggered("down")) {
@@ -206,8 +245,61 @@ class Window_BattleCommand {
     }
   }
 
+  drawSurgeCommand(context) {
+    if (!this.canOpenSurge()) {
+      return;
+    }
+
+    const selected = this.sideCommand === Window_BattleCommand.SIDE_SURGE;
+    const width = Math.max(104, this.sideWidth + 12);
+    const height = this.sideHeight;
+    const x = this.x + (this.width - width) / 2;
+    const y = this.y - height;
+
+    if (
+      typeof UIAssetManager !== "undefined" &&
+      typeof UIAssetManager.drawPanel === "function"
+    ) {
+      UIAssetManager.drawPanel(
+        context,
+        "accentPanel",
+        x,
+        y,
+        width,
+        height,
+        {
+          fallbackFill: "rgba(7, 10, 15, 0.96)",
+          fallbackStroke: "rgba(255, 215, 90, 0.92)",
+          lineWidth: selected ? 2 : 1.5,
+          assetAlpha: selected ? 0.58 : 0.42,
+          sourceMargin: 14,
+          destMargin: 8,
+        },
+      );
+    } else {
+      context.fillStyle = "rgba(7, 10, 15, 0.96)";
+      context.fillRect(x, y, width, height);
+      context.strokeStyle = "rgba(255, 215, 90, 0.92)";
+      context.lineWidth = selected ? 2 : 1.5;
+      context.strokeRect(x, y, width, height);
+    }
+
+    context.font = "600 17px Arial";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = "#ffd75a";
+    context.fillText(
+      selected ? "▶ SURGE" : "SURGE",
+      x + width / 2,
+      y + height / 2,
+    );
+  }
+
   drawSideCommand(context) {
-    if (!this.hasSideCommandOpen()) {
+    if (
+      !this.hasSideCommandOpen() ||
+      this.sideCommand === Window_BattleCommand.SIDE_SURGE
+    ) {
       return;
     }
 
@@ -356,6 +448,7 @@ class Window_BattleCommand {
       context.globalAlpha = 1.0;
     }
 
+    this.drawSurgeCommand(context);
     this.drawSideCommand(context);
     context.restore();
   }

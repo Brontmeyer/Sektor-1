@@ -472,6 +472,11 @@ function testMap001ContainsStoryDrivenNamingFixtures() {
   const protagonistEvent = map.events.find((event) => event?.id === 19);
 
   assert.ok(protagonistEvent, "Map001 should contain the protagonist naming fixture.");
+  assert.equal(
+    protagonistEvent.solid,
+    false,
+    "The one-shot naming fixture must never leave a blocking invisible tile.",
+  );
   const protagonistPage = protagonistEvent.pages[0];
   assert.equal(
     protagonistPage.commands.some(

@@ -277,6 +277,76 @@ class Game_Party {
       .filter((actor) => actor !== null);
   }
 
+  reserveMembers() {
+    const activeIds = new Set(this._battleActorIds);
+    return this._actors.filter((actor) => !activeIds.has(actor.actorId));
+  }
+
+  isBattleActor(actorOrId) {
+    const actorId = this.normalizeActorId(actorOrId);
+    return actorId > 0 && this._battleActorIds.includes(actorId);
+  }
+
+  activateBattleActor(actorOrId) {
+    const actorId = this.normalizeActorId(actorOrId);
+
+    if (
+      !actorId ||
+      !this.actorById(actorId) ||
+      this.isBattleActor(actorId) ||
+      this._battleActorIds.length >= 4
+    ) {
+      return false;
+    }
+
+    return this.setBattleActorIds([...this._battleActorIds, actorId]);
+  }
+
+  reserveBattleActor(actorOrId) {
+    const actorId = this.normalizeActorId(actorOrId);
+
+    if (
+      !actorId ||
+      !this.isBattleActor(actorId) ||
+      this._battleActorIds.length <= 1
+    ) {
+      return false;
+    }
+
+    return this.setBattleActorIds(
+      this._battleActorIds.filter((memberId) => memberId !== actorId),
+    );
+  }
+
+  replaceBattleActor(activeActorOrId, reserveActorOrId) {
+    const activeId = this.normalizeActorId(activeActorOrId);
+    const reserveId = this.normalizeActorId(reserveActorOrId);
+
+    if (
+      !activeId ||
+      !reserveId ||
+      !this.isBattleActor(activeId) ||
+      this.isBattleActor(reserveId) ||
+      !this.actorById(reserveId)
+    ) {
+      return false;
+    }
+
+    const nextIds = [...this._battleActorIds];
+    const index = nextIds.indexOf(activeId);
+    const formationIds = this.battleFormationActorIds().map((actorId) =>
+      actorId === activeId ? reserveId : actorId,
+    );
+    nextIds[index] = reserveId;
+
+    if (!this.setBattleActorIds(nextIds)) {
+      return false;
+    }
+
+    this.setBattleFormationActorIds(formationIds);
+    return true;
+  }
+
   battleMemberIndex(actor) {
     return this.battleMembers().indexOf(actor);
   }
