@@ -14,6 +14,7 @@ const enemies = readData("Enemies.json");
 const statuses = readData("Statuses.json");
 const magick = readData("Magick.json");
 const canonicalSkills = readData("Skills.json");
+const canonicalValorArts = readData("Valor.json");
 
 const testSkills = [
   null,
@@ -28,15 +29,20 @@ const testSkills = [
     target: ["enemy"],
     scope: ["single"],
   },
+];
+
+const testValorArts = [
+  null,
+  null,
   {
     id: 2,
     name: "Test Valor Art",
     description: "Test-only Valor Art.",
-    type: "skill",
+    type: "valor",
     category: "physical",
     effect: "damage",
     powerMultiplier: 2,
-    valorArt: true,
+    valorLevel: 1,
     target: ["enemy"],
     scope: ["single"],
   },
@@ -44,11 +50,11 @@ const testSkills = [
     id: 3,
     name: "Test Valor Wave",
     description: "Test-only all-target Valor Art.",
-    type: "skill",
+    type: "valor",
     category: "physical",
     effect: "damage",
     powerMultiplier: 1,
-    valorArt: true,
+    valorLevel: 1,
     target: ["enemy"],
     scope: ["all"],
   },
@@ -62,6 +68,7 @@ function createHarness() {
     statuses,
     magick,
     skills: testSkills,
+    valorArts: testValorArts,
     actor(id) {
       return actors[id] || null;
     },
@@ -76,6 +83,12 @@ function createHarness() {
     },
     skillName(id) {
       return testSkills[id]?.name || `Unknown Skill ${id}`;
+    },
+    valorArt(id) {
+      return testValorArts[id] || null;
+    },
+    valorArtName(id) {
+      return testValorArts[id]?.name || `Unknown Valor Art ${id}`;
     },
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
@@ -145,6 +158,7 @@ function createHarness() {
   } = context.__classes;
   const actor = new Game_Actor(1);
   actor.skillIds = [];
+  actor.valorArtIds = [];
   const enemy = new Game_Enemy(1);
   partyMembers.push(actor);
 
@@ -191,43 +205,38 @@ function createSkillEffectScene(actor, enemiesList, skill, targetScope = "single
 }
 
 function testCanonicalContentDefinesCharacterSpecificValorArts() {
-  const skills = canonicalSkills.filter((skill) => skill?.valorArt === true);
-
   assert.deepEqual(
-    skills.map((skill) => [skill.id, skill.name, skill.valorArt]),
+    canonicalValorArts.filter(Boolean).map((art) => [art.id, art.name, art.type]),
     [
-      [1, "Unbroken", true],
-      [2, "Rallyheart", true],
-      [3, "Wild Arc", true],
-      [4, "Zero Lock", true],
+      [1, "Unbroken", "valor"],
+      [2, "Rallyheart", "valor"],
+      [3, "Wild Arc", "valor"],
+      [4, "Zero Lock", "valor"],
     ],
   );
   assert.deepEqual(
-    actors
-      .filter(Boolean)
-      .map((actor) =>
-        actor.initialSkillIds.filter((skillId) => canonicalSkills[skillId]?.valorArt === true),
-      ),
+    actors.filter(Boolean).map((actor) => actor.initialValorArtIds),
     [[1], [2], [3], [4]],
   );
+  assert.deepEqual(canonicalSkills.slice(1, 5), [null, null, null, null]);
 }
 
 function testValorArtReadinessLivesOnActorSkillCostHook() {
   const { actor } = createHarness();
-  actor.learnSkill(2);
+  actor.learnValorArt(2);
 
-  assert.equal(actor.isValorArt(testSkills[2]), true);
-  assert.equal(actor.canUseSkill(2), false);
+  assert.equal(actor.isValorArt(testValorArts[2]), true);
+  assert.equal(actor.canUseValorArt(2), false);
 
   actor.setValor(actor.maxValor - 0.001);
-  assert.equal(actor.canUseSkill(2), false);
+  assert.equal(actor.canUseValorArt(2), false);
 
   actor.setValor(actor.maxValor);
-  assert.equal(actor.canUseSkill(2), true);
+  assert.equal(actor.canUseValorArt(2), true);
 
   actor.addStatus("frog");
   assert.equal(
-    actor.canUseSkill(2),
+    actor.canUseValorArt(2),
     false,
     "Shared action restrictions still gate a ready Valor Art",
   );
@@ -245,9 +254,9 @@ function testRegularSkillsRemainCostNeutral() {
 
 function testValorArtConsumesFullGaugeOnceWhenCommitted() {
   const { actor, enemy, BattleManager } = createHarness();
-  actor.learnSkill(2);
+  actor.learnValorArt(2);
   actor.setValor(actor.maxValor);
-  const { scene } = createSkillEffectScene(actor, [enemy], testSkills[2]);
+  const { scene } = createSkillEffectScene(actor, [enemy], testValorArts[2]);
   const manager = new BattleManager(scene);
   let consumeCalls = 0;
   const consumeValor = actor.consumeValor.bind(actor);
@@ -266,11 +275,11 @@ function testValorArtConsumesFullGaugeOnceWhenCommitted() {
 
 function testValorArtMissStillSpendsCommittedGauge() {
   const { context, actor, enemy, BattleManager } = createHarness();
-  actor.learnSkill(2);
+  actor.learnValorArt(2);
   actor.setValor(actor.maxValor);
   actor.attackPercent = 0;
   vm.runInContext("Math.random = () => 0.5;", context);
-  const { scene, popups } = createSkillEffectScene(actor, [enemy], testSkills[2]);
+  const { scene, popups } = createSkillEffectScene(actor, [enemy], testValorArts[2]);
   const manager = new BattleManager(scene);
   const hpBefore = enemy.hp;
 
@@ -282,9 +291,9 @@ function testValorArtMissStillSpendsCommittedGauge() {
 
 function testInvalidTargetDoesNotSpendValor() {
   const { actor, enemy, BattleManager } = createHarness();
-  actor.learnSkill(2);
+  actor.learnValorArt(2);
   actor.setValor(actor.maxValor);
-  const { scene } = createSkillEffectScene(actor, [enemy], testSkills[2]);
+  const { scene } = createSkillEffectScene(actor, [enemy], testValorArts[2]);
   scene.pendingSkillTarget = actor;
   const manager = new BattleManager(scene);
 
@@ -297,12 +306,12 @@ function testInvalidTargetDoesNotSpendValor() {
 function testAllTargetValorArtConsumesOnlyOnce() {
   const { actor, enemy, Game_Enemy, BattleManager } = createHarness();
   const secondEnemy = new Game_Enemy(1);
-  actor.learnSkill(3);
+  actor.learnValorArt(3);
   actor.setValor(actor.maxValor);
   const { scene } = createSkillEffectScene(
     actor,
     [enemy, secondEnemy],
-    testSkills[3],
+    testValorArts[3],
     "all",
   );
   const manager = new BattleManager(scene);
@@ -324,7 +333,7 @@ function testAllTargetValorArtConsumesOnlyOnce() {
 
 function testSurgeReadinessIsSeparateFromRegularSkillsCommand() {
   const { actor, Window_BattleCommand } = createHarness();
-  actor.learnSkill(2);
+  actor.learnValorArt(2);
   const scene = { partyController: { currentBattler: () => actor } };
   const window = new Window_BattleCommand(scene);
 
@@ -338,14 +347,14 @@ function testSurgeReadinessIsSeparateFromRegularSkillsCommand() {
 
 function testValorArtsLiveInSurgeAndLeaveRegularSkillMenus() {
   const { actor, Window_BattleSkills, Window_Skills } = createHarness();
-  const art = testSkills[2];
+  const art = testValorArts[2];
   const regular = testSkills[1];
 
   assert.equal(Window_BattleSkills.prototype.skillLabel(art), "Test Valor Art");
   assert.equal(Window_BattleSkills.prototype.skillLabel(regular), "Test Technique");
 
   actor.learnSkill(1);
-  actor.learnSkill(2);
+  actor.learnValorArt(2);
   const scene = { partyController: { currentBattler: () => actor } };
   const battleWindow = new Window_BattleSkills(scene);
 

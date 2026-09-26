@@ -16,6 +16,34 @@ class Window_BattleSkills {
 
     this.x = 290;
     this.y = Graphics.height - this.height - 40;
+    this.refreshLayout();
+  }
+
+  refreshLayout() {
+    const command = this.scene?.hudLayout?.commandBounds?.() || null;
+
+    if (!command) {
+      return false;
+    }
+
+    if (this.mode === "surge") {
+      const count = Math.max(1, Math.min(2, this.skillList().length || 1));
+      this.width = command.width;
+      this.lineHeight = 34;
+      this.padding = 14;
+      this.height = 54 + count * this.lineHeight + 10;
+      this.x = command.x;
+      this.y = Math.max(10, command.y - this.height);
+      return true;
+    }
+
+    this.width = Math.max(320, Math.min(380, command.width + 150));
+    this.height = 260;
+    this.lineHeight = 40;
+    this.padding = 20;
+    this.x = command.x;
+    this.y = Math.max(10, command.y - this.height);
+    return true;
   }
 
   actor() {
@@ -32,12 +60,10 @@ class Window_BattleSkills {
     if (this.mode === "surge") {
       return typeof actor.selectedValorArts === "function"
         ? actor.selectedValorArts()
-        : actor.knownSkills().filter((skill) => skill?.valorArt === true);
+        : [];
     }
 
-    return actor
-      .knownSkills()
-      .filter((skill) => skill?.type === "skill" && skill?.valorArt !== true);
+    return actor.knownSkills().filter((skill) => skill?.type === "skill");
   }
 
   currentSkill() {
@@ -77,6 +103,7 @@ class Window_BattleSkills {
     const entries = this.skillList();
 
     this.visible = true;
+    this.refreshLayout();
 
     if (modeChanged) {
       preserveIndex = false;
@@ -127,6 +154,7 @@ class Window_BattleSkills {
 
     const context = Graphics.context;
     const skills = this.skillList();
+    this.refreshLayout();
 
     context.save();
 
@@ -184,9 +212,12 @@ class Window_BattleSkills {
       const skill = skills[i];
       const prefix = i === this.index ? "▶ " : "   ";
       const row = i - range.start;
-      const drawY = this.y + 75 + row * this.lineHeight;
+      const listStartY = this.mode === "surge" ? this.y + 58 : this.y + 75;
+      const drawY = listStartY + row * this.lineHeight;
       const selected = i === this.index;
-      const usable = this.actor().canUseSkill(skill.id);
+      const usable = this.mode === "surge"
+        ? this.actor().canUseValorArt?.(skill.id) === true
+        : this.actor().canUseSkill(skill.id);
 
       if (selected) {
         const drawn =
@@ -218,7 +249,9 @@ class Window_BattleSkills {
       context.globalAlpha = 1;
     }
 
-    this.drawScrollIndicators(context, skills.length);
+    if (this.mode !== "surge") {
+      this.drawScrollIndicators(context, skills.length);
+    }
     context.restore();
   }
 }

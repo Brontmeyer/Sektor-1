@@ -1993,7 +1993,12 @@ class BattleManager {
     const battler = this.party().currentBattler();
     const skill = battle.skillsWindow.currentSkill();
 
-    if (!skill || !battler?.canUseSkill?.(skill.id)) {
+    const isValorArt = battler?.isValorArt?.(skill) === true;
+    const canUse = isValorArt
+      ? battler?.canUseValorArt?.(skill?.id) === true
+      : battler?.canUseSkill?.(skill?.id) === true;
+
+    if (!skill || !canUse) {
       return;
     }
 
@@ -2595,7 +2600,12 @@ class BattleManager {
     const caster = this.party().currentBattler();
     const skill = battle.pendingSkill;
 
-    if (!caster || !skill || !caster.canUseSkill?.(skill.id)) {
+    const isValorArt = caster?.isValorArt?.(skill) === true;
+    const canUse = isValorArt
+      ? caster?.canUseValorArt?.(skill?.id) === true
+      : caster?.canUseSkill?.(skill?.id) === true;
+
+    if (!caster || !skill || !canUse) {
       battle.pendingSkill = null;
       battle.pendingSkillTarget = null;
       return false;
@@ -2609,7 +2619,17 @@ class BattleManager {
       caster.isValidSkillTarget?.(skill, target),
     );
 
-    if (validTargets.length === 0 || !caster.paySkillCost?.(skill)) {
+    if (validTargets.length === 0) {
+      battle.pendingSkill = null;
+      battle.pendingSkillTarget = null;
+      return false;
+    }
+
+    const paid = isValorArt
+      ? caster.payValorArtCost?.(skill) === true
+      : caster.paySkillCost?.(skill) === true;
+
+    if (!paid) {
       battle.pendingSkill = null;
       battle.pendingSkillTarget = null;
       return false;

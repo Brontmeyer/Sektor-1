@@ -14,6 +14,7 @@ const readData = (filename) =>
 function createHarness() {
   const actors = readData("Actors.json");
   const skills = readData("Skills.json");
+  const valorArts = readData("Valor.json");
   const statuses = readData("Statuses.json");
   const actions = new Set();
   const drawCalls = [];
@@ -22,6 +23,8 @@ function createHarness() {
     actor(id) { return actors[id] || null; },
     skill(id) { return skills[id] || null; },
     skillName(id) { return skills[id]?.name || `Unknown Skill ${id}`; },
+    valorArt(id) { return valorArts[id] || null; },
+    valorArtName(id) { return valorArts[id]?.name || `Unknown Valor Art ${id}`; },
     statusByKey(key) { return statuses.find((status) => status?.key === key) || null; },
     weapon() { return null; },
     armor() { return null; },
@@ -98,6 +101,7 @@ function createHarness() {
   return {
     actors,
     skills,
+    valorArts,
     actions,
     drawCalls,
     Game_Actor,
@@ -119,10 +123,10 @@ function press(harness, window, action) {
 }
 
 function testCanonicalValorArtsDeclareLevelOne() {
-  const skills = readData("Skills.json").filter((skill) => skill?.valorArt === true);
+  const valorArts = readData("Valor.json").filter(Boolean);
 
   assert.deepEqual(
-    skills.map((skill) => [skill.name, skill.valorLevel]),
+    valorArts.map((art) => [art.name, art.valorLevel]),
     [
       ["Unbroken", 1],
       ["Rallyheart", 1],
@@ -146,20 +150,19 @@ function testActorOwnsValorProgressionGroupingWithoutDuplicatingSkillRuntime() {
   );
   assert.equal(actor.highestKnownValorLevel(), 1);
 
-  harness.skills[7] = {
+  harness.valorArts[7] = {
     id: 7,
     name: "Test Level Two Art",
     description: "Test-only progression entry.",
-    type: "skill",
+    type: "valor",
     category: "physical",
     effect: "damage",
     powerMultiplier: 1,
-    valorArt: true,
     valorLevel: 2,
     target: ["enemy"],
     scope: ["single"],
   };
-  actor.skillIds.push(7);
+  actor.valorArtIds.push(7);
 
   assert.deepEqual(
     Array.from(actor.knownValorArts(), (art) => art.name),
@@ -232,20 +235,19 @@ function testValorScreenSwitchesActorsAndKeepsArtSelectionVertical() {
 function testValorLevelSelectionPreservesEarnedGauge() {
   const harness = createHarness();
   const actor = harness.partyActors[0];
-  harness.skills[7] = {
+  harness.valorArts[7] = {
     id: 7,
     name: "Test Level Two Art",
     description: "Second-level test Art.",
-    type: "skill",
+    type: "valor",
     category: "physical",
     effect: "damage",
     powerMultiplier: 1,
-    valorArt: true,
     valorLevel: 2,
     target: ["enemy"],
     scope: ["single"],
   };
-  actor.skillIds.push(7);
+  actor.valorArtIds.push(7);
   actor.setValor(63.5);
 
   assert.equal(actor.selectedValorLevel(), 1);

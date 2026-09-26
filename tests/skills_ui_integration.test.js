@@ -43,7 +43,7 @@ function createDrawContext() {
   };
 }
 
-function testBattleRendererDrawsSkillsAndSuppressesCommandWindow() {
+function testBattleRendererKeepsCommandWindowVisibleBehindSelectors() {
   const context = createDrawContext();
   const Graphics = { width: 1600, height: 900, context };
   const BattleRenderer = loadClass(
@@ -64,6 +64,7 @@ function testBattleRendererDrawsSkillsAndSuppressesCommandWindow() {
     victory: false,
     defeat: false,
     battleInputLocked: false,
+    partyController: { currentBattler: () => ({ actorId: 1 }) },
     commandWindow: {
       draw() {
         calls.command++;
@@ -101,7 +102,7 @@ function testBattleRendererDrawsSkillsAndSuppressesCommandWindow() {
 
   renderer.draw();
 
-  assert.equal(calls.command, 0);
+  assert.equal(calls.command, 1);
   assert.equal(calls.skills, 1);
   assert.equal(calls.magick, 1);
   assert.equal(calls.item, 1);
@@ -109,7 +110,7 @@ function testBattleRendererDrawsSkillsAndSuppressesCommandWindow() {
   skillsOpen = false;
   renderer.draw();
 
-  assert.equal(calls.command, 1);
+  assert.equal(calls.command, 2);
   assert.equal(calls.skills, 2);
 }
 
@@ -170,7 +171,7 @@ function testFieldAbilityWindowsUseSharedBoundedDescriptionLayout() {
 }
 
 function run() {
-  testBattleRendererDrawsSkillsAndSuppressesCommandWindow();
+  testBattleRendererKeepsCommandWindowVisibleBehindSelectors();
   testSharedTextLayoutWrapsAndTruncatesInsideBounds();
   testFieldAbilityWindowsUseSharedBoundedDescriptionLayout();
 

@@ -6,6 +6,7 @@ Canonical game data belongs in the appropriate database files:
 - `data/Accessories.json`
 - `data/Magick.json`
 - `data/Skills.json`
+- `data/Valor.json`
 - `data/Essences.json`
 - `data/Statuses.json`
 
@@ -136,7 +137,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Add Status Menu Presentation v1 with shared actor summary, Main / Element / Effect pages, actor-safe page switching, live elemental/status runtime presentation, and Equip footer-overlap cleanup
 - [x] Add Essence Menu Presentation & List Navigation v1 with shared stacked-vitals actor summary, slot/catalog equipment flow, two-column held-repeat catalog navigation, progression/Mastery Ready preview, and Magick Awakening presentation
 - [x] Implement Main Menu Information & Command Layout v1 with four active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels
-- [x] Implement Main Menu Refinement & Command Availability Foundation v1 with RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and map-based Save restrictions; Load remains outside the in-game main menu
+- [x] Implement Main Menu Refinement & Command Availability Foundation v1 with RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and map-based Save restrictions; Load remains outside the final in-game main menu; development temporarily restores it for QA
 - [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
 - [x] Add canonical persistent play-time tracking with main-menu HH:MM:SS and Save/Load persistence
 - [x] Implement Main Menu Actor Selection & Order Foundation v1 with shared party-card focus, actor handoff, persistent front/back row state, portrait-position row language, and ROSTER hidden-by-default policy
@@ -216,7 +217,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Define additional Skill costs/resources beyond Valor when approved designs require them
 - [x] Expand Skills beyond physical-damage techniques with reusable percentage-heal and status-application effects required by Character Valor Arts v1
 - [x] Add enemy Skill actions through the shared Skills runtime with the first canonical enemy technique
-- [x] Define Valor Arts Runtime v1 within the Skills namespace (legacy/current runtime foundation)
+- [x] Define Valor Arts Runtime v1 within the Skills namespace (legacy foundation)
+- [x] Separate Valor Arts into canonical `Valor.json` / actor-owned `valorArtIds` with v13 save migration
 - [x] Refactor player-facing Valor progression into its dedicated menu/system while reusing the established Skill action engine
 - [x] Design the first canonical character-specific Valor Arts
 - [ ] Design long-term Valor Art unlock/progression rules and final per-level Art sets (target: two Arts for Levels 1-3, one master Art for Level 4)
@@ -277,7 +279,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v13 with persistent selected Valor level plus v12 area-location discovery, learned Skills/Valor/equipment/Essence/party-row/visual-formation state, and preserved older migrations
+- [x] Save Runtime v14 with dedicated Valor Art ownership plus v13 selected Valor level, v12 area-location discovery, learned Skills/Valor/equipment/Essence/party-row/visual-formation state, and preserved older migrations
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies
@@ -326,3 +328,6 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Pass 102: Add Area Map Foundation v1, persistent location discovery, one-shot protagonist naming, and unidentified companion-introduction fixtures
 
 - [x] Pass 103: Add ROSTER active/reserve management, direct main-menu Order control, selectable Valor levels with preserved gauge, battle Surge readiness, square Name portrait treatment, and nonblocking naming fixture collision
+
+- [x] Pass 104: Keep battle commands visible behind child selectors, compact/anchor Surge selection, lock the protagonist in ROSTER, restore development Load, and separate Valor Arts into `Valor.json` with Save Runtime v14 migration
+- [ ] Remove the temporary in-game Load shortcut for the release menu once development/QA no longer needs rapid prepared-save access

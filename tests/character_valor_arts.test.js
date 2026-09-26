@@ -14,6 +14,7 @@ const enemies = readData("Enemies.json");
 const statuses = readData("Statuses.json");
 const magick = readData("Magick.json");
 const skills = readData("Skills.json");
+const valorArts = readData("Valor.json");
 
 function createHarness() {
   const partyMembers = [];
@@ -23,6 +24,7 @@ function createHarness() {
     statuses,
     magick,
     skills,
+    valorArts,
     actor(id) {
       return actors[id] || null;
     },
@@ -37,6 +39,12 @@ function createHarness() {
     },
     skillName(id) {
       return skills[id]?.name || `Unknown Skill ${id}`;
+    },
+    valorArt(id) {
+      return valorArts[id] || null;
+    },
+    valorArtName(id) {
+      return valorArts[id]?.name || `Unknown Valor Art ${id}`;
     },
     statusByKey(key) {
       return statuses.find((status) => status?.key === key) || null;
@@ -131,35 +139,32 @@ function ready(actor) {
 
 function testCanonicalArtsAndOwnership() {
   assert.deepEqual(
-    skills.filter((skill) => skill?.valorArt === true).map((skill) => ({
-      id: skill.id,
-      name: skill.name,
-      effect: skill.effect,
-      category: skill.category,
-      valorArt: skill.valorArt,
+    valorArts.filter(Boolean).map((art) => ({
+      id: art.id,
+      name: art.name,
+      effect: art.effect,
+      category: art.category,
+      type: art.type,
     })),
     [
-      { id: 1, name: "Unbroken", effect: "damage", category: "physical", valorArt: true },
-      { id: 2, name: "Rallyheart", effect: "heal", category: "support", valorArt: true },
-      { id: 3, name: "Wild Arc", effect: "damage", category: "physical", valorArt: true },
-      { id: 4, name: "Zero Lock", effect: "inflictStatus", category: "control", valorArt: true },
+      { id: 1, name: "Unbroken", effect: "damage", category: "physical", type: "valor" },
+      { id: 2, name: "Rallyheart", effect: "heal", category: "support", type: "valor" },
+      { id: 3, name: "Wild Arc", effect: "damage", category: "physical", type: "valor" },
+      { id: 4, name: "Zero Lock", effect: "inflictStatus", category: "control", type: "valor" },
     ],
   );
   assert.deepEqual(
-    actors
-      .filter(Boolean)
-      .map((actor) =>
-        actor.initialSkillIds.filter((skillId) => skills[skillId]?.valorArt === true),
-      ),
+    actors.filter(Boolean).map((actor) => actor.initialValorArtIds),
     [[1], [2], [3], [4]],
   );
+  assert.equal(skills.filter((skill) => skill?.type === "valor").length, 0);
 }
 
 function testUnbrokenIsTylerSingleTargetBurst() {
   const { party, Game_Enemy, BattleManager } = createHarness();
   const tyler = party[0];
   const enemy = new Game_Enemy(1);
-  const skill = skills[1];
+  const skill = valorArts[1];
   ready(tyler);
 
   const expectedDamage = new BattleManager({ enemies: [enemy] }).calculatePhysicalDamage(
@@ -179,7 +184,7 @@ function testUnbrokenIsTylerSingleTargetBurst() {
 function testRallyheartHealsOnlyInjuredAllies() {
   const { party, Game_Enemy, BattleManager } = createHarness();
   const sarah = party[1];
-  const skill = skills[2];
+  const skill = valorArts[2];
   const enemy = new Game_Enemy(1);
 
   for (const actor of party) {
@@ -206,7 +211,7 @@ function testRallyheartHealsOnlyInjuredAllies() {
 function testWildArcDamagesAllEnemiesAndCanInflictDarkness() {
   const { party, Game_Enemy, BattleManager } = createHarness();
   const aboo = party[2];
-  const skill = skills[3];
+  const skill = valorArts[3];
   const enemyA = new Game_Enemy(1);
   const enemyB = new Game_Enemy(1);
   ready(aboo);
@@ -233,7 +238,7 @@ function testWildArcDamagesAllEnemiesAndCanInflictDarkness() {
 function testZeroLockControlsAllEnemiesWithoutPhysicalDamage() {
   const { party, Game_Enemy, BattleManager } = createHarness();
   const gPrime = party[3];
-  const skill = skills[4];
+  const skill = valorArts[4];
   const enemyA = new Game_Enemy(1);
   const enemyB = new Game_Enemy(1);
   ready(gPrime);

@@ -165,6 +165,7 @@ function testSurgeChipAppearsOnlyWhenReadyAndOpensAboveAttack() {
     isValorSurgeReady: () => ready,
     selectedValorArts: () => [art],
     canUseSkill: () => true,
+    canUseValorArt: () => true,
     canUseBattleAction: () => true,
     isPlayerControlled: () => true,
     knownSkills: () => [],
@@ -449,6 +450,62 @@ function testMagickAndItemSelectorsAlsoSupportPreservedReopen() {
   assert.equal(itemWindow.index, 1);
 }
 
+function testBattleSelectorsAnchorAbovePersistentCommandWindow() {
+  const commandBounds = { x: 190, y: 540, width: 220, height: 156 };
+  const actor = {
+    knownSkills: () => [{ id: 6, name: "Scan", type: "skill" }],
+    selectedValorArts: () => [
+      { id: 1, name: "Unbroken", type: "valor", valorLevel: 1 },
+      { id: 7, name: "Second Art", type: "valor", valorLevel: 1 },
+    ],
+    canUseSkill: () => true,
+    canUseValorArt: () => true,
+    knownMagick: () => [{ id: 10, name: "Ember", type: "magick", mpCost: 4 }],
+    canUseMagick: () => true,
+  };
+  const scene = {
+    hudLayout: { commandBounds: () => commandBounds },
+    partyController: { currentBattler: () => actor },
+  };
+  const globals = {
+    Graphics: { height: 720, context: createDrawContext() },
+    Input: { isActionTriggered: () => false },
+    $gameParty: {
+      battleLeader: () => actor,
+      itemIds: () => [1],
+      itemCount: () => 1,
+    },
+    DatabaseManager: {
+      item: () => ({ id: 1, name: "Potion", effect: { type: "healHp", value: 50 } }),
+    },
+  };
+
+  const Skills = loadSelector("js/windows/Window_BattleSkills.js", "Window_BattleSkills", globals);
+  const Magick = loadSelector("js/windows/Window_BattleMagick.js", "Window_BattleMagick", globals);
+  const Item = loadSelector("js/windows/Window_BattleItem.js", "Window_BattleItem", globals);
+
+  const skills = new Skills(scene);
+  skills.show({ mode: "skills" });
+  assert.equal(skills.x, commandBounds.x);
+  assert.equal(skills.y + skills.height, commandBounds.y);
+
+  skills.show({ mode: "surge" });
+  assert.equal(skills.x, commandBounds.x);
+  assert.equal(skills.width, commandBounds.width);
+  assert.equal(skills.y + skills.height, commandBounds.y);
+  assert.equal(skills.height < 160, true, "two-Art Surge selector stays compact");
+
+  const magick = new Magick(scene);
+  magick.show();
+  assert.equal(magick.x, commandBounds.x);
+  assert.equal(magick.y + magick.height, commandBounds.y);
+
+  const item = new Item(scene);
+  item.show();
+  assert.equal(item.x, commandBounds.x);
+  assert.equal(item.y + item.height, commandBounds.y);
+}
+
 function run() {
   testMainCommandListContainsOnlyFourCoreCommands();
   testSideCommandsStayHiddenUntilHorizontalInputRequestsThem();
@@ -459,6 +516,7 @@ function run() {
   testTargetCancelReturnsToOriginatingSelectorWithCursorPreserved();
   testSelectorShowCanPreserveCursorForTargetCancel();
   testMagickAndItemSelectorsAlsoSupportPreservedReopen();
+  testBattleSelectorsAnchorAbovePersistentCommandWindow();
 
   console.log("Battle command navigation regression tests passed.");
 }

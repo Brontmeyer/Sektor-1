@@ -121,14 +121,6 @@ class Game_Enemy extends Game_Battler {
     );
   }
 
-  canPaySkillCost(skill) {
-    if (skill?.valorArt === true) {
-      return false;
-    }
-
-    return super.canPaySkillCost(skill);
-  }
-
   banish() {
     if (this.isDefeated()) {
       return {

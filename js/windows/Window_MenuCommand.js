@@ -19,6 +19,7 @@ class Window_MenuCommand {
       "Valor",
       "Config",
       "Save",
+      "Load",
     ];
 
     this.commands = [];

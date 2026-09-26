@@ -283,6 +283,10 @@ class Scene_Menu extends Scene_Base {
         this.saveSlotsWindow.show("save");
         break;
 
+      case "Load":
+        this.saveSlotsWindow.show("load");
+        break;
+
       case "ROSTER":
         this.rosterWindow.show();
         break;

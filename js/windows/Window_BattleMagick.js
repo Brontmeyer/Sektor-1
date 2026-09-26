@@ -15,6 +15,15 @@ class Window_BattleMagick {
 
     this.x = 290;
     this.y = Graphics.height - this.height - 40;
+    this.refreshLayout();
+  }
+
+  refreshLayout() {
+    const command = this.scene?.hudLayout?.commandBounds?.() || null;
+    if (!command) return false;
+    this.x = command.x;
+    this.y = Math.max(10, command.y - this.height);
+    return true;
   }
 
   update() {
@@ -71,6 +80,7 @@ class Window_BattleMagick {
     const entries = this.magickList();
 
     this.visible = true;
+    this.refreshLayout();
 
     if (!preserveIndex) {
       this.index = 0;
@@ -121,6 +131,7 @@ class Window_BattleMagick {
 
     const context = Graphics.context;
     const magickList = this.magickList();
+    this.refreshLayout();
 
     context.save();
 

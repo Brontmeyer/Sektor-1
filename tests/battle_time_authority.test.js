@@ -277,7 +277,7 @@ function testAtbInputAuthorityIsNotUnlockedByLegacyAnimationIdleState() {
   );
   assert.match(
     sceneSource,
-    /canAcceptCommandInput\(\)[\s\S]*?battler !== null[\s\S]*?BattleManager\.TURN_COMMAND/,
+    /canAcceptCommandInput\(\)[\s\S]*?battler !== null[\s\S]*?BattleManager\.TURN_COMMAND[\s\S]*?BattleManager\.TURN_ACTION/,
   );
   assert.match(
     animationSource,

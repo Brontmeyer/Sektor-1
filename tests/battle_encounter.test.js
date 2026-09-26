@@ -136,6 +136,7 @@ function testProjectDatabaseValidation() {
     accessories: readData("Accessories.json"),
     magickData: readData("Magick.json"),
     skills: readData("Skills.json"),
+    valorArts: readData("Valor.json"),
     essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),
   };

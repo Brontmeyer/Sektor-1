@@ -47,7 +47,7 @@ class Scene_Battle extends Scene_Base {
     this.commandWindow = new Window_BattleCommand(this);
     this.magickWindow = new Window_BattleMagick(this);
     this.skillsWindow = new Window_BattleSkills(this);
-    this.itemWindow = new Window_BattleItem();
+    this.itemWindow = new Window_BattleItem(this);
     this.resultsWindow = new Window_BattleResults(this);
 
     this.battleMessages = [];
@@ -384,7 +384,11 @@ class Scene_Battle extends Scene_Base {
       this.battleInputLocked === false &&
       battler !== null &&
       $gameParty.battleMembers().includes(battler) &&
-      (turnState === null || turnState === BattleManager.TURN_COMMAND)
+      (
+        turnState === null ||
+        turnState === BattleManager.TURN_COMMAND ||
+        turnState === BattleManager.TURN_ACTION
+      )
     );
   }
 

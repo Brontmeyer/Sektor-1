@@ -1,0 +1,60 @@
+[
+  null,
+  {
+    "_comment": "ID 1: Tyler - Unbroken",
+    "id": 1,
+    "name": "Unbroken",
+    "description": "A decisive single-target strike that converts a full Valor gauge into overwhelming physical force.",
+    "type": "valor",
+    "category": "physical",
+    "effect": "damage",
+    "powerMultiplier": 2.75,
+    "valorLevel": 1,
+    "target": ["enemy"],
+    "scope": ["single"]
+  },
+  {
+    "_comment": "ID 2: Sarah - Rallyheart",
+    "id": 2,
+    "name": "Rallyheart",
+    "description": "A party-wide surge of resolve that restores 35% of each injured ally's maximum HP.",
+    "type": "valor",
+    "category": "support",
+    "effect": "heal",
+    "healPercent": 0.35,
+    "valorLevel": 1,
+    "target": ["ally"],
+    "scope": ["all"]
+  },
+  {
+    "_comment": "ID 3: Aboo - Wild Arc",
+    "id": 3,
+    "name": "Wild Arc",
+    "description": "A sweeping physical assault against all enemies with a 60% base chance to inflict Darkness.",
+    "type": "valor",
+    "category": "physical",
+    "effect": "damage",
+    "powerMultiplier": 1.35,
+    "status": {
+      "darkness": 0.6
+    },
+    "valorLevel": 1,
+    "target": ["enemy"],
+    "scope": ["all"]
+  },
+  {
+    "_comment": "ID 4: G Prime - Zero Lock",
+    "id": 4,
+    "name": "Zero Lock",
+    "description": "A battlefield-control Art that attempts to inflict Slow on every enemy.",
+    "type": "valor",
+    "category": "control",
+    "effect": "inflictStatus",
+    "status": {
+      "slow": 1.0
+    },
+    "valorLevel": 1,
+    "target": ["enemy"],
+    "scope": ["all"]
+  }
+]

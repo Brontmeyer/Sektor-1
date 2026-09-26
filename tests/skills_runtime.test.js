@@ -14,6 +14,7 @@ const enemies = readData("Enemies.json");
 const statuses = readData("Statuses.json");
 const magick = readData("Magick.json");
 const canonicalSkills = readData("Skills.json");
+const canonicalValorArts = readData("Valor.json");
 
 const testSkills = [
   null,
@@ -141,22 +142,19 @@ function createHarness() {
   };
 }
 
-function testCanonicalSkillsDatabaseSeparatesActorValorArtsAndEnemyTechniques() {
+function testCanonicalSkillsDatabaseIsSeparateFromValorArts() {
   const skills = canonicalSkills.filter(Boolean);
-  const valorArts = skills.filter((skill) => skill.valorArt === true);
   const enemyTechnique = canonicalSkills[5];
 
-  assert.deepEqual(valorArts.map((skill) => skill.id), [1, 2, 3, 4]);
+  assert.equal(skills.every((skill) => skill.type === "skill"), true);
   assert.equal(enemyTechnique.name, "Goo Rush");
-  assert.equal(enemyTechnique.valorArt, undefined);
+  assert.deepEqual(canonicalSkills.slice(1, 5), [null, null, null, null]);
   assert.deepEqual(
-    actors
-      .filter(Boolean)
-      .map((actor) =>
-        actor.initialSkillIds.filter(
-          (skillId) => canonicalSkills[skillId]?.valorArt === true,
-        ),
-      ),
+    canonicalValorArts.filter(Boolean).map((art) => art.id),
+    [1, 2, 3, 4],
+  );
+  assert.deepEqual(
+    actors.filter(Boolean).map((actor) => actor.initialValorArtIds),
     [[1], [2], [3], [4]],
   );
 }
@@ -316,7 +314,7 @@ function testSkillExecutionReusesPhysicalDamagePipeline() {
 }
 
 function run() {
-  testCanonicalSkillsDatabaseSeparatesActorValorArtsAndEnemyTechniques();
+  testCanonicalSkillsDatabaseIsSeparateFromValorArts();
   testActorSkillOwnershipIsSeparateFromMagick();
   testSkillLegalityUsesSharedActionRestrictions();
   testSkillTargetingUsesSkillDefinitionNotMagickRules();

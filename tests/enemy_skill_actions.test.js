@@ -14,6 +14,7 @@ const actors = readData("Actors.json");
 const enemies = readData("Enemies.json");
 const magick = readData("Magick.json");
 const canonicalSkills = readData("Skills.json");
+const canonicalValorArts = readData("Valor.json");
 const statuses = readData("Statuses.json");
 
 const testSkills = clone(canonicalSkills);
@@ -147,10 +148,13 @@ function testCanonicalEnemySkillIsSeparateFromValorArts() {
   const action = enemies[1].actions.find((entry) => entry.type === "skill");
 
   assert.equal(skill.name, "Goo Rush");
-  assert.equal(skill.valorArt, undefined);
   assert.equal(action.skillId, 5);
   assert.equal(action.scope, "single");
-  assert.equal(canonicalSkills.slice(1, 5).every((entry) => entry.valorArt === true), true);
+  assert.equal(canonicalSkills.slice(1, 5).every((entry) => entry === null), true);
+  assert.deepEqual(
+    canonicalValorArts.filter(Boolean).map((art) => art.type),
+    ["valor", "valor", "valor", "valor"],
+  );
 }
 
 function testEnemyExecutesSharedDamageAndStatusSkillRuntime() {
@@ -218,7 +222,7 @@ function testEnemyAllTargetControlSkillUsesSharedStatusRuntime() {
   assert.equal(fixture.party[1].hasStatus("slow"), true);
 }
 
-function testEnemyCannotUseActorOwnedValorArtAsSkillAction() {
+function testEnemyCannotUseValorDatabaseIdAsSkillAction() {
   const fixture = createFixture({ partyCount: 1, enemyCount: 1 });
   const enemy = fixture.enemies[0];
   enemy.actions = [
@@ -244,7 +248,7 @@ function run() {
   testEnemyExecutesSharedDamageAndStatusSkillRuntime();
   testEnemySupportSkillUsesMeaningfulAllyTargeting();
   testEnemyAllTargetControlSkillUsesSharedStatusRuntime();
-  testEnemyCannotUseActorOwnedValorArtAsSkillAction();
+  testEnemyCannotUseValorDatabaseIdAsSkillAction();
 
   console.log("Enemy Skill action regression tests passed.");
 }

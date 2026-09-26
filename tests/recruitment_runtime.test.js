@@ -20,6 +20,7 @@ const accessories = readData("Accessories.json");
 const magick = readData("Magick.json");
 const statuses = readData("Statuses.json");
 const skills = readData("Skills.json");
+const valorArts = readData("Valor.json");
 const essences = readData("Essences.json");
 
 function createLocalStorage() {
@@ -42,6 +43,7 @@ function createHarness() {
     magick,
     statuses,
     skills,
+    valorArts,
     essences,
     mapInfos: [{ id: 1, name: "Test Map", file: "Map001.json" }],
     actor(id) { return actors[id] || null; },
@@ -51,6 +53,8 @@ function createHarness() {
     accessory(id) { return accessories[id] || null; },
     magick(id) { return magick[id] || null; },
     skill(id) { return skills[id] || null; },
+    valorArt(id) { return valorArts[id] || null; },
+    valorArtName(id) { return valorArts[id]?.name || `Unknown Valor Art ${id}`; },
     essence(id) { return essences[id] || null; },
     statusByKey(key) { return statuses.find((status) => status?.key === key) || null; },
   };
@@ -194,6 +198,7 @@ function testRecruitmentCommandValidationAndMapFixture() {
     accessories,
     magickData: magick,
     skills,
+    valorArts,
     essences,
     statuses,
   }, 1);

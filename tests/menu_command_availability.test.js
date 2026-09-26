@@ -126,7 +126,7 @@ function testFutureStoryUnlocksCanHideOrDisableCommands() {
   assert.match(policy.state("Valor").reason, /not been unlocked/i);
 }
 
-function testMainMenuOmitsLoadAndExitWhileDisabledSaveRendersMuted() {
+function testDevelopmentMenuRestoresLoadAndStillOmitsExit() {
   const Policy = loadPolicy();
   const policy = new Policy({
     commandStates: {
@@ -136,7 +136,7 @@ function testMainMenuOmitsLoadAndExitWhileDisabledSaveRendersMuted() {
   });
   const { window, drawCalls } = loadWindow(policy);
 
-  assert.equal(window.commands.includes("Load"), false);
+  assert.equal(window.commands.includes("Load"), true);
   assert.equal(window.commands.includes("Exit"), false);
   assert.equal(window.commands.includes("ROSTER"), true);
 
@@ -169,7 +169,7 @@ function run() {
   testDebugModeKeepsSaveAndLoadPermissiveForDevelopment();
   testRosterIsHiddenByDefaultUntilExplicitStoryUnlock();
   testFutureStoryUnlocksCanHideOrDisableCommands();
-  testMainMenuOmitsLoadAndExitWhileDisabledSaveRendersMuted();
+  testDevelopmentMenuRestoresLoadAndStillOmitsExit();
   testPolicyLoadsBeforeMenuConsumers();
 
   console.log("Menu command availability regression tests passed.");

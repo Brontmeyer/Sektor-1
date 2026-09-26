@@ -70,7 +70,7 @@ class Window_BattleCommand {
     }
 
     const arts = actor.selectedValorArts?.() || [];
-    return arts.some((art) => actor.canUseSkill?.(art.id) !== false);
+    return arts.some((art) => actor.canUseValorArt?.(art.id) === true);
   }
 
   isCommandEnabled(command) {
@@ -107,9 +107,7 @@ class Window_BattleCommand {
     if (command === "Skills") {
       const skills =
         typeof actor.knownSkills === "function" ? actor.knownSkills() : [];
-      return skills
-        .filter((skill) => skill?.valorArt !== true)
-        .some((skill) => actor.canUseSkill?.(skill.id));
+      return skills.some((skill) => actor.canUseSkill?.(skill.id));
     }
 
     return true;

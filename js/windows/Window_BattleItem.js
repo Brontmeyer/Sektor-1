@@ -1,7 +1,8 @@
 "use strict";
 
 class Window_BattleItem {
-  constructor() {
+  constructor(scene = null) {
+    this.scene = scene;
     this.visible = false;
     this.index = 0;
 
@@ -14,6 +15,15 @@ class Window_BattleItem {
 
     this.x = 290;
     this.y = Graphics.height - this.height - 40;
+    this.refreshLayout();
+  }
+
+  refreshLayout() {
+    const command = this.scene?.hudLayout?.commandBounds?.() || null;
+    if (!command) return false;
+    this.x = command.x;
+    this.y = Math.max(10, command.y - this.height);
+    return true;
   }
 
   update() {
@@ -69,6 +79,7 @@ class Window_BattleItem {
     const entries = this.items();
 
     this.visible = true;
+    this.refreshLayout();
 
     if (!preserveIndex) {
       this.index = 0;
@@ -119,6 +130,7 @@ class Window_BattleItem {
 
     const context = Graphics.context;
     const items = this.items();
+    this.refreshLayout();
 
     context.save();
 

@@ -114,21 +114,23 @@ class BattleRenderer {
       : null;
   }
 
-  shouldDrawCommandWindow(selectionWindowOpen = this.hasOpenSelectionWindow()) {
+  shouldDrawCommandWindow(_selectionWindowOpen = this.hasOpenSelectionWindow()) {
     if (
       this.scene.victory ||
       this.scene.defeat ||
       this.scene.outcome ||
-      this.scene.battleInputLocked ||
-      this.scene.selectingEnemyTarget ||
-      selectionWindowOpen
+      this.scene.battleInputLocked
     ) {
       return false;
     }
 
-    const turnState = this.currentTurnState();
+    const battler = this.scene.partyController?.currentBattler?.() || null;
+    if (!battler) {
+      return false;
+    }
 
-    return turnState === null || turnState === "command";
+    const turnState = this.currentTurnState();
+    return turnState === null || turnState === "command" || turnState === "action";
   }
 
   battleBannerAlpha(banner = this.scene.battleBanner) {
@@ -419,13 +421,22 @@ class BattleRenderer {
       return `${up} / ${down}: Choose   ${confirm}: Select   ${cancel}: Back   ${this.tacticalHelpControlHint()}`;
     }
 
-    if (this.scene.battleInputLocked || this.scene.pendingEnemyTurn) {
+    const commandOwner = this.scene.partyController?.currentBattler?.() || null;
+
+    if (
+      this.scene.battleInputLocked ||
+      (this.scene.pendingEnemyTurn && !commandOwner)
+    ) {
       return "Resolving battle...";
     }
 
     const turnState = this.currentTurnState();
+    const decisionState =
+      turnState === null ||
+      turnState === "command" ||
+      (turnState === "action" && commandOwner);
 
-    if (turnState !== null && turnState !== "command") {
+    if (!decisionState) {
       return "Resolving battle...";
     }
 

@@ -230,7 +230,7 @@ function testPhaseSchemaValidationRejectsAmbiguousOrMalformedBossData() {
     true,
   );
   assert.equal(
-    errors.some((error) => error.includes("cannot reference a Valor Art")),
+    errors.some((error) => error.includes("must reference valid Skill")),
     true,
   );
 }

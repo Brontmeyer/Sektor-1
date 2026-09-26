@@ -188,7 +188,7 @@ function testTransientBannerFadesAtPresentationEdges() {
   );
 }
 
-function testCommandWindowIsSuppressedDuringTargetSelection() {
+function testCommandWindowPersistsThroughActorDecisionSubmenus() {
   const Graphics = { width: 1600, height: 900, context: createContext() };
   const { BattleHudLayout, BattleRenderer } = loadPresentation({ Graphics });
   const scene = baseScene();
@@ -198,14 +198,21 @@ function testCommandWindowIsSuppressedDuringTargetSelection() {
   assert.equal(renderer.shouldDrawCommandWindow(false), true);
 
   scene.selectingEnemyTarget = true;
-  assert.equal(renderer.shouldDrawCommandWindow(false), false);
+  assert.equal(renderer.shouldDrawCommandWindow(false), true);
 
   scene.selectingEnemyTarget = false;
   scene.battleInputLocked = true;
   assert.equal(renderer.shouldDrawCommandWindow(false), false);
 
   scene.battleInputLocked = false;
-  assert.equal(renderer.shouldDrawCommandWindow(true), false);
+  assert.equal(renderer.shouldDrawCommandWindow(true), true);
+
+  scene.battleManager.currentTurnState = () => "action";
+  assert.equal(
+    renderer.shouldDrawCommandWindow(false),
+    true,
+    "an enemy interruption must not hide the actor's command anchor",
+  );
 }
 
 function testContextualHintsMatchBattleState() {
@@ -234,6 +241,10 @@ function testContextualHintsMatchBattleState() {
   assert.match(renderer.battleHint(), /Back/);
 
   scene.skillsWindow.isOpen = () => false;
+  scene.battleManager.currentTurnState = () => "action";
+  assert.match(renderer.battleHint(), /Command/);
+  assert.match(renderer.battleHint(), /Defend/);
+
   scene.battleInputLocked = true;
   assert.equal(renderer.battleHint(), "Resolving battle...");
 
@@ -269,7 +280,7 @@ function run() {
   testBannerAppearsOnlyWhenTransientPresentationStateExists();
   testTransientBannerQueuePreservesStateAnnouncementsBeforeActions();
   testTransientBannerFadesAtPresentationEdges();
-  testCommandWindowIsSuppressedDuringTargetSelection();
+  testCommandWindowPersistsThroughActorDecisionSubmenus();
   testContextualHintsMatchBattleState();
   testCriticalFlashIsBriefGlobalPresentationEffect();
 

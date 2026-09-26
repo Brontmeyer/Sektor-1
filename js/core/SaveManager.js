@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 13;
+    return 14;
   }
 
   static clearError() {
@@ -62,7 +62,14 @@ class SaveManager {
         ? 1
         : null;
 
-    const upgradeToCurrent = (data, { includeStarterSkills = false } = {}) => ({
+    const upgradeToCurrent = (
+      data,
+      {
+        includeStarterSkills = false,
+        includeStarterValorArts = false,
+        extractLegacyValorArts = false,
+      } = {},
+    ) => ({
       ...data,
       version: this.currentVersion(),
       actors: Array.isArray(data.actors)
@@ -81,9 +88,24 @@ class SaveManager {
             const starterSkillIds = Array.isArray(actorDefinition?.initialSkillIds)
               ? actorDefinition.initialSkillIds
               : [];
-            const skillIds = includeStarterSkills
-              ? [...new Set([...savedSkillIds, ...starterSkillIds])]
+            const starterValorArtIds = Array.isArray(actorDefinition?.initialValorArtIds)
+              ? actorDefinition.initialValorArtIds
+              : [];
+            const legacyValorArtIds = extractLegacyValorArts
+              ? savedSkillIds.filter((id) => DatabaseManager.valorArt?.(Number(id)))
+              : [];
+            const savedValorArtIds = Array.isArray(source.valorArtIds)
+              ? source.valorArtIds
+              : legacyValorArtIds;
+            const ordinarySavedSkillIds = extractLegacyValorArts
+              ? savedSkillIds.filter((id) => !DatabaseManager.valorArt?.(Number(id)))
               : savedSkillIds;
+            const skillIds = includeStarterSkills
+              ? [...new Set([...ordinarySavedSkillIds, ...starterSkillIds])]
+              : ordinarySavedSkillIds;
+            const valorArtIds = includeStarterValorArts
+              ? [...new Set([...savedValorArtIds, ...starterValorArtIds])]
+              : savedValorArtIds;
             const legacyEssences = Array.isArray(source.essences)
               ? source.essences
               : [];
@@ -123,6 +145,7 @@ class SaveManager {
                   : 1,
               magickIds,
               skillIds,
+              valorArtIds,
               essenceProgress,
               equippedEssenceIds,
             };
@@ -171,17 +194,19 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if ([12, 11, 10, 9].includes(inferredVersion)) {
-      // v9+ already owns explicit Skill state, including deliberately forgotten
-      // starter Arts. v10 adds row state; v11 adds visual formation ordering.
-      // v12 adds persistent area-location discovery state; v13 adds the prepared Valor level.
-      // Preserve existing state exactly and default a missing formation order to
-      // the saved active-party order.
-      return upgradeToCurrent(saveData);
+    if ([13, 12, 11, 10, 9].includes(inferredVersion)) {
+      // v9+ already owns explicit Skill state. v14 separates Valor Arts into
+      // their own database/runtime, so migrate any legacy Valor Art IDs out of
+      // skillIds without re-injecting deliberately forgotten Arts.
+      return upgradeToCurrent(saveData, { extractLegacyValorArts: true });
     }
 
     if ([8, 7, 6, 5, 4, 3, 2].includes(inferredVersion)) {
-      return upgradeToCurrent(saveData, { includeStarterSkills: true });
+      return upgradeToCurrent(saveData, {
+        includeStarterSkills: true,
+        includeStarterValorArts: true,
+        extractLegacyValorArts: true,
+      });
     }
 
     if (inferredVersion === 1) {
@@ -194,7 +219,11 @@ class SaveManager {
           ...saveData,
           actors: legacyActor ? [legacyActor] : [],
         },
-        { includeStarterSkills: true },
+        {
+          includeStarterSkills: true,
+          includeStarterValorArts: true,
+          extractLegacyValorArts: true,
+        },
       );
     }
 
@@ -333,6 +362,31 @@ class SaveManager {
             }
 
             seenSkillIds.add(skillId);
+          }
+        }
+
+        if (actorData.valorArtIds !== undefined && !Array.isArray(actorData.valorArtIds)) {
+          errors.push(`Actor ${actorId} valorArtIds must be an array.`);
+        } else if (Array.isArray(actorData.valorArtIds)) {
+          const seenValorArtIds = new Set();
+
+          for (const rawValorArtId of actorData.valorArtIds) {
+            const valorArtId = Number(rawValorArtId);
+
+            if (
+              !Number.isInteger(valorArtId) ||
+              valorArtId <= 0 ||
+              !DatabaseManager.valorArt?.(valorArtId)
+            ) {
+              errors.push(`Actor ${actorId} references unknown Valor Art ${rawValorArtId}.`);
+              continue;
+            }
+
+            if (seenValorArtIds.has(valorArtId)) {
+              errors.push(`Actor ${actorId} stores Valor Art ${valorArtId} more than once.`);
+            }
+
+            seenValorArtIds.add(valorArtId);
           }
         }
 
@@ -656,6 +710,7 @@ class SaveManager {
       selectedValorLevel: actor.selectedValorLevel?.() || 1,
       magickIds: [...actor.magickIds],
       skillIds: [...actor.skillIds],
+      valorArtIds: [...(actor.valorArtIds || [])],
       statuses:
         typeof actor.persistentStatusState === "function"
           ? actor.persistentStatusState()
@@ -755,6 +810,21 @@ class SaveManager {
                 Number.isInteger(skillId) &&
                 skillId > 0 &&
                 DatabaseManager.skill?.(skillId),
+            ),
+        ),
+      ];
+    }
+
+    if (Array.isArray(actorData.valorArtIds)) {
+      actor.valorArtIds = [
+        ...new Set(
+          actorData.valorArtIds
+            .map((valorArtId) => Number(valorArtId))
+            .filter(
+              (valorArtId) =>
+                Number.isInteger(valorArtId) &&
+                valorArtId > 0 &&
+                DatabaseManager.valorArt?.(valorArtId),
             ),
         ),
       ];

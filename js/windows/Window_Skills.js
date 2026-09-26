@@ -41,12 +41,8 @@ class Window_Skills {
       return [];
     }
 
-    // The player-facing Skill menu is now the home for ordinary techniques.
-    // Valor Arts keep using the shared Skill runtime, but their field
-    // presentation belongs to the dedicated Valor destination planned later.
-    return this.actor
-      .knownSkills()
-      .filter((skill) => skill?.type === "skill" && skill?.valorArt !== true);
+    // Skills and Valor Arts now live in separate databases and runtimes.
+    return this.actor.knownSkills().filter((skill) => skill?.type === "skill");
   }
 
   currentSkill() {

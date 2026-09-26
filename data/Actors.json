@@ -48,9 +48,10 @@
     },
 
     "initialMagickIds": [1, 10],
-    "initialSkillIds": [1, 6],
+    "initialSkillIds": [6],
     "essenceSlots": 3,
-    "maxValor": 100
+    "maxValor": 100,
+    "initialValorArtIds": [1]
   },
   {
     "_comment": "Sarah",
@@ -100,9 +101,10 @@
     },
 
     "initialMagickIds": [1, 10],
-    "initialSkillIds": [2],
+    "initialSkillIds": [],
     "essenceSlots": 3,
-    "maxValor": 100
+    "maxValor": 100,
+    "initialValorArtIds": [2]
   },
   {
     "_comment": "Aboo",
@@ -152,9 +154,10 @@
     },
 
     "initialMagickIds": [1, 10],
-    "initialSkillIds": [3],
+    "initialSkillIds": [],
     "essenceSlots": 3,
-    "maxValor": 100
+    "maxValor": 100,
+    "initialValorArtIds": [3]
   },
   {
     "_comment": "G Prime",
@@ -204,8 +207,9 @@
     },
 
     "initialMagickIds": [1, 10],
-    "initialSkillIds": [4],
+    "initialSkillIds": [],
     "essenceSlots": 3,
-    "maxValor": 100
+    "maxValor": 100,
+    "initialValorArtIds": [4]
   }
 ]

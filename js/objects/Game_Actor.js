@@ -65,6 +65,9 @@ class Game_Actor extends Game_Battler {
     this.skillIds = Array.isArray(actorData.initialSkillIds)
       ? [...actorData.initialSkillIds]
       : [];
+    this.valorArtIds = Array.isArray(actorData.initialValorArtIds)
+      ? [...actorData.initialValorArtIds]
+      : [];
 
     // Essence progression belongs to the actor, while equipment slots only
     // reference those persistent runtime instances. This keeps Resonance intact
@@ -648,22 +651,57 @@ class Game_Actor extends Game_Battler {
       .filter((skill) => skill !== null);
   }
 
-  isValorArt(skill) {
-    return skill?.valorArt === true;
+  isValorArt(art) {
+    return art?.type === "valor";
   }
 
-  valorArtLevel(skill) {
-    if (!this.isValorArt(skill)) {
+  valorArtLevel(art) {
+    if (!this.isValorArt(art)) {
       return 0;
     }
 
-    const level = Number(skill?.valorLevel);
+    const level = Number(art?.valorLevel);
     return Number.isInteger(level) && level >= 1 && level <= 4 ? level : 1;
   }
 
+  learnValorArt(valorArtId) {
+    const id = Number(valorArtId);
+
+    if (!Number.isInteger(id) || id <= 0 || !DatabaseManager.valorArt?.(id)) {
+      console.warn(`Cannot learn Valor Art ${valorArtId}: Valor Art does not exist.`);
+      return false;
+    }
+
+    if (this.knowsValorArt(id)) {
+      return false;
+    }
+
+    this.valorArtIds.push(id);
+    DebugManager.log(`${this.name} learned ${DatabaseManager.valorArtName(id)}.`);
+    return true;
+  }
+
+  forgetValorArt(valorArtId) {
+    const id = Number(valorArtId);
+    const index = this.valorArtIds.indexOf(id);
+
+    if (index === -1) {
+      return false;
+    }
+
+    this.valorArtIds.splice(index, 1);
+    DebugManager.log(`${this.name} forgot ${DatabaseManager.valorArtName(id)}.`);
+    return true;
+  }
+
+  knowsValorArt(valorArtId) {
+    return this.valorArtIds.includes(Number(valorArtId));
+  }
+
   knownValorArts() {
-    return this.knownSkills()
-      .filter((skill) => this.isValorArt(skill))
+    return this.valorArtIds
+      .map((valorArtId) => DatabaseManager.valorArt?.(valorArtId) || null)
+      .filter((art) => art !== null)
       .sort((left, right) => {
         const levelDifference = this.valorArtLevel(left) - this.valorArtLevel(right);
         return levelDifference !== 0
@@ -680,34 +718,42 @@ class Game_Actor extends Game_Battler {
     }
 
     return this.knownValorArts().filter(
-      (skill) => this.valorArtLevel(skill) === resolvedLevel,
+      (art) => this.valorArtLevel(art) === resolvedLevel,
     );
   }
 
   highestKnownValorLevel() {
     return this.knownValorArts().reduce(
-      (highest, skill) => Math.max(highest, this.valorArtLevel(skill)),
+      (highest, art) => Math.max(highest, this.valorArtLevel(art)),
       0,
     );
   }
 
-  canPaySkillCost(skill) {
-    if (this.isValorArt(skill)) {
-      return (
-        this.isValorSurgeReady() &&
-        this.valorArtLevel(skill) === this.selectedValorLevel()
-      );
-    }
+  canUseValorArt(valorArtId) {
+    const art = DatabaseManager.valorArt?.(Number(valorArtId)) || null;
 
-    return super.canPaySkillCost(skill);
+    return (
+      art !== null &&
+      this.knowsValorArt(valorArtId) &&
+      this.canUseBattleAction("skill") &&
+      this.canPayValorArtCost(art)
+    );
   }
 
-  paySkillCost(skill) {
-    if (this.isValorArt(skill)) {
-      return this.consumeValor();
+  canPayValorArtCost(art) {
+    return (
+      this.isValorArt(art) &&
+      this.isValorSurgeReady() &&
+      this.valorArtLevel(art) === this.selectedValorLevel()
+    );
+  }
+
+  payValorArtCost(art) {
+    if (!this.canPayValorArtCost(art)) {
+      return false;
     }
 
-    return super.paySkillCost(skill);
+    return this.consumeValor();
   }
 
   // =====================================

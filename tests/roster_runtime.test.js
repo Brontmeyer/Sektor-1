@@ -115,10 +115,19 @@ function testRosterWindowFullPartySwapFlow() {
   assert.equal(window.confirmSelection(), true);
   assert.equal(window.pendingReserveId, 5);
   assert.equal(window.focus, "active");
+
+  // The protagonist is story-locked against ordinary ROSTER replacement.
+  assert.equal(window.currentActor().name, "Tyler");
+  assert.equal(window.confirmSelection(), false);
+  assert.equal(window.pendingReserveId, 5);
+
+  window.activeIndex = 1;
+  assert.equal(window.currentActor().name, "Sarah");
   assert.equal(window.confirmSelection(), true);
   assert.equal(window.pendingReserveId, 0);
-  assert.equal(active[0].name, "Reserve");
-  assert.equal(reserve[0].name, "Tyler");
+  assert.equal(active[0].name, "Tyler");
+  assert.equal(active[1].name, "Reserve");
+  assert.equal(reserve[0].name, "Sarah");
 }
 
 function testRosterTerminologyAndMenuRouting() {

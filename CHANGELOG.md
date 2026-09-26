@@ -12,6 +12,9 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Pass 104 Valor data separation and development workflow polish: canonical Valor Arts now live in dedicated `data/Valor.json`, actors own learned `valorArtIds` independently from ordinary Skills, Save Runtime v14 persists that ownership and migrates legacy v13-and-older Valor Art IDs out of `skillIds`, the development MAIN MENU restores Load for fast QA access, and ROSTER prevents ordinary player input from moving the configured protagonist into reserve.
+- Refined battle command hierarchy so the main Attack / Magick / Skills / Item panel remains visible as the actor's decision anchor while child selectors and targeting are open. Magick, Skills, and Item selectors anchor above that panel, while the ready-only Surge Art selector is compact enough for the intended two-Art-per-level contract and sits directly above Attack.
+
 - Added Pass 103 ROSTER + Valor Surge foundation: **ROSTER** now expands to **Remote Operative Selection Tactical Engagement Registry** and owns active/reserve battle-party switching under the four-member cap, including full-party replacement flow. It appears after a supporting operative joins. Order now edits the visible MAIN MENU party cards directly instead of opening a second formation screen, and the in-game command stack drops redundant Load/Exit destinations.
 - Added prepared Valor levels and battle **SURGE**: each actor sets one learned Valor level at a time, changing levels preserves already-earned gauge, the Valor screen lets players inspect Art descriptions before setting a level, normal Skills no longer mix in Valor Arts, and a gold Surge chip appears above Attack only when the current actor's set level is ready. Save Runtime v13 persists the prepared level with v12 migration.
 - Standardized Name entry portrait treatment with the same square actor portrait placeholder used by the rest of the menu family, and made the one-shot protagonist naming fixture non-solid so its completed state cannot leave an invisible collision wall.
@@ -34,6 +37,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 - Added recruitment regression coverage for hero-only New Game state, runtime recruitment/removal, event-side recruitment, and save/load restoration into a fresh hero-only party.
 
 ### Fixed
+
+- Kept actor command ownership visually stable during ATB enemy interruptions and child-menu navigation; an interrupting enemy action may resolve while input remains available, but it no longer makes the actor's main command panel disappear.
 
 - Fixed an ATB input-authority crash exposed by Confirm (`E`) during idle/no-owner battle frames. Legacy animation-idle code can no longer unlock input under ATB, the scene accepts command input only when a live party battler actually owns `TURN_COMMAND`, and `BattleManager` defensively ignores ownerless command execution instead of dereferencing a missing battler.
 - Refined ATB command ownership from hands-on playtesting: enemy actions no longer hide or lock an already-open player command surface, and Wait mode now pauses TIME only in deep selectors / target selection rather than on the main command bar. Ready enemies may still resolve while the main command is open, while a committed player action joins the execution queue instead of overlapping the enemy recovery beat.

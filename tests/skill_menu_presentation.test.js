@@ -35,10 +35,10 @@ function createHarness() {
     id: 2,
     name: "Rallyheart",
     description: "Valor-only technique.",
-    type: "skill",
+    type: "valor",
     category: "support",
     effect: "heal",
-    valorArt: true,
+    valorLevel: 1,
     target: ["ally"],
     scope: ["all"],
   };
@@ -50,7 +50,8 @@ function createHarness() {
     maxHp: 500,
     mp: 81,
     maxMp: 100,
-    knownSkills: () => [valorArt, ...skills],
+    knownSkills: () => skills,
+    knownValorArts: () => [valorArt],
   };
   const party = {
     battleFormationMembers: () => [actor],
@@ -122,12 +123,12 @@ function textCalls(harness) {
     .map((call) => ({ text: String(call[2]), x: call[3], y: call[4] }));
 }
 
-function testFieldSkillListExcludesValorArts() {
+function testFieldSkillListUsesDedicatedSkillsRuntimeOnly() {
   const harness = createHarness();
   const list = harness.window.skillList();
 
   assert.equal(list.length, harness.skills.length);
-  assert.equal(list.some((skill) => skill.valorArt === true), false);
+  assert.equal(list.some((skill) => skill.type === "valor"), false);
   assert.equal(list.includes(harness.valorArt), false);
 }
 
@@ -225,7 +226,7 @@ function testSkillUsesSharedHeldDirectionContract() {
 }
 
 function run() {
-  testFieldSkillListExcludesValorArts();
+  testFieldSkillListUsesDedicatedSkillsRuntimeOnly();
   testThreeColumnGridConsumesAllDirectionsAndKeepsActorFixed();
   testGridScrollsByRowsAndShowsOnlyNeededArrows();
   testSkillReferenceHierarchyAndActorSummary();

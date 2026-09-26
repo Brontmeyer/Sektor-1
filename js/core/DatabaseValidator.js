@@ -16,6 +16,7 @@ class DatabaseValidator {
       ["Accessories", database.accessories],
       ["Magick", database.magickData],
       ["Skills", database.skills],
+      ["Valor", database.valorArts],
       ["Essences", database.essences],
       ["Statuses", database.statuses],
     ]) {
@@ -28,6 +29,7 @@ class DatabaseValidator {
       errors,
       database.magickData,
       database.skills,
+      database.valorArts,
     );
     this.validateEnemies(
       database.enemies,
@@ -41,6 +43,7 @@ class DatabaseValidator {
     this.validateArmors(database.armors, errors);
     this.validateAccessories(database.accessories, errors);
     this.validateSkills(database.skills, database.statuses, errors);
+    this.validateValorArts(database.valorArts, database.statuses, errors);
     this.validateMagick(database.magickData, database.statuses, errors);
     this.validateStatuses(database.statuses, errors);
     this.validateEssences(
@@ -1269,7 +1272,13 @@ class DatabaseValidator {
     }
   }
 
-  static validateActors(actors, errors, magick = null, skills = null) {
+  static validateActors(
+    actors,
+    errors,
+    magick = null,
+    skills = null,
+    valorArts = null,
+  ) {
     if (!Array.isArray(actors)) {
       return;
     }
@@ -1354,6 +1363,33 @@ class DatabaseValidator {
 
           if (Array.isArray(skills) && !skills[skillId]) {
             errors.push(`${label} initialSkillIds references unknown skill ID ${skillId}.`);
+          }
+        }
+      }
+
+      if (!Array.isArray(actor.initialValorArtIds)) {
+        errors.push(`${label} initialValorArtIds must be an array.`);
+      } else {
+        const seenValorArtIds = new Set();
+
+        for (const valorArtId of actor.initialValorArtIds) {
+          if (!Number.isInteger(valorArtId) || valorArtId <= 0) {
+            errors.push(`${label} initialValorArtIds entries must be positive integers.`);
+            continue;
+          }
+
+          if (seenValorArtIds.has(valorArtId)) {
+            errors.push(
+              `${label} initialValorArtIds must not contain duplicate Valor Art ID ${valorArtId}.`,
+            );
+          }
+
+          seenValorArtIds.add(valorArtId);
+
+          if (Array.isArray(valorArts) && !valorArts[valorArtId]) {
+            errors.push(
+              `${label} initialValorArtIds references unknown Valor Art ID ${valorArtId}.`,
+            );
           }
         }
       }
@@ -1452,12 +1488,6 @@ class DatabaseValidator {
           errors.push(`${actionLabel}.${idKey} must reference valid ${labelName}.`);
         }
 
-        if (!isMagick && ability?.valorArt === true) {
-          errors.push(
-            `${actionLabel}.skillId cannot reference a Valor Art for an enemy action.`,
-          );
-        }
-
         if (action.targetGroup !== undefined) {
           if (!validTargetGroups.has(action.targetGroup)) {
             errors.push(
@@ -1497,7 +1527,6 @@ class DatabaseValidator {
         if (action.skillId !== undefined) {
           errors.push(`${actionLabel}.skillId is only valid for Skill actions.`);
         }
-
         if (action.targetGroup !== undefined) {
           errors.push(
             `${actionLabel}.targetGroup is only valid for Magick or Skill actions.`,
@@ -2002,8 +2031,6 @@ class DatabaseValidator {
           "healPercent",
           "valorGain",
           "status",
-          "valorArt",
-          "valorLevel",
           "target",
           "scope",
         ],
@@ -2082,23 +2109,6 @@ class DatabaseValidator {
         errors.push(`${label} inflictStatus effect requires status metadata.`);
       }
 
-      if (skill.valorArt !== undefined && typeof skill.valorArt !== "boolean") {
-        errors.push(`${label} valorArt must be a boolean when provided.`);
-      }
-
-      if (skill.valorLevel !== undefined) {
-        if (skill.valorArt !== true) {
-          errors.push(`${label} valorLevel is only supported by Valor Arts.`);
-        }
-
-        this.validateFiniteNumber(
-          `${label} valorLevel`,
-          skill.valorLevel,
-          errors,
-          { min: 1, max: 4, integer: true },
-        );
-      }
-
       if (!Array.isArray(skill.target) || skill.target.length === 0) {
         errors.push(`${label} target must be a non-empty array.`);
       } else {
@@ -2136,6 +2146,159 @@ class DatabaseValidator {
         skill.description !== undefined &&
         typeof skill.description !== "string"
       ) {
+        errors.push(`${label} description must be a string when provided.`);
+      }
+    }
+  }
+
+  static validateValorArts(valorArts, statuses, errors = null) {
+    if (!Array.isArray(errors)) {
+      errors = statuses;
+      statuses = [];
+    }
+
+    if (!Array.isArray(valorArts)) {
+      return;
+    }
+
+    const validTargets = new Set(["self", "ally", "enemy"]);
+    const validScopes = new Set(["single", "all"]);
+    const validCategories = new Set(["physical", "support", "control"]);
+    const validEffects = new Set(["damage", "heal", "inflictStatus", "scan"]);
+    const statusKeys = new Set(
+      Array.isArray(statuses)
+        ? statuses.filter(Boolean).map((status) => status.key)
+        : [],
+    );
+
+    for (let index = 1; index < valorArts.length; index++) {
+      const art = valorArts[index];
+
+      if (!art) {
+        continue;
+      }
+
+      const label = `Valor Art ${index}`;
+      this.validateKnownKeys(
+        label,
+        art,
+        [
+          "_comment",
+          "id",
+          "name",
+          "description",
+          "type",
+          "category",
+          "effect",
+          "powerMultiplier",
+          "healPercent",
+          "status",
+          "valorLevel",
+          "target",
+          "scope",
+        ],
+        errors,
+      );
+
+      if (art.type !== "valor") {
+        errors.push(`${label} type must be "valor".`);
+      }
+
+      if (!validCategories.has(art.category)) {
+        errors.push(`${label} has unsupported category "${art.category}".`);
+      }
+
+      if (!validEffects.has(art.effect)) {
+        errors.push(`${label} has unsupported effect "${art.effect}".`);
+      }
+
+      this.validateFiniteNumber(`${label} valorLevel`, art.valorLevel, errors, {
+        min: 1,
+        max: 4,
+        integer: true,
+      });
+
+      if (art.effect === "damage") {
+        this.validateFiniteNumber(
+          `${label} powerMultiplier`,
+          art.powerMultiplier,
+          errors,
+          { min: Number.MIN_VALUE },
+        );
+      } else if (art.powerMultiplier !== undefined) {
+        errors.push(`${label} powerMultiplier is only supported by damage Valor Arts.`);
+      }
+
+      if (art.effect === "heal") {
+        this.validateFiniteNumber(
+          `${label} healPercent`,
+          art.healPercent,
+          errors,
+          { min: Number.MIN_VALUE, max: 1 },
+        );
+      } else if (art.healPercent !== undefined) {
+        errors.push(`${label} healPercent is only supported by heal Valor Arts.`);
+      }
+
+      if (art.status !== undefined) {
+        if (!["damage", "inflictStatus"].includes(art.effect)) {
+          errors.push(
+            `${label} status metadata is only supported by damage or inflictStatus Valor Arts.`,
+          );
+        }
+
+        if (!this.isPlainObject(art.status) || Object.keys(art.status).length === 0) {
+          errors.push(`${label} status must be a non-empty object when provided.`);
+        } else {
+          for (const [statusKey, chance] of Object.entries(art.status)) {
+            if (statusKeys.size > 0 && !statusKeys.has(statusKey)) {
+              errors.push(`${label} status references unknown status key "${statusKey}".`);
+            }
+
+            this.validateFiniteNumber(
+              `${label} status.${statusKey}`,
+              chance,
+              errors,
+              { min: 0, max: 1 },
+            );
+          }
+        }
+      } else if (art.effect === "inflictStatus") {
+        errors.push(`${label} inflictStatus effect requires status metadata.`);
+      }
+
+      if (!Array.isArray(art.target) || art.target.length === 0) {
+        errors.push(`${label} target must be a non-empty array.`);
+      } else {
+        for (const target of art.target) {
+          if (!validTargets.has(target)) {
+            errors.push(`${label} target has unsupported value "${target}".`);
+          }
+        }
+      }
+
+      if (!Array.isArray(art.scope) || art.scope.length === 0) {
+        errors.push(`${label} scope must be a non-empty array.`);
+      } else {
+        for (const scope of art.scope) {
+          if (!validScopes.has(scope)) {
+            errors.push(`${label} scope has unsupported value "${scope}".`);
+          }
+        }
+      }
+
+      if (art.effect === "scan") {
+        const targets = Array.isArray(art.target) ? art.target : [];
+        const scopes = Array.isArray(art.scope) ? art.scope : [];
+        if (targets.length !== 1 || targets[0] !== "enemy") {
+          errors.push(`${label} scan effect must target only enemy.`);
+        }
+        if (scopes.length !== 1 || scopes[0] !== "single") {
+          errors.push(`${label} scan effect must use single scope.`);
+        }
+      }
+
+      if (art.description !== undefined && typeof art.description !== "string") {
         errors.push(`${label} description must be a string when provided.`);
       }
     }

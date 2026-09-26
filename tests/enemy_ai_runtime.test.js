@@ -282,7 +282,7 @@ function testEnemyActionSchemaValidation() {
   assert.equal(errors.some((error) => error.includes("actions[0].weight")), true);
   assert.equal(errors.some((error) => error.includes("valid Skill")), true);
   assert.equal(errors.some((error) => error.includes("valid Magick")), true);
-  assert.equal(errors.some((error) => error.includes("Valor Art")), true);
+  assert.equal(errors.filter((error) => error.includes("valid Skill")).length >= 2, true);
   assert.equal(
     errors.some((error) => error.includes("condition.value")),
     true,

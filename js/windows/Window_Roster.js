@@ -136,6 +136,21 @@ class Window_Roster {
     return true;
   }
 
+  protagonistActorId() {
+    if (typeof DatabaseManager !== "undefined") {
+      const configured = Number(DatabaseManager.system?.protagonistActorId);
+      if (Number.isInteger(configured) && configured > 0) {
+        return configured;
+      }
+    }
+
+    return 1;
+  }
+
+  isRosterLockedActor(actor) {
+    return Number(actor?.actorId) === this.protagonistActorId();
+  }
+
   confirmSelection() {
     const actor = this.currentActor();
     if (!actor) {
@@ -146,6 +161,10 @@ class Window_Roster {
       if (this.focus !== "active") {
         this.switchFocus("active");
         return true;
+      }
+
+      if (this.isRosterLockedActor(actor)) {
+        return false;
       }
 
       const reserveActor = this.pendingReserveActor();
@@ -159,6 +178,10 @@ class Window_Roster {
     }
 
     if (this.focus === "active") {
+      if (this.isRosterLockedActor(actor)) {
+        return false;
+      }
+
       const reserved = this.party?.reserveBattleActor?.(actor) === true;
       this.clampIndices();
       return reserved;
@@ -364,6 +387,10 @@ class Window_Roster {
     }
 
     if (this.focus === "active") {
+      if (this.isRosterLockedActor(actor)) {
+        return `${actor.name} is story-locked as the protagonist and cannot be moved to reserve here.`;
+      }
+
       return this.activeMembers().length <= 1
         ? `${actor.name} is the last active operative and cannot be moved to reserve.`
         : `Move ${actor.name} to reserve. Active battle parties may contain up to four operatives.`;
