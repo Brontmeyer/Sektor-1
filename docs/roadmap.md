@@ -140,7 +140,7 @@ The current `Magick.json` runtime vocabulary is now connected through reusable e
 Primary remaining work includes:
 
 - Verify every initial Magick ability against its canonical data through broader playtest/content coverage
-- Implement undead restorative-damage interaction once undead battler identity/data is established
+- ✅ Undead restorative-damage interaction through battler-owned `undead` identity and the shared Magick/Skill/Item restorative path
 
 ## Milestone Exit Condition
 
@@ -516,7 +516,7 @@ Battle-presentation directions and current status:
 - ✅ Game Options / Config Foundation v1 with battle/message pacing, battle cursor memory, Magick ordering, and save-slot-independent persistence
 - ✅ Custom Controls / Input Mapping v1 with named actions, persistent two-slot keyboard bindings, dynamic hints, and a dedicated Controls screen
 - ✅ Battle UI / Presentation Polish v1 with tighter HUD/command proportions, compact translucent Tactical Help, banner fades, softer hints, and battle accent cursors
-- ✅ Battle Context Panel v2 with automatic action descriptions, shared scanned-target readouts, wider translucent context geometry, heading-free normal selectors, and four visible selector rows
+- ✅ Battle Context Panel v2 with vertically centered description-only action prose, shared scanned-target readouts, wider translucent context geometry, heading-free normal selectors, and four visible selector rows
 - ✅ Asset / UI Skinning Foundation v1 with centralized asset loading, curated UI art, safe fallbacks, windowskin/icon primitives, and optional battler shadows
 - ✅ UI Style Integration Prototype v1 with soft-framed semantic battle/menu panels, selection surfaces, and gauge framing
 - ✅ Menu Window Softening & Frame Polish v1 with centralized rounded clipping, depth/shadow, inset highlights, and softened gauges/selections

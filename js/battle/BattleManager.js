@@ -1453,12 +1453,26 @@ class BattleManager {
 
     if (magick.effect === "heal") {
       healing = Math.max(0, target.hp - hpBefore);
+      const restorativeDamage = Math.max(0, hpBefore - target.hp);
 
-      this.scene.addBattlePopup(target, `+${healing}`, "heal");
-      this.scene.addBattleMessage(
-        `${caster.name} casts ${magick.name}! ` +
-          `${target.name} recovers ${healing} HP!`,
-      );
+      if (restorativeDamage > 0 && target.isUndead?.() === true) {
+        damageResult = {
+          damage: restorativeDamage,
+          healing: 0,
+          restorative: true,
+        };
+        this.scene.addBattlePopup(target, `-${restorativeDamage}`, "damage");
+        this.scene.addBattleMessage(
+          `${caster.name} casts ${magick.name}! ` +
+            `${target.name} takes ${restorativeDamage} restorative damage!`,
+        );
+      } else {
+        this.scene.addBattlePopup(target, `+${healing}`, "heal");
+        this.scene.addBattleMessage(
+          `${caster.name} casts ${magick.name}! ` +
+            `${target.name} recovers ${healing} HP!`,
+        );
+      }
     }
 
     if (magick.effect === "revive") {
@@ -2555,8 +2569,24 @@ class BattleManager {
       return false;
     }
 
-    target.gainHp(requestedHealing);
+    if (typeof target.applyRestorativeHp === "function") {
+      target.applyRestorativeHp(requestedHealing, { source: caster });
+    } else {
+      target.gainHp(requestedHealing);
+    }
+
     const healing = Math.max(0, target.hp - hpBefore);
+    const restorativeDamage = Math.max(0, hpBefore - target.hp);
+
+    if (restorativeDamage > 0 && target.isUndead?.() === true) {
+      battle.addBattlePopup(target, `-${restorativeDamage}`, "damage");
+      battle.addBattleMessage(
+        `${caster.name} uses ${skill.name}! ` +
+          `${target.name} takes ${restorativeDamage} restorative damage!`,
+      );
+      this.presentDefeatTransition(target, false);
+      return true;
+    }
 
     if (healing > 0) {
       battle.addBattlePopup(target, `+${healing}`, "heal");
@@ -2903,12 +2933,23 @@ class BattleManager {
       return false;
     }
 
-    const healing = target.hp - hpBefore;
+    const healing = Math.max(0, target.hp - hpBefore);
+    const restorativeDamage = Math.max(0, hpBefore - target.hp);
 
-    battle.addBattleMessage(
-      `${battler.name} uses ${item.name} on ${target.name}! ` +
-        `${target.name} recovers ${healing} HP!`,
-    );
+    if (restorativeDamage > 0 && target.isUndead?.() === true) {
+      battle.addBattlePopup?.(target, `-${restorativeDamage}`, "damage");
+      battle.addBattleMessage(
+        `${battler.name} uses ${item.name} on ${target.name}! ` +
+          `${target.name} takes ${restorativeDamage} restorative damage!`,
+      );
+      this.presentDefeatTransition(target, false);
+    } else {
+      battle.addBattlePopup?.(target, `+${healing}`, "heal");
+      battle.addBattleMessage(
+        `${battler.name} uses ${item.name} on ${target.name}! ` +
+          `${target.name} recovers ${healing} HP!`,
+      );
+    }
 
     // Consumption happens only after a legal target accepts the effect.
     battle.pendingItem = null;

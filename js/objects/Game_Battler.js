@@ -41,6 +41,11 @@ class Game_Battler {
       ...(data.elementRates || {}),
     };
 
+    // Undead is a battler identity flag rather than a spell/item exception.
+    // Restorative HP effects can therefore ask the target how restoration is
+    // interpreted without checking enemy names or database IDs.
+    this.undead = data.undead === true;
+
     this.statusRates = {
       ...(data.statusRates || {}),
     };
@@ -1353,6 +1358,7 @@ class Game_Battler {
     if (magick.effect === "heal") {
       if (
         !reflected &&
+        target.isUndead?.() !== true &&
         typeof target.isFullHp === "function" &&
         target.isFullHp()
       ) {
@@ -1367,7 +1373,11 @@ class Game_Battler {
         return false;
       }
 
-      target.gainHp(healAmount);
+      if (typeof target.applyRestorativeHp === "function") {
+        target.applyRestorativeHp(healAmount, { source: this });
+      } else {
+        target.gainHp(healAmount);
+      }
       this._lastMagickStatusResults = this.resolveMagickStatusEffects(
         magick,
         target,
@@ -1649,6 +1659,7 @@ class Game_Battler {
 
     if (
       skill.effect === "heal" &&
+      target.isUndead?.() !== true &&
       typeof target.isFullHp === "function" &&
       target.isFullHp()
     ) {
@@ -1707,6 +1718,7 @@ class Game_Battler {
 
     if (
       item.effect?.type === "healHp" &&
+      target.isUndead?.() !== true &&
       typeof target.isFullHp === "function" &&
       target.isFullHp()
     ) {
@@ -1834,6 +1846,49 @@ class Game_Battler {
   // =====================================
   // HP Management
   // =====================================
+
+  isUndead() {
+    return this.undead === true;
+  }
+
+  applyRestorativeHp(amount, { source = null } = {}) {
+    const requested = this._validAmount(amount);
+    const hpBefore = this.hp;
+
+    if (requested <= 0) {
+      return {
+        healing: 0,
+        damage: 0,
+        inverted: this.isUndead(),
+        damageResult: null,
+      };
+    }
+
+    if (this.isUndead()) {
+      const damageResult = this.receiveDamage(requested, {
+        category: "restorative",
+        element: "restorative",
+        source,
+        valorEligible: false,
+      });
+
+      return {
+        healing: 0,
+        damage: damageResult?.damage ?? Math.max(0, hpBefore - this.hp),
+        inverted: true,
+        damageResult: damageResult || null,
+      };
+    }
+
+    this.gainHp(requested);
+
+    return {
+      healing: Math.max(0, this.hp - hpBefore),
+      damage: 0,
+      inverted: false,
+      damageResult: null,
+    };
+  }
 
   receiveDamage(
     amount,

@@ -218,6 +218,43 @@ function testEnemyHealingTargetsLowestHpAlly() {
   );
 }
 
+function testEnemyAiDoesNotRestoreUndeadAlliesButCanTreatUndeadOpponentsAsHarmfulTargets() {
+  const fixture = createFixture({ partyCount: 1, enemyCount: 2 });
+  const caster = fixture.enemies[0];
+  const undeadAlly = fixture.enemies[1];
+  const undeadOpponent = fixture.party[0];
+  const mendAction = {
+    type: "magick",
+    magickId: 1,
+    targetGroup: "ally",
+    targetStrategy: "lowestHpRate",
+    scope: "single",
+  };
+
+  undeadAlly.undead = true;
+  undeadAlly.setHp(Math.floor(undeadAlly.maxHp * 0.5));
+  undeadOpponent.undead = true;
+
+  assert.equal(
+    fixture.manager.enemyAI.targetIsMeaningful(
+      caster,
+      mendAction,
+      undeadAlly,
+      magick[1],
+    ),
+    false,
+  );
+  assert.equal(
+    fixture.manager.enemyAI.targetIsMeaningful(
+      caster,
+      { ...mendAction, targetGroup: "enemy" },
+      undeadOpponent,
+      magick[1],
+    ),
+    true,
+  );
+}
+
 function testUnusableConfiguredMagickFallsBackToAttack() {
   const fixture = createFixture({ partyCount: 1, enemyCount: 1 });
   const enemy = fixture.enemies[0];
@@ -302,6 +339,7 @@ function run() {
   testWeightedSelectionAndHpCondition();
   testEnemyCastsDamageMagickAndPaysMp();
   testEnemyHealingTargetsLowestHpAlly();
+  testEnemyAiDoesNotRestoreUndeadAlliesButCanTreatUndeadOpponentsAsHarmfulTargets();
   testUnusableConfiguredMagickFallsBackToAttack();
   testConfusionOverridesNormalEnemyTargetStrategy();
   testEnemyActionSchemaValidation();

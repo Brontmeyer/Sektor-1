@@ -410,11 +410,8 @@ class BattleRenderer {
     }
 
     const entry = this.currentBattleSelectionEntry();
-    const surgeSelection =
-      this.scene.skillsWindow?.isOpen?.() === true &&
-      this.scene.skillsWindow?.mode === "surge";
 
-    if (entry && surgeSelection) {
+    if (entry) {
       const description =
         typeof entry.description === "string" ? entry.description.trim() : "";
       const detail = description || "No description available.";
@@ -430,31 +427,6 @@ class BattleRenderer {
         18,
         2,
       );
-      context.restore();
-      return;
-    }
-
-    if (entry) {
-      const name = String(entry.name || "").trim();
-      const description =
-        typeof entry.description === "string" ? entry.description.trim() : "";
-
-      context.font = "bold 14px Arial";
-      context.fillStyle = "#ffd75a";
-      const displayName =
-        context.measureText(name).width <= maxWidth
-          ? name
-          : Window_TextLayout.ellipsize(context, name, maxWidth);
-      context.fillText(displayName, left, lineOneY);
-
-      context.font = "13px Arial";
-      context.fillStyle = "#e3e8ef";
-      const detail = description || "No description available.";
-      const displayDetail =
-        context.measureText(detail).width <= maxWidth
-          ? detail
-          : Window_TextLayout.ellipsize(context, detail, maxWidth);
-      context.fillText(displayDetail, left, lineTwoY);
       context.restore();
       return;
     }

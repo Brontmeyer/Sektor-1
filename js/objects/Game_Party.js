@@ -715,7 +715,10 @@ class Game_Party {
 
     switch (item.effect.type) {
       case "healHp":
-        if (resolvedTarget.isFullHp()) {
+        if (
+          resolvedTarget.isUndead?.() !== true &&
+          resolvedTarget.isFullHp()
+        ) {
           DebugManager.log(
             `${item.name} was not used because HP is already full.`,
           );
@@ -733,7 +736,11 @@ class Game_Party {
           return false;
         }
 
-        resolvedTarget.gainHp(healAmount);
+        if (typeof resolvedTarget.applyRestorativeHp === "function") {
+          resolvedTarget.applyRestorativeHp(healAmount);
+        } else {
+          resolvedTarget.gainHp(healAmount);
+        }
 
         break;
 

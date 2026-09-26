@@ -273,9 +273,9 @@
       ]
     },
     {
-      "_comment": "ID 3: Test Merchant",
+      "_comment": "ID 3: Item Merchant",
       "id": 3,
-      "name": "Test Merchant",
+      "name": "Item Merchant",
       "x": 320,
       "y": 300,
       "width": 32,
@@ -287,7 +287,7 @@
           "commands": [
             {
               "code": "shop",
-              "name": "Test Merchant",
+              "name": "Item Merchant",
               "goods": [
                 {
                   "type": "item",

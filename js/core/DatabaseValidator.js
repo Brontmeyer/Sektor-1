@@ -1247,6 +1247,10 @@ class DatabaseValidator {
   }
 
   static validateBattlerStats(record, label, errors) {
+    if (record.undead !== undefined && typeof record.undead !== "boolean") {
+      errors.push(`${label} undead must be true or false when provided.`);
+    }
+
     this.validateFiniteNumber(`${label} level`, record.level, errors, {
       min: 1,
       integer: true,

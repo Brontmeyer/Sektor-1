@@ -72,7 +72,7 @@ function loadRenderer(scene, drawContext) {
   return new context.__classes.BattleRenderer(scene);
 }
 
-function testContextPanelShowsHighlightedActionWithoutRedundantHeading() {
+function testContextPanelShowsDescriptionWithoutRepeatingSelectedActionName() {
   const drawContext = createDrawContext();
   const mend = {
     id: 1,
@@ -97,10 +97,20 @@ function testContextPanelShowsHighlightedActionWithoutRedundantHeading() {
   renderer.drawTacticalHelp(drawContext);
 
   const text = renderedText(drawContext);
-  assert.equal(text.includes("Mend"), true);
+  assert.equal(text.includes("Mend"), false);
   assert.equal(text.includes("Heal a small amount of HP."), true);
   assert.equal(text.includes("TACTICAL"), false);
   assert.equal(text.includes("Magick"), false);
+
+  const descriptionCall = drawContext.calls.find(
+    (call) => call[0] === "fillText" && call[2] === "Heal a small amount of HP.",
+  );
+  const bounds = scene.hudLayout.contextPanelBounds();
+  assert.equal(
+    descriptionCall?.[4],
+    bounds.y + bounds.height / 2,
+    "single-line action descriptions should sit on the vertical centerline",
+  );
 }
 
 function testSurgeContextPanelShowsArtDescriptionWithoutRepeatingArtName() {
@@ -283,7 +293,7 @@ function testNormalBattleSelectorsDropRedundantCategoryHeadings() {
 }
 
 function run() {
-  testContextPanelShowsHighlightedActionWithoutRedundantHeading();
+  testContextPanelShowsDescriptionWithoutRepeatingSelectedActionName();
   testSurgeContextPanelShowsArtDescriptionWithoutRepeatingArtName();
   testContextPanelBecomesScannedTargetReadoutDuringTargeting();
   testNormalBattleSelectorsDropRedundantCategoryHeadings();

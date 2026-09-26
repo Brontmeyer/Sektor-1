@@ -224,7 +224,7 @@ function testMap001ContainsDedicatedShopkeeperFixtures() {
     shops.map(({ event, command }) => [command.shopType, { event, command }]),
   );
 
-  assert.equal(byType.general.command.name, "Test Merchant");
+  assert.equal(byType.general.command.name, "Item Merchant");
   assert.deepEqual(
     byType.general.command.goods.map((good) => good.type),
     ["item", "item"],

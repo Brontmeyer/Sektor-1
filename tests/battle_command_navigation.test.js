@@ -158,7 +158,7 @@ function testSideCommandsStayHiddenUntilHorizontalInputRequestsThem() {
 }
 
 
-function testSurgeChipAppearsOnlyWhenReadyAndOpensAboveAttack() {
+function testSurgeChipStaysHiddenUntilReadyActorRequestsItAboveAttack() {
   let ready = false;
   const art = { id: 1, name: "Unbroken", valorArt: true };
   const actor = {
@@ -185,11 +185,11 @@ function testSurgeChipAppearsOnlyWhenReadyAndOpensAboveAttack() {
   text = drawContext.calls
     .filter((call) => call[0] === "fillText")
     .map((call) => String(call[1]));
-  assert.equal(text.includes("SURGE"), true);
-  const surgeRect = drawContext.calls.find(
-    (call) => call[0] === "strokeRect" && call[1] === window.x && call[2] < window.y,
+  assert.equal(
+    text.some((value) => value.includes("SURGE")),
+    false,
+    "Valor Ready lives on the HUD; the Surge chip stays hidden until requested",
   );
-  assert.notEqual(surgeRect, undefined, "Surge aligns with the Attack/command left edge");
 
   window.index = 0;
   trigger("ArrowUp");
@@ -198,11 +198,29 @@ function testSurgeChipAppearsOnlyWhenReadyAndOpensAboveAttack() {
   assert.equal(window.currentCommand(), "Surge");
   assert.equal(window.hasSideCommandOpen(), true);
 
+  drawContext.calls.length = 0;
+  window.draw();
+  text = drawContext.calls
+    .filter((call) => call[0] === "fillText")
+    .map((call) => String(call[1]));
+  assert.equal(text.includes("▶ SURGE"), true);
+  const surgeRect = drawContext.calls.find(
+    (call) => call[0] === "strokeRect" && call[1] === window.x && call[2] < window.y,
+  );
+  assert.notEqual(surgeRect, undefined, "Surge aligns with the Attack/command left edge");
+
   trigger("ArrowDown");
   window.update();
   clear();
   assert.equal(window.hasSideCommandOpen(), false);
   assert.equal(window.currentCommand(), "Attack");
+
+  drawContext.calls.length = 0;
+  window.draw();
+  text = drawContext.calls
+    .filter((call) => call[0] === "fillText")
+    .map((call) => String(call[1]));
+  assert.equal(text.some((value) => value.includes("SURGE")), false);
 }
 
 function testSideWindowsAreFlushWithMainCommandTopAndEdges() {
@@ -644,7 +662,7 @@ function testBattleSelectorsClampVerticalNavigationAtListEdges() {
 function run() {
   testMainCommandListContainsOnlyFourCoreCommands();
   testSideCommandsStayHiddenUntilHorizontalInputRequestsThem();
-  testSurgeChipAppearsOnlyWhenReadyAndOpensAboveAttack();
+  testSurgeChipStaysHiddenUntilReadyActorRequestsItAboveAttack();
   testSideWindowsAreFlushWithMainCommandTopAndEdges();
   testBossEscapeSideActionRemainsFocusableButDisabled();
   testSideCommandConfirmationDelegatesEscapeAndDefendPaths();

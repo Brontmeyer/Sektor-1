@@ -163,7 +163,7 @@ Single / All
 
 Some Magick may permit unusual combinations, including restorative abilities that can legally target enemies.
 
-This creates room for mechanics such as planned undead restorative damage and other future interactions where the meaning of an effect depends on the target.
+Battlers marked `undead: true` turn HP restoration into restorative damage. The rule belongs to the target-side restorative contract, so Magick, healing Skills/Valor Arts, and HP-restoring Items all inherit the same behavior without name-specific exceptions.
 
 The design principle is:
 
@@ -437,7 +437,7 @@ Exceptions are valuable when they create strategy.
 
 Examples already present in the design include:
 
-- Restore Magick being allowed to target enemies for future undead interaction
+- Restore Magick and HP-restoring Items damaging battlers with `undead: true` through the shared restorative path
 - Shield converting elemental magical damage into healing while leaving non-elemental Magick normal
 - Frog restricting actions without becoming identical to Stop or Paralyze
 - Poison and Dual sharing a family without sharing every interaction
@@ -513,7 +513,7 @@ A useful rule is:
 
 Sektor 1 currently uses a side-view battle presentation and HTML5 Canvas rendering.
 
-Visual and audio identity should reinforce readability first. Players need to understand targets, damage, healing, critical hits, weaknesses, resistances, immunities, status changes, and battle outcomes without fighting the interface. Battle Context Panel v2 keeps that information near the decision without making it permanent battlefield furniture: the panel appears automatically while choosing an action or target, then disappears with that interaction layer. The same surface may still be opened as Tactical Help through the configured Help action. When the context surface is visible it owns that information band by itself rather than carrying a second upper-right control legend. Surge is the deliberate exception to the centered context geometry: its prepared-level selector remains compact above Attack and the selected Valor Art's description attaches immediately to the selector's right, tracking one of the maximum two Art rows without repeating the Art name. Unknown enemy information stays visibly unknown, and Scan reveals information already owned by combat data instead of inventing a separate UI-only truth. Scan knowledge is battle-local in v1 and applies to the specific enemy instance analyzed.
+Visual and audio identity should reinforce readability first. Players need to understand targets, damage, healing, critical hits, weaknesses, resistances, immunities, status changes, and battle outcomes without fighting the interface. Battle Context Panel v2 keeps that information near the decision without making it permanent battlefield furniture: the panel appears automatically while choosing an action or target, then disappears with that interaction layer. The same surface may still be opened as Tactical Help through the configured Help action. When the context surface is visible it owns that information band by itself rather than carrying a second upper-right control legend. During Magick / Skill / Item browsing, the selector owns the selected name and the context surface owns only its canonical description, vertically centered for one- or two-line prose. Surge is the deliberate exception to the centered context geometry: its prepared-level selector remains compact above Attack and the selected Valor Art's description attaches immediately to the selector's right, tracking one of the maximum two Art rows without repeating the Art name. Unknown enemy information stays visibly unknown, and Scan reveals information already owned by combat data instead of inventing a separate UI-only truth. Scan knowledge is battle-local in v1 and applies to the specific enemy instance analyzed.
 
 Side-view formation should preserve that readability with four active actors. The canonical layout foundation uses a stable vertical party stack and reusable `normal`, `backAttack`, and `pincer` encounter formations. Pass 46 deliberately adds one mechanical consequence instead of inferring one silently: when an enemy physically attacks a party member from behind, rear exposure multiplies physical damage by 1.5. Magick is unchanged by facing. Back Attack keeps the party on the left facing away at battle start; Pincer derives exposure from which flank each actor currently faces. Enemy Formation Rows v1 allows up to eight enemies in four front and four back positions. Rows are deliberately spatial only for now: they may be auto-centered or handcrafted per encounter, but no row penalty, protection, melee restriction, or ranged advantage exists until weapon/Skill range contracts are intentionally designed.
 

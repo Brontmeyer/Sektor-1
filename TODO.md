@@ -205,7 +205,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Define Advanced Magick
 - [x] Implement remaining Magick mechanics required by Magick.json
 - [x] Implement status interaction with Magick
-- [ ] Implement undead restorative-damage interaction
+- [x] Implement undead restorative-damage interaction
 - [ ] Design Summon Magick
 - [x] Implement Valor gauge/runtime and consume status Valor multipliers
 
@@ -338,4 +338,5 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Pass 103: Add ROSTER active/reserve management, direct main-menu Order control, selectable Valor levels with preserved gauge, battle Surge readiness, square Name portrait treatment, and nonblocking naming fixture collision
 
 - [x] Pass 104: Keep battle commands visible behind child selectors, compact/anchor Surge selection, lock the protagonist in ROSTER, restore development Load, and separate Valor Arts into `Valor.json` with Save Runtime v14 migration
+- [x] Pass 112: Add battler-owned undead identity with restorative Magick/Skill/Item damage inversion, make the ready Surge chip reveal only when Up is pressed from Attack, and center description-only battle context prose without repeating selector names
 - [ ] Remove the temporary in-game Load shortcut for the release menu once development/QA no longer needs rapid prepared-save access

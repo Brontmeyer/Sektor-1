@@ -120,6 +120,7 @@ function testEnemyElementRateAndSpriteContracts() {
 
   enemies[1].elementRates.fire = "weak";
   enemies[1].battleSpriteWidth = -1;
+  enemies[2].undead = "yes";
 
   DatabaseValidator.validateEnemies(enemies, errors);
 
@@ -129,6 +130,10 @@ function testEnemyElementRateAndSpriteContracts() {
   );
   assert.equal(
     errors.some((error) => error.includes("battleSpriteWidth")),
+    true,
+  );
+  assert.equal(
+    errors.some((error) => error.includes("Enemy 2 undead")),
     true,
   );
 }

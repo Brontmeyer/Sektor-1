@@ -244,11 +244,17 @@ class Window_BattleCommand {
   }
 
   drawSurgeCommand(context) {
-    if (!this.canOpenSurge()) {
+    // Valor readiness is already communicated by the HUD gauge. Keep the
+    // SURGE chip out of the command silhouette until the player deliberately
+    // presses Up from Attack, then reveal it as the focused side command.
+    if (
+      this.sideCommand !== Window_BattleCommand.SIDE_SURGE ||
+      !this.canOpenSurge()
+    ) {
       return;
     }
 
-    const selected = this.sideCommand === Window_BattleCommand.SIDE_SURGE;
+    const selected = true;
     const width = Math.max(104, this.sideWidth + 12);
     const height = this.sideHeight;
     const x = this.x;

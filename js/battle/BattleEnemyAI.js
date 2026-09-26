@@ -151,6 +151,13 @@ class BattleEnemyAI {
     }
 
     if (ability.effect === "heal") {
+      if (target.isUndead?.() === true) {
+        // Restorative effects are offensive against undead. Enemy AI should
+        // never "heal" an undead ally into damage, but an explicitly
+        // enemy-targeted restorative action may use that interaction.
+        return enemy.isOpposingBattleSide?.(target) === true;
+      }
+
       return typeof target.isFullHp !== "function" || !target.isFullHp();
     }
 
