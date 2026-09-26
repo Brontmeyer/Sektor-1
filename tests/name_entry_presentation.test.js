@@ -107,11 +107,11 @@ function createHarness() {
 function testTypingReplacesDefaultAndLetterEDoesNotConfirm() {
   const harness = createHarness();
 
-  assert.equal(harness.window.value, "Tyler");
+  assert.equal(harness.window.value, actors[1].name);
   harness.type("R", "e");
   assert.equal(harness.window.value, "Re");
   assert.equal(harness.window.isComplete(), false);
-  assert.equal(harness.actor.name, "Tyler");
+  assert.equal(harness.actor.name, actors[1].name);
 
   harness.type("n");
   harness.window.focus = "commands";
@@ -130,12 +130,12 @@ function testBackspaceAndDefaultCommandRestoreCanonicalName() {
   harness.window.focus = "commands";
   harness.window.commandIndex = 3;
   harness.action("confirm");
-  assert.equal(harness.window.value, "Tyler");
+  assert.equal(harness.window.value, actors[1].name);
   assert.equal(harness.window.isComplete(), false);
 
   harness.window.commandIndex = 2;
   harness.action("confirm");
-  assert.equal(harness.actor.name, "Tyler");
+  assert.equal(harness.actor.name, actors[1].name);
 }
 
 function testWhitespaceAndMaximumLengthStayPresentationSafe() {
@@ -155,7 +155,7 @@ function testSymbolsAreIgnoredUntilAValidNameCharacterIsTyped() {
   const harness = createHarness();
 
   harness.type("!", "@", "#");
-  assert.equal(harness.window.value, "Tyler");
+  assert.equal(harness.window.value, actors[1].name);
 
   harness.type("R", "_", "o", "-", "o", "k", "2");
   assert.equal(harness.window.value, "Rook");
@@ -204,8 +204,8 @@ function testStoryRevealCanPresentCanonicalDefaultOverUnknownRuntimeName() {
   const window = new harness.window.constructor(harness.actor, { startFromDefault: true });
 
   assert.equal(harness.actor.name, "Unknown");
-  assert.equal(window.defaultValue, "Tyler");
-  assert.equal(window.value, "Tyler");
+  assert.equal(window.defaultValue, actors[1].name);
+  assert.equal(window.value, actors[1].name);
 }
 
 function testReferenceStyleKeyboardContractStaysVisibleInSource() {

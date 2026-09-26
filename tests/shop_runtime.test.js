@@ -319,7 +319,7 @@ function testShopWindowSupportsCommandEntryAndScrollableBuyPresentation() {
   calls.length = 0;
   window.draw();
   assert.equal(
-    calls.some((call) => call[0] === "fillText" && String(call[1]).includes("Mystic Charm")),
+    calls.some((call) => call[0] === "fillText" && String(call[1]).includes(accessories[3].name)),
     true,
     "the shared list viewport should render the final shop entry",
   );
@@ -419,7 +419,7 @@ function testShopSceneOwnsPurchaseRequestsButPartyOwnsMutation() {
 
   assert.equal(party.gil(), 0);
   assert.equal(party.itemCount(1), 1);
-  assert.equal(scene.shopWindow.message, "Purchased Potion for 50 R.");
+  assert.equal(scene.shopWindow.message, `Purchased ${items[1].name} for 50 R.`);
 
   scene.shopWindow.result = { action: "purchase", type: "item", id: 1 };
   scene.update();
@@ -432,7 +432,7 @@ function testShopSceneOwnsPurchaseRequestsButPartyOwnsMutation() {
   scene.update();
   assert.equal(party.gil(), 25);
   assert.equal(party.itemCount(1), 1);
-  assert.equal(scene.shopWindow.message, "Sold Potion for 25 R.");
+  assert.equal(scene.shopWindow.message, `Sold ${items[1].name} for 25 R.`);
 
   scene.shopWindow.result = { action: "cancel" };
   scene.update();

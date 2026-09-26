@@ -171,7 +171,7 @@ Action data should determine which target groups and scopes are legal. `BattleTa
 
 # 🔎 Scan & Tactical Help
 
-Scan & Tactical Help v1 is battle-local. `Scan` is an ordinary support Skill with `effect: "scan"`, `target: ["enemy"]`, and `scope: ["single"]`; it follows the same Skills window, spatial target selection, action restriction, turn cost, and action-phase execution as other Skills. There is no separate Scan command.
+Scan & Tactical Help v1 is battle-local. The current scan-effect Skill is an ordinary support Skill with `effect: "scan"`, `target: ["enemy"]`, and `scope: ["single"]`; it follows the same Skills window, spatial target selection, action restriction, turn cost, and action-phase execution as other Skills. There is no separate Scan command. Tactical Help derives that Skill's current display name from the database, so renaming the Skill does not leave stale renderer copy behind.
 
 `BattleScanManager` records concrete enemy instances rather than enemy species IDs. Scanning one slime therefore does not reveal every other slime in the encounter. The information also does not persist after battle in v1, so Save Runtime remains unchanged.
 

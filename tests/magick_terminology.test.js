@@ -61,8 +61,8 @@ function testCanonicalDataKeepsMagickAndSkillsDistinct() {
   assert.equal(skills[0], null);
   assert.equal(skills.filter(Boolean).every((entry) => entry.type === "skill"), true);
   assert.equal(enemySkills.filter(Boolean).every((entry) => entry.type === "skill"), true);
-  assert.equal(enemySkills[1].name, "Goo Rush");
-  assert.equal(skills.some((entry) => entry?.name === "Goo Rush"), false);
+  assert.equal(enemySkills[1].id, 1);
+  assert.equal(enemySkills[1].type, "skill");
 
   for (const actor of actors.filter(Boolean)) {
     assert.equal(Array.isArray(actor.initialMagickIds), true);

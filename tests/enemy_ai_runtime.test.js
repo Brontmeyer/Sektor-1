@@ -193,7 +193,7 @@ function testEnemyCastsDamageMagickAndPaysMp() {
   assert.ok(target.hp < hpBefore);
   assert.equal(enemy.mp, mpBefore - magick[10].mpCost);
   assert.equal(
-    fixture.messages.some((message) => message.includes("casts Ember")),
+    fixture.messages.some((message) => message.includes(`casts ${magick[10].name}`)),
     true,
   );
 }
@@ -213,7 +213,7 @@ function testEnemyHealingTargetsLowestHpAlly() {
   assert.ok(ally.hp > hpBefore);
   assert.equal(caster.mp, mpBefore - magick[1].mpCost);
   assert.equal(
-    fixture.messages.some((message) => message.includes("casts Mend")),
+    fixture.messages.some((message) => message.includes(`casts ${magick[1].name}`)),
     true,
   );
 }

@@ -522,28 +522,31 @@ Use these rules as a guide:
 1. **Content definition belongs in data.**
    A new Magick, Essence, status, item, enemy, or equipment entry should normally begin as data rather than a named hard-coded branch.
 
-2. **Persistent game state belongs in runtime objects and saves.**
+2. **Stable identifiers own identity; display names own presentation.**
+   Runtime behavior should resolve actors, maps, events, encounters, enemies, inventory records, abilities, shops, and reusable mechanics through IDs, keys, effect metadata, or explicit type fields. A player-facing `name` may be edited without changing what the record *is*. Tests that consume canonical data should assert the stable contract and derive expected labels from that data instead of pinning mutable names.
+
+3. **Persistent game state belongs in runtime objects and saves.**
    Do not modify canonical JSON to remember what happened in one player's game.
 
-3. **Shared battler mechanics belong at the shared battler level.**
+4. **Shared battler mechanics belong at the shared battler level.**
    Avoid implementing the same combat rule separately for actors and enemies when both use it.
 
-4. **Battle coordination belongs in battle systems.**
+5. **Battle coordination belongs in battle systems.**
    Specialized responsibilities such as targeting, effects, animation, and rendering should remain separated where practical.
 
-5. **Scenes coordinate.**
+6. **Scenes coordinate.**
    A scene connects systems and controls flow, but should not become the default home for unrelated mechanics.
 
-6. **Windows present and collect choices.**
+7. **Windows present and collect choices.**
    UI code should not silently become the source of gameplay truth.
 
-7. **Rendering presents results.**
+8. **Rendering presents results.**
    Visual code should not determine mechanical outcomes.
 
-8. **Prefer reusable mechanics over named exceptions.**
+9. **Prefer reusable mechanics over named exceptions.**
    If several Magick or statuses can share one engine behavior, represent that behavior generically and drive it from data.
 
-9. **Keep unfinished architecture explicit.**
+10. **Keep unfinished architecture explicit.**
    Documentation must distinguish implemented systems from planned systems instead of describing future work as already functional.
 
 ---

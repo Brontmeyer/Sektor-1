@@ -128,7 +128,7 @@ function createHarness() {
 }
 
 function testAccessoryInventoryAndActorOwnership() {
-  const { actor, party } = createHarness();
+  const { actor, party, accessories } = createHarness();
 
   assert.equal(party.gainAccessory(1, 2), true);
   assert.equal(party.accessoryCount(1), 2);
@@ -139,7 +139,7 @@ function testAccessoryInventoryAndActorOwnership() {
   const baseAttack = actor.totalAttack();
   assert.equal(actor.equipAccessory(1), true);
   assert.equal(actor.accessoryId, 1);
-  assert.equal(actor.accessory().name, "Power Wrist");
+  assert.equal(actor.accessory().name, accessories[1].name);
   assert.equal(actor.totalAttack(), baseAttack + 3);
 
   assert.equal(actor.equipAccessory(999), false);
@@ -165,7 +165,7 @@ function testAccessoryBonusesFlowThroughDerivedCombatStats() {
 }
 
 function testAccessoryEventCommandsUsePartyInventoryApi() {
-  const { context, party, Game_Interpreter } = createHarness();
+  const { context, party, accessories, Game_Interpreter } = createHarness();
   const messageWindow = {
     opened: false,
     lastMessage: "",
@@ -202,12 +202,12 @@ function testAccessoryEventCommandsUsePartyInventoryApi() {
     false,
   );
   assert.equal(party.accessoryCount(2), 1);
-  assert.equal(messageWindow.lastMessage, "You found a Guard Ring!");
+  assert.equal(messageWindow.lastMessage, `You found a ${accessories[2].name}!`);
   assert.equal(messageWindow.lastSpeaker, "Chest");
 }
 
 function testAccessorySelectorUsesSharedEquipmentPath() {
-  const { actor, party, Window_EquipSelect } = createHarness();
+  const { actor, party, accessories, Window_EquipSelect } = createHarness();
 
   party.gainAccessory(1, 1);
   party.gainAccessory(2, 1);
@@ -218,7 +218,7 @@ function testAccessorySelectorUsesSharedEquipmentPath() {
 
   assert.deepEqual(
     Array.from(selector.entries(), (entry) => entry.name),
-    ["None", "Power Wrist", "Guard Ring"],
+    ["None", accessories[1].name, accessories[2].name],
   );
   assert.equal(selector.currentEntry().id, 2);
 
@@ -232,7 +232,7 @@ function testAccessorySelectorUsesSharedEquipmentPath() {
 }
 
 function testEquipmentWindowAddsOneAccessorySlotAndDrawsSafely() {
-  const { actor, party, drawCalls, Window_Equipment } = createHarness();
+  const { actor, party, accessories, drawCalls, Window_Equipment } = createHarness();
 
   party.gainAccessory(1, 1);
   const window = new Window_Equipment(actor);
@@ -252,7 +252,7 @@ function testEquipmentWindowAddsOneAccessorySlotAndDrawsSafely() {
     true,
   );
   assert.equal(
-    drawCalls.some((call) => String(call[0]).includes("Power Wrist")),
+    drawCalls.some((call) => String(call[0]).includes(accessories[1].name)),
     true,
   );
 }

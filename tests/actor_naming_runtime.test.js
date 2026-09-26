@@ -62,7 +62,7 @@ function testActorNamesAreRuntimeIdentityWithCanonicalFallback() {
   const actor = system.actor(1);
 
   assert.ok(actor);
-  assert.equal(actor.defaultName(), "Tyler");
+  assert.equal(actor.defaultName(), actors[1].name);
   assert.equal(actor.name, "Unknown");
   assert.equal(system.actorName(1), "Unknown");
   assert.equal(system.actor(2).name, system.actor(2).defaultName());
@@ -94,8 +94,8 @@ function testActorNamesAreRuntimeIdentityWithCanonicalFallback() {
   assert.equal(actor.rename("ABCDEFGHIJKLMNOPQRSTUV"), true);
   assert.equal(Array.from(actor.name).length, actor.nameMaxLength());
 
-  assert.equal(actor.resetName(), "Tyler");
-  assert.equal(actor.name, "Tyler");
+  assert.equal(actor.resetName(), actors[1].name);
+  assert.equal(actor.name, actors[1].name);
 }
 
 function testDialogueActorTokensResolveRuntimeNames() {
@@ -153,7 +153,7 @@ function testNameActorEventPushesReusableNamingSceneAndAdvancesInterpreter() {
   };
   const interpreter = new Game_Interpreter(messageWindow, choiceWindow);
 
-  assert.equal(system.renameActor(2, "Sarah"), true);
+  assert.equal(system.renameActor(2, actors[2].name), true);
   interpreter.setup([
     {
       code: "nameActor",
@@ -167,7 +167,7 @@ function testNameActorEventPushesReusableNamingSceneAndAdvancesInterpreter() {
   assert.equal(pushed.length, 1);
   assert.equal(pushed[0][1], 2);
   assert.equal(pushed[0][2].title, "NAME");
-  assert.equal(pushed[0][2].prompt, "What should Sarah be called?");
+  assert.equal(pushed[0][2].prompt, `What should ${actors[2].name} be called?`);
   assert.equal(interpreter.index, 1);
 }
 

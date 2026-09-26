@@ -312,7 +312,7 @@ function testActorCyclingMenusShareLeftRightNavigation() {
     window.draw();
     assert.equal(
       drawCalls.some(
-        (call) => call[0] === "fillText" && String(call[1]).includes("Sarah"),
+        (call) => call[0] === "fillText" && String(call[1]).includes(partyActors[1].name),
       ),
       true,
       `${testCase.name} draws the selected actor name`,
@@ -375,7 +375,7 @@ function testSkillUsesDirectionsForGridAfterActorHandoff() {
   drawCalls.length = 0;
   window.draw();
   assert.equal(
-    drawCalls.some((call) => call[0] === "fillText" && call[1] === "Tyler"),
+    drawCalls.some((call) => call[0] === "fillText" && call[1] === partyActors[0].name),
     true,
   );
 }

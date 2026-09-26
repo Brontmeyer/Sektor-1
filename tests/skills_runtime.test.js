@@ -148,9 +148,9 @@ function testCanonicalSkillsDatabaseIsSeparateFromValorArts() {
   const enemyTechnique = canonicalEnemySkills[1];
 
   assert.equal(skills.every((skill) => skill.type === "skill"), true);
-  assert.equal(enemyTechnique.name, "Goo Rush");
+  assert.equal(enemyTechnique.id, 1);
   assert.equal(canonicalSkills[5], null);
-  assert.equal(canonicalSkills[6].name, "Scan");
+  assert.equal(canonicalSkills[6].effect, "scan");
   assert.deepEqual(
     canonicalValorArts.filter(Boolean).map((art) => art.id),
     [1, 2, 3, 4],

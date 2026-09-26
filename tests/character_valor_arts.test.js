@@ -141,16 +141,15 @@ function testCanonicalArtsAndOwnership() {
   assert.deepEqual(
     valorArts.filter(Boolean).map((art) => ({
       id: art.id,
-      name: art.name,
       effect: art.effect,
       category: art.category,
       type: art.type,
     })),
     [
-      { id: 1, name: "Unbroken", effect: "damage", category: "physical", type: "valor" },
-      { id: 2, name: "Rallyheart", effect: "heal", category: "support", type: "valor" },
-      { id: 3, name: "Wild Arc", effect: "damage", category: "physical", type: "valor" },
-      { id: 4, name: "Zero Lock", effect: "inflictStatus", category: "control", type: "valor" },
+      { id: 1, effect: "damage", category: "physical", type: "valor" },
+      { id: 2, effect: "heal", category: "support", type: "valor" },
+      { id: 3, effect: "damage", category: "physical", type: "valor" },
+      { id: 4, effect: "inflictStatus", category: "control", type: "valor" },
     ],
   );
   assert.deepEqual(
@@ -160,7 +159,7 @@ function testCanonicalArtsAndOwnership() {
   assert.equal(skills.filter((skill) => skill?.type === "valor").length, 0);
 }
 
-function testUnbrokenIsTylerSingleTargetBurst() {
+function testActorOneValorArtIsSingleTargetBurst() {
   const { party, Game_Enemy, BattleManager } = createHarness();
   const tyler = party[0];
   const enemy = new Game_Enemy(1);
@@ -263,7 +262,7 @@ function testZeroLockControlsAllEnemiesWithoutPhysicalDamage() {
 
 function run() {
   testCanonicalArtsAndOwnership();
-  testUnbrokenIsTylerSingleTargetBurst();
+  testActorOneValorArtIsSingleTargetBurst();
   testRallyheartHealsOnlyInjuredAllies();
   testWildArcDamagesAllEnemiesAndCanInflictDarkness();
   testZeroLockControlsAllEnemiesWithoutPhysicalDamage();

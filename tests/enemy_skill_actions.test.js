@@ -152,11 +152,11 @@ function testCanonicalEnemySkillIsSeparateFromValorArts() {
   const skill = canonicalEnemySkills[1];
   const action = enemies[1].actions.find((entry) => entry.type === "enemySkill");
 
-  assert.equal(skill.name, "Goo Rush");
+  assert.equal(skill.id, 1);
   assert.equal(action.enemySkillId, 1);
   assert.equal(action.scope, "single");
   assert.equal(canonicalSkills[5], null);
-  assert.equal(canonicalSkills[6].name, "Scan");
+  assert.equal(canonicalSkills[6].effect, "scan");
   assert.deepEqual(
     canonicalValorArts.filter(Boolean).map((art) => art.type),
     ["valor", "valor", "valor", "valor"],
@@ -177,7 +177,7 @@ function testEnemyExecutesSharedDamageAndStatusSkillRuntime() {
   assert.equal(target.hasStatus("slow"), true);
   assert.equal(enemy.mp, mpBefore, "non-Magick Skills must not spend MP");
   assert.equal(
-    fixture.messages.some((message) => message.includes("uses Goo Rush")),
+    fixture.messages.some((message) => message.includes(`uses ${canonicalEnemySkills[1].name}`)),
     true,
   );
 }

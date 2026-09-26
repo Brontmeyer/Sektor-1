@@ -79,7 +79,7 @@ function testDatabaseStatusLookup() {
   DatabaseManager.statuses = statuses;
 
   assert.equal(DatabaseManager.statusByKey("poison").id, 1);
-  assert.equal(DatabaseManager.statusNameByKey("regen"), "Regen");
+  assert.equal(DatabaseManager.statusNameByKey("regen"), DatabaseManager.statusByKey("regen").name);
   assert.equal(DatabaseManager.statusByKey("missing"), null);
 }
 
@@ -209,7 +209,9 @@ function testStatusSummary() {
   battler.addStatus("poison");
   battler.addStatus("regen");
 
-  assert.equal(battler.statusSummary(2), "Barrier 4, Poison, +1");
+  const barrierName = statuses.find((status) => status?.key === "barrier").name;
+  const poisonName = statuses.find((status) => status?.key === "poison").name;
+  assert.equal(battler.statusSummary(2), `${barrierName} 4, ${poisonName}, +1`);
 }
 
 function testBattleManagerTicksSkippedTurnsAndStartsNewRoundStatuses() {

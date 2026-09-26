@@ -182,7 +182,7 @@ function testWelcomeIntroducesMerchantWithoutPreviewingStock() {
   assert.equal(includes(values, "Buy"), true);
   assert.equal(includes(values, "Sell"), true);
   assert.equal(includes(values, "Exit"), true);
-  assert.equal(includes(values, "Potion"), false);
+  assert.equal(includes(values, items[1].name), false);
   assert.equal(includes(values, "MERCHANDISE"), false);
 }
 
@@ -194,7 +194,7 @@ function testBuyPresentationAvoidsOldPanelHeadingsAndKeepsRosterComparison() {
 
   assert.equal(includes(values, "BUY"), true);
   assert.equal(includes(values, "DETAILS"), true);
-  assert.equal(includes(values, "Iron Sword"), true);
+  assert.equal(includes(values, weapons[1].name), true);
   assert.equal(includes(values, "Tyler"), true);
   assert.equal(includes(values, "ATK"), true);
   assert.equal(includes(values, "ROSTER PREVIEW"), false);
@@ -229,16 +229,16 @@ function testShopTypeControlsIdentityAndMerchandiseScope() {
 
   press(weaponHarness, "confirm");
   const buyValues = texts(weaponHarness);
-  assert.equal(includes(buyValues, "Iron Sword"), true);
-  assert.equal(includes(buyValues, "Steel Sword"), true);
-  assert.equal(includes(buyValues, "Potion"), false);
+  assert.equal(includes(buyValues, weapons[1].name), true);
+  assert.equal(includes(buyValues, weapons[2].name), true);
+  assert.equal(includes(buyValues, items[1].name), false);
 
   weaponHarness.window.commandIndex = 1;
   weaponHarness.window.state = "command";
   press(weaponHarness, "confirm");
   const sellValues = texts(weaponHarness);
-  assert.equal(includes(sellValues, "Steel Sword"), false, "equipped weapon copies remain protected");
-  assert.equal(includes(sellValues, "Potion"), false, "weapon shops do not buy item inventory");
+  assert.equal(includes(sellValues, weapons[2].name), false, "equipped weapon copies remain protected");
+  assert.equal(includes(sellValues, items[1].name), false, "weapon shops do not buy item inventory");
 }
 
 function testRosterNamesShareTheStatTextColumn() {

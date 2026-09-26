@@ -40,6 +40,7 @@ Completed engine foundations include:
 - Turn queue
 - Multi-character turns
 - Data-driven actor collection ownership with explicit party/leader context
+- Display-name / stable-identity separation across canonical data, runtime presentation, and regression contracts
 - Save / Load with version-aware multi-actor Save Runtime v14, persistent area-location discovery plus learned Skills / Valor / Runes (legacy Gil field) / accessory equipment / slot-aware Essence / party-row state, v11 discovery migration, v9 row migration, and preserved v1-v8 starter-Valor-Art migration
 - Equipment system with Weapon, Armor, and Accessory slots
 - Inventory system

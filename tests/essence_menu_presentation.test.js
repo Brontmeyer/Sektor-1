@@ -148,7 +148,7 @@ function testEssenceUsesSharedActorSummaryAndRealProgressionData() {
   const mp = text.find((call) => call.text === "MP");
 
   assert.equal(values.includes("ESSENCE"), true);
-  assert.equal(values.includes("Tyler"), true);
+  assert.equal(values.includes(actor.name), true);
   assert.equal(values.includes("LV"), true);
   assert.equal(values.includes("HP"), true);
   assert.equal(values.includes("MP"), true);
@@ -158,7 +158,7 @@ function testEssenceUsesSharedActorSummaryAndRealProgressionData() {
   assert.equal(values.includes("Resonance"), true);
   assert.equal(values.includes("PROGRESSION"), true);
   assert.equal(values.includes("MAGICK AWAKENING"), true);
-  assert.equal(values.includes("Flame Essence"), true);
+  assert.equal(values.includes(harness.essences[4].name), true);
   assert.equal(values.includes("250 / 300"), true);
   assert.equal(
     values.some((value) => value.includes("50 to Level 3")),

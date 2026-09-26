@@ -42,7 +42,6 @@ function testCanonicalTestKeyUsesKeyItemContract() {
   const key = items[3];
 
   assert.equal(key.id, 3);
-  assert.equal(key.name, "Test Key");
   assert.equal(key.keyItem, true);
   assert.equal(key.consumable, true);
   assert.equal(key.sellable, false);
@@ -102,7 +101,6 @@ function testMapCommentsAndTestKeyFixtureAreCanonical() {
 
   const chest = map.events.find((event) => event.id === 13);
   assert.ok(chest, "Map001 should contain the Test Key development chest");
-  assert.equal(chest.name, "Test Key Chest");
 
   const grant = chest.pages[0].commands.find(
     (command) => command.code === "gainItemMessage",
@@ -167,7 +165,7 @@ function testBattleSelectorExcludesKeyItemsAndEffectlessRecords() {
   const window = new context.__Window_BattleItem();
   assert.deepEqual(
     Array.from(window.items(), (item) => item.name),
-    ["Potion", "Hi-Potion"],
+    [items[1].name, items[2].name],
   );
 }
 

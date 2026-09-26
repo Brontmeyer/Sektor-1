@@ -310,11 +310,20 @@ class BattleRenderer {
       const resistText = this.tacticalAffinityText(profile.resist);
       const immuneText = this.tacticalAffinityText(profile.immune);
 
+      const scanSkill =
+        typeof DatabaseManager !== "undefined" && Array.isArray(DatabaseManager.skills)
+          ? DatabaseManager.skills.find((skill) => skill?.effect === "scan") || null
+          : null;
+      const scanName = String(scanSkill?.name || "").trim();
+      const unknownTacticalText = scanName
+        ? `Tactical data unknown. Use ${scanName} to reveal HP, MP, and affinities.`
+        : "Tactical data unknown. Use a scan skill to reveal HP, MP, and affinities.";
+
       return {
         primary: `${profile.name}   HP ${hpText}   MP ${mpText}`,
         secondary: profile.scanned
           ? `Weak ${weakText}   Resist ${resistText}   Immune ${immuneText}`
-          : "Tactical data unknown. Use Scan to reveal HP, MP, and affinities.",
+          : unknownTacticalText,
         known: profile.scanned,
       };
     }

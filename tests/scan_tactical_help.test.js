@@ -88,6 +88,7 @@ function loadPresentation(scene) {
   const context = vm.createContext({
     console,
     Graphics,
+    DatabaseManager: { skills: readData("Skills.json") },
     Input: {
       actionLabel(action) {
         return { help: "H", up: "W / ↑", down: "S / ↓", left: "A / ←", right: "D / →", confirm: "E / Enter", cancel: "Q / Esc", menu: "Esc", scope: "R" }[action] || action;
@@ -118,7 +119,6 @@ function testCanonicalScanSkillAndOwnership() {
   const actors = readData("Actors.json");
   const scan = skills[6];
 
-  assert.equal(scan.name, "Scan");
   assert.equal(scan.type, "skill");
   assert.equal(scan.category, "support");
   assert.equal(scan.effect, "scan");
@@ -209,6 +209,11 @@ function testTacticalHelpRendersUnknownThenScannedDetails() {
   assert.equal(
     texts.some((text) => String(text).includes("Tactical data unknown")),
     true,
+  );
+  assert.equal(
+    texts.some((text) => String(text).includes(readData("Skills.json")[6].name)),
+    true,
+    "unknown tactical help should use the current scan-skill display name",
   );
 
   manager.scan(target);

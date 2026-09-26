@@ -206,12 +206,12 @@ function createSkillEffectScene(actor, enemiesList, skill, targetScope = "single
 
 function testCanonicalContentDefinesCharacterSpecificValorArts() {
   assert.deepEqual(
-    canonicalValorArts.filter(Boolean).map((art) => [art.id, art.name, art.type]),
+    canonicalValorArts.filter(Boolean).map((art) => [art.id, art.type]),
     [
-      [1, "Unbroken", "valor"],
-      [2, "Rallyheart", "valor"],
-      [3, "Wild Arc", "valor"],
-      [4, "Zero Lock", "valor"],
+      [1, "valor"],
+      [2, "valor"],
+      [3, "valor"],
+      [4, "valor"],
     ],
   );
   assert.deepEqual(

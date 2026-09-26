@@ -126,12 +126,12 @@ function testCanonicalValorArtsDeclareLevelOne() {
   const valorArts = readData("Valor.json").filter(Boolean);
 
   assert.deepEqual(
-    valorArts.map((art) => [art.name, art.valorLevel]),
+    valorArts.map((art) => [art.id, art.valorLevel]),
     [
-      ["Unbroken", 1],
-      ["Rallyheart", 1],
-      ["Wild Arc", 1],
-      ["Zero Lock", 1],
+      [1, 1],
+      [2, 1],
+      [3, 1],
+      [4, 1],
     ],
   );
 }
@@ -142,11 +142,11 @@ function testActorOwnsValorProgressionGroupingWithoutDuplicatingSkillRuntime() {
 
   assert.deepEqual(
     Array.from(actor.knownValorArts(), (art) => art.name),
-    ["Unbroken"],
+    [harness.valorArts[1].name],
   );
   assert.deepEqual(
     Array.from(actor.valorArtsForLevel(1), (art) => art.name),
-    ["Unbroken"],
+    [harness.valorArts[1].name],
   );
   assert.equal(actor.highestKnownValorLevel(), 1);
 
@@ -166,7 +166,7 @@ function testActorOwnsValorProgressionGroupingWithoutDuplicatingSkillRuntime() {
 
   assert.deepEqual(
     Array.from(actor.knownValorArts(), (art) => art.name),
-    ["Unbroken", "Test Level Two Art"],
+    [harness.valorArts[1].name, "Test Level Two Art"],
   );
   assert.deepEqual(
     Array.from(actor.valorArtsForLevel(2), (art) => art.name),
@@ -184,7 +184,7 @@ function testValorScreenUsesSharedCharacterLanguageAndLimitInspiredLevels() {
   window.draw();
 
   const text = textValues(harness);
-  assert.equal(text.includes("Tyler"), true);
+  assert.equal(text.includes(actor.name), true);
   assert.equal(text.includes("LV"), true);
   assert.equal(text.includes("HP"), true);
   assert.equal(text.includes("MP"), true);
@@ -192,7 +192,7 @@ function testValorScreenUsesSharedCharacterLanguageAndLimitInspiredLevels() {
   assert.equal(text.includes("SET LEVEL 1"), true);
   assert.equal(text.includes("42.5 / 100"), true);
   assert.equal(text.includes("Viewing"), true);
-  assert.equal(text.some((value) => value.includes("Unbroken")), true);
+  assert.equal(text.some((value) => value.includes(harness.valorArts[1].name)), true);
   assert.equal(text.includes("Set Level"), true);
   assert.equal(text.includes("Arts"), false);
   assert.equal(text.includes("State"), false);
@@ -200,7 +200,7 @@ function testValorScreenUsesSharedCharacterLanguageAndLimitInspiredLevels() {
   assert.equal(text.includes("LEVEL 2"), true);
   assert.equal(text.includes("LEVEL 3"), true);
   assert.equal(text.includes("LEVEL 4"), true);
-  assert.equal(text.some((value) => value.includes("Unbroken")), true);
+  assert.equal(text.some((value) => value.includes(harness.valorArts[1].name)), true);
   assert.equal(text.includes("No Arts learned"), true);
   assert.equal(
     text.includes(
@@ -218,7 +218,7 @@ function testValorScreenSwitchesActorsAndKeepsArtSelectionVertical() {
   assert.equal(window.actor.name, harness.partyActors[0].name);
   press(harness, window, "right");
   assert.equal(window.actor.name, harness.partyActors[1].name);
-  assert.equal(window.currentArt().name, "Rallyheart");
+  assert.equal(window.currentArt().name, harness.valorArts[2].name);
   assert.equal(window.index, 0);
 
   press(harness, window, "left");

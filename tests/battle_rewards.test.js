@@ -205,7 +205,7 @@ function testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce() {
   assert.equal(result.runesAfter, 10);
   assert.deepEqual(
     Array.from(result.rewards.drops, (drop) => ({ ...drop })),
-    [{ itemId: 1, name: "Potion", quantity: 2 }],
+    [{ itemId: 1, name: items[1].name, quantity: 2 }],
   );
   assert.equal(party.gil(), 10);
   assert.equal(party.itemCount(1), 2);
@@ -252,7 +252,7 @@ function testVictoryDropsRespectRemainingInventoryCapacity() {
   assert.equal(party.itemCount(1), 99);
   assert.deepEqual(
     Array.from(result.rewards.drops, (drop) => ({ ...drop })),
-    [{ itemId: 1, name: "Potion", quantity: 1 }],
+    [{ itemId: 1, name: items[1].name, quantity: 1 }],
   );
 }
 
