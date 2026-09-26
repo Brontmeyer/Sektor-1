@@ -573,6 +573,59 @@ function testBattleSelectorsUseHudSideRegionWhileSurgeStaysAboveCommand() {
   assert.equal(item.height, selectorBounds.height);
 }
 
+function testBattleSelectorsClampVerticalNavigationAtListEdges() {
+  const triggered = new Set();
+  const entries = Array.from({ length: 4 }, (_, index) => ({
+    id: index + 1,
+    name: `Entry ${index + 1}`,
+    type: "skill",
+    mpCost: 1,
+    effect: { type: "healHp", value: 1 },
+  }));
+  const actor = {
+    knownSkills: () => entries,
+    canUseSkill: () => true,
+    knownMagick: () => entries.map((entry) => ({ ...entry, type: "magick" })),
+    canUseMagick: () => true,
+  };
+  const globals = {
+    Graphics: { height: 720, context: createDrawContext() },
+    Input: {
+      isActionTriggered(action) { return triggered.has(action); },
+    },
+    $gameParty: {
+      battleLeader: () => actor,
+      itemIds: () => entries.map((entry) => entry.id),
+      itemCount: () => 1,
+    },
+    DatabaseManager: {
+      item: (id) => ({ ...entries[id - 1], type: "item" }),
+    },
+  };
+  const scene = { partyController: { currentBattler: () => actor } };
+  const Skills = loadSelector("js/windows/Window_BattleSkills.js", "Window_BattleSkills", globals);
+  const Magick = loadSelector("js/windows/Window_BattleMagick.js", "Window_BattleMagick", globals);
+  const Item = loadSelector("js/windows/Window_BattleItem.js", "Window_BattleItem", globals);
+
+  for (const window of [new Skills(scene), new Magick(scene), new Item(scene)]) {
+    window.show();
+    triggered.add("up");
+    window.update();
+    triggered.clear();
+    assert.equal(window.index, 0, "Up at the first entry does not wrap to the bottom");
+
+    window.index = entries.length - 1;
+    triggered.add("down");
+    window.update();
+    triggered.clear();
+    assert.equal(
+      window.index,
+      entries.length - 1,
+      "Down at the final entry does not wrap to the top",
+    );
+  }
+}
+
 function run() {
   testMainCommandListContainsOnlyFourCoreCommands();
   testSideCommandsStayHiddenUntilHorizontalInputRequestsThem();
@@ -584,6 +637,7 @@ function run() {
   testSelectorShowCanPreserveCursorForTargetCancel();
   testMagickAndItemSelectorsAlsoSupportPreservedReopen();
   testBattleSelectorsPageWithLeftAndRight();
+  testBattleSelectorsClampVerticalNavigationAtListEdges();
   testBattleSelectorsUseHudSideRegionWhileSurgeStaysAboveCommand();
 
   console.log("Battle command navigation regression tests passed.");

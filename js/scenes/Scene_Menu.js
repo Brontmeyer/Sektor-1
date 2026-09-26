@@ -420,7 +420,9 @@ class Scene_Menu extends Scene_Base {
     context.textAlign = "right";
     context.fillStyle = "#ffffff";
     context.fillText(
-      Number($gameParty.gil?.() || 0).toLocaleString(),
+      typeof $gameParty.formatRunes === "function"
+        ? $gameParty.formatRunes()
+        : `${Number($gameParty.gil?.() || 0).toLocaleString()} R`,
       valueX,
       this.layout.utility.y + 23,
     );

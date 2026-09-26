@@ -88,11 +88,11 @@ class Window_BattleSkills {
     }
 
     if (Input.isActionTriggered("up")) {
-      this.index = (this.index - 1 + skills.length) % skills.length;
+      this.index = Math.max(0, this.index - 1);
     }
 
     if (Input.isActionTriggered("down")) {
-      this.index = (this.index + 1) % skills.length;
+      this.index = Math.min(skills.length - 1, this.index + 1);
     }
 
     if (this.mode !== "surge" && Input.isActionTriggered("left")) {

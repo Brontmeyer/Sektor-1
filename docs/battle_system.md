@@ -595,20 +595,16 @@ Essence Resonance caps at the canonical Mastery threshold (1500 with the current
 
 ## Battle Results Presentation
 
-On victory, `Scene_Battle` finalizes the authoritative result before leaving the scene and opens `Window_BattleResults`. The window is presentation-only: it reads `scene.result` and does not recalculate EXP, reroll drops, mutate Runes, or award Resonance. Victory presentation is sequential: page 1 reports EXP, level changes, and Essence Resonance progression; page 2 reports Runes and accepted item drops. The first confirmation advances pages and only the final confirmation exits, preserving the idempotent reward contract established by `BattleManager.finalizeBattle()`.
+On victory, `Scene_Battle` finalizes the authoritative result before leaving the scene and opens `Window_BattleResults`. The window remains presentation-only: it reads `scene.result` and never recalculates EXP, rerolls drops, mutates Runes, or awards Resonance. `BattleManager.finalizeBattle()` records the pre/post values needed for animation (`expBefore` / `expAfter` per participant and `runesBefore` / `runesAfter` for party currency) while still applying each reward exactly once.
 
-The initial results screen presents:
+Victory presentation is a two-screen, confirm-gated sequence inspired by the classic end-of-battle spoils cadence:
 
-- Total EXP, Runes, and encounter Resonance
-- Aggregated item drops
-- Per-participant EXP
-- Character level-up transitions
-- Equipped-Essence Resonance gains
-- Essence level-up transitions
-- Newly awakened Essence Magick
-- Mastery Ready transitions
+1. **EXP & Resonance:** the full-screen actor-row presentation opens completely still. The first Confirm starts real-time EXP gauge movement from each actor's pre-battle-reward EXP toward the finalized value. Crossing a level threshold resets that actor's gauge for the new level and presents a temporary **LEVEL UP** callout. Ordinary Essence Resonance gains remain silent and do not add per-Essence progress rows; only meaningful Essence level or Mastery Ready milestones receive a short callout. Newly awakened Magick remains part of the structured reward result but does not currently create a separate `was born` presentation. After every EXP and Essence milestone animation finishes, Confirm advances to the second screen.
+2. **Runes & Items:** the screen again opens still. The first Confirm starts a Rune ticker from `runesBefore` to `runesAfter` while accepted item drops remain visible below. Once the ticker finishes, Confirm completes the existing callback / scene-pop handoff to the originating map event.
 
-Long progression output scrolls inside the results panel while the battle scene remains visible underneath. `E` / `Enter` confirms the results and completes the existing callback / scene-pop handoff to the originating map event. Defeat and escape retain their existing no-reward completion behavior.
+Player-facing Rune amounts use **R** as the denomination (for example, `1,250 R`). The same denomination is used by the current Victory, MAIN MENU, Save/Load, and Shop presentation surfaces.
+
+Defeat and escape retain their existing no-reward completion behavior. The results animation never changes the authoritative game state, so repeated drawing/updating cannot duplicate rewards.
 
 ## Post-Battle State
 
@@ -633,8 +629,10 @@ Conceptually:
   outcome: victory | defeat | escape,
   encounter: { id, name },
   rewards: { exp, currency, drops, resonance },
+  runesBefore,
+  runesAfter,
   defeatedEnemies: [...],
-  party: [...]
+  party: [{ ..., levelBefore, levelAfter, expBefore, expAfter, essenceRewards }]
 }
 ```
 

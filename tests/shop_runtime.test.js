@@ -281,7 +281,7 @@ function testShopWindowSupportsCommandEntryAndScrollableBuyPresentation() {
     true,
   );
   assert.equal(
-    calls.some((call) => call[0] === "fillText" && call[1] === "100"),
+    calls.some((call) => call[0] === "fillText" && call[1] === "100 R"),
     true,
   );
   assert.equal(
@@ -419,20 +419,20 @@ function testShopSceneOwnsPurchaseRequestsButPartyOwnsMutation() {
 
   assert.equal(party.gil(), 0);
   assert.equal(party.itemCount(1), 1);
-  assert.equal(scene.shopWindow.message, "Purchased Potion for 50 Runes.");
+  assert.equal(scene.shopWindow.message, "Purchased Potion for 50 R.");
 
   scene.shopWindow.result = { action: "purchase", type: "item", id: 1 };
   scene.update();
   assert.equal(party.gil(), 0);
   assert.equal(party.itemCount(1), 1);
-  assert.equal(scene.shopWindow.message, "Not enough Runes. Need 50, have 0.");
+  assert.equal(scene.shopWindow.message, "Not enough Runes. Need 50 R, have 0 R.");
 
   party.gainItem(1, 1);
   scene.shopWindow.result = { action: "sell", type: "item", id: 1, quantity: 1 };
   scene.update();
   assert.equal(party.gil(), 25);
   assert.equal(party.itemCount(1), 1);
-  assert.equal(scene.shopWindow.message, "Sold Potion for 25 Runes.");
+  assert.equal(scene.shopWindow.message, "Sold Potion for 25 R.");
 
   scene.shopWindow.result = { action: "cancel" };
   scene.update();

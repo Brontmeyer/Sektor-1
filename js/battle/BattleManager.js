@@ -331,6 +331,7 @@ class BattleManager {
           mp: actor.mp,
           wasDefeated: this.battlerIsDefeated(actor),
           levelBefore: actor.level,
+          expBefore: Math.max(0, Number(actor.exp) || 0),
         },
       ]),
     );
@@ -347,9 +348,20 @@ class BattleManager {
           )
         : { exp: 0, currency: 0, drops: [], resonance: 0 };
 
+    let runesBefore = null;
+    let runesAfter = null;
+
     if (outcome === BattleManager.OUTCOME_VICTORY) {
+      if (typeof $gameParty.gil === "function") {
+        runesBefore = Math.max(0, Number($gameParty.gil()) || 0);
+      }
+
       if (rewards.currency > 0 && typeof $gameParty.gainGil === "function") {
         $gameParty.gainGil(rewards.currency);
+      }
+
+      if (typeof $gameParty.gil === "function") {
+        runesAfter = Math.max(0, Number($gameParty.gil()) || 0);
       }
 
       const acceptedDrops = [];
@@ -401,6 +413,8 @@ class BattleManager {
         levelsGained,
         levelBefore: snapshot.levelBefore,
         levelAfter: actor.level,
+        expBefore: snapshot.expBefore,
+        expAfter: Math.max(0, Number(actor.exp) || 0),
         essenceRewards,
         ...postBattle,
       };
@@ -413,6 +427,8 @@ class BattleManager {
         name: this.scene.encounter.name,
       },
       rewards,
+      runesBefore,
+      runesAfter,
       defeatedEnemies: defeatedEnemies.map((enemy) => ({
         enemyId: enemy.enemyId,
         name: enemy.name,

@@ -51,19 +51,11 @@ class Window_BattleItem {
     }
 
     if (Input.isActionTriggered("up")) {
-      this.index--;
-
-      if (this.index < 0) {
-        this.index = items.length - 1;
-      }
+      this.index = Math.max(0, this.index - 1);
     }
 
     if (Input.isActionTriggered("down")) {
-      this.index++;
-
-      if (this.index >= items.length) {
-        this.index = 0;
-      }
+      this.index = Math.min(items.length - 1, this.index + 1);
     }
 
     if (Input.isActionTriggered("left")) {

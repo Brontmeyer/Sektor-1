@@ -33,6 +33,24 @@ function actionLabel(action) {
   return labels[action] || action;
 }
 
+function createDrawContext() {
+  const calls = [];
+  return {
+    calls,
+    fillStyle: "",
+    strokeStyle: "",
+    lineWidth: 0,
+    font: "",
+    textAlign: "",
+    textBaseline: "",
+    save() {},
+    restore() {},
+    fillRect(...args) { calls.push(["fillRect", ...args]); },
+    strokeRect(...args) { calls.push(["strokeRect", ...args]); },
+    fillText(...args) { calls.push(["fillText", ...args]); },
+  };
+}
+
 function loadClasses(relativePaths, exportExpression, globals = {}) {
   const context = vm.createContext({ console, ...globals });
   const source = relativePaths
@@ -60,11 +78,15 @@ function sampleResult() {
       resonance: 10,
       drops: [{ itemId: 1, name: "Potion", quantity: 2 }],
     },
+    runesBefore: 80,
+    runesAfter: 100,
     party: [
       {
         actorId: 1,
         name: "Tyler",
         expGained: 100,
+        expBefore: 100,
+        expAfter: 0,
         levelBefore: 2,
         levelAfter: 3,
         levelsGained: 1,
@@ -73,13 +95,13 @@ function sampleResult() {
           {
             essenceId: 1,
             name: "Ember Essence",
-            gained: 5,
-            oldResonance: 1495,
-            newResonance: 1500,
-            oldLevel: 3,
-            newLevel: 4,
+            gained: 10,
+            oldResonance: 295,
+            newResonance: 305,
+            oldLevel: 2,
+            newLevel: 3,
             leveledUp: true,
-            becameMasteryReady: true,
+            becameMasteryReady: false,
             awakenedMagick: [{ id: 47, name: "Meteor Barrage" }],
           },
         ],
@@ -88,6 +110,8 @@ function sampleResult() {
         actorId: 2,
         name: "Sarah",
         expGained: 100,
+        expBefore: 0,
+        expAfter: 100,
         levelBefore: 2,
         levelAfter: 2,
         levelsGained: 0,
@@ -100,6 +124,7 @@ function sampleResult() {
 
 function createResultsWindow() {
   const triggered = new Set();
+  const drawContext = createDrawContext();
   const { classes } = loadClasses(
     [
       "js/windows/Window_ListViewport.js",
@@ -110,7 +135,7 @@ function createResultsWindow() {
       Graphics: {
         width: 1240,
         height: 720,
-        context: {},
+        context: drawContext,
       },
       Input: {
         isTriggered(code) {
@@ -127,10 +152,21 @@ function createResultsWindow() {
   return {
     window: new classes.Window_BattleResults(),
     triggered,
+    drawContext,
   };
 }
 
-function testVictoryResultsSplitProgressionFromRunesAndDrops() {
+function runUntilComplete(window, maxSeconds = 10) {
+  const step = 0.05;
+  let elapsed = 0;
+  while (!window.isComplete() && elapsed < maxSeconds) {
+    window.update(step);
+    elapsed += step;
+  }
+  assert.equal(window.isComplete(), true, "reward animation completes in bounded time");
+}
+
+function testVictoryResultsWaitForConfirmBeforeAnimatingExp() {
   const { window } = createResultsWindow();
   const result = sampleResult();
 
@@ -138,51 +174,99 @@ function testVictoryResultsSplitProgressionFromRunesAndDrops() {
   assert.equal(window.isOpen(), true);
   assert.equal(window.pageIndex, 0);
   assert.equal(window.pageTitle(), "EXP & RESONANCE");
+  assert.equal(window.pageState, "waiting");
+  assert.equal(window.actorRows[0].visualLevel, 2);
+  assert.equal(window.actorRows[0].visualExp, 100);
 
-  const progression = window.lines.map((line) => line.text).join("\n");
+  window.update(2);
+  assert.equal(window.actorRows[0].visualLevel, 2, "idle results do not animate themselves");
+  assert.equal(window.actorRows[0].visualExp, 100);
 
-  assert.equal(progression.includes("Potion ×2"), false);
-  assert.equal(progression.includes("Tyler   +100 EXP"), true);
-  assert.equal(progression.includes("Level 2 → 3!"), true);
-  assert.equal(progression.includes("Ember Essence +5 Resonance (1500/1500)"), true);
-  assert.equal(progression.includes("Essence Level 3 → 4!"), true);
-  assert.equal(progression.includes("Awakened: Meteor Barrage"), true);
-  assert.equal(progression.includes("Ember Essence is MASTERY READY!"), true);
-  assert.equal(
-    progression.includes("Defeated in battle — EXP awarded, no Essence Resonance"),
-    true,
-  );
+  assert.equal(window.handleConfirm(), false);
+  assert.equal(window.pageState, "animating");
+  assert.equal(window.pageIndex, 0, "first confirm starts animation instead of changing pages");
 
-  assert.equal(window.advancePage(), true);
-  assert.equal(window.pageIndex, 1);
-  assert.equal(window.pageTitle(), "RUNES & ITEMS");
-  assert.equal(window.isFinalPage(), true);
-  assert.equal(window.lines.map((line) => line.text).join("\n").includes("Potion ×2"), true);
-  assert.equal(window.advancePage(), false);
+  window.update(0.5);
+  assert.equal(window.actorRows[0].visualExp > 100, true, "EXP bar advances in real time");
+  assert.equal(window.actorRows[0].visualExp < 200, true, "EXP is not granted visually all at once");
+
+  runUntilComplete(window);
+  assert.equal(window.actorRows[0].visualLevel, 3);
+  assert.equal(window.actorRows[0].visualExp, 0);
+  assert.equal(window.actorRows[1].visualLevel, 2);
+  assert.equal(window.actorRows[1].visualExp, 100);
+  assert.equal(window.essencePopupQueue.length, 0, "Essence level-up callout is consumed during animation");
 }
 
-function testResultsWindowRejectsNonVictoryAndScrollsOverflow() {
+function testCompletedExpAdvancesToFrozenRunePageThenTicksTotal() {
+  const { window } = createResultsWindow();
+  window.show(sampleResult());
+  window.handleConfirm();
+  runUntilComplete(window);
+
+  assert.equal(window.handleConfirm(), false);
+  assert.equal(window.pageIndex, 1);
+  assert.equal(window.pageTitle(), "RUNES & ITEMS");
+  assert.equal(window.pageState, "waiting");
+  assert.equal(window.visualRunes, 80);
+  assert.equal(window.formatRunes(20), "20 R");
+  assert.equal(window.lootLines[0].text, "Potion ×2");
+
+  window.update(2);
+  assert.equal(window.visualRunes, 80, "Rune total remains frozen until confirm");
+
+  assert.equal(window.handleConfirm(), false);
+  assert.equal(window.pageState, "animating");
+  window.update(0.35);
+  assert.equal(window.visualRunes > 80, true);
+  assert.equal(window.visualRunes < 100, true, "Rune total counts upward rather than jumping");
+
+  runUntilComplete(window);
+  assert.equal(window.visualRunes, 100);
+  assert.equal(window.handleConfirm(), true, "only completed final page requests battle exit");
+}
+
+function testResultsPresentationIsFullScreenAndOmitsEssenceProgressClutter() {
+  const { window, drawContext } = createResultsWindow();
+  window.show(sampleResult());
+  window.draw();
+
+  assert.equal(window.x, 8);
+  assert.equal(window.y, 8);
+  assert.equal(window.width, 1224);
+  assert.equal(window.height, 704);
+
+  const text = drawContext.calls
+    .filter((call) => call[0] === "fillText")
+    .map((call) => String(call[1]));
+
+  assert.equal(text.includes("Gained EXP."), true);
+  assert.equal(text.includes("Tyler"), true);
+  assert.equal(text.includes("Sarah"), true);
+  assert.equal(text.some((value) => value.includes("Ember Essence +")), false);
+  assert.equal(text.some((value) => value.includes("Meteor Barrage")), false);
+}
+
+function testResultsWindowRejectsNonVictoryAndScrollsLootOverflow() {
   const { window, triggered } = createResultsWindow();
 
   assert.equal(window.show({ outcome: "defeat" }), false);
   assert.equal(window.isOpen(), false);
 
   const result = sampleResult();
-  result.party = Array.from({ length: 10 }, (_, index) => ({
-    actorId: index + 1,
-    name: `Actor ${index + 1}`,
-    expGained: 10,
-    levelBefore: 1,
-    levelAfter: 1,
-    wasDefeated: false,
-    essenceRewards: [],
+  result.rewards.drops = Array.from({ length: 18 }, (_, index) => ({
+    itemId: index + 1,
+    name: `Drop ${index + 1}`,
+    quantity: 1,
   }));
-
   window.show(result);
+  window.pageIndex = 1;
+  window.resetPageState();
+  window.viewport.maxVisibleRows = 4;
   triggered.add("ArrowDown");
 
-  for (let index = 0; index < 20; index++) {
-    window.update();
+  for (let index = 0; index < 12; index++) {
+    window.update(0);
   }
 
   assert.equal(window.scrollIndex > 0, true);
@@ -233,12 +317,14 @@ function testVictorySceneFinalizesOnceBeforeExit() {
   assert.equal(showCount, 1);
 }
 
-function testVictoryUpdatePresentsResultsBeforeContinue() {
+function testVictoryUpdateDelegatesConfirmToRewardStateMachine() {
   let prepareCount = 0;
   let resultUpdateCount = 0;
   let finishCount = 0;
   let confirm = false;
-  let pageAdvanceCount = 0;
+  let shouldFinish = false;
+  let handleConfirmCount = 0;
+  let receivedDelta = null;
 
   class Scene_Base {}
   class BattleManager {
@@ -273,40 +359,36 @@ function testVictoryUpdatePresentsResultsBeforeContinue() {
     updateBattleEffect() {},
     updateBattlePopups() {},
     updatePendingEnemyTurn() {},
-    prepareBattleResults() {
-      prepareCount++;
-    },
+    prepareBattleResults() { prepareCount++; },
     resultsWindow: {
-      update() {
+      update(deltaTime) {
         resultUpdateCount++;
+        receivedDelta = deltaTime;
       },
-      advancePage() {
-        pageAdvanceCount++;
-        return pageAdvanceCount === 1;
+      handleConfirm() {
+        handleConfirmCount++;
+        return shouldFinish;
       },
     },
-    finishBattle() {
-      finishCount++;
-    },
+    finishBattle() { finishCount++; },
   };
 
-  Scene_Battle.prototype.update.call(scene, 1 / 60);
+  Scene_Battle.prototype.update.call(scene, 0.25);
   assert.equal(prepareCount, 1);
   assert.equal(resultUpdateCount, 1);
+  assert.equal(receivedDelta, 0.25);
+  assert.equal(handleConfirmCount, 0);
   assert.equal(finishCount, 0);
 
   confirm = true;
-  Scene_Battle.prototype.update.call(scene, 1 / 60);
-  assert.equal(prepareCount, 2);
-  assert.equal(resultUpdateCount, 2);
-  assert.equal(pageAdvanceCount, 1);
-  assert.equal(finishCount, 0, "first confirmation advances to the Runes / Items page");
+  Scene_Battle.prototype.update.call(scene, 0.25);
+  assert.equal(handleConfirmCount, 1);
+  assert.equal(finishCount, 0, "early confirms are consumed by the results state machine");
 
-  Scene_Battle.prototype.update.call(scene, 1 / 60);
-  assert.equal(prepareCount, 3);
-  assert.equal(resultUpdateCount, 3);
-  assert.equal(pageAdvanceCount, 2);
-  assert.equal(finishCount, 1, "second confirmation exits the victory results");
+  shouldFinish = true;
+  Scene_Battle.prototype.update.call(scene, 0.25);
+  assert.equal(handleConfirmCount, 2);
+  assert.equal(finishCount, 1, "completed Runes page hands control back to battle exit");
 }
 
 function testSceneDrawsResultsAfterBattleRenderer() {
@@ -341,10 +423,12 @@ function testResultsWindowLoadsBeforeBattleScene() {
 }
 
 function run() {
-  testVictoryResultsSplitProgressionFromRunesAndDrops();
-  testResultsWindowRejectsNonVictoryAndScrollsOverflow();
+  testVictoryResultsWaitForConfirmBeforeAnimatingExp();
+  testCompletedExpAdvancesToFrozenRunePageThenTicksTotal();
+  testResultsPresentationIsFullScreenAndOmitsEssenceProgressClutter();
+  testResultsWindowRejectsNonVictoryAndScrollsLootOverflow();
   testVictorySceneFinalizesOnceBeforeExit();
-  testVictoryUpdatePresentsResultsBeforeContinue();
+  testVictoryUpdateDelegatesConfirmToRewardStateMachine();
   testSceneDrawsResultsAfterBattleRenderer();
   testResultsWindowLoadsBeforeBattleScene();
 

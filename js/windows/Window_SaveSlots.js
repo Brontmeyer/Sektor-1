@@ -454,7 +454,9 @@ class Window_SaveSlots {
     context.fillText(
       summary.runes === null
         ? "—"
-        : Math.max(0, summary.runes).toLocaleString(),
+        : typeof Game_Party !== "undefined" && typeof Game_Party.formatRunes === "function"
+          ? Game_Party.formatRunes(summary.runes)
+          : `${Math.max(0, summary.runes).toLocaleString()} R`,
       valueX,
       rowYs[3],
     );

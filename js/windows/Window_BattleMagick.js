@@ -51,19 +51,11 @@ class Window_BattleMagick {
     }
 
     if (Input.isActionTriggered("up")) {
-      this.index--;
-
-      if (this.index < 0) {
-        this.index = magickList.length - 1;
-      }
+      this.index = Math.max(0, this.index - 1);
     }
 
     if (Input.isActionTriggered("down")) {
-      this.index++;
-
-      if (this.index >= magickList.length) {
-        this.index = 0;
-      }
+      this.index = Math.min(magickList.length - 1, this.index + 1);
     }
 
     if (Input.isActionTriggered("left")) {

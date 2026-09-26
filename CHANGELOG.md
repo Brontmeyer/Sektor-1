@@ -12,6 +12,8 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Added
 
+- Added Pass 108 animated Victory Spoils presentation: the full-screen EXP page now waits for Confirm before animating per-actor EXP gauges in real time, pauses on character LEVEL UP callouts, keeps ordinary Essence Resonance silent while surfacing Essence level/mastery milestones, and requires a second Confirm before moving to the frozen Runes/Items page. The Runes page likewise waits for Confirm, then ticks the earned amount into the party total before Continue becomes available.
+- Added authoritative pre/post reward snapshots (`expBefore` / `expAfter`, `runesBefore` / `runesAfter`) so the results window can animate already-finalized rewards without becoming a second reward authority. Player-facing Rune values now use the `R` denomination across Victory, MAIN MENU, Save/Load, and Shop presentation.
 - Added Pass 106 inventory clarity, battle list paging, and Victory Results v2: ITEM now lists only unequipped Weapon / Armor / Accessory copies, empty Key Items stays visible but disabled and is skipped by tab navigation, battle Magick / Skills / Item selectors page by one visible window with Left / Right, and the victory flow now presents **EXP + Resonance** before **Runes + Item Drops** in the shared Sektor 1 panel language.
 - Added a shared `Game_Party.unequippedMerchandiseCount()` authority so ITEM and merchant Sell presentation agree on which physical equipment copies are actually free rather than worn by any actor.
 - Moved **Map** to the final MAIN MENU command slot during development, making it one wraparound Up press from the default Item position while preserving the temporary QA Load command.
@@ -45,6 +47,7 @@ Until formal versioning begins, new completed work is collected under **Unreleas
 
 ### Fixed
 
+- Stopped battle Magick, Skills/Surge, and Item selectors from wrapping vertically between their first and last entries; Up/Down now clamp at list boundaries while Left/Right paging remains intact.
 - Refined EQUIP candidate presentation so the currently equipped choice is identified by yellow item text instead of an `Equipped` suffix; the focus chevron remains gold while an ordinary selected item name stays white.
 - Prevented equipped physical copies from cluttering ITEM inventory quantities while preserving extra unequipped copies of the same record.
 

@@ -128,8 +128,10 @@ function testCurrencyApi() {
   const { party } = createBattleHarness();
 
   assert.equal(party.gil(), 0);
+  assert.equal(party.formatRunes(), "0 R");
   assert.equal(party.gainGil(75), true);
   assert.equal(party.gil(), 75);
+  assert.equal(party.formatRunes(), "75 R");
   assert.equal(party.spendGil(20), true);
   assert.equal(party.gil(), 55);
   assert.equal(party.spendGil(100), false);
@@ -199,6 +201,8 @@ function testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce() {
   assert.equal(result.rewards.exp, 100);
   assert.equal(result.rewards.currency, 10);
   assert.equal(result.rewards.resonance, 10);
+  assert.equal(result.runesBefore, 0);
+  assert.equal(result.runesAfter, 10);
   assert.deepEqual(
     Array.from(result.rewards.drops, (drop) => ({ ...drop })),
     [{ itemId: 1, name: "Potion", quantity: 2 }],
@@ -211,6 +215,10 @@ function testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce() {
   const firstEssence = first.equippedEssence(1);
   const secondEssence = second.equippedEssence(4);
 
+  assert.equal(firstResult.expBefore, 0);
+  assert.equal(firstResult.expAfter, 0);
+  assert.equal(firstResult.levelBefore, 1);
+  assert.equal(firstResult.levelAfter, 2);
   assert.equal(firstEssence.resonance, 1500);
   assert.equal(firstEssence.isMasteryReady(), true);
   assert.equal(firstResult.essenceRewards.length, 1);

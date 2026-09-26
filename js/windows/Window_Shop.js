@@ -358,6 +358,14 @@ class Window_Shop {
     return this.sellTypes();
   }
 
+  formatRunes(value) {
+    if (typeof Game_Party !== "undefined" && typeof Game_Party.formatRunes === "function") {
+      return Game_Party.formatRunes(value);
+    }
+
+    return `${Math.max(0, Math.floor(Number(value) || 0)).toLocaleString()} R`;
+  }
+
   merchantFocusLabel() {
     return this.shopTypeConfig().label;
   }
@@ -515,7 +523,7 @@ class Window_Shop {
       this.message =
         capacity <= 0
           ? `${entry.name} is already at the inventory limit.`
-          : `Not enough Runes. Need ${entry.price}, have ${$gameParty?.gil?.() ?? 0}.`;
+          : `Not enough Runes. Need ${this.formatRunes(entry.price)}, have ${this.formatRunes($gameParty?.gil?.() ?? 0)}.`;
       return;
     }
 
@@ -896,7 +904,7 @@ class Window_Shop {
     context.fillText("VISIT", right.x + 18, right.y + 30);
 
     const visitRows = [
-      ["Runes", String($gameParty?.gil?.() ?? 0)],
+      ["Runes", this.formatRunes($gameParty?.gil?.() ?? 0)],
       ["Store", this.merchantFocusLabel()],
       ["Buy", "Available"],
       ["Sell", "Available"],
@@ -1018,7 +1026,7 @@ class Window_Shop {
       context.textAlign = "right";
       context.fillStyle = enabled ? "#ffffff" : this.themeColor("muted", "#8897ac");
       context.font = "16px sans-serif";
-      context.fillText(String(entry.price), bounds.x + bounds.width - 18, y);
+      context.fillText(this.formatRunes(entry.price), bounds.x + bounds.width - 18, y);
       context.textAlign = "left";
     }
 
@@ -1059,8 +1067,8 @@ class Window_Shop {
     context.textAlign = "left";
 
     const rows = [
-      ["Runes", String(runes), this.themeColor("accent", "#7ff0d5")],
-      ["Price", entry ? String(entry.price) : "—", this.themeColor("secondary", "#aebbd0")],
+      ["Runes", this.formatRunes(runes), this.themeColor("accent", "#7ff0d5")],
+      ["Price", entry ? this.formatRunes(entry.price) : "—", this.themeColor("secondary", "#aebbd0")],
       ["Owned", String(owned), this.themeColor("secondary", "#aebbd0")],
     ];
 
@@ -1418,16 +1426,16 @@ class Window_Shop {
 
     const rows = sellMode
       ? [
-          ["Sell Price", `${unitPrice} Runes`],
+          ["Sell Price", this.formatRunes(unitPrice)],
           ["Available", `x${max}`],
           ["Quantity", String(this.quantity)],
-          ["Receive", `${total} Runes`],
+          ["Receive", this.formatRunes(total)],
         ]
       : [
-          ["Price", `${unitPrice} Runes`],
+          ["Price", this.formatRunes(unitPrice)],
           ["Max", `x${max}`],
           ["Quantity", String(this.quantity)],
-          ["Total", `${total} Runes`],
+          ["Total", this.formatRunes(total)],
         ];
 
     rows.forEach(([label, value], index) => {

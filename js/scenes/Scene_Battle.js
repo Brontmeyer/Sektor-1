@@ -187,20 +187,21 @@ class Scene_Battle extends Scene_Base {
     if (this.outcome) {
       if (this.outcome === BattleManager.OUTCOME_VICTORY) {
         this.prepareBattleResults();
-        this.resultsWindow.update();
+        this.resultsWindow.update(deltaTime);
+
+        if (Input.isActionTriggered("confirm")) {
+          if (this.resultsWindow?.handleConfirm?.() === true) {
+            this.finishBattle();
+          }
+        }
+
+        return;
       }
 
       if (
         Input.isActionTriggered("confirm") ||
         Input.isActionTriggered("menu")
       ) {
-        if (
-          this.outcome === BattleManager.OUTCOME_VICTORY &&
-          this.resultsWindow?.advancePage?.() === true
-        ) {
-          return;
-        }
-
         this.finishBattle();
       }
 

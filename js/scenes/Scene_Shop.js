@@ -12,6 +12,14 @@ class Scene_Shop extends Scene_Base {
     this.shopWindow = new Window_Shop(this.shopData);
   }
 
+  formatRunes(value) {
+    if (typeof Game_Party !== "undefined" && typeof Game_Party.formatRunes === "function") {
+      return Game_Party.formatRunes(value);
+    }
+
+    return `${Math.max(0, Math.floor(Number(value) || 0)).toLocaleString()} R`;
+  }
+
   update() {
     this.shopWindow.update();
 
@@ -33,14 +41,14 @@ class Scene_Shop extends Scene_Base {
 
       if (purchase.success) {
         this.shopWindow.setMessage(
-          `Purchased ${record?.name || "merchandise"}${quantity > 1 ? ` x${quantity}` : ""} for ${purchase.totalPrice} Runes.`,
+          `Purchased ${record?.name || "merchandise"}${quantity > 1 ? ` x${quantity}` : ""} for ${this.formatRunes(purchase.totalPrice)}.`,
         );
         return;
       }
 
       if (purchase.reason === "insufficientGil") {
         this.shopWindow.setMessage(
-          `Not enough Runes. Need ${purchase.requiredGil}, have ${purchase.gil}.`,
+          `Not enough Runes. Need ${this.formatRunes(purchase.requiredGil)}, have ${this.formatRunes(purchase.gil)}.`,
         );
         return;
       }
@@ -63,7 +71,7 @@ class Scene_Shop extends Scene_Base {
 
       if (sale.success) {
         this.shopWindow.setMessage(
-          `Sold ${record?.name || "merchandise"}${quantity > 1 ? ` x${quantity}` : ""} for ${sale.totalPrice} Runes.`,
+          `Sold ${record?.name || "merchandise"}${quantity > 1 ? ` x${quantity}` : ""} for ${this.formatRunes(sale.totalPrice)}.`,
         );
         return;
       }

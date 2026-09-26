@@ -75,6 +75,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Battle Results Screen v1
 - [x] Present EXP, Runes, item drops, level-ups, Essence Resonance, awakened Magick abilities, and Mastery Ready transitions
 - [x] Implement Battle Results Presentation v2 with project-standard panels and sequential EXP/Resonance then Runes/Items pages
+- [x] Implement Battle Results Presentation v3 with confirm-gated real-time EXP/level-up animation, silent Essence progression callouts, animated Rune transfer, full-screen actor-row presentation, and Rune `R` denomination
 - [x] Implement Battle Presentation & Feedback v1
 - [x] Present encounter name and active party battler during player-command flow
 - [x] Replace permanent test-battle footer copy with context-sensitive command/selection/target/outcome hints

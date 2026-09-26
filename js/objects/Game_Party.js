@@ -504,6 +504,15 @@ class Game_Party {
   // Currency
   // =================================
 
+  static formatRunes(amount) {
+    const value = Math.max(0, Math.floor(Number(amount) || 0));
+    return `${value.toLocaleString()} R`;
+  }
+
+  formatRunes(amount = this._gil) {
+    return Game_Party.formatRunes(amount);
+  }
+
   gil() {
     return this._gil;
   }
