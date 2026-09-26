@@ -269,7 +269,8 @@ Completed systems and design rules should be documented rather than duplicated h
 # 🌎 World
 
 - [x] Area Map foundation for current-zone landmarks, exits, and discovered locations
-- [ ] World Map built on the shared location/discovery contract once multiple regions exist
+- [x] Quick Map field input (`M` by default, remappable) routes current field maps into the existing Area Map through a scope-aware map-view seam
+- [ ] World Map built on the shared location/discovery contract once multiple regions exist; the Quick Map route may resolve to that world surface when overworld traversal exists
 - [ ] Towns
 - [ ] Dungeons
 - [ ] Side Quests

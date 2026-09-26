@@ -337,11 +337,11 @@ class BattleRenderer {
       return;
     }
 
-    if (typeof this.scene.hudLayout?.tacticalHelpBounds !== "function") {
+    if (typeof this.scene.hudLayout?.contextPanelBounds !== "function") {
       return;
     }
 
-    const bounds = this.scene.hudLayout.tacticalHelpBounds();
+    const bounds = this.scene.hudLayout.contextPanelBounds();
     const paddingX = 16;
     const left = bounds.x + paddingX;
     const maxWidth = bounds.width - paddingX * 2;
@@ -410,6 +410,29 @@ class BattleRenderer {
     }
 
     const entry = this.currentBattleSelectionEntry();
+    const surgeSelection =
+      this.scene.skillsWindow?.isOpen?.() === true &&
+      this.scene.skillsWindow?.mode === "surge";
+
+    if (entry && surgeSelection) {
+      const description =
+        typeof entry.description === "string" ? entry.description.trim() : "";
+      const detail = description || "No description available.";
+
+      context.font = "13px Arial";
+      context.fillStyle = "#e3e8ef";
+      Window_TextLayout.drawWrappedTextCentered(
+        context,
+        detail,
+        left,
+        bounds.y + bounds.height / 2,
+        maxWidth,
+        18,
+        2,
+      );
+      context.restore();
+      return;
+    }
 
     if (entry) {
       const name = String(entry.name || "").trim();
@@ -475,12 +498,12 @@ class BattleRenderer {
   }
 
   shouldDrawBattleHint() {
-    if (this.scene.outcome || this.scene.selectingEnemyTarget) {
+    if (this.scene.outcome) {
       return true;
     }
 
-    if (this.hasOpenSelectionWindow()) {
-      return true;
+    if (this.shouldDrawContextPanel()) {
+      return false;
     }
 
     const commandWindow = this.scene.commandWindow;

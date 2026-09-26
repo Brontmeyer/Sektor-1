@@ -103,6 +103,46 @@ function testContextPanelShowsHighlightedActionWithoutRedundantHeading() {
   assert.equal(text.includes("Magick"), false);
 }
 
+function testSurgeContextPanelShowsArtDescriptionWithoutRepeatingArtName() {
+  const drawContext = createDrawContext();
+  const unbroken = {
+    id: 1,
+    name: "Unbroken",
+    description: "Convert a full Valor gauge into overwhelming physical force.",
+  };
+  const scene = {
+    outcome: null,
+    selectingEnemyTarget: false,
+    skillsWindow: {
+      isOpen: () => true,
+      mode: "surge",
+      x: 170,
+      y: 420,
+      width: 220,
+      lineHeight: 34,
+      index: 0,
+      currentSkill: () => unbroken,
+    },
+    magickWindow: { isOpen: () => false },
+    itemWindow: { isOpen: () => false },
+    scanManager: { isHelpVisible: () => false },
+  };
+  const renderer = loadRenderer(scene, drawContext);
+
+  renderer.drawTacticalHelp(drawContext);
+
+  const text = renderedText(drawContext);
+  assert.equal(
+    text.some((entry) => entry.includes("overwhelming physical force")),
+    true,
+  );
+  assert.equal(
+    text.includes("Unbroken"),
+    false,
+    "the compact Surge selector already names the selected Art",
+  );
+}
+
 function testContextPanelBecomesScannedTargetReadoutDuringTargeting() {
   const drawContext = createDrawContext();
   const target = { name: "Test Slime" };
@@ -244,6 +284,7 @@ function testNormalBattleSelectorsDropRedundantCategoryHeadings() {
 
 function run() {
   testContextPanelShowsHighlightedActionWithoutRedundantHeading();
+  testSurgeContextPanelShowsArtDescriptionWithoutRepeatingArtName();
   testContextPanelBecomesScannedTargetReadoutDuringTargeting();
   testNormalBattleSelectorsDropRedundantCategoryHeadings();
 

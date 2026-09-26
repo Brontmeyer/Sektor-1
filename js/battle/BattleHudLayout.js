@@ -122,6 +122,39 @@ class BattleHudLayout {
     };
   }
 
+  surgeContextBounds() {
+    const hud = this.hudBounds();
+    const command = this.commandBounds();
+    const selector = this.scene?.skillsWindow || null;
+    const selectorX = Number(selector?.x) || command.x;
+    const selectorWidth = Number(selector?.width) || command.width;
+    const selectorY = Number(selector?.y) || Math.max(10, command.y - 122);
+    const lineHeight = Number(selector?.lineHeight) || 34;
+    const selectedIndex = Math.max(0, Math.min(1, Number(selector?.index) || 0));
+    const selectedRowCenterY = selectorY + 58 + selectedIndex * lineHeight;
+    const height = 54;
+    const x = selectorX + selectorWidth + 10;
+    const availableWidth = Math.max(260, hud.x + hud.width - x);
+
+    return {
+      x,
+      y: Math.max(10, selectedRowCenterY - height / 2),
+      width: Math.min(680, availableWidth),
+      height,
+    };
+  }
+
+  contextPanelBounds() {
+    if (
+      this.scene?.skillsWindow?.isOpen?.() === true &&
+      this.scene?.skillsWindow?.mode === "surge"
+    ) {
+      return this.surgeContextBounds();
+    }
+
+    return this.tacticalHelpBounds();
+  }
+
   contextHelpVisible() {
     if (this.scene?.outcome) {
       return false;
@@ -141,10 +174,10 @@ class BattleHudLayout {
   }
 
   bannerBounds(textWidth = 0) {
-    const paddingX = 18;
+    const paddingX = 26;
     const width = Math.max(
-      136,
-      Math.min(Graphics.width * 0.42, Number(textWidth) + paddingX * 2 || 136),
+      220,
+      Math.min(Graphics.width * 0.48, Number(textWidth) + paddingX * 2 || 220),
     );
 
     return {
@@ -158,7 +191,7 @@ class BattleHudLayout {
 
   hintY() {
     if (this.contextHelpVisible()) {
-      return this.tacticalHelpBounds().y - 7;
+      return this.contextPanelBounds().y - 7;
     }
 
     return this.hudBounds().y - 9;

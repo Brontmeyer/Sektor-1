@@ -42,20 +42,63 @@ class Scene_Map extends Scene_Base {
     DebugManager.log("Map scene ready.");
   }
 
+  quickMapRoute() {
+    if (!this.map?.areaMapEnabled?.()) {
+      return null;
+    }
+
+    const snapshot = this.map.areaMapSnapshot?.(this.player) || null;
+
+    if (!snapshot) {
+      return null;
+    }
+
+    return {
+      scope: "area",
+      sceneClass: Scene_AreaMap,
+      args: [snapshot],
+    };
+  }
+
+  openQuickMap() {
+    const route = this.quickMapRoute();
+
+    if (!route?.sceneClass) {
+      return false;
+    }
+
+    SceneManager.push(route.sceneClass, ...(route.args || []));
+    return true;
+  }
+
+  fieldInputAvailable() {
+    return (
+      !this.messageWindow.isOpen() &&
+      !this.choiceWindow.isOpen() &&
+      !this.interpreter.isRunning()
+    );
+  }
+
   update(deltaTime) {
     if (this.loading || this.transferring) {
       return;
     }
 
     // =====================================
-    // MAIN MENU
+    // QUICK MAP / MAIN MENU
     // =====================================
 
     if (
+      Input.isActionTriggered("map") &&
+      this.fieldInputAvailable() &&
+      this.openQuickMap()
+    ) {
+      return;
+    }
+
+    if (
       Input.isActionTriggered("menu") &&
-      !this.messageWindow.isOpen() &&
-      !this.choiceWindow.isOpen() &&
-      !this.interpreter.isRunning()
+      this.fieldInputAvailable()
     ) {
       SceneManager.push(
         Scene_Menu,

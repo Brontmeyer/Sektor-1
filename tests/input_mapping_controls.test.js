@@ -68,6 +68,7 @@ function testLegacyConfigMigratesWithoutLosingOptions() {
   assert.equal(ConfigManager.get("battleCursorMemory"), "memory");
   assert.deepEqual(Array.from(ConfigManager.bindingSlots("confirm")), ["KeyE", "Enter"]);
   assert.deepEqual(Array.from(ConfigManager.bindingSlots("help")), ["KeyH", null]);
+  assert.deepEqual(Array.from(ConfigManager.bindingSlots("map")), ["KeyM", null]);
   assert.deepEqual(
     JSON.parse(JSON.stringify(ConfigManager.getWindowColors())),
     JSON.parse(JSON.stringify(ConfigManager.windowColorDefaults())),
@@ -244,6 +245,7 @@ function testControlsWindowCapturesClearsCancelsAndResetsBindings() {
   window.update();
   assert.deepEqual(Array.from(ConfigManager.bindingSlots("up")), ["KeyW", "ArrowUp"]);
   assert.deepEqual(Array.from(ConfigManager.bindingSlots("help")), ["KeyH", null]);
+  assert.deepEqual(Array.from(ConfigManager.bindingSlots("map")), ["KeyM", null]);
 
   assert.doesNotThrow(() => window.draw());
   assert.equal(

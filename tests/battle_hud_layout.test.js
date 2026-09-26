@@ -129,6 +129,13 @@ function testIdleBattleHudSuppressesTopRightCommandLegend() {
 
   scene.commandWindow.hasSideCommandOpen = () => true;
   assert.equal(renderer.shouldDrawBattleHint(), true);
+
+  scene.magickWindow.isOpen = () => true;
+  assert.equal(
+    renderer.shouldDrawBattleHint(),
+    false,
+    "the context panel replaces the old upper-right selector legend",
+  );
 }
 
 function testBannerIsCompactAndDoesNotSpanTheScreen() {
@@ -138,8 +145,9 @@ function testBannerIsCompactAndDoesNotSpanTheScreen() {
   const short = layout.bannerBounds(80);
   const long = layout.bannerBounds(2000);
 
+  assert.equal(short.width >= 220, true);
   assert.equal(short.width < Graphics.width * 0.5, true);
-  assert.equal(long.width <= Graphics.width * 0.46, true);
+  assert.equal(long.width <= Graphics.width * 0.48, true);
   assert.equal(short.x > 0, true);
 }
 
@@ -158,6 +166,31 @@ function testContextHelpIsExpandedAndCenteredAboveHud() {
   assert.equal(help.x + help.width < hud.x + hud.width, true);
   assert.equal(help.y + help.height < hud.y, true);
   assert.equal(layout.hintY() < help.y, true);
+}
+
+function testSurgeContextPanelTracksSelectedArtBesideCompactSelector() {
+  const Graphics = { width: 1280, height: 720 };
+  const skillsWindow = {
+    isOpen: () => true,
+    mode: "surge",
+    x: 170,
+    y: 420,
+    width: 220,
+    lineHeight: 34,
+    index: 0,
+  };
+  const scene = { skillsWindow };
+  const { BattleHudLayout } = loadPresentation({ Graphics });
+  const layout = new BattleHudLayout(scene);
+  const first = layout.contextPanelBounds();
+
+  assert.equal(first.x, skillsWindow.x + skillsWindow.width + 10);
+  assert.equal(first.width <= 680, true);
+  assert.equal(first.height, 54);
+
+  skillsWindow.index = 1;
+  const second = layout.contextPanelBounds();
+  assert.equal(second.y - first.y, skillsWindow.lineHeight);
 }
 
 function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
@@ -339,6 +372,7 @@ function run() {
   testIdleBattleHudSuppressesTopRightCommandLegend();
   testBannerIsCompactAndDoesNotSpanTheScreen();
   testContextHelpIsExpandedAndCenteredAboveHud();
+  testSurgeContextPanelTracksSelectedArtBesideCompactSelector();
   testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve();
   testHudLayoutLoadsBeforeRendererAndBattleScene();
 

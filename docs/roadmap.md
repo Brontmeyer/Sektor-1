@@ -245,7 +245,7 @@ Exact character designs should only be added to canonical documentation when del
 
 A JRPG battle engine eventually needs a world capable of carrying the adventure around it.
 
-Area Map Foundation v1 now establishes validated current-zone landmark/exit records, proximity discovery, persistent discovery state, and a reusable AREA MAP menu surface. The later World Map should consume that shared contract once multiple authored regions exist.
+Area Map Foundation v1 now establishes validated current-zone landmark/exit records, proximity discovery, persistent discovery state, and a reusable AREA MAP menu surface. Pass 111 adds a remappable field **Quick Map** action (default `M`) plus a small scope-aware route contract: current field maps resolve to the existing AREA MAP snapshot, while a later overworld scene can resolve that same player intent to the World Map. The later World Map should consume the shared discovery contract once multiple authored regions exist rather than replacing the Area Map.
 
 Primary work includes:
 

@@ -241,6 +241,64 @@ function testAreaMapWindowShowsOnlyDiscoveredLocationsAndSupportsSelection() {
   );
 }
 
+function testQuickMapInputRoutesFieldExplorationIntoCurrentAreaMap() {
+  const config = read("js/core/ConfigManager.js");
+  const sceneMap = read("js/scenes/Scene_Map.js");
+
+  assert.match(
+    config,
+    /action: "map", label: "Quick Map", defaults: \["KeyM", null\]/,
+  );
+  assert.match(sceneMap, /Input\.isActionTriggered\("map"\)/);
+  assert.match(sceneMap, /scope: "area"/);
+  assert.match(sceneMap, /sceneClass: Scene_AreaMap/);
+
+  const pushes = [];
+  const snapshot = { mapId: 1, name: "Dev Zone 1" };
+  const context = vm.createContext({
+    console,
+    Scene_Base: class {},
+    Window_Message: class {},
+    Window_Choice: class {},
+    Game_Interpreter: class {},
+    Scene_AreaMap: class Scene_AreaMap {},
+    SceneManager: {
+      push(sceneClass, ...args) {
+        pushes.push([sceneClass, ...args]);
+      },
+    },
+    Input: {},
+    DebugManager: { log() {} },
+    CollisionManager: {},
+    Graphics: {},
+    DatabaseManager: {},
+    Game_Map: class {},
+    Game_Player: class {},
+    Camera: class {},
+  });
+
+  vm.runInContext(
+    `${sceneMap}\nglobalThis.__SceneMap = Scene_Map;`,
+    context,
+  );
+
+  const fake = {
+    map: {
+      areaMapEnabled: () => true,
+      areaMapSnapshot: () => snapshot,
+    },
+    player: {},
+  };
+  fake.quickMapRoute = context.__SceneMap.prototype.quickMapRoute;
+
+  const route = context.__SceneMap.prototype.quickMapRoute.call(fake);
+  assert.equal(route.scope, "area");
+  assert.equal(route.args[0], snapshot);
+  assert.equal(context.__SceneMap.prototype.openQuickMap.call(fake), true);
+  assert.equal(pushes.length, 1);
+  assert.equal(pushes[0][1], snapshot);
+}
+
 function testAreaMapIsAFirstClassMainMenuDestination() {
   const command = read("js/windows/Window_MenuCommand.js");
   const sceneMenu = read("js/scenes/Scene_Menu.js");
@@ -270,6 +328,7 @@ function run() {
   testGameSystemOwnsPersistentSharedDiscoveryState();
   testGameMapDiscoversNearbyLocationsAndBuildsSnapshot();
   testAreaMapWindowShowsOnlyDiscoveredLocationsAndSupportsSelection();
+  testQuickMapInputRoutesFieldExplorationIntoCurrentAreaMap();
   testAreaMapIsAFirstClassMainMenuDestination();
   console.log("Area Map runtime regression tests passed.");
 }

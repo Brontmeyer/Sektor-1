@@ -102,6 +102,7 @@ class ConfigManager {
       { action: "confirm", label: "Confirm", defaults: ["KeyE", "Enter"], required: true },
       { action: "cancel", label: "Cancel / Back", defaults: ["KeyQ", "Escape"], required: true },
       { action: "menu", label: "Menu", defaults: ["Escape", null], required: true },
+      { action: "map", label: "Quick Map", defaults: ["KeyM", null], required: false },
       { action: "interact", label: "Interact", defaults: ["KeyE", null], required: true },
       { action: "help", label: "Tactical Help", defaults: ["KeyH", null], required: false },
       { action: "scope", label: "Target Scope", defaults: ["KeyR", null], required: false },

@@ -11,7 +11,7 @@ const defaultActionCodes = {
   up: ["KeyW", "ArrowUp"], down: ["KeyS", "ArrowDown"],
   left: ["KeyA", "ArrowLeft"], right: ["KeyD", "ArrowRight"],
   confirm: ["KeyE", "Enter"], cancel: ["KeyQ", "Escape"],
-  menu: ["Escape"], interact: ["KeyE"], help: ["KeyH"], scope: ["KeyR"],
+  menu: ["Escape"], map: ["KeyM"], interact: ["KeyE"], help: ["KeyH"], scope: ["KeyR"],
 };
 function actionTriggered(triggered, action) {
   return (defaultActionCodes[action] || []).some((code) => triggered.has(code));
