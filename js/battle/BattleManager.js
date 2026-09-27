@@ -280,6 +280,18 @@ class BattleManager {
 
     if (outcome) {
       this.declareBattleOutcome(outcome);
+
+      // Retreat is a committed Magick action, so let its normal cast/effect/
+      // recovery animation sequence finish before leaving the battle scene.
+      // Side-command Escape still exits immediately through Scene_Battle's
+      // command handler and never enters this action sequence.
+      if (
+        outcome === BattleManager.OUTCOME_ESCAPE &&
+        typeof battle.finishBattle === "function"
+      ) {
+        return battle.finishBattle(outcome);
+      }
+
       return;
     }
 
@@ -2400,14 +2412,14 @@ class BattleManager {
       ? "single"
       : scopes[0] || "single";
 
-    // Cast-level effects and per-hit random-target magick own their targeting
-    // at resolution time. They should not ask the player to select a target
-    // that will immediately be ignored.
-    if (magick.effect === "escape" || this.magickUsesRandomTargetPerHit(magick)) {
-      if (
-        this.magickUsesRandomTargetPerHit(magick) &&
-        this.randomMagickTargetCandidates(magick).length === 0
-      ) {
+    // Per-hit random-target Magick owns its targeting at resolution time. It
+    // should not pretend one highlighted battler is the target when every hit
+    // will independently choose from the legal enemy pool. Cast-level effects
+    // such as Retreat still enter the battlefield selector so the player gets
+    // the same deliberate action -> target/group -> confirm rhythm as ordinary
+    // Magick before MP or the actor's turn is committed.
+    if (this.magickUsesRandomTargetPerHit(magick)) {
+      if (this.randomMagickTargetCandidates(magick).length === 0) {
         battle.addBattleMessage(`${magick.name} has no valid targets.`);
         battle.pendingMagick = null;
         return;

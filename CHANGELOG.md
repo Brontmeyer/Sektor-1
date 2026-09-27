@@ -1,3 +1,11 @@
+
+## Pass 118 - Battle Action Confirmation v1
+
+- Routed Retreat Magick through the shared battlefield target/group confirmation flow instead of committing directly from the Magick list.
+- Retreat now presents the allied all-target battlefield surface, spends no MP/turn until Confirm, inherits the existing target-cancel return to the remembered Magick selector entry, and after confirmation completes the caster's normal Magick animation/recovery sequence before automatically leaving battle.
+- Preserved the no-escape encounter gate before confirmation so blocked Retreat attempts still consume nothing.
+- Kept random-per-hit Magick such as Meteor Barrage as an intentional direct-commit exception because highlighting one battler would misrepresent its independently randomized hit targets.
+- Added focused regression coverage for Retreat confirmation, post-confirm cast animation/automatic battle exit, and the blocked-escape pre-target gate.
 # 📜 Sektor 1 Changelog
 
 Notable completed changes to Sektor 1 are recorded here.

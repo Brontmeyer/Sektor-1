@@ -103,6 +103,11 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Collapse optional All scope when only one legal target exists in the current target bucket
 - [x] Support four-direction spatial targeting across normal/back-attack/pincer layouts without wraparound
 - [x] Limit Pincer All targeting to one selected enemy flank at a time and allow left/right flank switching
+- [ ] Preserve the last confirmed battle target per actor/action context when that battler is still alive and legal; fall back safely when the remembered target is unavailable
+- [ ] Refine spatial target navigation so repeated directional input stays within the geometrically intended enemy/ally lane instead of jumping sides unexpectedly when battlers overlap vertically
+- [ ] Add pre-emptive battle opening rules/presentation
+- [ ] Revisit front/back row combat mechanics for physical damage dealt/received by actors and enemies; current player row state is presentation-only outside existing formation/rear-exposure rules
+- [ ] Refine victory spoils pacing so Confirm starts each tally, Confirm during counting snaps to the final total, and the next Confirm advances to the next results stage
 - [x] Implement Scan & Tactical Help v1 with battle-local per-enemy knowledge, H-toggle help, live HP/MP, and elemental Weak/Resist/Immune detail
 - [x] Implement Game Options / Config Foundation v1 with save-slot-independent persistence
 - [x] Add Battle Speed, Battle Message Speed, Field Message Speed, Battle Cursor Memory, and Magick Order runtime settings
@@ -146,6 +151,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
 - [x] Add canonical persistent play-time tracking with main-menu HH:MM:SS and Save/Load persistence
 - [x] Implement Main Menu Actor Selection & Order Foundation v1 with shared party-card focus, actor handoff, persistent front/back row state, portrait-position row language, and ROSTER hidden-by-default policy
+- [ ] When backing out of actor-confirmed Main Menu destinations such as Magick/Skill, return focus to the actor cards so another actor can be chosen immediately; destinations with internal actor switching such as Equip/Essence keep their own navigation contract
 - [x] Extend Order with persistent active-party visual formation swapping (positions 1-4) without changing mechanical party/turn order
 - [x] Streamline Order back into direct active-party-card control so selecting Order immediately edits rows and visual formation slots without an intermediate full-screen window
 - [x] Connect player front/back row state to battlefield geometry as presentation only; keep row/slot position free of damage, weapon, targeting, or stat advantages unless the design is explicitly revisited
@@ -344,4 +350,6 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Pass 112: Add battler-owned undead identity with restorative Magick/Skill/Item damage inversion, make the ready Surge chip reveal only when Up is pressed from Attack, and center description-only battle context prose without repeating selector names
 - [x] Pass 115: Make equipped Essence progression grant currently awakened Magick through the shared actor Magick-availability contract, preserve independent permanent Magick ownership, and make restorative/healing battle actions prefer the caster as their initial legal target while offensive actions remain enemy-first
 - [x] Pass 116: Reject guaranteed no-effect heal/status-cleanse targets, add custom Restore/Attack/Indirect/Advanced Magick category priority with stable-ID ordering inside each category, make Battle Cursor Memory actor-specific by stable action identity, and organize AREA MAP Landmarks/Exits with Discovery / Name / Distance ordering
+- [x] Pass 117: Implement all 19 Level-4 Essence passives, add the development-only `$dev` console harness, expose passive/Fury feedback, enforce Haste/Slow opposition, make Small/Frog physically vulnerable, exclude banished enemies from rewards, and simplify battle-console narration
+- [x] Pass 118: Route Retreat through the shared battlefield target/group confirmation flow so cast-level escape follows Magick → battlefield confirmation before MP/turn commitment, then completes the caster Magick presentation and exits battle automatically; keep random-per-hit Magick as the intentional no-fake-target exception
 - [ ] Remove the temporary in-game Load shortcut for the release menu once development/QA no longer needs rapid prepared-save access

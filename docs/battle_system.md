@@ -776,3 +776,11 @@ That keeps the battle system understandable today while leaving room for the str
 ---
 
 Built with ❤️ by **Sarah & Tyler**
+
+## Battle Action Confirmation
+
+Player-selected battle actions use an explicit selection rhythm whenever the action has a truthful battlefield target or target group: choose the command/action, choose or review the battlefield target/group, then Confirm to commit the turn. MP/resources and the actor turn are not committed merely by selecting the action from its list.
+
+Retreat Magick follows this contract even though its escape effect resolves at cast level. Selecting Retreat opens the allied all-target battlefield confirmation surface; confirming that surface commits the cast, while Back returns to the Magick selector with the remembered Magick entry preserved. After confirmation, the caster completes the ordinary Magick cast/effect/recovery presentation and the battle exits automatically at the end of that sequence, with no second confirmation required. Non-escapable encounters still reject Retreat before target confirmation and spend no MP/turn.
+
+Random-per-hit Magick such as Meteor Barrage remains an intentional exception: because each hit independently chooses from the legal enemy pool at resolution time, the UI does not highlight one battler as a fake target.
