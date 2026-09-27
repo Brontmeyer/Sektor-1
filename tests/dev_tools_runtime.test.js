@@ -71,13 +71,13 @@ function makeHarness(debugMode = true) {
   };
 
   const party = {
-    _gil: 0,
+    _runes: 0,
     _items: {},
     members: () => [actor],
     actorById: (id) => Number(id) === 1 ? actor : null,
     gainItem(id, amount) { this._items[id] = (this._items[id] || 0) + amount; return true; },
-    gainGil(amount) { this._gil += amount; return true; },
-    spendGil(amount) { if (amount > this._gil) return false; this._gil -= amount; return true; },
+    gainRunes(amount) { this._runes += amount; return true; },
+    spendRunes(amount) { if (amount > this._runes) return false; this._runes -= amount; return true; },
   };
   const system = {
     party,
@@ -144,8 +144,9 @@ function testResourceStatusAndBattleHelpersUseRuntimeContracts() {
   assert.ok(Math.abs(chance.effectiveChance - 0.54) < 1e-9);
   assert.equal(tools.item(1, 3), true);
   assert.equal(party._items[1], 3);
-  assert.equal(tools.gil(500), true);
-  assert.equal(party._gil, 500);
+  assert.equal(tools.runes(500), true);
+  assert.equal(typeof tools.gil, "undefined");
+  assert.equal(party._runes, 500);
   assert.equal(tools.battle(1), true);
   assert.equal(SceneManager.startedEncounterId, 1);
 }

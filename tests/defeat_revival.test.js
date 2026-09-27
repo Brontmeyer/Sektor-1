@@ -353,6 +353,12 @@ function testBattleOutcomeAndRewardsTreatPetrifyAsDefeat() {
   const enemy = new Game_Enemy(1);
   const party = new Game_Party([actor]);
 
+  // This test owns its reward fixture so enemy balance edits cannot turn a
+  // defeat-state regression into an unrelated progression failure.
+  enemy.expReward = 50;
+  enemy.runeReward = 0;
+  enemy.resonanceReward = 0;
+  enemy.dropTable = [];
   enemy.addStatus("petrify");
 
   const messages = [];

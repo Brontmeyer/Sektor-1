@@ -18,6 +18,13 @@ const magick = readData("Magick.json");
 const essences = readData("Essences.json");
 const statuses = readData("Statuses.json");
 
+const REWARD_FIXTURE = Object.freeze({
+  exp: 50,
+  runes: 10,
+  resonance: 5,
+  drop: Object.freeze({ itemId: 1, quantity: 1, chance: 1 }),
+});
+
 function makeDatabaseManager() {
   return {
     actors,
@@ -93,6 +100,15 @@ function createBattleHarness() {
   const party = new Game_Party([first, second]);
   const firstEnemy = new Game_Enemy(1);
   const secondEnemy = new Game_Enemy(1);
+
+  // Engine reward tests own their fixture values. Balance edits to Test Slime
+  // must not invalidate reward-authority regression coverage.
+  for (const enemy of [firstEnemy, secondEnemy]) {
+    enemy.expReward = REWARD_FIXTURE.exp;
+    enemy.runeReward = REWARD_FIXTURE.runes;
+    enemy.resonanceReward = REWARD_FIXTURE.resonance;
+    enemy.dropTable = [{ ...REWARD_FIXTURE.drop }];
+  }
   const scene = {
     encounter: { id: 1, name: "Reward Test" },
     enemies: [firstEnemy, secondEnemy],
@@ -124,21 +140,25 @@ function createBattleHarness() {
   };
 }
 
-function testCurrencyApi() {
+function testRuneApi() {
   const { party } = createBattleHarness();
 
-  assert.equal(party.gil(), 0);
+  assert.equal(party.runes(), 0);
+  assert.equal(typeof party.gil, "undefined");
+  assert.equal(typeof party.gainGil, "undefined");
+  assert.equal(typeof party.spendGil, "undefined");
+  assert.equal(typeof party.setGil, "undefined");
   assert.equal(party.formatRunes(), "0 R");
-  assert.equal(party.gainGil(75), true);
-  assert.equal(party.gil(), 75);
+  assert.equal(party.gainRunes(75), true);
+  assert.equal(party.runes(), 75);
   assert.equal(party.formatRunes(), "75 R");
-  assert.equal(party.spendGil(20), true);
-  assert.equal(party.gil(), 55);
-  assert.equal(party.spendGil(100), false);
-  assert.equal(party.gil(), 55);
-  assert.equal(party.gainGil(-1), false);
-  assert.equal(party.setGil(12), true);
-  assert.equal(party.gil(), 12);
+  assert.equal(party.spendRunes(20), true);
+  assert.equal(party.runes(), 55);
+  assert.equal(party.spendRunes(100), false);
+  assert.equal(party.runes(), 55);
+  assert.equal(party.gainRunes(-1), false);
+  assert.equal(party.setRunes(12), true);
+  assert.equal(party.runes(), 12);
 }
 
 function testRewardSchemaValidation() {
@@ -159,7 +179,7 @@ function testRewardSchemaValidation() {
 
   const broken = {
     ...enemies[1],
-    gilReward: -1,
+    runeReward: -1,
     resonanceReward: "5",
     dropTable: [
       { itemId: 999, quantity: 0, chance: 2 },
@@ -168,7 +188,7 @@ function testRewardSchemaValidation() {
   const errors = [];
   DatabaseValidator.validateEnemies([null, broken], items, errors);
 
-  assert.equal(errors.some((error) => error.includes("gilReward")), true);
+  assert.equal(errors.some((error) => error.includes("runeReward")), true);
   assert.equal(errors.some((error) => error.includes("resonanceReward")), true);
   assert.equal(errors.some((error) => error.includes("valid item")), true);
   assert.equal(errors.some((error) => error.includes("positive integer")), true);
@@ -198,16 +218,16 @@ function testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce() {
 
   const result = manager.finalizeBattle(BattleManager.OUTCOME_VICTORY);
 
-  assert.equal(result.rewards.exp, 50);
-  assert.equal(result.rewards.currency, 10);
-  assert.equal(result.rewards.resonance, 5);
+  assert.equal(result.rewards.exp, REWARD_FIXTURE.exp);
+  assert.equal(result.rewards.runes, REWARD_FIXTURE.runes);
+  assert.equal(result.rewards.resonance, REWARD_FIXTURE.resonance);
   assert.equal(result.runesBefore, 0);
-  assert.equal(result.runesAfter, 10);
+  assert.equal(result.runesAfter, REWARD_FIXTURE.runes);
   assert.deepEqual(
     Array.from(result.rewards.drops, (drop) => ({ ...drop })),
     [{ itemId: 1, name: items[1].name, quantity: 1 }],
   );
-  assert.equal(party.gil(), 10);
+  assert.equal(party.runes(), REWARD_FIXTURE.runes);
   assert.equal(party.itemCount(1), 1);
 
   const firstResult = result.party.find((entry) => entry.actorId === 1);
@@ -216,13 +236,13 @@ function testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce() {
   const secondEssence = second.equippedEssence(4);
 
   assert.equal(firstResult.expBefore, 0);
-  assert.equal(firstResult.expAfter, 50);
+  assert.equal(firstResult.expAfter, REWARD_FIXTURE.exp);
   assert.equal(firstResult.levelBefore, 1);
   assert.equal(firstResult.levelAfter, 1);
-  assert.equal(firstEssence.resonance, 1500);
+  assert.equal(firstEssence.resonance, 1495 + REWARD_FIXTURE.resonance);
   assert.equal(firstEssence.isMasteryReady(), true);
   assert.equal(firstResult.essenceRewards.length, 1);
-  assert.equal(firstResult.essenceRewards[0].gained, 5);
+  assert.equal(firstResult.essenceRewards[0].gained, REWARD_FIXTURE.resonance);
   assert.equal(firstResult.essenceRewards[0].becameMasteryReady, true);
 
   assert.equal(secondEssence.resonance, 0);
@@ -232,9 +252,9 @@ function testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce() {
 
   const again = manager.finalizeBattle(BattleManager.OUTCOME_VICTORY);
   assert.equal(again, result);
-  assert.equal(party.gil(), 10);
+  assert.equal(party.runes(), REWARD_FIXTURE.runes);
   assert.equal(party.itemCount(1), 1);
-  assert.equal(firstEssence.resonance, 1500);
+  assert.equal(firstEssence.resonance, 1495 + REWARD_FIXTURE.resonance);
 }
 
 function testAllBanishedVictoryAwardsNoEnemyRewards() {
@@ -250,9 +270,9 @@ function testAllBanishedVictoryAwardsNoEnemyRewards() {
 
   assert.deepEqual(
     { ...result.rewards, drops: Array.from(result.rewards.drops) },
-    { exp: 0, currency: 0, drops: [], resonance: 0 },
+    { exp: 0, runes: 0, drops: [], resonance: 0 },
   );
-  assert.equal(party.gil(), 0);
+  assert.equal(party.runes(), 0);
   assert.equal(party.itemCount(1), 0);
   assert.equal(first.exp, 0);
   assert.equal(first.equippedEssence(1).resonance, 700);
@@ -278,7 +298,7 @@ function testVictoryDropsRespectRemainingInventoryCapacity() {
 }
 
 function run() {
-  testCurrencyApi();
+  testRuneApi();
   testRewardSchemaValidation();
   testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce();
   testAllBanishedVictoryAwardsNoEnemyRewards();

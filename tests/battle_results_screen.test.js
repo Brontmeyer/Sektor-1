@@ -74,7 +74,7 @@ function sampleResult() {
     encounter: { id: 1, name: "Test Slime Pair" },
     rewards: {
       exp: 100,
-      currency: 20,
+      runes: 20,
       resonance: 10,
       drops: [{ itemId: 1, name: "Potion", quantity: 2 }],
     },

@@ -108,6 +108,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Add pre-emptive battle opening rules/presentation
 - [ ] Revisit front/back row combat mechanics for physical damage dealt/received by actors and enemies; current player row state is presentation-only outside existing formation/rear-exposure rules
 - [x] Pass 120: Refine victory spoils pacing so Confirm starts each tally, Confirm during counting snaps to the final total, and the next Confirm advances to the next results stage
+- [x] Pass 121: Rename the active economy/runtime contract to Runes, migrate legacy save currency into Save Runtime v15, and decouple reward-engine tests from enemy balance values
 - [x] Implement Scan & Tactical Help v1 with battle-local per-enemy knowledge, H-toggle help, live HP/MP, and elemental Weak/Resist/Immune detail
 - [x] Implement Game Options / Config Foundation v1 with save-slot-independent persistence
 - [x] Add Battle Speed, Battle Message Speed, Field Message Speed, Battle Cursor Memory, and Magick Order runtime settings
@@ -164,7 +165,7 @@ Completed systems and design rules should be documented rather than duplicated h
 
 # 💰 Economy
 
-- [x] Persistent Runes rewards (legacy internal `gil` runtime naming retained)
+- [x] Persistent Runes rewards (native `runes` runtime naming)
 - [x] Price metadata for items, weapons, armor, and accessories
 - [x] Shops / Runes Spending v1
 - [x] Shop Presentation v2 with merchant intro, quantity-aware Buy/Sell flow, roster equipment comparison, and equipped-copy sale protection
@@ -296,7 +297,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v14 with dedicated Valor Art ownership plus v13 selected Valor level, v12 area-location discovery, learned Skills/Valor/equipment/Essence/party-row/visual-formation state, and preserved older migrations
+- [x] Save Runtime v15 with native `party.runes`, v14 legacy-currency migration, dedicated Valor Art ownership, area-location discovery, learned Skills/Valor/equipment/Essence/party-row/visual-formation state, and preserved older migrations
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies

@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 14;
+    return 15;
   }
 
   static clearError() {
@@ -151,37 +151,40 @@ class SaveManager {
             };
           })
         : [],
-      party: {
-        ...(this.isPlainObject(data.party) ? data.party : {}),
-        accessories: this.isPlainObject(data.party?.accessories)
-          ? data.party.accessories
-          : {},
-        gil: Number.isInteger(Number(data.party?.gil))
-          ? Math.max(0, Number(data.party.gil))
-          : 0,
-        battleRows: this.isPlainObject(data.party?.battleRows)
-          ? data.party.battleRows
-          : {},
-        actorIds: Array.isArray(data.party?.actorIds)
-          ? data.party.actorIds
-          : Array.isArray(data.actors)
-            ? data.actors.map((actor) => actor?.actorId).filter((actorId) => Number.isInteger(Number(actorId)))
-            : [],
-        metActorIds: Array.isArray(data.party?.metActorIds)
-          ? data.party.metActorIds
-          : Array.isArray(data.party?.actorIds)
-            ? data.party.actorIds
+      party: (() => {
+        const sourceParty = this.isPlainObject(data.party) ? data.party : {};
+        const { gil: legacyGil, ...currentParty } = sourceParty;
+        const rawRunes = sourceParty.runes ?? legacyGil;
+        const runes = Number(rawRunes);
+
+        return {
+          ...currentParty,
+          accessories: this.isPlainObject(sourceParty.accessories)
+            ? sourceParty.accessories
+            : {},
+          runes: Number.isInteger(runes) && runes >= 0 ? runes : 0,
+          battleRows: this.isPlainObject(sourceParty.battleRows)
+            ? sourceParty.battleRows
+            : {},
+          actorIds: Array.isArray(sourceParty.actorIds)
+            ? sourceParty.actorIds
             : Array.isArray(data.actors)
               ? data.actors.map((actor) => actor?.actorId).filter((actorId) => Number.isInteger(Number(actorId)))
               : [],
-        battleFormationActorIds: Array.isArray(
-          data.party?.battleFormationActorIds,
-        )
-          ? data.party.battleFormationActorIds
-          : Array.isArray(data.party?.battleActorIds)
-            ? data.party.battleActorIds
-            : [],
-      },
+          metActorIds: Array.isArray(sourceParty.metActorIds)
+            ? sourceParty.metActorIds
+            : Array.isArray(sourceParty.actorIds)
+              ? sourceParty.actorIds
+              : Array.isArray(data.actors)
+                ? data.actors.map((actor) => actor?.actorId).filter((actorId) => Number.isInteger(Number(actorId)))
+                : [],
+          battleFormationActorIds: Array.isArray(sourceParty.battleFormationActorIds)
+            ? sourceParty.battleFormationActorIds
+            : Array.isArray(sourceParty.battleActorIds)
+              ? sourceParty.battleActorIds
+              : [],
+        };
+      })(),
       world: {
         ...(this.isPlainObject(data.world) ? data.world : {}),
         areaDiscoveries: this.isPlainObject(data.world?.areaDiscoveries)
@@ -194,10 +197,10 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if ([13, 12, 11, 10, 9].includes(inferredVersion)) {
-      // v9+ already owns explicit Skill state. v14 separates Valor Arts into
-      // their own database/runtime, so migrate any legacy Valor Art IDs out of
-      // skillIds without re-injecting deliberately forgotten Arts.
+    if ([14, 13, 12, 11, 10, 9].includes(inferredVersion)) {
+      // v14 and older saves may still carry the retired party.gil field;
+      // upgradeToCurrent migrates it to party.runes. v9+ already owns explicit
+      // Skill state, while v14 separated Valor Arts into their own runtime.
       return upgradeToCurrent(saveData, { extractLegacyValorArts: true });
     }
 
@@ -587,9 +590,9 @@ class SaveManager {
         }
       }
 
-      const gil = Number(saveData.party.gil);
-      if (!Number.isInteger(gil) || gil < 0) {
-        errors.push("Party gil must be a non-negative integer.");
+      const runes = Number(saveData.party.runes);
+      if (!Number.isInteger(runes) || runes < 0) {
+        errors.push("Party runes must be a non-negative integer.");
       }
     }
 
@@ -913,8 +916,8 @@ class SaveManager {
       (id) => DatabaseManager.accessory?.(id),
     );
 
-    if (typeof $gameParty.setGil === "function") {
-      $gameParty.setGil(Number(partyData.gil) || 0);
+    if (typeof $gameParty.setRunes === "function") {
+      $gameParty.setRunes(Number(partyData.runes) || 0);
     }
 
     if (Array.isArray(partyData.battleActorIds)) {
@@ -1111,7 +1114,7 @@ class SaveManager {
           weapons: { ...$gameParty.weapons },
           armors: { ...$gameParty.armors },
           accessories: { ...$gameParty.accessories },
-          gil: typeof $gameParty.gil === "function" ? $gameParty.gil() : 0,
+          runes: typeof $gameParty.runes === "function" ? $gameParty.runes() : 0,
           actorIds:
             typeof $gameParty.recruitedActorIds === "function"
               ? $gameParty.recruitedActorIds()

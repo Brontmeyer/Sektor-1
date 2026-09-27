@@ -217,7 +217,7 @@ function serializeLegacyActorWithValorInSkills(actor, SaveManager) {
   };
 }
 
-function testV14SaveSerializesSkillAndValorArtStateValorLevelEquipmentCurrencyEssencesStatusesRowsFormationAndDiscovery() {
+function testV15SaveSerializesSkillAndValorArtStateValorLevelEquipmentRunesEssencesStatusesRowsFormationAndDiscovery() {
   const { localStorage, party, partyActors, SaveManager, gameSystem } = createHarness();
   const second = partyActors[1];
 
@@ -238,7 +238,7 @@ function testV14SaveSerializesSkillAndValorArtStateValorLevelEquipmentCurrencyEs
   party.weapons = { 1: 1 };
   party.armors = { 1: 1 };
   party.accessories = { 1: 2, 3: 1 };
-  assert.equal(party.gainGil(77), true);
+  assert.equal(party.gainRunes(77), true);
   assert.equal(party.setBattleRow(second, "back"), true);
   assert.equal(party.swapBattleFormationSlots(0, 2), true);
   gameSystem.seconds = 5025.9;
@@ -249,7 +249,7 @@ function testV14SaveSerializesSkillAndValorArtStateValorLevelEquipmentCurrencyEs
   const saveData = rawSave(localStorage, SaveManager);
   const savedSecond = saveData.actors.find((actor) => actor.actorId === 2);
 
-  assert.equal(saveData.version, 14);
+  assert.equal(saveData.version, 15);
   assert.equal(saveData.metadata.playTimeSeconds, 5025);
   assert.deepEqual(saveData.world.areaDiscoveries, {
     1: ["test-plaza", "merchant-row"],
@@ -278,7 +278,8 @@ function testV14SaveSerializesSkillAndValorArtStateValorLevelEquipmentCurrencyEs
     3: "front",
     4: "front",
   });
-  assert.equal(saveData.party.gil, 77);
+  assert.equal(saveData.party.runes, 77);
+  assert.equal(Object.hasOwn(saveData.party, "gil"), false);
   assert.equal(savedSecond.accessoryId, 3);
   assert.deepEqual(saveData.party.accessories, { 1: 2, 3: 1 });
   assert.deepEqual(Array.from(savedSecond.essenceProgress), [
@@ -287,7 +288,7 @@ function testV14SaveSerializesSkillAndValorArtStateValorLevelEquipmentCurrencyEs
   assert.deepEqual(Array.from(savedSecond.equippedEssenceIds), [1, null, null]);
 }
 
-async function testV14LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFormationDiscoveryAndNormalizesInventory() {
+async function testV15LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFormationDiscoveryAndNormalizesInventory() {
   const { localStorage, party, partyActors, SaveManager, gameSystem } = createHarness();
   const second = partyActors[1];
 
@@ -304,7 +305,7 @@ async function testV14LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFo
   assert.equal(second.equipAccessory(1), true);
   party.items = { 1: 2 };
   party.accessories = { 1: 1, 2: 2 };
-  assert.equal(party.gainGil(120), true);
+  assert.equal(party.gainRunes(120), true);
   assert.equal(party.setBattleRow(second, "back"), true);
   assert.equal(party.swapBattleFormationSlots(0, 3), true);
   gameSystem.seconds = 3723;
@@ -330,7 +331,7 @@ async function testV14LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFo
   second.accessoryId = 0;
   party.items = {};
   party.accessories = {};
-  party.setGil(0);
+  party.setRunes(0);
   party.setBattleRow(second, "front");
   assert.equal(party.swapBattleFormationSlots(0, 1), true);
   gameSystem.seconds = 9;
@@ -351,7 +352,7 @@ async function testV14LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFo
   assert.equal(party.itemCount(1), 99);
   assert.equal(party.itemCount(2), 0);
   assert.equal(party.itemCount(999), 0);
-  assert.equal(party.gil(), 120);
+  assert.equal(party.runes(), 120);
   assert.equal(party.battleRow(second), "back");
   assert.deepEqual(Array.from(party.battleFormationActorIds()), [4, 2, 3, 1]);
   assert.deepEqual(Array.from(party.battleActorIds()), [1, 2, 3, 4]);
@@ -362,6 +363,36 @@ async function testV14LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFo
   assert.equal(second.equippedEssence(4).resonance, 299);
   assert.equal(gameSystem.playTimeSeconds(), 3723);
   assert.deepEqual(gameSystem.areaDiscoveries, { 1: ["test-plaza"] });
+}
+
+
+async function testVersionFourteenMigratesLegacyGilFieldToRunes() {
+  const { localStorage, party, partyActors, SaveManager } = createHarness();
+  const legacySave = {
+    version: 14,
+    metadata: { actorName: partyActors[0].name, level: 1, timestamp: Date.now() },
+    actors: partyActors.map((actor) => SaveManager.serializeActor(actor)),
+    party: {
+      items: {}, weapons: {}, armors: {}, accessories: {},
+      actorIds: [1, 2, 3, 4], metActorIds: [1, 2, 3, 4],
+      battleActorIds: [1, 2, 3, 4], battleFormationActorIds: [1, 2, 3, 4],
+      battleRows: {}, gil: 4321,
+    },
+    world: { areaDiscoveries: {} },
+    switches: { data: {} }, variables: { data: {} }, selfSwitches: { data: {} },
+    location: { mapId: 1, x: 7, y: 8 },
+  };
+
+  localStorage.setItem(SaveManager.saveKey(1), JSON.stringify(legacySave));
+  party.setRunes(0);
+
+  assert.equal(await SaveManager.load(1), true);
+  assert.equal(party.runes(), 4321);
+
+  const migrated = SaveManager.prepareSaveData(legacySave);
+  assert.equal(migrated.version, 15);
+  assert.equal(migrated.party.runes, 4321);
+  assert.equal(Object.hasOwn(migrated.party, "gil"), false);
 }
 
 
@@ -606,7 +637,7 @@ async function testVersionSixSaveMigratesValorDefault() {
 
   assert.equal(await SaveManager.load(1), true);
   assert.equal(second.valor, 0);
-  assert.equal(party.gil(), 25);
+  assert.equal(party.runes(), 25);
 }
 
 async function testVersionFiveSaveMigratesAccessoryDefaults() {
@@ -645,7 +676,7 @@ async function testVersionFiveSaveMigratesAccessoryDefaults() {
   assert.equal(await SaveManager.load(1), true);
   assert.equal(second.accessoryId, 0);
   assert.deepEqual(Object.keys(party.accessories), []);
-  assert.equal(party.gil(), 15);
+  assert.equal(party.runes(), 15);
 }
 
 async function testVersionFourSaveMigratesLegacyEssenceLoadout() {
@@ -738,11 +769,11 @@ async function testVersionThreeSaveMigratesLegacySkillsToMagickIds() {
   localStorage.setItem(SaveManager.saveKey(1), JSON.stringify(v3));
 
   second.magickIds = [];
-  party.setGil(0);
+  party.setRunes(0);
 
   assert.equal(await SaveManager.load(1), true);
   assert.deepEqual(Array.from(second.magickIds), [2, 3]);
-  assert.equal(party.gil(), 44);
+  assert.equal(party.runes(), 44);
 }
 
 async function testVersionTwoSaveMigratesCurrencyAndEssenceDefaults() {
@@ -775,7 +806,7 @@ async function testVersionTwoSaveMigratesCurrencyAndEssenceDefaults() {
   localStorage.setItem(SaveManager.saveKey(1), JSON.stringify(v2));
 
   assert.equal(await SaveManager.load(1), true);
-  assert.equal(party.gil(), 0);
+  assert.equal(party.runes(), 0);
   assert.equal(second.equippedEssences().length, 0);
 }
 
@@ -899,8 +930,9 @@ function testSaveStorageFailureReturnsFalse() {
 }
 
 async function run() {
-  testV14SaveSerializesSkillAndValorArtStateValorLevelEquipmentCurrencyEssencesStatusesRowsFormationAndDiscovery();
-  await testV14LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFormationDiscoveryAndNormalizesInventory();
+  testV15SaveSerializesSkillAndValorArtStateValorLevelEquipmentRunesEssencesStatusesRowsFormationAndDiscovery();
+  await testV15LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFormationDiscoveryAndNormalizesInventory();
+  await testVersionFourteenMigratesLegacyGilFieldToRunes();
   await testVersionThirteenMigratesValorArtsOutOfLegacySkillState();
   await testVersionElevenSaveMigratesEmptyAreaDiscoveryState();
   await testVersionTenSaveMigratesFormationWithoutReinjectingForgottenSkills();

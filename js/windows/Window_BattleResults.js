@@ -418,7 +418,7 @@ class Window_BattleResults {
   }
 
   resolveRuneTotals(result) {
-    this.runeReward = Math.max(0, Number(result.rewards?.currency) || 0);
+    this.runeReward = Math.max(0, Number(result.rewards?.runes) || 0);
     const explicitBefore = Number(result.runesBefore);
     const explicitAfter = Number(result.runesAfter);
 
@@ -427,8 +427,8 @@ class Window_BattleResults {
       this.runesAfter = Math.max(this.runesBefore, explicitAfter);
     } else {
       const currentRunes =
-        typeof $gameParty !== "undefined" && typeof $gameParty?.gil === "function"
-          ? Math.max(0, Number($gameParty.gil()) || 0)
+        typeof $gameParty !== "undefined" && typeof $gameParty?.runes === "function"
+          ? Math.max(0, Number($gameParty.runes()) || 0)
           : this.runeReward;
       this.runesAfter = currentRunes;
       this.runesBefore = Math.max(0, currentRunes - this.runeReward);

@@ -320,7 +320,7 @@ class Window_Shop {
       return Math.min(inventoryLimit, capacity);
     }
 
-    const runes = Math.max(0, Number($gameParty?.gil?.() || 0));
+    const runes = Math.max(0, Number($gameParty?.runes?.() || 0));
     return Math.max(
       0,
       Math.min(inventoryLimit, capacity, Math.floor(runes / price)),
@@ -523,7 +523,7 @@ class Window_Shop {
       this.message =
         capacity <= 0
           ? `${entry.name} is already at the inventory limit.`
-          : `Not enough Runes. Need ${this.formatRunes(entry.price)}, have ${this.formatRunes($gameParty?.gil?.() ?? 0)}.`;
+          : `Not enough Runes. Need ${this.formatRunes(entry.price)}, have ${this.formatRunes($gameParty?.runes?.() ?? 0)}.`;
       return;
     }
 
@@ -904,7 +904,7 @@ class Window_Shop {
     context.fillText("VISIT", right.x + 18, right.y + 30);
 
     const visitRows = [
-      ["Runes", this.formatRunes($gameParty?.gil?.() ?? 0)],
+      ["Runes", this.formatRunes($gameParty?.runes?.() ?? 0)],
       ["Store", this.merchantFocusLabel()],
       ["Buy", "Available"],
       ["Sell", "Available"],
@@ -1043,7 +1043,7 @@ class Window_Shop {
   }
 
   drawBuyDetails(context, bounds, entry) {
-    const runes = Math.max(0, Number($gameParty?.gil?.() || 0));
+    const runes = Math.max(0, Number($gameParty?.runes?.() || 0));
     const owned = entry
       ? Math.max(0, Number($gameParty?.merchandiseCount?.(entry.type, entry.id)) || 0)
       : 0;

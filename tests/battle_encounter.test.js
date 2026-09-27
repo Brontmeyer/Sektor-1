@@ -227,7 +227,7 @@ function testBattleSceneConstructionAndExit() {
       this.scene.outcome = outcome;
       this.finalResult = {
         outcome,
-        rewards: { exp: 0, currency: 0, drops: [], resonance: 0 },
+        rewards: { exp: 0, runes: 0, drops: [], resonance: 0 },
       };
       this.scene.result = this.finalResult;
       return this.finalResult;
@@ -365,7 +365,7 @@ function testInterpreterPausesForBattle() {
 
   const result = {
     outcome: "victory",
-    rewards: { exp: 50, currency: 0, drops: [], resonance: 0 },
+    rewards: { exp: 50, runes: 0, drops: [], resonance: 0 },
   };
   battleCallback(result);
 
@@ -471,7 +471,7 @@ function testBattleResolutionAwardsActivePartyExactlyOnce() {
   assert.equal(second, first);
   assert.equal(first.outcome, "victory");
   assert.equal(first.rewards.exp, 50);
-  assert.equal(first.rewards.currency, 0);
+  assert.equal(first.rewards.runes, 0);
   assert.deepEqual(Array.from(first.rewards.drops), []);
   assert.equal(first.rewards.resonance, 0);
   assert.equal(first.defeatedEnemies.length, 2);
@@ -513,7 +513,7 @@ function testBattleResolutionNoRewardsForDefeatOrEscape() {
 
     assert.equal(result.outcome, outcome);
     assert.equal(result.rewards.exp, 0);
-    assert.equal(result.rewards.currency, 0);
+    assert.equal(result.rewards.runes, 0);
     assert.deepEqual(Array.from(result.rewards.drops), []);
     assert.equal(result.rewards.resonance, 0);
     assert.equal(actor.exp, 0);

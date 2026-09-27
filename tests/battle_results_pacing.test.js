@@ -34,7 +34,7 @@ function sampleResult() {
     encounter: { id: 1, name: "Pacing Test" },
     rewards: {
       exp: 10000,
-      currency: 10000,
+      runes: 10000,
       resonance: 10,
       drops: [{ itemId: 1, name: "Potion", quantity: 1 }],
     },

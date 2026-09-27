@@ -34,7 +34,7 @@
     "magicDefense": 5,
     "magicDefensePercent": 0,
 
-    "gilReward": 10,
+    "runeReward": 10,
     "resonanceReward": 5,
     "dropTable": [
       {
@@ -113,7 +113,7 @@
     "magicDefense": 9,
     "magicDefensePercent": 2,
 
-    "gilReward": 80,
+    "runeReward": 80,
     "resonanceReward": 20,
     "dropTable": [
       {

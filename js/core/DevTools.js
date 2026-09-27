@@ -88,7 +88,7 @@ class DevTools {
       ["$dev.status(actorId, key) / $dev.clearStatus(actorId, key)", "Apply/remove a status by stable key"],
       ["$dev.statusChance(actorId, key, baseChance)", "Inspect effective status chance after target resistance"],
       ["$dev.verbose(enabled)", "Toggle low-level HP/MP/runtime console tracing (default off)"],
-      ["$dev.item(itemId, amount) / $dev.gil(amount)", "Give/take inventory or Runes"],
+      ["$dev.item(itemId, amount) / $dev.runes(amount)", "Give/take inventory or Runes"],
       ["$dev.essence(essenceId, actorId, slot, resonance)", "Equip an Essence with explicit Resonance"],
       ["$dev.essenceLevel(essenceId, level, actorId, slot)", "Equip an Essence at a requested level"],
       ["$dev.level4(essenceId, actorId, slot)", "Equip an Essence at its Level-4 threshold"],
@@ -267,11 +267,11 @@ class DevTools {
     return this.P?.gainItem?.(id, quantity) === true;
   }
 
-  gil(amount = 1000) {
+  runes(amount = 1000) {
     const value = Number(amount);
     if (!Number.isFinite(value) || value === 0 || !this.P) return false;
-    if (value > 0) return this.P.gainGil?.(value) === true;
-    return this.P.spendGil?.(Math.abs(value)) === true;
+    if (value > 0) return this.P.gainRunes?.(value) === true;
+    return this.P.spendRunes?.(Math.abs(value)) === true;
   }
 
   essence(essenceId, actorId = 1, slot = 0, resonance = 0) {

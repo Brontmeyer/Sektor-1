@@ -46,9 +46,9 @@ class Scene_Shop extends Scene_Base {
         return;
       }
 
-      if (purchase.reason === "insufficientGil") {
+      if (purchase.reason === "insufficientRunes") {
         this.shopWindow.setMessage(
-          `Not enough Runes. Need ${this.formatRunes(purchase.requiredGil)}, have ${this.formatRunes(purchase.gil)}.`,
+          `Not enough Runes. Need ${this.formatRunes(purchase.requiredRunes)}, have ${this.formatRunes(purchase.runes)}.`,
         );
         return;
       }

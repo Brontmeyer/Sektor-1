@@ -31,7 +31,7 @@ function createHarness() {
     measureText(text) { return { width: String(text).length * 8 }; },
   };
   const saveData = {
-    version: 11,
+    version: 15,
     metadata: {
       actorName: "Tyler",
       level: 12,
@@ -44,7 +44,7 @@ function createHarness() {
       { actorId: 2, name: "Sarah", level: 11 },
       { actorId: 3, name: "Aboo", level: 10 },
     ],
-    party: { gil: 2345, actorIds: [1] },
+    party: { runes: 2345, actorIds: [1] },
     location: { mapId: 2, x: 4, y: 8 },
   };
 
@@ -59,6 +59,7 @@ function createHarness() {
     SaveManager: {
       exists(slotId) { return slotId === 1; },
       read(slotId) { return slotId === 1 ? saveData : null; },
+      migrateSaveData(data) { return data; },
     },
   };
 

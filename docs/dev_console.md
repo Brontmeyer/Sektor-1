@@ -36,7 +36,7 @@ D.statusChance(1, "sleep", 0.72); // inspect effective chance after resistance
 D.verbose(true);         // opt into low-level HP/MP/runtime tracing
 D.verbose(false);        // return to concise action-level console output
 D.item(1, 10);           // gain 10 of item ID 1
-D.gil(10000);            // gain 10,000 Runes
+D.runes(10000);            // gain 10,000 Runes
 D.battle(1);             // start encounter ID 1
 ```
 

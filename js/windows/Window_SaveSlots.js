@@ -142,7 +142,13 @@ class Window_SaveSlots {
     }
 
     try {
-      return SaveManager.read(slotId) || null;
+      const rawSaveData = SaveManager.read(slotId) || null;
+      if (!rawSaveData) {
+        return null;
+      }
+      return typeof SaveManager.migrateSaveData === "function"
+        ? SaveManager.migrateSaveData(rawSaveData) || rawSaveData
+        : rawSaveData;
     } catch (error) {
       console.warn(`Could not read save slot ${slotId} for presentation.`, error);
       return null;
@@ -195,7 +201,7 @@ class Window_SaveSlots {
       (saveData.location?.mapId
         ? `Map ${saveData.location.mapId}`
         : "Unknown Location");
-    const runes = Number(saveData.party?.gil);
+    const runes = Number(saveData.party?.runes);
 
     return {
       slotId,

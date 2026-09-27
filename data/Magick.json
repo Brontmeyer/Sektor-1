@@ -825,7 +825,7 @@
     "_comment": "ID 44: 🚫 Banish - Remove an enemy from battle and flag as Dead",
     "id": 44,
     "name": "Banish",
-    "description": "Remove an enemy from battle and flag as Dead. No Gil will be received from this enemy. Cannot be reflected.",
+    "description": "Remove an enemy from battle and flag as Dead. No enemy rewards will be received from this target. Cannot be reflected.",
     "type": "magick",
     "category": "indirect",
     "element": "none",

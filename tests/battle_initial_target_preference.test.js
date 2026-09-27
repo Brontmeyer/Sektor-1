@@ -34,7 +34,7 @@ function createHarness(magickId) {
     battleMembers: () => partyMembers,
     livingBattleMembers: () => partyMembers.filter((battler) => battler.isAlive()),
     gainItem() {},
-    gainGil() {},
+    gainRunes() {},
   };
   const context = vm.createContext({
     console: { log() {}, warn() {}, error() {} },

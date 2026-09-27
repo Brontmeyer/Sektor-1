@@ -75,14 +75,14 @@ function testPurchasesUseCanonicalPricesAndPartyInventory() {
   const Game_Party = loadGameParty();
   const party = new Game_Party();
 
-  assert.equal(party.gainGil(1000), true);
+  assert.equal(party.gainRunes(1000), true);
 
   const itemPurchase = party.purchaseMerchandise("item", 1, 2);
   assert.equal(itemPurchase.success, true);
   assert.equal(itemPurchase.unitPrice, 50);
   assert.equal(itemPurchase.totalPrice, 100);
   assert.equal(party.itemCount(1), 2);
-  assert.equal(party.gil(), 900);
+  assert.equal(party.runes(), 900);
 
   const weaponPurchase = party.purchaseMerchandise("weapon", 1);
   const armorPurchase = party.purchaseMerchandise("armor", 1);
@@ -94,34 +94,34 @@ function testPurchasesUseCanonicalPricesAndPartyInventory() {
   assert.equal(party.weaponCount(1), 1);
   assert.equal(party.armorCount(1), 1);
   assert.equal(party.accessoryCount(1), 1);
-  assert.equal(party.gil(), 550);
+  assert.equal(party.runes(), 550);
 }
 
-function testFailedPurchaseDoesNotMutateGilOrInventory() {
+function testFailedPurchaseDoesNotMutateRunesOrInventory() {
   const Game_Party = loadGameParty();
   const party = new Game_Party();
 
-  party.gainGil(49);
+  party.gainRunes(49);
 
   const result = party.purchaseMerchandise("item", 1);
 
   assert.equal(result.success, false);
-  assert.equal(result.reason, "insufficientGil");
-  assert.equal(result.requiredGil, 50);
-  assert.equal(party.gil(), 49);
+  assert.equal(result.reason, "insufficientRunes");
+  assert.equal(result.requiredRunes, 50);
+  assert.equal(party.runes(), 49);
   assert.equal(party.itemCount(1), 0);
 
   const unknownType = party.purchaseMerchandise("relic", 1);
   assert.equal(unknownType.success, false);
   assert.equal(unknownType.reason, "unknownMerchandise");
-  assert.equal(party.gil(), 49);
+  assert.equal(party.runes(), 49);
 }
 
 function testInventoryLimitBlocksDirectAndRepeatedShopPurchases() {
   const Game_Party = loadGameParty();
   const party = new Game_Party();
 
-  party.gainGil(10000);
+  party.gainRunes(10000);
   assert.equal(party.inventoryLimit(), 99);
   assert.equal(party.gainItem(1, 99), true);
   assert.equal(party.itemCount(1), 99);
@@ -134,7 +134,7 @@ function testInventoryLimitBlocksDirectAndRepeatedShopPurchases() {
   assert.equal(blocked.reason, "inventoryFull");
   assert.equal(blocked.limit, 99);
   assert.equal(party.itemCount(1), 99);
-  assert.equal(party.gil(), 10000);
+  assert.equal(party.runes(), 10000);
 
   party.loseItem(1, 1);
   assert.equal(party.itemCount(1), 98);
@@ -150,7 +150,7 @@ function testShopBuyQuantityHonorsRemainingInventoryCapacity() {
     goods: [{ type: "item", id: 1 }],
   });
 
-  party.gainGil(10000);
+  party.gainRunes(10000);
   party.gainItem(1, 99);
 
   triggered.add("Enter");
@@ -180,13 +180,13 @@ function testSellingReturnsHalfPriceWithoutCorruptingInventory() {
   assert.equal(sale.unitPrice, 25);
   assert.equal(sale.totalPrice, 50);
   assert.equal(party.itemCount(1), 1);
-  assert.equal(party.gil(), 50);
+  assert.equal(party.runes(), 50);
 
   const failed = party.sellMerchandise("item", 1, 2);
   assert.equal(failed.success, false);
   assert.equal(failed.reason, "insufficientInventory");
   assert.equal(party.itemCount(1), 1);
-  assert.equal(party.gil(), 50);
+  assert.equal(party.runes(), 50);
 }
 
 function makeDrawContext(calls) {
@@ -269,7 +269,7 @@ function testShopWindowSupportsCommandEntryAndScrollableBuyPresentation() {
   ];
   const window = new Window_Shop({ name: "Test Merchant", goods });
 
-  party.gainGil(100);
+  party.gainRunes(100);
   window.draw();
 
   assert.equal(
@@ -289,7 +289,7 @@ function testShopWindowSupportsCommandEntryAndScrollableBuyPresentation() {
     false,
     "the welcome screen should introduce the merchant instead of exposing wares before Buy is opened",
   );
-  assert.equal(party.gil(), 100, "drawing must not spend Gil");
+  assert.equal(party.runes(), 100, "drawing must not spend Runes");
   assert.equal(party.itemCount(1), 0, "drawing must not grant merchandise");
 
   triggered.add("Enter");
@@ -311,7 +311,7 @@ function testShopWindowSupportsCommandEntryAndScrollableBuyPresentation() {
     { ...request },
     { action: "purchase", type: "item", id: 1, quantity: 1 },
   );
-  assert.equal(party.gil(), 100, "shop window only requests a purchase");
+  assert.equal(party.runes(), 100, "shop window only requests a purchase");
   assert.equal(party.itemCount(1), 0);
 
   window.buyIndex = goods.length - 1;
@@ -413,24 +413,24 @@ function testShopSceneOwnsPurchaseRequestsButPartyOwnsMutation() {
     goods: [{ type: "item", id: 1 }],
   });
 
-  party.gainGil(50);
+  party.gainRunes(50);
   scene.shopWindow.result = { action: "purchase", type: "item", id: 1 };
   scene.update();
 
-  assert.equal(party.gil(), 0);
+  assert.equal(party.runes(), 0);
   assert.equal(party.itemCount(1), 1);
   assert.equal(scene.shopWindow.message, `Purchased ${items[1].name} for 50 R.`);
 
   scene.shopWindow.result = { action: "purchase", type: "item", id: 1 };
   scene.update();
-  assert.equal(party.gil(), 0);
+  assert.equal(party.runes(), 0);
   assert.equal(party.itemCount(1), 1);
   assert.equal(scene.shopWindow.message, "Not enough Runes. Need 50 R, have 0 R.");
 
   party.gainItem(1, 1);
   scene.shopWindow.result = { action: "sell", type: "item", id: 1, quantity: 1 };
   scene.update();
-  assert.equal(party.gil(), 25);
+  assert.equal(party.runes(), 25);
   assert.equal(party.itemCount(1), 1);
   assert.equal(scene.shopWindow.message, `Sold ${items[1].name} for 25 R.`);
 
@@ -569,7 +569,7 @@ function testShopEventValidationChecksGoodsAndDuplicates() {
   assert.equal(
     priceErrors.some((error) => error.includes("Item 1 price")),
     true,
-    "shop prices must be integer Gil values",
+    "shop prices must be integer Rune values",
   );
 
   const invalid = JSON.parse(JSON.stringify(map001));
@@ -623,7 +623,7 @@ function testShopEventValidationChecksGoodsAndDuplicates() {
 
 function run() {
   testPurchasesUseCanonicalPricesAndPartyInventory();
-  testFailedPurchaseDoesNotMutateGilOrInventory();
+  testFailedPurchaseDoesNotMutateRunesOrInventory();
   testInventoryLimitBlocksDirectAndRepeatedShopPurchases();
   testShopBuyQuantityHonorsRemainingInventoryCapacity();
   testSellingReturnsHalfPriceWithoutCorruptingInventory();

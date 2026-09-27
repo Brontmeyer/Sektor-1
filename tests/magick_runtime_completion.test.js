@@ -67,7 +67,7 @@ function loadCombatClasses() {
     battleMembers: () => partyMembers,
     livingBattleMembers: () => partyMembers.filter((battler) => battler.isAlive()),
     gainItem() {},
-    gainGil() {},
+    gainRunes() {},
   };
 
   const classes = loadClasses(
@@ -292,7 +292,7 @@ function testRetreatDeclaresEscapeAndFinalizesWithoutRewards() {
   assert.equal(result.outcome, BattleManager.OUTCOME_ESCAPE);
   assert.deepEqual(
     JSON.parse(JSON.stringify(result.rewards)),
-    { exp: 0, currency: 0, drops: [], resonance: 0 },
+    { exp: 0, runes: 0, drops: [], resonance: 0 },
   );
 }
 
@@ -336,7 +336,7 @@ function testBanishUsesDeathBridgeAndPreservesRewardReason() {
   assert.equal(result.defeatedEnemies.length, 1);
   assert.equal(result.defeatedEnemies[0].banished, true);
   assert.equal(result.rewards.exp, 0);
-  assert.equal(result.rewards.currency, 0);
+  assert.equal(result.rewards.runes, 0);
   assert.equal(result.rewards.resonance, 0);
   assert.deepEqual(Array.from(result.rewards.drops), []);
 }

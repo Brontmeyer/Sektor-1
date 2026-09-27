@@ -5,7 +5,7 @@ class Game_Party {
 
   constructor(initialActors = []) {
     this.items = {};
-    this._gil = 0;
+    this._runes = 0;
 
     this.weapons = {};
     this.armors = {};
@@ -501,7 +501,7 @@ class Game_Party {
   }
 
   // =================================
-  // Currency
+  // Runes
   // =================================
 
   static formatRunes(amount) {
@@ -509,45 +509,45 @@ class Game_Party {
     return `${value.toLocaleString()} R`;
   }
 
-  formatRunes(amount = this._gil) {
+  formatRunes(amount = this._runes) {
     return Game_Party.formatRunes(amount);
   }
 
-  gil() {
-    return this._gil;
+  runes() {
+    return this._runes;
   }
 
-  gainGil(amount) {
+  gainRunes(amount) {
     const value = Number(amount);
 
     if (!Number.isInteger(value) || value < 0) {
-      console.error(`Invalid Gil amount: ${amount}`);
+      console.error(`Invalid Rune amount: ${amount}`);
       return false;
     }
 
-    this._gil += value;
+    this._runes += value;
     return true;
   }
 
-  spendGil(amount) {
+  spendRunes(amount) {
     const value = Number(amount);
 
-    if (!Number.isInteger(value) || value < 0 || value > this._gil) {
+    if (!Number.isInteger(value) || value < 0 || value > this._runes) {
       return false;
     }
 
-    this._gil -= value;
+    this._runes -= value;
     return true;
   }
 
-  setGil(amount) {
+  setRunes(amount) {
     const value = Number(amount);
 
     if (!Number.isInteger(value) || value < 0) {
       return false;
     }
 
-    this._gil = value;
+    this._runes = value;
     return true;
   }
 
@@ -1187,12 +1187,12 @@ class Game_Party {
       return { success: false, reason: "invalidPrice" };
     }
 
-    if (totalPrice > this._gil) {
+    if (totalPrice > this._runes) {
       return {
         success: false,
-        reason: "insufficientGil",
-        requiredGil: totalPrice,
-        gil: this._gil,
+        reason: "insufficientRunes",
+        requiredRunes: totalPrice,
+        runes: this._runes,
       };
     }
 
@@ -1200,7 +1200,7 @@ class Game_Party {
       return { success: false, reason: "inventoryRejected" };
     }
 
-    if (!this.spendGil(totalPrice)) {
+    if (!this.spendRunes(totalPrice)) {
       this.gainMerchandise(type, id, -quantity);
       return { success: false, reason: "paymentRejected" };
     }
@@ -1212,7 +1212,7 @@ class Game_Party {
       quantity,
       unitPrice,
       totalPrice,
-      gil: this._gil,
+      runes: this._runes,
       owned: this.merchandiseCount(type, id),
     };
   }
@@ -1257,7 +1257,7 @@ class Game_Party {
       return { success: false, reason: "inventoryRejected" };
     }
 
-    if (!this.gainGil(totalPrice)) {
+    if (!this.gainRunes(totalPrice)) {
       this.gainMerchandise(type, id, quantity);
       return { success: false, reason: "paymentRejected" };
     }
@@ -1269,7 +1269,7 @@ class Game_Party {
       quantity,
       unitPrice,
       totalPrice,
-      gil: this._gil,
+      runes: this._runes,
       owned: this.merchandiseCount(type, id),
     };
   }

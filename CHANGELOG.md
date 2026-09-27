@@ -1,3 +1,11 @@
+## Pass 121 - Runes Runtime Cleanup + Balance-Safe Reward Tests v1
+
+- Renamed the active economy contract from legacy Gil terminology to native Runes terminology across `Game_Party`, shops, battle rewards/results, enemy reward data, developer tools, menus, validation, and current documentation.
+- Advanced Save Runtime to v15: new saves persist `party.runes`, while v14 and older saves transparently migrate the retired `party.gil` value at the save boundary without keeping Gil APIs alive in current runtime code.
+- Renamed enemy reward metadata from `gilReward` to `runeReward` and battle result bundles from generic `currency` to `runes`; Banish copy now accurately states that removed targets provide no enemy rewards.
+- Reworked reward regression fixtures so engine correctness no longer depends on Test Slime balance numbers. EXP, Runes, Resonance, and drop values can be tuned in `Enemies.json` without invalidating reward-authority tests.
+- Added a balance-mutation audit that radically changes Test Slime rewards while all 94 regression suites still pass, protecting future enemy/stat balancing from brittle engine assertions.
+
 ## Pass 120 - Victory Spoils Pacing v1
 
 - Refined the two-page victory results state machine into a dialogue-like **Begin → Finish → Next/Continue** Confirm rhythm.

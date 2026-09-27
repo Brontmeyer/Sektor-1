@@ -238,7 +238,7 @@ function testConfigRenameAndWhiteRunesValueArePlayerFacingOnly() {
   assert.match(sceneOptions, /this\.optionsWindow\.draw\(\)/);
   assert.match(
     sceneMenu,
-    /context\.fillStyle = "#ffffff";[\s\S]*Number\(\$gameParty\.gil\?\.\(\) \|\| 0\)\.toLocaleString\(\)/,
+    /context\.fillStyle = "#ffffff";[\s\S]*Number\(\$gameParty\.runes\?\.\(\) \|\| 0\)\.toLocaleString\(\)/,
   );
   assert.match(sceneMenu, /SceneManager\.push\(Scene_Options\)/, "internal scene name stays stable");
 }

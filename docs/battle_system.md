@@ -255,7 +255,7 @@ Gravity-style Magick abilities use `gravityPercent` against the target's **curre
 
 Percentage-healing Magick abilities use `healPercent` against the target's maximum HP. This is the data-driven path used by Perfect Renewal's full restoration.
 
-The `escape` effect is battle-owned: a successful cast declares the authoritative escape outcome and finalizes with no rewards. The `banish` effect routes through the canonical Death/defeat state while preserving a separate banished marker so future currency rewards can exclude Gil from that enemy without re-parsing the originating Magick.
+The `escape` effect is battle-owned: a successful cast declares the authoritative escape outcome and finalizes with no rewards. The `banish` effect routes through the canonical Death/defeat state while preserving a separate banished marker so Rune rewards can exclude that enemy without re-parsing the originating Magick.
 
 The current battle presentation can report elemental outcomes such as:
 
@@ -494,7 +494,7 @@ base Valor gain = (actual HP lost / Max HP) × Max Valor
 final Valor gain = base gain × combined valorGainMultiplier
 ```
 
-Current actors define `maxValor: 100` in `Actors.json`. Valor may be fractional internally so many small hits accumulate accurately; presentation shows one decimal when needed so low-damage gains remain visible instead of being floored away. Gauge state is clamped between `0` and `maxValor`, persists outside battle, and is serialized by Save Runtime v14 together with the actor's prepared Valor level. At full gauge the actor is **Valor Ready**, but readiness never forces an action or resets the resource. The player may continue using normal commands and carry the full gauge until choosing Surge. Changing prepared levels also preserves the current gauge.
+Current actors define `maxValor: 100` in `Actors.json`. Valor may be fractional internally so many small hits accumulate accurately; presentation shows one decimal when needed so low-damage gains remain visible instead of being floored away. Gauge state is clamped between `0` and `maxValor`, persists outside battle, and is serialized by Save Runtime v15 together with the actor's prepared Valor level. At full gauge the actor is **Valor Ready**, but readiness never forces an action or resets the resource. The player may continue using normal commands and carry the full gauge until choosing Surge. Changing prepared levels also preserves the current gauge.
 
 Only actual hostile battle-action damage routed through `receiveDamage()` with `valorEligible: true` generates passive Valor. `BattleManager` derives that flag from the source and target battle sides for physical Attacks/Skills and Magick after reflection resolves. Fully nullified damage, absorbed elemental Magick, self-damage, friendly-fire, and damage that defeats the actor generate none. Damage-over-time and other HP changes that bypass the shared hostile direct-damage path also do not generate Valor. Skills may deliberately raise Valor through the explicit `effect: "valor"` + positive `valorGain` contract; this is not treated as damage.
 
@@ -593,7 +593,7 @@ This includes active party members who were defeated when victory was earned. Re
 Defeat and escape award no battle rewards. Victory resolves every reward exactly once through the same idempotent finalization path:
 
 - **EXP:** total `expReward` from killed enemies; awarded in full to every active battle-party participant, including defeated participants.
-- **Runes:** total `gilReward` from killed enemies. The result is added to persistent `Game_Party` currency state; `gilReward` remains the legacy internal data key.
+- **Runes:** total `runeReward` from killed enemies. The result is added to persistent `Game_Party` Rune state.
 - **Item drops:** each killed enemy resolves its validated `dropTable` independently. Successful rolls are aggregated by item ID and awarded through `Game_Party.gainItem()`.
 - **Essence Resonance:** total `resonanceReward` from killed enemies. Every equipped Essence on each **surviving active battle-party participant** receives the full encounter Resonance amount. Defeated participants and reserve roster members receive none.
 
@@ -638,7 +638,7 @@ Conceptually:
 {
   outcome: victory | defeat | escape,
   encounter: { id, name },
-  rewards: { exp, currency, drops, resonance },
+  rewards: { exp, runes, drops, resonance },
   runesBefore,
   runesAfter,
   defeatedEnemies: [...],

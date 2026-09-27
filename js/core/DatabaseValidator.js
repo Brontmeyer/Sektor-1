@@ -1624,8 +1624,8 @@ class DatabaseValidator {
         errors.push(`${label} expReward must be a non-negative integer.`);
       }
 
-      if (!Number.isInteger(enemy.gilReward) || enemy.gilReward < 0) {
-        errors.push(`${label} gilReward must be a non-negative integer.`);
+      if (!Number.isInteger(enemy.runeReward) || enemy.runeReward < 0) {
+        errors.push(`${label} runeReward must be a non-negative integer.`);
       }
 
       if (

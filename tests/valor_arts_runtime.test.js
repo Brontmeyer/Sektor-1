@@ -114,7 +114,7 @@ function createHarness() {
       return partyMembers[0] || null;
     },
     gainItem() {},
-    gainGil() {},
+    gainRunes() {},
   };
   const context = vm.createContext({
     console: { log() {}, warn() {}, error() {} },

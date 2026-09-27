@@ -95,7 +95,7 @@ function createHarness(shopType = "general") {
   const party = {
     ...inventory,
     members() { return actors; },
-    gil() { return runes; },
+    runes() { return runes; },
     merchandiseRecord(type, id) {
       return db[type]?.(id) || null;
     },

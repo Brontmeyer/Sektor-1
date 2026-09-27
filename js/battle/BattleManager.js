@@ -307,7 +307,7 @@ class BattleManager {
   createRewardBundle(defeatedEnemies, random = Math.random) {
     return {
       exp: this.calculateExperienceReward(defeatedEnemies),
-      currency: this.calculateCurrencyReward(defeatedEnemies),
+      runes: this.calculateRuneReward(defeatedEnemies),
       drops: this.calculateItemDrops(defeatedEnemies, random),
       resonance: this.calculateEssenceResonance(defeatedEnemies),
     };
@@ -334,9 +334,9 @@ class BattleManager {
     }, 0);
   }
 
-  calculateCurrencyReward(defeatedEnemies) {
+  calculateRuneReward(defeatedEnemies) {
     return this.rewardEligibleEnemies(defeatedEnemies).reduce((total, enemy) => {
-      const reward = Number(enemy.gilReward);
+      const reward = Number(enemy.runeReward);
       return total + (Number.isInteger(reward) && reward > 0 ? reward : 0);
     }, 0);
   }
@@ -433,22 +433,22 @@ class BattleManager {
             defeatedEnemies,
             typeof this.rewardRandom === "function" ? this.rewardRandom : Math.random,
           )
-        : { exp: 0, currency: 0, drops: [], resonance: 0 };
+        : { exp: 0, runes: 0, drops: [], resonance: 0 };
 
     let runesBefore = null;
     let runesAfter = null;
 
     if (outcome === BattleManager.OUTCOME_VICTORY) {
-      if (typeof $gameParty.gil === "function") {
-        runesBefore = Math.max(0, Number($gameParty.gil()) || 0);
+      if (typeof $gameParty.runes === "function") {
+        runesBefore = Math.max(0, Number($gameParty.runes()) || 0);
       }
 
-      if (rewards.currency > 0 && typeof $gameParty.gainGil === "function") {
-        $gameParty.gainGil(rewards.currency);
+      if (rewards.runes > 0 && typeof $gameParty.gainRunes === "function") {
+        $gameParty.gainRunes(rewards.runes);
       }
 
-      if (typeof $gameParty.gil === "function") {
-        runesAfter = Math.max(0, Number($gameParty.gil()) || 0);
+      if (typeof $gameParty.runes === "function") {
+        runesAfter = Math.max(0, Number($gameParty.runes()) || 0);
       }
 
       const acceptedDrops = [];
@@ -520,7 +520,7 @@ class BattleManager {
         enemyId: enemy.enemyId,
         name: enemy.name,
         expReward: enemy.expReward,
-        gilReward: enemy.gilReward,
+        runeReward: enemy.runeReward,
         resonanceReward: enemy.resonanceReward,
         banished:
           typeof enemy.isBanished === "function" ? enemy.isBanished() : false,

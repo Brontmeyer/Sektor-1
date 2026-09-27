@@ -414,7 +414,7 @@ class Scene_Menu extends Scene_Base {
     context.fillText(
       typeof $gameParty.formatRunes === "function"
         ? $gameParty.formatRunes()
-        : `${Number($gameParty.gil?.() || 0).toLocaleString()} R`,
+        : `${Number($gameParty.runes?.() || 0).toLocaleString()} R`,
       valueX,
       this.layout.utility.y + 23,
     );
