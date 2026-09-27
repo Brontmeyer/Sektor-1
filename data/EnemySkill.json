@@ -12,11 +12,7 @@
     "status": {
       "slow": 0.35
     },
-    "target": [
-      "enemy"
-    ],
-    "scope": [
-      "single"
-    ]
+    "target": ["enemy"],
+    "scope": ["single"]
   }
 ]

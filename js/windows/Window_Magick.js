@@ -179,8 +179,16 @@ class Window_Magick {
       Array.isArray(magick.target) &&
       (magick.target.includes("ally") || magick.target.includes("self"));
     const isFieldEffect = magick.effect === "heal";
+    const validSelfTarget =
+      typeof this.actor.isValidMagickTarget !== "function" ||
+      this.actor.isValidMagickTarget(magick, this.actor);
 
-    return canTargetPlayer && isFieldEffect && this.actor.canUseMagick(magick.id);
+    return (
+      canTargetPlayer &&
+      isFieldEffect &&
+      validSelfTarget &&
+      this.actor.canUseMagick(magick.id)
+    );
   }
 
   show() {

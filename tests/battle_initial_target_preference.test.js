@@ -136,9 +136,39 @@ function testOffensiveMagickStillOpensOnEnemy() {
   assert.equal(scene.selectingEnemyTarget, true);
 }
 
+function testHealSkipsFullHpLivingCasterButKeepsInjuredAllyLegal() {
+  const { ally, caster, selectedMagick, scene, manager } = createHarness(1);
+
+  caster.setHp(caster.maxHp);
+  ally.setHp(Math.max(1, ally.maxHp - 50));
+  manager.executeMagick();
+
+  assert.equal(caster.isValidMagickTarget(selectedMagick, caster), false);
+  assert.equal(caster.isValidMagickTarget(selectedMagick, ally), true);
+  assert.equal(scene.targetGroup, "ally");
+  assert.equal(scene.targetManager.getSelectedTarget(), ally);
+}
+
+function testStatusCuresOnlySelectTargetsTheyCanActuallyCleanse() {
+  const { ally, caster, selectedMagick, scene, manager } = createHarness(4);
+
+  assert.equal(selectedMagick.effect, "removeStatus");
+  assert.equal(caster.isValidMagickTarget(selectedMagick, caster), false);
+  assert.equal(caster.isValidMagickTarget(selectedMagick, ally), false);
+
+  ally.addStatus("poison");
+  assert.equal(caster.isValidMagickTarget(selectedMagick, ally), true);
+  manager.executeMagick();
+
+  assert.equal(scene.targetGroup, "ally");
+  assert.equal(scene.targetManager.getSelectedTarget(), ally);
+}
+
 function run() {
   testRestorativeMagickOpensOnCaster();
   testOffensiveMagickStillOpensOnEnemy();
+  testHealSkipsFullHpLivingCasterButKeepsInjuredAllyLegal();
+  testStatusCuresOnlySelectTargetsTheyCanActuallyCleanse();
   console.log("Battle initial target preference regression tests passed.");
 }
 

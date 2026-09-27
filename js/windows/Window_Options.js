@@ -5,11 +5,20 @@ class Window_Options {
     this.index = 0;
     this.onControls = onControls;
     this.onWindowColor = onWindowColor;
+    this.magickOrderEditing = false;
+    this.magickOrderIndex = 0;
     this.options = [
       ...ConfigManager.optionDefinitions().map((option) => ({
         type: "option",
         ...option,
       })),
+      {
+        type: "magickOrder",
+        key: "magickCategoryOrder",
+        label: "Magick Order",
+        description:
+          "Customize category priority for field and battle Magick. Magick inside each category stays in stable ID order.",
+      },
       {
         type: "windowColor",
         key: "windowColor",
@@ -45,6 +54,18 @@ class Window_Options {
     return this.options[this.index] || null;
   }
 
+  isEditingMagickOrder() {
+    return this.magickOrderEditing;
+  }
+
+  currentDescription() {
+    if (this.magickOrderEditing) {
+      return "Magick Order: Up/Down selects a category; Left/Right moves its priority; Confirm or Back finishes.";
+    }
+
+    return this.currentOption()?.description || "Configure Sektor 1.";
+  }
+
   cycleCurrent(direction) {
     const option = this.currentOption();
 
@@ -55,7 +76,49 @@ class Window_Options {
     return ConfigManager.cycle(option.key, direction);
   }
 
+  beginMagickOrderEditing() {
+    this.magickOrderEditing = true;
+    this.magickOrderIndex = 0;
+    return true;
+  }
+
+  updateMagickOrderEditing() {
+    const order = ConfigManager.magickCategoryOrder();
+
+    if (Input.isActionTriggered("cancel") || Input.isActionTriggered("confirm")) {
+      this.magickOrderEditing = false;
+      return true;
+    }
+
+    if (Input.isActionTriggered("up")) {
+      this.magickOrderIndex =
+        (this.magickOrderIndex - 1 + order.length) % order.length;
+      return true;
+    }
+
+    if (Input.isActionTriggered("down")) {
+      this.magickOrderIndex = (this.magickOrderIndex + 1) % order.length;
+      return true;
+    }
+
+    if (Input.isActionTriggered("left") || Input.isActionTriggered("right")) {
+      const category = order[this.magickOrderIndex];
+      const direction = Input.isActionTriggered("left") ? -1 : 1;
+      this.magickOrderIndex = ConfigManager.moveMagickCategory(
+        category,
+        direction,
+      );
+      return true;
+    }
+
+    return false;
+  }
+
   update() {
+    if (this.magickOrderEditing) {
+      return this.updateMagickOrderEditing();
+    }
+
     if (Input.isActionTriggered("up")) {
       this.index =
         (this.index - 1 + this.options.length) % this.options.length;
@@ -84,6 +147,8 @@ class Window_Options {
         this.onControls?.();
       } else if (option?.type === "windowColor") {
         this.onWindowColor?.();
+      } else if (option?.type === "magickOrder") {
+        this.beginMagickOrderEditing();
       } else {
         this.cycleCurrent(1);
       }
@@ -105,8 +170,8 @@ class Window_Options {
   drawHeader(context) {
     ConfigMenuLayout.drawHeader(context, this.layout, {
       title: "CONFIG",
-      subtitle: "SYSTEM",
-      description: this.currentOption()?.description || "Configure Sektor 1.",
+      subtitle: this.magickOrderEditing ? "MAGICK ORDER" : "SYSTEM",
+      description: this.currentDescription(),
     });
   }
 
@@ -119,10 +184,19 @@ class Window_Options {
       return "Open  ▶";
     }
 
+    if (option.type === "magickOrder") {
+      return `${ConfigManager.magickCategoryOrderLabel(" > ")}  ▶`;
+    }
+
     return `◀  ${ConfigManager.displayValue(option.key)}  ▶`;
   }
 
   drawContent(context) {
+    if (this.magickOrderEditing) {
+      this.drawMagickOrderEditor(context);
+      return;
+    }
+
     const bounds = this.contentBounds;
     const bodyTop = bounds.y + 18;
     const bodyBottom = bounds.y + bounds.height - 18;
@@ -161,6 +235,69 @@ class Window_Options {
       context.fillStyle = selected ? "#ffd75a" : "#ffffff";
       context.font = selected ? "600 17px sans-serif" : "17px sans-serif";
       context.fillText(this.optionValue(option), valueX, rowY);
+    }
+
+    context.restore();
+  }
+
+  drawMagickOrderEditor(context) {
+    const bounds = this.contentBounds;
+    const order = ConfigManager.magickCategoryOrder();
+    const labels = ConfigManager.magickCategoryLabels();
+    const editorWidth = Math.min(620, bounds.width - 80);
+    const editorX = bounds.x + Math.floor((bounds.width - editorWidth) / 2);
+    const headingY = bounds.y + 64;
+    const rowHeight = 72;
+    const rowStartY = bounds.y + 142;
+
+    this.drawPanel(context, bounds);
+    context.save();
+    context.textBaseline = "middle";
+    context.textAlign = "center";
+    context.fillStyle = "#7ff0d5";
+    context.font = "600 18px sans-serif";
+    context.fillText("MAGICK CATEGORY PRIORITY", bounds.x + bounds.width / 2, headingY);
+
+    context.fillStyle = "#aebbd0";
+    context.font = "14px sans-serif";
+    context.fillText(
+      "Top categories appear first. Magick within each category is always ordered by ID.",
+      bounds.x + bounds.width / 2,
+      headingY + 30,
+    );
+
+    for (let i = 0; i < order.length; i++) {
+      const category = order[i];
+      const selected = i === this.magickOrderIndex;
+      const rowY = rowStartY + i * rowHeight;
+
+      if (selected) {
+        this.drawSelection(
+          context,
+          editorX,
+          rowY - rowHeight / 2 + 6,
+          editorWidth,
+          rowHeight - 12,
+        );
+      }
+
+      context.textAlign = "left";
+      context.fillStyle = selected ? "#ffd75a" : "#ffffff";
+      context.font = selected ? "600 20px sans-serif" : "20px sans-serif";
+      context.fillText(
+        `${selected ? "▶ " : "  "}${i + 1}. ${labels[category] || category}`,
+        editorX + 24,
+        rowY,
+      );
+
+      context.textAlign = "right";
+      context.fillStyle = selected ? "#ffd75a" : "#7ff0d5";
+      context.font = "15px sans-serif";
+      context.fillText(
+        selected ? "◀  MOVE  ▶" : "",
+        editorX + editorWidth - 24,
+        rowY,
+      );
     }
 
     context.restore();

@@ -63,6 +63,15 @@ function testConfigPersistsIndependentlyFromSaveSlots() {
   assert.equal(ConfigManager.set("battleSpeed", "fast"), true);
   assert.equal(ConfigManager.set("battleCursorMemory", "memory"), true);
   assert.equal(ConfigManager.set("atbMode", "wait"), true);
+  assert.equal(
+    ConfigManager.setMagickCategoryOrder([
+      "attack",
+      "restore",
+      "advanced",
+      "indirect",
+    ]),
+    true,
+  );
   assert.equal(localStorage.store.has(ConfigManager.storageKey()), true);
 
   ConfigManager.data = null;
@@ -70,6 +79,10 @@ function testConfigPersistsIndependentlyFromSaveSlots() {
   assert.equal(ConfigManager.get("battleSpeed"), "fast");
   assert.equal(ConfigManager.get("battleCursorMemory"), "memory");
   assert.equal(ConfigManager.get("atbMode"), "wait");
+  assert.deepEqual(
+    Array.from(ConfigManager.magickCategoryOrder()),
+    ["attack", "restore", "advanced", "indirect"],
+  );
   assert.equal(ConfigManager.set("battleSpeed", "warp"), false);
   assert.equal(ConfigManager.get("battleSpeed"), "fast");
 }
@@ -89,27 +102,63 @@ function testSpeedMappingsAndMagickOrderingAreDeterministic() {
   assert.equal(ConfigManager.fieldMessageCharactersPerSecond(), 70);
 
   const magick = [
-    { id: 10, name: "Ember", element: "fire" },
-    { id: 1, name: "Mend", element: "restorative" },
-    { id: 13, name: "Frost", element: "ice" },
+    { id: 31, name: "Diminish", element: "none", category: "indirect" },
+    { id: 10, name: "Ember", element: "fire", category: "attack" },
+    { id: 4, name: "Purge Venom", element: "restorative", category: "restore" },
+    { id: 1, name: "Mend", element: "restorative", category: "restore" },
+    { id: 46, name: "Starfall", element: "none", category: "advanced" },
+    { id: 13, name: "Frost", element: "ice", category: "attack" },
   ];
 
-  ConfigManager.set("magickOrder", "alphabetical", { persist: false });
   assert.deepEqual(
-    Array.from(ConfigManager.sortMagick(magick), (entry) => entry.name),
-    ["Ember", "Frost", "Mend"],
+    Array.from(ConfigManager.magickCategoryOrder()),
+    ["restore", "attack", "indirect", "advanced"],
+  );
+  assert.deepEqual(
+    Array.from(ConfigManager.sortMagick(magick), (entry) => [entry.category, entry.id]),
+    [
+      ["restore", 1],
+      ["restore", 4],
+      ["attack", 10],
+      ["attack", 13],
+      ["indirect", 31],
+      ["advanced", 46],
+    ],
   );
 
-  ConfigManager.set("magickOrder", "element", { persist: false });
+  assert.equal(
+    ConfigManager.setMagickCategoryOrder(
+      ["indirect", "restore", "attack", "advanced"],
+      { persist: false },
+    ),
+    true,
+  );
   assert.deepEqual(
-    Array.from(ConfigManager.sortMagick(magick), (entry) => entry.element),
-    ["restorative", "fire", "ice"],
+    Array.from(ConfigManager.sortMagick(magick), (entry) => [entry.category, entry.id]),
+    [
+      ["indirect", 31],
+      ["restore", 1],
+      ["restore", 4],
+      ["attack", 10],
+      ["attack", 13],
+      ["advanced", 46],
+    ],
+  );
+  assert.equal(
+    ConfigManager.magickCategoryOrderLabel(),
+    "Indirect > Restore > Attack > Advanced",
   );
 
-  ConfigManager.set("magickOrder", "default", { persist: false });
+  assert.equal(
+    ConfigManager.setMagickCategoryOrder(
+      ["restore", "restore", "attack", "advanced"],
+      { persist: false },
+    ),
+    false,
+  );
   assert.deepEqual(
-    Array.from(ConfigManager.sortMagick(magick), (entry) => entry.id),
-    [10, 1, 13],
+    Array.from(ConfigManager.magickCategoryOrder()),
+    ["indirect", "restore", "attack", "advanced"],
   );
 }
 
@@ -151,6 +200,44 @@ function testOptionsWindowCyclesAndPersistsSettings() {
   window.update();
   assert.equal(ConfigManager.get("atbMode"), "wait");
   assert.equal(localStorage.store.has(ConfigManager.storageKey()), true);
+
+  while (window.currentOption().type !== "magickOrder") {
+    triggered = new Set(["ArrowDown"]);
+    window.update();
+  }
+
+  triggered = new Set(["Enter"]);
+  window.update();
+  assert.equal(window.isEditingMagickOrder(), true);
+  assert.equal(window.magickOrderIndex, 0);
+
+  triggered = new Set(["ArrowRight"]);
+  window.update();
+  assert.deepEqual(
+    Array.from(ConfigManager.magickCategoryOrder()),
+    ["attack", "restore", "indirect", "advanced"],
+  );
+  assert.equal(window.magickOrderIndex, 1);
+
+  triggered = new Set(["ArrowDown"]);
+  window.update();
+  assert.equal(window.magickOrderIndex, 2);
+
+  triggered = new Set(["ArrowLeft"]);
+  window.update();
+  assert.deepEqual(
+    Array.from(ConfigManager.magickCategoryOrder()),
+    ["attack", "indirect", "restore", "advanced"],
+  );
+  assert.equal(window.magickOrderIndex, 1);
+
+  triggered = new Set(["Enter"]);
+  window.update();
+  assert.equal(window.isEditingMagickOrder(), false);
+  assert.equal(
+    ConfigManager.magickCategoryOrderLabel(),
+    "Attack > Indirect > Restore > Advanced",
+  );
 }
 
 function testFieldMessageSpeedControlsRevealAndConfirmBehavior() {
@@ -300,7 +387,7 @@ function testBattleSpeedAndMessageSpeedUseSeparateClocks() {
   assert.equal(Math.abs(banner[1] - 0.14) < 1e-9, true);
 }
 
-function testCursorMemoryControlsFreshSelectorEntryButNotHierarchy() {
+function testCursorMemoryPassesStableRememberedIdsIntoSelectors() {
   const localStorage = localStorageHarness();
   const context = vm.createContext({
     console,
@@ -319,7 +406,8 @@ function testCursorMemoryControlsFreshSelectorEntryButNotHierarchy() {
   ConfigManager.initialize();
   const shown = [];
   const actor = {
-    name: "Tyler",
+    actorId: 1,
+    name: "Actor",
     canAct: () => true,
     isPlayerControlled: () => true,
     canUseBattleAction: () => true,
@@ -330,16 +418,24 @@ function testCursorMemoryControlsFreshSelectorEntryButNotHierarchy() {
     skillsWindow: { show(options) { shown.push(options); } },
     magickWindow: { show(options) { shown.push(options); } },
     itemWindow: { show(options) { shown.push(options); } },
+    rememberBattleCommand() {},
+    rememberedBattleSelectionId(_actor, kind) {
+      return kind === "magick" && ConfigManager.battleCursorMemoryEnabled()
+        ? 10
+        : null;
+    },
   };
   const manager = new BattleManager(scene);
 
   ConfigManager.set("battleCursorMemory", "initial", { persist: false });
-  manager.executeCommand("Skills");
+  manager.executeCommand("Magick");
   assert.equal(shown.at(-1).preserveIndex, false);
+  assert.equal(shown.at(-1).preferredId, null);
 
   ConfigManager.set("battleCursorMemory", "memory", { persist: false });
   manager.executeCommand("Magick");
-  assert.equal(shown.at(-1).preserveIndex, true);
+  assert.equal(shown.at(-1).preserveIndex, false);
+  assert.equal(shown.at(-1).preferredId, 10);
 }
 
 function testFullscreenOptionsSceneDrawsAndReturnsToMenu() {
@@ -398,6 +494,18 @@ function testFullscreenOptionsSceneDrawsAndReturnsToMenu() {
   assert.equal(text.includes("OPTION"), false);
   assert.equal(text.some((value) => String(value).includes("Battle Speed")), true);
 
+  scene.optionsWindow.index = scene.optionsWindow.options.findIndex(
+    (option) => option.type === "magickOrder",
+  );
+  triggered = new Set(["Enter"]);
+  scene.update();
+  assert.equal(scene.optionsWindow.isEditingMagickOrder(), true);
+
+  triggered = new Set(["Escape"]);
+  scene.update();
+  assert.equal(scene.optionsWindow.isEditingMagickOrder(), false);
+  assert.equal(pops, 0);
+
   triggered = new Set(["Escape"]);
   scene.update();
   assert.equal(pops, 1);
@@ -424,7 +532,7 @@ function run() {
   testFieldMessageSpeedControlsRevealAndConfirmBehavior();
   testAtbModePausesOnlyDeepSelectionInWaitMode();
   testBattleSpeedAndMessageSpeedUseSeparateClocks();
-  testCursorMemoryControlsFreshSelectorEntryButNotHierarchy();
+  testCursorMemoryPassesStableRememberedIdsIntoSelectors();
   testFullscreenOptionsSceneDrawsAndReturnsToMenu();
   testOptionsAreReachableAndLoadBeforeConsumers();
 

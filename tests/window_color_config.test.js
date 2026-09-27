@@ -36,7 +36,7 @@ function loadConfig(storage = localStorageHarness()) {
   return { ConfigManager: context.__Config, storage };
 }
 
-function testConfigV4PersistsAndMigratesWindowColors() {
+function testConfigV5PersistsAndMigratesWindowColors() {
   const oldPayload = JSON.stringify({
     version: 2,
     options: {
@@ -53,8 +53,8 @@ function testConfigV4PersistsAndMigratesWindowColors() {
   const storage = localStorageHarness({ Sektor1_Config_v2: oldPayload });
   const { ConfigManager } = loadConfig(storage);
 
-  assert.equal(ConfigManager.currentVersion(), 4);
-  assert.equal(ConfigManager.storageKey(), "Sektor1_Config_v4");
+  assert.equal(ConfigManager.currentVersion(), 5);
+  assert.equal(ConfigManager.storageKey(), "Sektor1_Config_v5");
   assert.equal(ConfigManager.get("battleSpeed"), "fast");
   assert.equal(ConfigManager.get("atbMode"), "active");
   assert.deepEqual(Array.from(ConfigManager.bindingSlots("confirm")), ["Space", "Enter"]);
@@ -62,7 +62,7 @@ function testConfigV4PersistsAndMigratesWindowColors() {
     JSON.parse(JSON.stringify(ConfigManager.getWindowColors())),
     JSON.parse(JSON.stringify(ConfigManager.windowColorDefaults())),
   );
-  assert.equal(storage.store.has("Sektor1_Config_v4"), true);
+  assert.equal(storage.store.has("Sektor1_Config_v5"), true);
 }
 
 function testWindowColorsSanitizePersistAndClampChannels() {
@@ -85,8 +85,8 @@ function testWindowColorsSanitizePersistAndClampChannels() {
   assert.equal(ConfigManager.windowColorChannel("bottomRight", "b"), 0);
 
   ConfigManager.save();
-  const payload = JSON.parse(storage.store.get("Sektor1_Config_v4"));
-  assert.equal(payload.version, 4);
+  const payload = JSON.parse(storage.store.get("Sektor1_Config_v5"));
+  assert.equal(payload.version, 5);
   assert.equal(payload.windowColors.topLeft, "#a1b2c3");
   assert.equal(payload.windowColors.bottomRight, "#fffe00");
 
@@ -313,7 +313,7 @@ function testOptionsRouteAndScriptOrderExposeWindowColorEditor() {
 }
 
 function run() {
-  testConfigV4PersistsAndMigratesWindowColors();
+  testConfigV5PersistsAndMigratesWindowColors();
   testWindowColorsSanitizePersistAndClampChannels();
   testInvalidStoredWindowColorsFallBackPerCorner();
   testWindowColorEditorEditsLiveAndResetsOnlyColors();

@@ -1593,6 +1593,40 @@ class Game_Battler {
     });
   }
 
+  magickCanRemoveAnyStatus(magick, target) {
+    if (magick?.effect !== "removeStatus" || !target) {
+      return false;
+    }
+
+    const statusPayload = magick.status;
+
+    if (
+      !statusPayload ||
+      typeof statusPayload !== "object" ||
+      Array.isArray(statusPayload) ||
+      typeof target.hasStatus !== "function"
+    ) {
+      return false;
+    }
+
+    return Object.keys(statusPayload).some((statusKey) => {
+      if (!target.hasStatus(statusKey)) {
+        return false;
+      }
+
+      const hasDefinitionLookup = typeof target.statusDefinition === "function";
+      const definition = hasDefinitionLookup
+        ? target.statusDefinition(statusKey)
+        : null;
+
+      if (hasDefinitionLookup && !definition) {
+        return false;
+      }
+
+      return definition?.classification?.removable !== false;
+    });
+  }
+
   battleSideType() {
     if (typeof Game_Actor !== "undefined" && this instanceof Game_Actor) {
       return "actor";
@@ -1765,6 +1799,19 @@ class Game_Battler {
 
     if (defeated) {
       return this.magickCanRemoveDefeatStatus(magick, target);
+    }
+
+    if (
+      magick.effect === "heal" &&
+      target.isUndead?.() !== true &&
+      typeof target.isFullHp === "function" &&
+      target.isFullHp()
+    ) {
+      return false;
+    }
+
+    if (magick.effect === "removeStatus") {
+      return this.magickCanRemoveAnyStatus(magick, target);
     }
 
     return true;

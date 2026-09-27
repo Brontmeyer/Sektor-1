@@ -2,15 +2,20 @@
 
 class ConfigManager {
   static currentVersion() {
-    return 4;
+    return 5;
   }
 
   static storageKey() {
-    return "Sektor1_Config_v4";
+    return "Sektor1_Config_v5";
   }
 
   static legacyStorageKeys() {
-    return ["Sektor1_Config_v3", "Sektor1_Config_v2", "Sektor1_Config_v1"];
+    return [
+      "Sektor1_Config_v4",
+      "Sektor1_Config_v3",
+      "Sektor1_Config_v2",
+      "Sektor1_Config_v1",
+    ];
   }
 
   static defaults() {
@@ -20,8 +25,25 @@ class ConfigManager {
       battleMessageSpeed: "normal",
       fieldMessageSpeed: "normal",
       battleCursorMemory: "initial",
-      magickOrder: "default",
+      magickCategoryOrder: this.defaultMagickCategoryOrder(),
     };
+  }
+
+  static magickCategories() {
+    return ["restore", "attack", "indirect", "advanced"];
+  }
+
+  static magickCategoryLabels() {
+    return {
+      restore: "Restore",
+      attack: "Attack",
+      indirect: "Indirect",
+      advanced: "Advanced",
+    };
+  }
+
+  static defaultMagickCategoryOrder() {
+    return [...this.magickCategories()];
   }
 
   static windowColorDefaults() {
@@ -78,17 +100,6 @@ class ConfigManager {
         values: ["initial", "memory"],
         labels: { initial: "Initial", memory: "Memory" },
         description: "Initial resets battle lists; Memory keeps the last cursor this battle.",
-      },
-      {
-        key: "magickOrder",
-        label: "Magick Order",
-        values: ["default", "alphabetical", "element"],
-        labels: {
-          default: "Default",
-          alphabetical: "Alphabetical",
-          element: "Element",
-        },
-        description: "Changes how learned Magick is presented in menus and battle.",
       },
     ];
   }
@@ -171,7 +182,33 @@ class ConfigManager {
       }
     }
 
+    result.magickCategoryOrder = this.sanitizeMagickCategoryOrder(
+      source.magickCategoryOrder,
+    );
+
     return result;
+  }
+
+  static sanitizeMagickCategoryOrder(source) {
+    const categories = this.magickCategories();
+
+    if (!Array.isArray(source) || source.length !== categories.length) {
+      return this.defaultMagickCategoryOrder();
+    }
+
+    const normalized = source.map((value) =>
+      typeof value === "string" ? value.trim().toLowerCase() : "",
+    );
+    const unique = new Set(normalized);
+
+    if (
+      unique.size !== categories.length ||
+      normalized.some((category) => !categories.includes(category))
+    ) {
+      return this.defaultMagickCategoryOrder();
+    }
+
+    return normalized;
   }
 
   static isBindingCode(code) {
@@ -403,7 +440,10 @@ class ConfigManager {
     try {
       const payload = {
         version: this.currentVersion(),
-        options: { ...this.data },
+        options: {
+          ...this.data,
+          magickCategoryOrder: this.magickCategoryOrder(),
+        },
         bindings: Object.fromEntries(
           Object.entries(this.bindings).map(([action, slots]) => [
             action,
@@ -616,49 +656,79 @@ class ConfigManager {
     return this.get("battleCursorMemory") === "memory";
   }
 
+  static magickCategoryOrder() {
+    this.ensureInitializedWithoutLoad();
+    return this.sanitizeMagickCategoryOrder(this.data.magickCategoryOrder);
+  }
+
+  static setMagickCategoryOrder(order, { persist = true } = {}) {
+    this.ensureInitializedWithoutLoad();
+    const sanitized = this.sanitizeMagickCategoryOrder(order);
+
+    if (
+      !Array.isArray(order) ||
+      order.length !== sanitized.length ||
+      order.some(
+        (value, index) =>
+          String(value || "").trim().toLowerCase() !== sanitized[index],
+      )
+    ) {
+      return false;
+    }
+
+    this.data.magickCategoryOrder = [...sanitized];
+
+    if (persist) {
+      this.save();
+    }
+
+    return true;
+  }
+
+  static moveMagickCategory(category, direction, { persist = true } = {}) {
+    const order = this.magickCategoryOrder();
+    const normalized = String(category || "").trim().toLowerCase();
+    const index = order.indexOf(normalized);
+
+    if (index < 0) {
+      return -1;
+    }
+
+    const offset = Number(direction) < 0 ? -1 : 1;
+    const targetIndex = index + offset;
+
+    if (targetIndex < 0 || targetIndex >= order.length) {
+      return index;
+    }
+
+    [order[index], order[targetIndex]] = [order[targetIndex], order[index]];
+    this.setMagickCategoryOrder(order, { persist });
+    return targetIndex;
+  }
+
+  static magickCategoryOrderLabel(separator = " > ") {
+    const labels = this.magickCategoryLabels();
+    return this.magickCategoryOrder()
+      .map((category) => labels[category] || category)
+      .join(separator);
+  }
+
   static sortMagick(list) {
     const source = Array.isArray(list) ? [...list] : [];
-    const order = this.get("magickOrder");
+    const categoryOrder = this.magickCategoryOrder();
 
-    if (order === "alphabetical") {
-      return source.sort((a, b) => {
-        const nameA = String(a?.name || "").toLowerCase();
-        const nameB = String(b?.name || "").toLowerCase();
+    return source.sort((a, b) => {
+      const categoryA = String(a?.category || "").toLowerCase();
+      const categoryB = String(b?.category || "").toLowerCase();
+      const rawIndexA = categoryOrder.indexOf(categoryA);
+      const rawIndexB = categoryOrder.indexOf(categoryB);
+      const indexA = rawIndexA >= 0 ? rawIndexA : categoryOrder.length;
+      const indexB = rawIndexB >= 0 ? rawIndexB : categoryOrder.length;
 
-        if (nameA < nameB) return -1;
-        if (nameA > nameB) return 1;
-        return (Number(a?.id) || 0) - (Number(b?.id) || 0);
-      });
-    }
-
-    if (order === "element") {
-      const elementOrder = [
-        "restorative",
-        "fire",
-        "ice",
-        "lightning",
-        "earth",
-        "wind",
-        "poison",
-        "gravity",
-        "none",
-      ];
-
-      return source.sort((a, b) => {
-        const elementA = String(a?.element || "none").toLowerCase();
-        const elementB = String(b?.element || "none").toLowerCase();
-        const rawIndexA = elementOrder.indexOf(elementA);
-        const rawIndexB = elementOrder.indexOf(elementB);
-        const indexA = rawIndexA >= 0 ? rawIndexA : elementOrder.length;
-        const indexB = rawIndexB >= 0 ? rawIndexB : elementOrder.length;
-
-        if (indexA !== indexB) return indexA - indexB;
-        if (elementA < elementB) return -1;
-        if (elementA > elementB) return 1;
-        return (Number(a?.id) || 0) - (Number(b?.id) || 0);
-      });
-    }
-
-    return source;
+      if (indexA !== indexB) return indexA - indexB;
+      if (categoryA < categoryB) return -1;
+      if (categoryA > categoryB) return 1;
+      return (Number(a?.id) || 0) - (Number(b?.id) || 0);
+    });
   }
 }

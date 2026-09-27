@@ -126,6 +126,12 @@ function testGameMapDiscoversNearbyLocationsAndBuildsSnapshot() {
       isLocationDiscovered(mapId, locationId) {
         return discoveries.has(key(mapId, locationId));
       },
+      discoveredLocationIds(mapId) {
+        const prefix = `${mapId}:`;
+        return [...discoveries.keys()]
+          .filter((entry) => entry.startsWith(prefix))
+          .map((entry) => entry.slice(prefix.length));
+      },
     },
   });
 
@@ -160,6 +166,16 @@ function testGameMapDiscoversNearbyLocationsAndBuildsSnapshot() {
     snapshot.locations.find((location) => location.id === "north-passage")
       .discovered,
     false,
+  );
+  assert.equal(
+    snapshot.locations.find((location) => location.id === "test-plaza")
+      .discoveryOrder,
+    0,
+  );
+  assert.equal(
+    snapshot.locations.find((location) => location.id === "merchant-row")
+      .discoveryOrder,
+    1,
   );
 }
 
@@ -231,13 +247,44 @@ function testAreaMapWindowShowsOnlyDiscoveredLocationsAndSupportsSelection() {
     locations: [
       {
         id: "a",
-        name: "Alpha",
+        name: "Zulu Plaza",
         type: "landmark",
         x: 100,
         y: 100,
+        discoveryOrder: 0,
+        sourceIndex: 0,
         discovered: true,
       },
-      { id: "b", name: "Beta", type: "exit", x: 200, y: 200, discovered: true },
+      {
+        id: "b",
+        name: "Beta Exit",
+        type: "exit",
+        x: 200,
+        y: 200,
+        discoveryOrder: 1,
+        sourceIndex: 1,
+        discovered: true,
+      },
+      {
+        id: "d",
+        name: "Alpha Row",
+        type: "landmark",
+        x: 500,
+        y: 500,
+        discoveryOrder: 2,
+        sourceIndex: 2,
+        discovered: true,
+      },
+      {
+        id: "e",
+        name: "Alpha Exit",
+        type: "exit",
+        x: 120,
+        y: 120,
+        discoveryOrder: 3,
+        sourceIndex: 3,
+        discovered: true,
+      },
       {
         id: "c",
         name: "Secret",
@@ -251,12 +298,36 @@ function testAreaMapWindowShowsOnlyDiscoveredLocationsAndSupportsSelection() {
 
   assert.deepEqual(
     Array.from(window.discoveredLocations(), (location) => location.name),
-    ["Alpha", "Beta"],
+    ["Zulu Plaza", "Beta Exit", "Alpha Row", "Alpha Exit"],
   );
+  assert.deepEqual(
+    Array.from(window.organizedLocations(), (location) => location.name),
+    ["Zulu Plaza", "Alpha Row", "Beta Exit", "Alpha Exit"],
+    "Discovery order is preserved within separate Landmark and Exit groups",
+  );
+
+  triggered.add("right");
+  window.update();
+  triggered.clear();
+  assert.equal(window.sortMode, "name");
+  assert.deepEqual(
+    Array.from(window.organizedLocations(), (location) => location.name),
+    ["Alpha Row", "Zulu Plaza", "Alpha Exit", "Beta Exit"],
+  );
+
+  triggered.add("right");
+  window.update();
+  triggered.clear();
+  assert.equal(window.sortMode, "distance");
+  assert.deepEqual(
+    Array.from(window.organizedLocations(), (location) => location.name),
+    ["Zulu Plaza", "Alpha Row", "Alpha Exit", "Beta Exit"],
+  );
+
   triggered.add("down");
   window.update();
   triggered.clear();
-  assert.equal(window.currentLocation().name, "Beta");
+  assert.equal(window.currentLocation().name, "Alpha Row");
   assert.doesNotThrow(() => window.draw());
 
   const text = calls
@@ -274,6 +345,9 @@ function testAreaMapWindowShowsOnlyDiscoveredLocationsAndSupportsSelection() {
     text.some((value) => value.includes("Secret")),
     false,
   );
+  assert.equal(text.some((value) => value.includes("LANDMARKS")), true);
+  assert.equal(text.some((value) => value.includes("EXITS")), true);
+  assert.equal(text.some((value) => value.includes("Distance")), true);
 }
 
 function testQuickMapInputRoutesFieldExplorationIntoCurrentAreaMap() {

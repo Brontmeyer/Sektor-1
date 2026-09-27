@@ -8,31 +8,33 @@
     "y": 300
   },
   "areaMap": {
-    "_comment": "Second-zone Area Map fixture using the shared discovery contract.",
     "enabled": true,
     "locations": [
       {
-        "id": "second-zone-landing",
-        "name": "Second Zone Landing",
+        "_comment": "Dev Zone 2 Plaza",
+        "id": "dev-zone-2-plaza",
+        "name": "Dev Zone 2 Plaza",
         "type": "landmark",
         "x": 626,
         "y": 316,
         "discoverRadius": 140,
         "initiallyDiscovered": true,
-        "description": "The arrival point in the second test zone."
+        "description": "Dev Zone 2 Plaza."
       },
       {
-        "id": "return-passage",
-        "name": "Return Passage",
+        "_comment": "Dev Zone 1 Passage",
+        "id": "dev-zone-1-passage",
+        "name": "Dev Zone 1 Passage",
         "type": "exit",
         "x": 630,
         "y": 125,
         "discoverRadius": 105,
         "initiallyDiscovered": false,
-        "description": "The passage back to Sektor 1 Test Zone."
+        "description": "The passage to Dev Zone 1."
       }
     ]
   },
+
   "obstacles": [
     {
       "x": 300,
@@ -83,8 +85,10 @@
       "height": 150
     }
   ],
+
   "transfers": [
     {
+      "_comment": "Transfer to Dev Zone 1",
       "x": 555,
       "y": 50,
       "width": 150,

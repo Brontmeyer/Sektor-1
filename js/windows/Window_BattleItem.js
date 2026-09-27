@@ -93,11 +93,23 @@ class Window_BattleItem {
     return typeof entry?.description === "string" ? entry.description.trim() : "";
   }
 
-  show({ preserveIndex = false } = {}) {
+  show({ preserveIndex = false, preferredId = null } = {}) {
     const entries = this.items();
 
     this.visible = true;
     this.refreshLayout();
+
+    const rememberedId = Number(preferredId);
+
+    if (Number.isInteger(rememberedId) && rememberedId > 0) {
+      const rememberedIndex = entries.findIndex(
+        (entry) => Number(entry?.id) === rememberedId,
+      );
+      this.index = rememberedIndex >= 0 ? rememberedIndex : 0;
+      this.listViewport.reset(this.index, entries.length);
+      this.listViewport.ensureVisible(this.index, entries.length);
+      return;
+    }
 
     if (!preserveIndex) {
       this.index = 0;

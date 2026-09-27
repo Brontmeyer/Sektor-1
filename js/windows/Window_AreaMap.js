@@ -13,6 +13,8 @@ class Window_AreaMap {
       locations: [],
     };
     this.index = 0;
+    this.sortMode = "discovery";
+    this.sortModes = ["discovery", "name", "distance"];
   }
 
   discoveredLocations() {
@@ -21,8 +23,75 @@ class Window_AreaMap {
     );
   }
 
+  distanceToPlayer(location) {
+    const player = this.snapshot.player || {};
+    const dx = Number(location?.x || 0) - Number(player.x || 0);
+    const dy = Number(location?.y || 0) - Number(player.y || 0);
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  compareLocations(left, right) {
+    if (this.sortMode === "name") {
+      const byName = String(left?.name || "").localeCompare(
+        String(right?.name || ""),
+        undefined,
+        { sensitivity: "base" },
+      );
+
+      if (byName !== 0) {
+        return byName;
+      }
+    } else if (this.sortMode === "distance") {
+      const byDistance = this.distanceToPlayer(left) - this.distanceToPlayer(right);
+
+      if (Math.abs(byDistance) > 0.0001) {
+        return byDistance;
+      }
+    } else {
+      const byDiscovery =
+        Number(left?.discoveryOrder ?? Number.MAX_SAFE_INTEGER) -
+        Number(right?.discoveryOrder ?? Number.MAX_SAFE_INTEGER);
+
+      if (byDiscovery !== 0) {
+        return byDiscovery;
+      }
+
+      const bySource =
+        Number(left?.sourceIndex ?? Number.MAX_SAFE_INTEGER) -
+        Number(right?.sourceIndex ?? Number.MAX_SAFE_INTEGER);
+
+      if (bySource !== 0) {
+        return bySource;
+      }
+    }
+
+    return String(left?.id || "").localeCompare(String(right?.id || ""));
+  }
+
+  locationGroups() {
+    const discovered = this.discoveredLocations();
+    const sort = (locations) => [...locations].sort((a, b) => this.compareLocations(a, b));
+
+    return [
+      {
+        key: "landmark",
+        label: "LANDMARKS",
+        locations: sort(discovered.filter((location) => location?.type !== "exit")),
+      },
+      {
+        key: "exit",
+        label: "EXITS",
+        locations: sort(discovered.filter((location) => location?.type === "exit")),
+      },
+    ];
+  }
+
+  organizedLocations() {
+    return this.locationGroups().flatMap((group) => group.locations);
+  }
+
   currentLocation() {
-    const locations = this.discoveredLocations();
+    const locations = this.organizedLocations();
     if (locations.length === 0) {
       return null;
     }
@@ -31,8 +100,44 @@ class Window_AreaMap {
     return locations[this.index] || null;
   }
 
+  cycleSort(direction) {
+    const currentId = this.currentLocation()?.id ?? null;
+    const currentIndex = this.sortModes.indexOf(this.sortMode);
+    const step = direction < 0 ? -1 : 1;
+    const nextIndex =
+      (Math.max(0, currentIndex) + step + this.sortModes.length) %
+      this.sortModes.length;
+
+    this.sortMode = this.sortModes[nextIndex];
+
+    if (currentId !== null) {
+      const nextLocations = this.organizedLocations();
+      const selectedIndex = nextLocations.findIndex(
+        (location) => location?.id === currentId,
+      );
+      this.index = selectedIndex >= 0 ? selectedIndex : 0;
+    }
+
+    return this.sortMode;
+  }
+
+  sortLabel() {
+    return { discovery: "Discovery", name: "Name", distance: "Distance" }[this.sortMode] || "Discovery";
+  }
+
   update() {
-    const locations = this.discoveredLocations();
+    const locations = this.organizedLocations();
+
+    if (Input.isActionTriggered("left")) {
+      this.cycleSort(-1);
+      return;
+    }
+
+    if (Input.isActionTriggered("right")) {
+      this.cycleSort(1);
+      return;
+    }
+
     if (locations.length <= 1) {
       this.index = 0;
       return;
@@ -224,7 +329,8 @@ class Window_AreaMap {
 
   drawLocationList(context, bounds) {
     this.panel(context, bounds, { assetAlpha: 0.46 });
-    const locations = this.discoveredLocations();
+    const locations = this.organizedLocations();
+    const groups = this.locationGroups();
     const left = bounds.x + 20;
     const right = bounds.x + bounds.width - 20;
 
@@ -232,15 +338,25 @@ class Window_AreaMap {
     context.textBaseline = "middle";
     context.fillStyle = "#aebfd1";
     context.font = "600 13px sans-serif";
-    context.fillText("DISCOVERED", left, bounds.y + 26);
+    context.fillText("DISCOVERED", left, bounds.y + 24);
 
     context.textAlign = "right";
     context.fillStyle = "#ffffff";
     context.font = "600 15px sans-serif";
-    context.fillText(String(locations.length), right, bounds.y + 26);
+    context.fillText(String(locations.length), right, bounds.y + 24);
 
-    const listTop = bounds.y + 54;
-    const rowHeight = 52;
+    context.textAlign = "left";
+    context.fillStyle = "#aebfd1";
+    context.font = "600 12px sans-serif";
+    context.fillText("ORDER", left, bounds.y + 50);
+    context.fillStyle = "#f4f7fb";
+    context.font = "14px sans-serif";
+    context.fillText(`◀  ${this.sortLabel()}  ▶`, left + 58, bounds.y + 50);
+
+    const listTop = bounds.y + 78;
+    const detailTop = bounds.y + bounds.height - 150;
+    const headingHeight = 24;
+    const rowHeight = 34;
 
     if (locations.length === 0) {
       context.textAlign = "left";
@@ -249,38 +365,57 @@ class Window_AreaMap {
       context.fillText("No locations discovered.", left, listTop + 18);
     }
 
-    locations.forEach((location, index) => {
-      const rowY = listTop + index * rowHeight;
-      const selected = index === this.index;
+    let drawY = listTop;
+    let locationIndex = 0;
 
-      if (selected) {
-        context.fillStyle = "rgba(255, 215, 90, 0.1)";
-        context.fillRect(left - 8, rowY, bounds.width - 24, rowHeight - 4);
+    for (const group of groups) {
+      if (group.locations.length === 0) {
+        continue;
+      }
+
+      if (drawY + headingHeight >= detailTop - 8) {
+        break;
       }
 
       context.textAlign = "left";
-      context.fillStyle = selected ? "#ffd75a" : "#f0f3f7";
-      context.font = "16px sans-serif";
+      context.fillStyle = group.key === "exit" ? "#b9aaff" : "#70e0c0";
+      context.font = "600 12px sans-serif";
       context.fillText(
-        `${selected ? "▶ " : "  "}${location.name}`,
+        `${group.label}  ${group.locations.length}`,
         left,
-        rowY + 17,
+        drawY + headingHeight / 2,
       );
+      drawY += headingHeight;
 
-      context.fillStyle = location.type === "exit" ? "#b9aaff" : "#70e0c0";
-      context.font = "600 11px sans-serif";
-      context.fillText(
-        String(location.type || "landmark").toUpperCase(),
-        left + 20,
-        rowY + 37,
-      );
-    });
+      for (const location of group.locations) {
+        if (drawY + rowHeight >= detailTop - 8) {
+          break;
+        }
+
+        const selected = locationIndex === this.index;
+
+        if (selected) {
+          context.fillStyle = "rgba(255, 215, 90, 0.1)";
+          context.fillRect(left - 8, drawY, bounds.width - 24, rowHeight - 2);
+        }
+
+        context.textAlign = "left";
+        context.fillStyle = selected ? "#ffd75a" : "#f0f3f7";
+        context.font = "15px sans-serif";
+        context.fillText(
+          `${selected ? "▶ " : "  "}${location.name}`,
+          left,
+          drawY + rowHeight / 2,
+        );
+
+        drawY += rowHeight;
+        locationIndex++;
+      }
+
+      drawY += 4;
+    }
 
     const current = this.currentLocation();
-    const detailTop = Math.max(
-      bounds.y + bounds.height - 150,
-      listTop + locations.length * rowHeight + 18,
-    );
 
     context.strokeStyle = "rgba(205, 216, 235, 0.18)";
     context.beginPath();
@@ -288,6 +423,7 @@ class Window_AreaMap {
     context.lineTo(right, detailTop);
     context.stroke();
 
+    context.textAlign = "left";
     context.fillStyle = "#aebfd1";
     context.font = "600 12px sans-serif";
     context.fillText("LOCATION", left, detailTop + 24);

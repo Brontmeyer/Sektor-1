@@ -246,7 +246,7 @@ Exact character designs should only be added to canonical documentation when del
 
 A JRPG battle engine eventually needs a world capable of carrying the adventure around it.
 
-Area Map Foundation v1 now establishes validated current-zone landmark/exit records, proximity discovery, persistent discovery state, and a reusable AREA MAP menu surface. Pass 111 adds a remappable field **Quick Map** action (default `M`) plus a small scope-aware route contract: current field maps resolve to the existing AREA MAP snapshot, while a later overworld scene can resolve that same player intent to the World Map. The later World Map should consume the shared discovery contract once multiple authored regions exist rather than replacing the Area Map.
+Area Map Foundation v1 now establishes validated current-zone landmark/exit records, proximity discovery, persistent discovery state, and a reusable AREA MAP menu surface. Pass 116 separates discovered Landmarks and Exits and adds in-map Discovery / Name / Distance ordering while preserving `Game_System` as the ordered discovery-state authority. Pass 111 adds a remappable field **Quick Map** action (default `M`) plus a small scope-aware route contract: current field maps resolve to the existing AREA MAP snapshot, while a later overworld scene can resolve that same player intent to the World Map. The later World Map should consume the shared discovery contract once multiple authored regions exist rather than replacing the Area Map.
 
 Primary work includes:
 
@@ -514,7 +514,7 @@ Battle-presentation directions and current status:
 - ✅ Valor & Escape Rules v1 with hostile-source Valor gain, explicit Valor-support Skills, and Agility/retry-based Escape attempts
 - ✅ Enemy Formation Rows v1 for up to eight centered/customizable front/back-row enemies with pincer-aware flank geometry
 - ✅ Scan & Tactical Help v1 for battle-local per-enemy HP/MP and elemental weakness/resistance/immunity details while targeting
-- ✅ Game Options / Config Foundation v1 with battle/message pacing, battle cursor memory, Magick ordering, and save-slot-independent persistence
+- ✅ Game Options / Config Foundation v1 with battle/message pacing, per-actor battle cursor memory, custom Restore/Attack/Indirect/Advanced Magick category priority with stable-ID ordering inside each category, and save-slot-independent persistence
 - ✅ Custom Controls / Input Mapping v1 with named actions, persistent two-slot keyboard bindings, dynamic hints, and a dedicated Controls screen
 - ✅ Battle UI / Presentation Polish v1 with tighter HUD/command proportions, compact translucent Tactical Help, banner fades, softer hints, and battle accent cursors
 - ✅ Battle Context Panel v2 with vertically centered description-only action prose, shared scanned-target readouts, wider translucent context geometry, heading-free normal selectors, and four visible selector rows

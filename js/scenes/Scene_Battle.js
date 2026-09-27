@@ -116,6 +116,10 @@ class Scene_Battle extends Scene_Base {
     // PENDING ITEM ACTION
     this.pendingItem = null;
     this.pendingItemTarget = null;
+
+    // Cursor memory is battle-local and keyed by stable actor IDs. Display
+    // names and list indexes are deliberately not identity.
+    this.battleCursorMemory = new Map();
   }
 
   start() {
@@ -392,6 +396,123 @@ class Scene_Battle extends Scene_Base {
     if (Input.isActionTriggered("cancel")) {
       this.cancelCommandSelection();
     }
+  }
+
+  battleCursorMemoryEnabled() {
+    return (
+      typeof ConfigManager !== "undefined" &&
+      typeof ConfigManager.battleCursorMemoryEnabled === "function" &&
+      ConfigManager.battleCursorMemoryEnabled()
+    );
+  }
+
+  battleCursorMemoryKey(actor) {
+    const actorId = Number(actor?.actorId);
+    return Number.isInteger(actorId) && actorId > 0 ? actorId : null;
+  }
+
+  battleCursorMemoryEntry(actor, { create = false } = {}) {
+    const key = this.battleCursorMemoryKey(actor);
+
+    if (key === null) {
+      return null;
+    }
+
+    if (!this.battleCursorMemory.has(key) && create) {
+      this.battleCursorMemory.set(key, {
+        command: "Attack",
+        magickId: null,
+        skillId: null,
+        surgeId: null,
+        itemId: null,
+      });
+    }
+
+    return this.battleCursorMemory.get(key) || null;
+  }
+
+  rememberBattleCommand(actor, command) {
+    if (!this.battleCursorMemoryEnabled()) {
+      return false;
+    }
+
+    const commands = this.commandWindow?.commands || [];
+
+    if (!commands.includes(command)) {
+      return false;
+    }
+
+    const entry = this.battleCursorMemoryEntry(actor, { create: true });
+
+    if (!entry) {
+      return false;
+    }
+
+    entry.command = command;
+    return true;
+  }
+
+  battleSelectionMemoryProperty(kind) {
+    return {
+      magick: "magickId",
+      skill: "skillId",
+      surge: "surgeId",
+      item: "itemId",
+    }[kind] || null;
+  }
+
+  rememberBattleSelection(actor, kind, definition) {
+    if (!this.battleCursorMemoryEnabled()) {
+      return false;
+    }
+
+    const property = this.battleSelectionMemoryProperty(kind);
+    const id = Number(definition?.id);
+
+    if (!property || !Number.isInteger(id) || id <= 0) {
+      return false;
+    }
+
+    const entry = this.battleCursorMemoryEntry(actor, { create: true });
+
+    if (!entry) {
+      return false;
+    }
+
+    entry[property] = id;
+    return true;
+  }
+
+  rememberedBattleSelectionId(actor, kind) {
+    if (!this.battleCursorMemoryEnabled()) {
+      return null;
+    }
+
+    const property = this.battleSelectionMemoryProperty(kind);
+    const entry = this.battleCursorMemoryEntry(actor);
+    const id = property ? Number(entry?.[property]) : NaN;
+
+    return Number.isInteger(id) && id > 0 ? id : null;
+  }
+
+  prepareBattleCommandCursor(actor) {
+    if (!this.commandWindow) {
+      return false;
+    }
+
+    this.commandWindow.closeSide?.();
+
+    if (!this.battleCursorMemoryEnabled()) {
+      this.commandWindow.index = 0;
+      this.commandWindow.ensureEnabledSelection?.();
+      return true;
+    }
+
+    const entry = this.battleCursorMemoryEntry(actor);
+    const rememberedIndex = this.commandWindow.commands?.indexOf(entry?.command);
+    this.commandWindow.index = rememberedIndex >= 0 ? rememberedIndex : 0;
+    this.commandWindow.ensureEnabledSelection?.();
+    return true;
   }
 
   canAcceptCommandInput() {

@@ -86,6 +86,11 @@ class Game_Map {
     this.updateAreaDiscovery(player);
     const point = this.playerMapPoint(player);
 
+    const discoveryIds = $gameSystem?.discoveredLocationIds?.(this.id) || [];
+    const discoveryOrder = new Map(
+      discoveryIds.map((locationId, index) => [String(locationId), index]),
+    );
+
     return {
       mapId: this.id,
       name: this.name,
@@ -94,10 +99,14 @@ class Game_Map {
       player: point,
       obstacles: this.obstacles.map((obstacle) => ({ ...obstacle })),
       transfers: this.transfers.map((transfer) => ({ ...transfer })),
-      locations: this.areaMapLocations().map((location) => ({
+      locations: this.areaMapLocations().map((location, sourceIndex) => ({
         ...location,
         discovered:
           $gameSystem?.isLocationDiscovered?.(this.id, location.id) === true,
+        discoveryOrder: discoveryOrder.has(String(location.id))
+          ? discoveryOrder.get(String(location.id))
+          : Number.MAX_SAFE_INTEGER,
+        sourceIndex,
       })),
     };
   }

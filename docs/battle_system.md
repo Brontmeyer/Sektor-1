@@ -289,7 +289,7 @@ Restore Magick is intentionally capable of supporting unusual ally/enemy interac
 
 Some restorative Magick may legally target enemies. Battlers can declare `undead: true`; shared HP-restoration then inverts into direct restorative damage against that target instead of healing it. This applies through the reusable restorative path rather than spell-name checks, so Restore Magick, healing Skills/Valor Arts, and HP-restoring Items share the same interaction.
 
-Target legality and effect interpretation are separate responsibilities. A full-HP undead battler remains a legal restorative target because the effect is harmful rather than redundant, while a normal full-HP battler still rejects pure HP restoration.
+Target legality and effect interpretation are separate responsibilities. A full-HP undead battler remains a legal restorative target because the effect is harmful rather than redundant, while a normal full-HP living battler rejects pure HP restoration. Status-removal Magick is likewise legal only when the target currently carries at least one removable status named by that Magick, preventing MP from being spent on a guaranteed no-effect cleanse.
 
 A Magick being restorative does not automatically mean its target must be an ally.
 
@@ -515,7 +515,7 @@ As battle mechanics expand, any broader Defend interactions should be documented
 
 Config Runtime v2 keeps player pacing and control preferences outside battle rules. **Battle Speed** scales battle-local elapsed time used by battler state timers, action phases, animation updates, visual movement, battle effects, popups, and enemy-turn delay. It does not change formulas, turn eligibility, Haste/Slow slot scheduling, or player input polling. **Battle Message Speed** uses a separate clock for transient action/state banners so banner readability can be tuned independently from animation pacing.
 
-Battle selector cursor memory is also configuration-driven. Fresh Skills/Magick/Item entry can reset to the first entry or preserve the last valid index, while target-cancel navigation always returns to the originating selector position. Magick ordering is presentation-only and is shared by field and battle Magick windows.
+Battle cursor memory is configuration-driven and battle-local. **Initial** resets each actor to Attack and opens fresh Skills/Magick/Item selectors at the first entry. **Memory** keeps a separate record per stable actor ID: the actor's last main command plus selected Magick, Skill, Valor Art, and Item are stored by stable action ID rather than list index. A remembered entry remains selected when it still exists even if it is temporarily unusable (for example, insufficient MP); if it has disappeared (for example, the last Item was consumed), that selector falls back to its first current entry. Target-cancel navigation always returns to the originating selector position without consulting memory. Magick ordering is presentation-only and shared by field and battle Magick windows. Config stores a player-customizable priority permutation of Restore / Attack / Indirect / Advanced; inside every category, Magick remains ordered by ascending stable Magick ID. Because cursor memory stores Magick IDs rather than list indexes, rearranging category priority does not redirect a remembered selection to a different spell.
 
 # 🧭 Battle Formations
 

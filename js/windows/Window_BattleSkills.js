@@ -111,7 +111,7 @@ class Window_BattleSkills {
     this.listViewport.ensureVisible(this.index, skills.length);
   }
 
-  show({ preserveIndex = false, mode = null } = {}) {
+  show({ preserveIndex = false, mode = null, preferredId = null } = {}) {
     const nextMode = mode === "surge" ? "surge" : mode === "skills" ? "skills" : this.mode;
     const modeChanged = nextMode !== this.mode;
     this.mode = nextMode;
@@ -119,6 +119,18 @@ class Window_BattleSkills {
 
     this.visible = true;
     this.refreshLayout();
+
+    const rememberedId = Number(preferredId);
+
+    if (Number.isInteger(rememberedId) && rememberedId > 0) {
+      const rememberedIndex = entries.findIndex(
+        (entry) => Number(entry?.id) === rememberedId,
+      );
+      this.index = rememberedIndex >= 0 ? rememberedIndex : 0;
+      this.listViewport.reset(this.index, entries.length);
+      this.listViewport.ensureVisible(this.index, entries.length);
+      return;
+    }
 
     if (modeChanged) {
       preserveIndex = false;

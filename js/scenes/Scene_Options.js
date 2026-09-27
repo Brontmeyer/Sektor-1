@@ -10,6 +10,11 @@ class Scene_Options extends Scene_Base {
   }
 
   update() {
+    if (this.optionsWindow.isEditingMagickOrder()) {
+      this.optionsWindow.update();
+      return;
+    }
+
     if (Input.isActionTriggered("cancel")) {
       SceneManager.pop();
       return;

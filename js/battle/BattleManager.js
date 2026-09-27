@@ -1666,6 +1666,7 @@ class BattleManager {
       return false;
     }
 
+    this.scene.prepareBattleCommandCursor?.(battler);
     return true;
   }
 
@@ -1947,6 +1948,8 @@ class BattleManager {
       return;
     }
 
+    battle.rememberBattleCommand?.(battler, command);
+
     switch (command) {
       case "Attack": {
         battle.targetScope = "single";
@@ -1979,8 +1982,9 @@ class BattleManager {
 
       case "Skills":
         battle.skillsWindow.show({
-          preserveIndex: this.battleCursorMemoryEnabled(),
+          preserveIndex: false,
           mode: "skills",
+          preferredId: battle.rememberedBattleSelectionId?.(battler, "skill"),
         });
         break;
 
@@ -1989,20 +1993,23 @@ class BattleManager {
           return false;
         }
         battle.skillsWindow.show({
-          preserveIndex: this.battleCursorMemoryEnabled(),
+          preserveIndex: false,
           mode: "surge",
+          preferredId: battle.rememberedBattleSelectionId?.(battler, "surge"),
         });
         break;
 
       case "Magick":
         battle.magickWindow.show({
-          preserveIndex: this.battleCursorMemoryEnabled(),
+          preserveIndex: false,
+          preferredId: battle.rememberedBattleSelectionId?.(battler, "magick"),
         });
         break;
 
       case "Item":
         battle.itemWindow.show({
-          preserveIndex: this.battleCursorMemoryEnabled(),
+          preserveIndex: false,
+          preferredId: battle.rememberedBattleSelectionId?.(battler, "item"),
         });
         break;
 
@@ -2028,6 +2035,14 @@ class BattleManager {
     const canUse = isValorArt
       ? battler?.canUseValorArt?.(skill?.id) === true
       : battler?.canUseSkill?.(skill?.id) === true;
+
+    if (skill) {
+      battle.rememberBattleSelection?.(
+        battler,
+        isValorArt ? "surge" : "skill",
+        skill,
+      );
+    }
 
     if (!skill || !canUse) {
       return;
@@ -2113,6 +2128,8 @@ class BattleManager {
     if (!magick) {
       return;
     }
+
+    battle.rememberBattleSelection?.(battler, "magick", magick);
 
     if (!this.battlerCanUseAction(battler, "magick")) {
       this.rejectRestrictedAction(battler, "Magick");
@@ -2239,6 +2256,8 @@ class BattleManager {
     if (!item) {
       return;
     }
+
+    battle.rememberBattleSelection?.(battler, "item", item);
 
     const targetGroups = battle.targetManager.allowedTargetGroups(item);
     const scopes = battle.targetManager.allowedScopes(item);
