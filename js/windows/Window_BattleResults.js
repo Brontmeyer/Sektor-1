@@ -128,6 +128,33 @@ class Window_BattleResults {
     return true;
   }
 
+  finishCurrentAnimation() {
+    if (!this.visible || !this.isAnimating()) {
+      return false;
+    }
+
+    if (this.pageIndex === Window_BattleResults.PAGE_EXP) {
+      for (const row of this.actorRows) {
+        row.visualLevel = row.levelAfter;
+        row.visualExp = row.expAfter;
+        row.remainingExp = 0;
+        row.levelPopupTimer = 0;
+      }
+
+      // Confirm during the EXP tally is an explicit presentation skip. Any
+      // queued milestone callouts belong to that animation, so they must not
+      // keep the page artificially busy after the player asks to finish it.
+      this.essencePopupQueue = [];
+      this.activeEssencePopup = null;
+      this.activeEssencePopupTimer = 0;
+    } else {
+      this.visualRunes = this.runesAfter;
+    }
+
+    this.pageState = Window_BattleResults.STATE_COMPLETE;
+    return true;
+  }
+
   handleConfirm() {
     if (!this.visible) {
       return false;
@@ -139,6 +166,7 @@ class Window_BattleResults {
     }
 
     if (this.isAnimating()) {
+      this.finishCurrentAnimation();
       return false;
     }
 
@@ -786,9 +814,7 @@ class Window_BattleResults {
     }
 
     if (this.isAnimating()) {
-      return this.pageIndex === Window_BattleResults.PAGE_EXP
-        ? "Updating EXP..."
-        : "Counting Runes...";
+      return `${confirm}: Finish`;
     }
 
     return `${confirm}: ${this.isFinalPage() ? "Continue" : "Next"}`;

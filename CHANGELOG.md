@@ -1,3 +1,11 @@
+## Pass 120 - Victory Spoils Pacing v1
+
+- Refined the two-page victory results state machine into a dialogue-like **Begin → Finish → Next/Continue** Confirm rhythm.
+- Confirm during EXP/Resonance presentation now snaps actor level/EXP visuals to their authoritative finalized values and clears remaining timed milestone callouts instead of forcing the player to wait for the animation.
+- Confirm during the Rune ticker now snaps the displayed party total directly to `runesAfter`, so large rewards never require waiting for the count-up to finish.
+- Kept the results window presentation-only: skipping animations never recalculates or reapplies EXP, Runes, item drops, or Essence Resonance.
+- Updated the results footer to advertise `Finish` while a tally is running and added focused regression coverage for the full six-confirm victory pacing contract.
+
 ## Pass 119 - Battle Target Memory & Navigation Polish v1
 
 - Extended configuration-driven Battle Cursor Memory so each actor remembers the last player-confirmed battler per stable action context (Attack or stable Skill / Valor Art / Magick / Item ID) for the current battle.

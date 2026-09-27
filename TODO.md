@@ -107,7 +107,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Refine spatial target navigation so repeated directional input stays within the geometrically intended enemy/ally lane instead of jumping sides unexpectedly when battlers overlap vertically
 - [ ] Add pre-emptive battle opening rules/presentation
 - [ ] Revisit front/back row combat mechanics for physical damage dealt/received by actors and enemies; current player row state is presentation-only outside existing formation/rear-exposure rules
-- [ ] Refine victory spoils pacing so Confirm starts each tally, Confirm during counting snaps to the final total, and the next Confirm advances to the next results stage
+- [x] Pass 120: Refine victory spoils pacing so Confirm starts each tally, Confirm during counting snaps to the final total, and the next Confirm advances to the next results stage
 - [x] Implement Scan & Tactical Help v1 with battle-local per-enemy knowledge, H-toggle help, live HP/MP, and elemental Weak/Resist/Immune detail
 - [x] Implement Game Options / Config Foundation v1 with save-slot-independent persistence
 - [x] Add Battle Speed, Battle Message Speed, Field Message Speed, Battle Cursor Memory, and Magick Order runtime settings
