@@ -1,6 +1,10 @@
 "use strict";
 
 class DatabaseValidator {
+  static isLegacyStatusPlaceholder(statusKey) {
+    return statusKey === "resist" || statusKey === "deathforce";
+  }
+
   static validate(database) {
     const errors = [];
 
@@ -2381,8 +2385,6 @@ class DatabaseValidator {
         ? statuses.filter(Boolean).map((status) => status.key)
         : [],
     );
-    const legacyStatusPlaceholders = new Set(["resist", "deathforce"]);
-
     for (let index = 1; index < magickDatabase.length; index++) {
       const magick = magickDatabase[index];
 
@@ -2524,7 +2526,7 @@ class DatabaseValidator {
           } else if (
             statusKeys.size > 0 &&
             !statusKeys.has(statusKey) &&
-            !legacyStatusPlaceholders.has(statusKey)
+            !this.isLegacyStatusPlaceholder(statusKey)
           ) {
             errors.push(`Magick ${index} references unknown status key "${statusKey}".`);
           }

@@ -217,6 +217,19 @@ function testPhysicalOutgoingDamageAndAccuracyModifiers() {
   assert.equal(target.hp, 995);
 }
 
+function testTransformationStatusesIncreaseIncomingPhysicalDamage() {
+  const { Game_Battler } = loadCombatClasses();
+
+  for (const statusKey of ["frog", "small"]) {
+    const target = new Game_Battler({ name: statusKey, maxHp: 1000 });
+    target.addStatus(statusKey);
+    const result = target.receiveDamage(100, { category: "physical" });
+
+    assert.equal(result.damage, 125, `${statusKey} should take 25% more physical damage`);
+    assert.equal(target.hp, 875);
+  }
+}
+
 function testRearExposureBoostsOnlyPhysicalDamagePath() {
   const { Game_Battler, BattleManager } = loadCombatClasses();
   const attacker = new Game_Battler({

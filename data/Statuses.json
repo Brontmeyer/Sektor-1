@@ -371,7 +371,7 @@
     "id": 19,
     "key": "frog",
     "name": "Frog",
-    "description": "Transforms the target into a frog, greatly weakening its combat abilities.",
+    "description": "Transforms the target into a frog, greatly reducing physical damage dealt while increasing physical damage taken.",
     "classification": {
       "family": "transformation",
       "negative": true,
@@ -383,6 +383,7 @@
     },
     "effects": {
       "physicalDamageMultiplier": 0.1,
+      "physicalDamageTakenMultiplier": 1.25,
       "allowedActions": ["attack"]
     }
   },
@@ -391,7 +392,7 @@
     "id": 20,
     "key": "small",
     "name": "Small",
-    "description": "Shrinks the target, greatly reducing physical damage dealt and physical damage taken.",
+    "description": "Shrinks the target, greatly reducing physical damage dealt while increasing physical damage taken.",
     "classification": {
       "family": "transformation",
       "negative": true,
@@ -403,7 +404,7 @@
     },
     "effects": {
       "physicalDamageMultiplier": 0.1,
-      "physicalDamageTakenMultiplier": 0.5
+      "physicalDamageTakenMultiplier": 1.25
     }
   },
   {

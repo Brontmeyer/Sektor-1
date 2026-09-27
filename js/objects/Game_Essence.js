@@ -125,6 +125,32 @@ class Game_Essence {
     };
   }
 
+  passive() {
+    const passive = this.data()?.passive;
+
+    return passive && typeof passive === "object" ? passive : null;
+  }
+
+  isPassiveUnlocked() {
+    const passive = this.passive();
+
+    if (!passive) {
+      return false;
+    }
+
+    const unlockLevel = Number(passive.unlockLevel);
+
+    return (
+      Number.isInteger(unlockLevel) &&
+      unlockLevel > 0 &&
+      this.level() >= unlockLevel
+    );
+  }
+
+  activePassive() {
+    return this.isPassiveUnlocked() ? this.passive() : null;
+  }
+
   unlockedAbilities() {
     const essence = this.data();
 

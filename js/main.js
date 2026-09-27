@@ -36,6 +36,9 @@ async function startGame() {
   // Current engine runtime resolves actor ownership through $gameParty.
   window.$gameActor = $gameParty.leader();
 
+  // Development console helpers are exposed only when System.debugMode is true.
+  DevTools.install();
+
   // =====================================
   // START GAME
   // =====================================

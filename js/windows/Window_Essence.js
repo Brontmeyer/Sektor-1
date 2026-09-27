@@ -632,6 +632,70 @@ class Window_Essence {
     context.fillRect(x + 1, y + 1, Math.max(0, (width - 2) * rate), 6);
   }
 
+  passivePercent(value) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) ? Math.round(numeric * 100) : 0;
+  }
+
+  passiveStatusName(statusKey) {
+    return DatabaseManager.statusByKey?.(statusKey)?.name || String(statusKey || "Status");
+  }
+
+  passiveDescription(passive) {
+    if (!passive || typeof passive !== "object") {
+      return "No passive ability data.";
+    }
+
+    const percent = (value) => `${this.passivePercent(value)}%`;
+
+    switch (passive.type) {
+      case "essenceAbilityMpCostReduction":
+        return `Magick granted by this Essence costs ${percent(passive.value)} less MP.`;
+      case "essenceCleanseHeal":
+        return `Successful cleansing also restores ${percent(passive.healPercent)} of target Max HP.`;
+      case "reviveGrantStatus":
+        return `Successful revival also grants ${this.passiveStatusName(passive.status)}.`;
+      case "elementDamageBoost":
+        return `${this.titleCase(passive.element)} Magick damage +${percent(passive.value)}.`;
+      case "elementStatusChance":
+        return `${this.titleCase(passive.triggerElement)} Magick has a ${percent(passive.chance)} chance to inflict ${this.passiveStatusName(passive.status)}.`;
+      case "elementSelfStatusChance":
+        return `${this.titleCase(passive.triggerElement)} Magick has a ${percent(passive.chance)} chance to grant ${this.passiveStatusName(passive.status)} to the caster.`;
+      case "statusDamageBoost":
+        return `${this.passiveStatusName(passive.status)} inflicted by the wearer deals ${percent(passive.value)} more periodic damage.`;
+      case "statusFamilyResistance":
+        return `Reduces incoming ${this.titleCase(passive.statusFamily)}-status application chance by ${percent(passive.value)}.`;
+      case "essenceAbilityStatusChanceBoost":
+        return `Status chance on this Essence's Magick +${percent(passive.value)} points.`;
+      case "essenceAbilityMpRefundChance":
+        return `This Essence's Magick has a ${percent(passive.chance)} chance to refund all MP paid.`;
+      case "lowHpSelfStatuses": {
+        const names = (Array.isArray(passive.statuses) ? passive.statuses : [])
+          .map((key) => this.passiveStatusName(key))
+          .join(" + ");
+        return `At ≤${percent(passive.hpThreshold)} HP, grants ${names || "its configured statuses"}${passive.oncePerBattle ? " once per battle" : ""}.`;
+      }
+      case "incomingStatusNegateChance":
+        return `${percent(passive.chance)} chance to negate an incoming hostile negative status.`;
+      case "essenceAbilityPartialMpRefundChance":
+        return `${percent(passive.chance)} chance for this Essence's Magick to refund ${percent(passive.refundPercent)} of MP paid.`;
+      case "physicalEvasionBonus":
+        return `Physical evasion +${percent(passive.value)}.`;
+      case "lowHpPhysicalDamageBoost": {
+        const tiers = (Array.isArray(passive.thresholds) ? passive.thresholds : [])
+          .map((tier) => `+${percent(tier?.value)} at ≤${percent(tier?.hpThreshold)} HP`)
+          .join(", ");
+        return `Physical damage ${tiers || "increases at low HP"}.`;
+      }
+      case "successfulEscapePartyRecovery":
+        return `Successful escape restores ${percent(passive.hpPercent)} HP and ${percent(passive.mpPercent)} MP to living party members.`;
+      case "banishChainChance":
+        return `Banish has a ${percent(passive.chance)} chance to chain up to ${Math.max(0, Number(passive.maxChains) || 0)} additional target${Number(passive.maxChains) === 1 ? "" : "s"}.`;
+      default:
+        return "Passive ability activates at its configured unlock level.";
+    }
+  }
+
   drawDetails(context) {
     const bounds = this.detailBounds;
     const essence = this.displayedEssence();
@@ -691,6 +755,7 @@ class Window_Essence {
       context.fillStyle = "#aebbd0";
       context.font = "16px sans-serif";
       context.fillText("No Magick awakening data.", contentX, abilityY);
+      abilityY += 28;
     } else {
       context.font = "16px sans-serif";
 
@@ -705,6 +770,44 @@ class Window_Essence {
         );
         abilityY += 28;
       }
+    }
+
+    const passive = data?.passive || null;
+    const passiveUnlockLevel = Math.max(1, Number(passive?.unlockLevel) || 1);
+    const passiveActive = Boolean(passive && essence.level() >= passiveUnlockLevel);
+    const passiveHeadingY = abilityY + 10;
+
+    context.fillStyle = "#ffffff";
+    context.font = "600 18px sans-serif";
+    context.textAlign = "left";
+    context.fillText("PASSIVE", contentX, passiveHeadingY);
+
+    context.textAlign = "right";
+    context.fillStyle = passiveActive ? "#7dff8a" : "#9aa8b8";
+    context.font = "600 14px sans-serif";
+    context.fillText(
+      passiveActive ? `Lv ${passiveUnlockLevel} • ACTIVE` : `Unlocks at Level ${passiveUnlockLevel}`,
+      bounds.x + bounds.width - 20,
+      passiveHeadingY,
+    );
+
+    context.textAlign = "left";
+    context.fillStyle = passive ? "#dfe7f2" : "#9aa8b8";
+    context.font = "15px sans-serif";
+    const passiveText = this.passiveDescription(passive);
+
+    if (typeof Window_TextLayout !== "undefined" && Window_TextLayout.drawWrappedText) {
+      Window_TextLayout.drawWrappedText(
+        context,
+        passiveText,
+        contentX,
+        passiveHeadingY + 28,
+        contentWidth,
+        20,
+        3,
+      );
+    } else {
+      context.fillText(passiveText, contentX, passiveHeadingY + 28);
     }
   }
 

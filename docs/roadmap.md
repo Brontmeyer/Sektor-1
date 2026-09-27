@@ -153,23 +153,23 @@ Summon Magick remains later Magick design work and is not required to complete t
 
 # 💎 Milestone 3: Essence Runtime
 
-The Essence data model, database loading, validation, equipment UI, progression, and first ability-grant runtime are established. The remaining runtime work is now concentrated on ownership, passives, and Mastery support.
+The Essence data model, database loading, validation, equipment UI, progression, ability-grant runtime, and Level 4 passive runtime are established. The remaining runtime work is now concentrated on ownership and Mastery support.
 
 Completed runtime foundation now includes:
 
 - Data-driven Essence slot counts on actors
-- Player-facing Essence Equipment & Menu v1 plus full-screen Essence Menu Presentation & List Navigation v1 with shared actor summary, slot/catalog browsing, Resonance milestone preview, and Magick Awakening presentation
+- Player-facing Essence Equipment & Menu v1 plus full-screen Essence Menu Presentation & List Navigation v1 with shared actor summary, slot/catalog browsing, Resonance milestone preview, Magick Awakening presentation, and Level-4 passive locked/ACTIVE details
 - Persistent actor-owned Essence progression that survives unequipping
 - Battle Resonance gain for surviving active participants
 - Resonance-capped Essence leveling and next-milestone reporting
 - Equipped-Essence Magick availability through the actor's shared Magick contract, including immediate newly awakened ability access
+- Data-driven Level 4 passive execution across Magick cost/damage/status hooks, battle-local low-HP triggers, physical evasion/damage, escape recovery, and Banish chaining, with active low-HP Fury feedback in the battle HUD
 - Mastery Ready transition at 1500 Resonance
 - Save / Load persistence for Essence progression and slot assignments
 
 Primary remaining work includes:
 
 - Define long-term Essence acquisition / ownership rules for filtering the equip catalog
-- Implement Level 4 passive effects
 - Implement full Mastery state / Trial support
 
 Equipped Essences should gain full battle Resonance regardless of whether one of their abilities was cast.

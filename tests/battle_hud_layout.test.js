@@ -356,6 +356,37 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
   }
 }
 
+function testHudShowsActiveEssenceBattleIndicator() {
+  const context = createContext();
+  const Graphics = { width: 1600, height: 900, context };
+  const furyActor = actor("Tyler", 25, 30, 0);
+  furyActor.essenceBattleStatusSummary = () => "FURY ESS +20%";
+  const globals = {
+    Graphics,
+    $gameParty: {
+      battleMembers: () => [furyActor],
+      battleFormationMembers: () => [furyActor],
+    },
+  };
+  const { BattleHudLayout, BattleRenderer } = loadPresentation(globals);
+  const scene = {
+    outcome: null,
+    pendingEnemyTurn: false,
+    battleManager: { currentTurnState: () => "command" },
+    partyController: { currentBattler: () => furyActor },
+    timeManager: { value: () => 0, maximum: () => 100, isReady: () => false },
+  };
+  scene.hudLayout = new BattleHudLayout(scene);
+  const renderer = new BattleRenderer(scene);
+
+  renderer.drawBattleHud(context);
+  const text = context.calls
+    .filter((call) => call[0] === "fillText")
+    .map((call) => call[2]);
+
+  assert.equal(text.includes("FURY ESS +20%"), true);
+}
+
 function testHudLayoutLoadsBeforeRendererAndBattleScene() {
   const source = read("index.html");
   const layoutIndex = source.indexOf("BattleHudLayout.js");
@@ -374,6 +405,7 @@ function run() {
   testContextHelpIsExpandedAndCenteredAboveHud();
   testSurgeContextPanelTracksSelectedArtBesideCompactSelector();
   testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve();
+  testHudShowsActiveEssenceBattleIndicator();
   testHudLayoutLoadsBeforeRendererAndBattleScene();
 
   console.log("Battle HUD and message layout regression tests passed.");

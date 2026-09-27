@@ -270,7 +270,14 @@ class Window_Magick {
       ["Category", this.titleCase(magick?.category)],
       ["Element", this.titleCase(magick?.element)],
       ["Scope", this.scopeLabel(magick)],
-      ["MP Cost", String(Math.max(0, Number(magick?.mpCost) || 0)).padStart(3, "0")],
+      [
+        "MP Cost",
+        String(
+          magick && typeof this.actor?.magickMpCost === "function"
+            ? this.actor.magickMpCost(magick)
+            : Math.max(0, Number(magick?.mpCost) || 0),
+        ).padStart(3, "0"),
+      ],
     ];
 
     context.textBaseline = "middle";

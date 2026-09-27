@@ -938,8 +938,13 @@ class BattleRenderer {
     context.textAlign = "left";
     context.textBaseline = "middle";
 
-    let status =
+    const passiveStatus =
+      typeof actor.essenceBattleStatusSummary === "function"
+        ? actor.essenceBattleStatusSummary()
+        : "";
+    const ordinaryStatus =
       typeof actor.statusSummary === "function" ? actor.statusSummary(2) : "";
+    let status = [passiveStatus, ordinaryStatus].filter(Boolean).join(", ");
 
     if (isDefeated && !status) {
       status = "DEFEATED";

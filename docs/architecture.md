@@ -121,12 +121,17 @@ CollisionManager.js
 DatabaseManager.js
 DatabaseValidator.js
 DebugManager.js
+DevTools.js
 GameLoop.js
 Graphics.js
 Input.js
 SaveManager.js
 SceneManager.js
 ```
+
+## DevTools
+
+`DevTools` is a development-only console facade installed as `$dev` after database and game-object initialization when `System.debugMode` is explicitly true. It provides short, stable-ID helpers for live actor/party resources, statuses, encounters, inventory, recruitment, and Essence progression/passive setup. `statusChance()` is a deterministic diagnostic over the actor's real status-rate contract, useful for verifying resistance passives without statistical trial-and-error; it does not apply the status or roll RNG. DevTools must not become a gameplay authority or write canonical data; helpers delegate to the same runtime objects/managers used by ordinary play. Production/debug-disabled startup does not expose `$dev`.
 
 ## GameLoop
 
@@ -162,7 +167,7 @@ All indexed database accessors share the same null-safe record helper. Name help
 
 The current validator establishes field-level contracts for runtime-active actor and enemy combat data, actor starter Skill references, enemy EXP/Gil/Resonance/drop rewards, battle-sprite metadata, item/weapon/armor/accessory schemas, Magick targeting/effect/combat metadata, Skills metadata for physical damage, percentage healing, status application, explicit Valor gain, battle-local Scan analysis, targeting/scope, and Valor-Art classification, the canonical nested status schema, encounters, Essence progression/ability/mastery definitions, and on-demand map/event data. Essence progression ordering and database references are validated before `Game_Essence` can consume them. Map validation recursively checks event pages and supported interpreter commands before world runtime objects are constructed.
 
-Validation describes the shape and references of canonical data; it does not imply that every designed mechanic is runtime-complete. Gravity, percentage healing, and multi-hit Magick metadata are now runtime-active; Essence passive metadata still belongs to later runtime passes. As new database systems become runtime-active, their validation rules should be extended here or delegated to appropriately focused helpers.
+Validation describes the shape and references of canonical data; it does not imply that every designed mechanic is runtime-complete. Gravity, percentage healing, multi-hit Magick metadata, and the current Level-4 Essence passive schemas are runtime-active. As new database systems become runtime-active, their validation rules should be extended here or delegated to appropriately focused helpers.
 
 ## Input
 
@@ -202,7 +207,7 @@ Save data should represent runtime state that must survive between sessions rath
 
 ## DebugManager
 
-`DebugManager` centralizes development logging and debug behavior so diagnostic output can be controlled without scattering debug switches throughout the engine.
+`DebugManager` centralizes development logging and debug behavior so diagnostic output can be controlled without scattering debug switches throughout the engine. Normal debug logging is reserved for useful action-level/runtime events. Routine model-layer HP/MP/Magick bookkeeping uses the opt-in verbose channel so battle console output does not narrate the same action twice; development builds can toggle that channel through `$dev.verbose(true/false)`.
 
 ---
 
@@ -262,7 +267,7 @@ It forms the runtime foundation for multi-character gameplay and future party-ma
 
 The canonical Essence definitions live in `data/Essences.json`; mutable Resonance lives on `Game_Essence` instances instead of modifying database definitions. Resonance is capped at the canonical Mastery threshold, level progression is derived from validated thresholds, and the runtime reports the next progression milestone and when an Essence becomes Mastery Ready. Actor-owned Essence progression and slot assignments are serialized independently through the current Save Runtime v14 so unequipping preserves progression.
 
-`Window_Essence` provides the first player-facing equipment surface: party-member switching, data-driven slots, a scrollable canonical Essence catalog, and progression / Magick-awakening details. The v1 catalog is intentionally not an ownership system; long-term acquisition rules can later filter the selectable catalog without changing the slot API. Equipped Essences now grant their currently unlocked Magick through `Game_Actor`'s shared Magick-availability contract; passives, Mastery Trials, and evolution remain later work.
+`Window_Essence` provides the player-facing equipment surface: party-member switching, data-driven slots, a scrollable canonical Essence catalog, progression / Magick-awakening details, and the selected Essence's Level-4 passive description plus locked/ACTIVE state. The catalog is intentionally not yet an ownership system; long-term acquisition rules can later filter the selectable catalog without changing the slot API. Equipped Essences grant their currently unlocked Magick through `Game_Actor`'s shared Magick-availability contract and activate their validated passive schema at its configured unlock level; Mastery Trials and evolution remain later work.
 
 ## World Runtime Objects
 
@@ -471,7 +476,7 @@ Several major systems intentionally cross architectural boundaries while retaini
 
 `BattleTargetManager` asks the acting player's shared Magick-target contract whether a battler is selectable. Enemy AI uses the same `Game_Battler.isValidMagickTarget()` contract through `BattleEnemyAI`, so ally/enemy labels remain relative to the caster on either side of battle. Revival can select revivable defeated battlers and status cleansing can select a defeated battler when the chosen Magick can remove that defeat status.
 
-`BattleManager` coordinates battle targeting and presentation, then consumes the status-resolution results produced by the caster so status feedback is shown without making individual Magick names part of battle-flow logic. Battle outcome and reward paths consume the shared `isDefeated()` contract rather than assuming every defeated battler must have zero HP. Victory finalization owns exactly-once aggregation of EXP, Gil, item drops, and encounter Resonance; party/inventory/Essence objects own the resulting persistent state mutations. Under ATB, command authority is manager-owned: animation idleness may clean visual state but cannot unlock command input, and the scene requires a real party command owner before forwarding Confirm/Cancel to the command window.
+`BattleManager` coordinates battle targeting and presentation, then consumes the status-resolution results produced by the caster so status feedback is shown without making individual Magick names part of battle-flow logic. Battle outcome and reward paths consume the shared `isDefeated()` contract rather than assuming every defeated battler must have zero HP. Victory finalization owns exactly-once aggregation of EXP, Gil, item drops, and encounter Resonance from reward-eligible defeated enemies; Banish may satisfy defeat/victory detection but its marked targets are filtered from every enemy reward category because removal is not a kill. Party/inventory/Essence objects own the resulting persistent state mutations. Under ATB, command authority is manager-owned: animation idleness may clean visual state but cannot unlock command input, and the scene requires a real party command owner before forwarding Confirm/Cancel to the command window.
 
 Windows present available commands and Magick to the player. `Window_BattleCommand` reads the active battler's shared action-availability rules so forbidden commands are dimmed and skipped, while `BattleManager` rechecks the same rule before execution.
 
@@ -499,7 +504,7 @@ The current AREA MAP is intentionally zone-local. It scales map dimensions and o
 
 `Game_Essence` owns mutable Resonance progression and Mastery-Ready state. `Game_Actor` owns both persistent Essence progression instances and a separate slot assignment list, so removing an Essence from a slot does not destroy its Resonance. Victory finalization awards the encounter's Resonance to every currently equipped Essence on each surviving active battle participant exactly once.
 
-`Window_Essence` is a presentation layer over those actor APIs: it switches party-member context, displays slot state and progression, and asks the actor whether a catalog entry is legal before mutating the loadout. Essence Menu Presentation & List Navigation v1 makes that boundary explicit through a full-screen slot/catalog workflow, two-column held-repeat catalog navigation, selected-definition metadata/description, and a progression surface that reads `Game_Essence` for Resonance milestones, Mastery Ready, and Magick Awakening. The awakened Magick shown there is now runtime-active: equipped Essences contribute unlocked Magick to `Game_Actor.knownMagick()`, which means the existing field and battle Magick windows receive the grant without owning Essence-specific logic. It does not evaluate passives or Mastery Trials. `Window_ActorSummary` now owns the shared portrait/name/LV plus stacked HP/MP mini-gauge presentation consumed by MAGICK, SKILL, ESSENCE, and VALOR, preventing those character menus from drifting into separate vitals layouts. Future Essence Runtime work will add acquisition / ownership filtering, passives, Mastery Trials, and evolution without moving progression state back into canonical data.
+`Window_Essence` is a presentation layer over those actor APIs: it switches party-member context, displays slot state and progression, and asks the actor whether a catalog entry is legal before mutating the loadout. Essence Menu Presentation & List Navigation v1 makes that boundary explicit through a full-screen slot/catalog workflow, two-column held-repeat catalog navigation, selected-definition metadata/description, and a progression surface that reads `Game_Essence` for Resonance milestones, Mastery Ready, Magick Awakening, and the Level-4 passive's locked/ACTIVE state. Equipped Essences contribute unlocked Magick to `Game_Actor.knownMagick()` and active passives through actor-owned passive queries, so field/battle Magick windows and combat systems do not own Essence-name branches. `Window_ActorSummary` owns the shared portrait/name/LV plus stacked HP/MP mini-gauge presentation consumed by MAGICK, SKILL, ESSENCE, and VALOR, preventing those character menus from drifting into separate vitals layouts. Future Essence Runtime work will add acquisition / ownership filtering, Mastery Trials, and evolution without moving progression state back into canonical data.
 
 ## Statuses
 
@@ -571,7 +576,7 @@ Planned responsibilities include:
 - Battler status state
 - Battle hooks for status effects
 - UI status indicators
-- Special interaction rules such as Fury/Sadness mutual exclusion
+- Special interaction rules such as Fury/Sadness and Haste/Slow mutual exclusion
 - Post-battle Death recovery behavior
 
 ## Essence Runtime
@@ -582,11 +587,16 @@ Essence runtime currently connects the completed Essence design to gameplay thro
 - Resonance gain
 - Level progression
 - Magick ability availability from equipped Essences
+- Data-driven Level 4 passive activation through `Game_Essence.activePassive()` / actor-owned passive queries
+- Battle-local passive trigger state for one-shot effects such as low-HP wards
+- Shared Magick/status/damage/escape hooks for passive behavior rather than Essence-name branches
 - Mastery Ready state
+
+`Game_Essence` owns the unlock boundary: a passive is active only while that Essence is equipped and its current Resonance-derived level meets `passive.unlockLevel`. `Window_Essence` presents that same passive schema with its unlock/ACTIVE state instead of maintaining separate player-facing rules. `Game_Actor` owns actor-facing passive aggregation and modifier queries; low-HP physical-damage passives also expose a compact battle-HUD summary so their active tier is visible before the player attacks. `Game_Battler` exposes neutral extension hooks for effective Magick MP cost, outgoing Magick damage, status application metadata, incoming status negation, and post-Magick passive resolution. `BattleManager` owns scene-wide consequences such as physical-evasion hit resolution, successful-escape party recovery, passive feedback, and Banish chaining. Battle-local trigger bookkeeping is intentionally excluded from Save Runtime.
 
 Remaining Essence runtime work includes:
 
-- Passive activation
+- Long-term acquisition / ownership filtering
 - Mastery Trials
 - Mastered state
 - Essence Evolution

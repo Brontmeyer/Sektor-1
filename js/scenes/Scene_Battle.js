@@ -876,6 +876,12 @@ class Scene_Battle extends Scene_Base {
     this.partyBattleData.clear();
 
     for (const actor of $gameParty.battleMembers()) {
+      actor.beginEssenceBattleState?.();
+      // Low-HP passives may already be active when battle begins. Their status
+      // state is visible immediately; discard startup events so a later hit
+      // cannot replay stale activation popups.
+      actor.drainEssencePassiveEvents?.();
+
       this.partyBattleData.set(actor, {
         state: "idle",
         stateTimer: 0,

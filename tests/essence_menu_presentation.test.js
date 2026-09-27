@@ -159,6 +159,9 @@ function testEssenceUsesSharedActorSummaryAndRealProgressionData() {
   assert.equal(values.includes("Resonance"), true);
   assert.equal(values.includes("PROGRESSION"), true);
   assert.equal(values.includes("MAGICK AWAKENING"), true);
+  assert.equal(values.includes("PASSIVE"), true);
+  assert.equal(values.includes("Unlocks at Level 4"), true);
+  assert.equal(values.includes("Fire Magick damage +10%."), true);
   assert.equal(values.includes(harness.essences[4].name), true);
   assert.equal(values.includes("250 / 300"), true);
   assert.equal(
@@ -172,6 +175,24 @@ function testEssenceUsesSharedActorSummaryAndRealProgressionData() {
 
   const gaugeCalls = harness.calls.filter((call) => call[0] === "drawGauge");
   assert.equal(gaugeCalls.length >= 3, true, "HP, MP, and Resonance render gauges");
+}
+
+function testEssencePassivePresentationShowsActiveStateAtUnlock() {
+  const harness = createHarness();
+  const { window, actor, calls } = harness;
+  assert.equal(actor.equipEssenceInSlot(0, 17, 700), true);
+
+  window.show();
+  calls.length = 0;
+  window.draw();
+  const values = textCalls(harness).map((call) => call.text);
+
+  assert.equal(values.includes("PASSIVE"), true);
+  assert.equal(values.includes("Lv 4 • ACTIVE"), true);
+  assert.equal(
+    values.some((value) => value.includes("Physical damage +10% at ≤50% HP")),
+    true,
+  );
 }
 
 function testCatalogUsesTwoDimensionalHeldNavigation() {
@@ -276,6 +297,7 @@ function testEssenceUsesSharedHeldDirectionAndSummaryContracts() {
 
 function run() {
   testEssenceUsesSharedActorSummaryAndRealProgressionData();
+  testEssencePassivePresentationShowsActiveStateAtUnlock();
   testCatalogUsesTwoDimensionalHeldNavigation();
   testCatalogScrollsByRowsAndUsesContextualArrows();
   testEquippedEssencesHeadingSpacingAndSlotScrollAffordance();

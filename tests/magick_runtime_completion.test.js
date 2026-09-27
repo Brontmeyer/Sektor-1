@@ -335,7 +335,10 @@ function testBanishUsesDeathBridgeAndPreservesRewardReason() {
 
   assert.equal(result.defeatedEnemies.length, 1);
   assert.equal(result.defeatedEnemies[0].banished, true);
-  assert.equal(result.rewards.exp, target.expReward);
+  assert.equal(result.rewards.exp, 0);
+  assert.equal(result.rewards.currency, 0);
+  assert.equal(result.rewards.resonance, 0);
+  assert.deepEqual(Array.from(result.rewards.drops), []);
 }
 
 function run() {

@@ -82,6 +82,10 @@ class BattleManager {
       return battle.outcome === outcome;
     }
 
+    if (outcome === BattleManager.OUTCOME_ESCAPE) {
+      this.applySuccessfulEscapeEssenceRecovery();
+    }
+
     battle.outcome = outcome;
     battle.victory = outcome === BattleManager.OUTCOME_VICTORY;
     battle.defeat = outcome === BattleManager.OUTCOME_DEFEAT;
@@ -96,6 +100,67 @@ class BattleManager {
     }
 
     return true;
+  }
+
+  applySuccessfulEscapeEssenceRecovery() {
+    const party = $gameParty.battleMembers();
+    let hpPercent = 0;
+    let mpPercent = 0;
+    const sources = [];
+
+    for (const actor of party) {
+      const entries = actor?.activeEssencePassives?.(
+        "successfulEscapePartyRecovery",
+      ) || [];
+
+      for (const entry of entries) {
+        const hp = Number(entry.passive.hpPercent);
+        const mp = Number(entry.passive.mpPercent);
+
+        if (Number.isFinite(hp) && hp > 0) {
+          hpPercent += hp;
+        }
+
+        if (Number.isFinite(mp) && mp > 0) {
+          mpPercent += mp;
+        }
+
+        sources.push(entry.essenceId);
+      }
+    }
+
+    if (sources.length === 0) {
+      return { hpRecovered: 0, mpRecovered: 0, sources: [] };
+    }
+
+    let hpRecovered = 0;
+    let mpRecovered = 0;
+
+    for (const actor of party) {
+      if (!actor || actor.isDefeated?.() === true) {
+        continue;
+      }
+
+      const hpBefore = actor.hp;
+      const mpBefore = actor.mp;
+      actor.gainHp?.(Math.floor(actor.maxHp * Math.min(1, hpPercent)));
+      actor.gainMp?.(Math.floor(actor.maxMp * Math.min(1, mpPercent)));
+      hpRecovered += Math.max(0, actor.hp - hpBefore);
+      mpRecovered += Math.max(0, actor.mp - mpBefore);
+    }
+
+    if (hpRecovered > 0 || mpRecovered > 0) {
+      const sourceNames = [...new Set(sources)]
+        .map((essenceId) => DatabaseManager.essence?.(essenceId)?.name)
+        .filter(Boolean);
+      const sourceLabel =
+        sourceNames.length > 0 ? sourceNames.join(" + ") : "Essence recovery";
+      this.scene.addBattleMessage(
+        `${sourceLabel} restores the party after escape!`,
+      );
+    }
+
+    return { hpRecovered, mpRecovered, sources };
   }
 
   detectBattleOutcome() {
@@ -236,19 +301,29 @@ class BattleManager {
     };
   }
 
+  rewardEligibleEnemies(defeatedEnemies) {
+    if (!Array.isArray(defeatedEnemies)) {
+      return [];
+    }
+
+    // Banish satisfies the encounter's defeated-state contract so battles can
+    // end normally, but removal is not a kill. Enemy rewards therefore come
+    // only from defeated enemies that were not banished.
+    return defeatedEnemies.filter(
+      (enemy) =>
+        !(typeof enemy?.isBanished === "function" && enemy.isBanished()),
+    );
+  }
+
   calculateExperienceReward(defeatedEnemies) {
-    return defeatedEnemies.reduce((total, enemy) => {
+    return this.rewardEligibleEnemies(defeatedEnemies).reduce((total, enemy) => {
       const reward = enemy.expReward;
       return total + (Number.isInteger(reward) && reward > 0 ? reward : 0);
     }, 0);
   }
 
   calculateCurrencyReward(defeatedEnemies) {
-    return defeatedEnemies.reduce((total, enemy) => {
-      if (typeof enemy.isBanished === "function" && enemy.isBanished()) {
-        return total;
-      }
-
+    return this.rewardEligibleEnemies(defeatedEnemies).reduce((total, enemy) => {
       const reward = Number(enemy.gilReward);
       return total + (Number.isInteger(reward) && reward > 0 ? reward : 0);
     }, 0);
@@ -258,7 +333,7 @@ class BattleManager {
     const totals = new Map();
     const roll = typeof random === "function" ? random : Math.random;
 
-    for (const enemy of defeatedEnemies) {
+    for (const enemy of this.rewardEligibleEnemies(defeatedEnemies)) {
       const dropTable = Array.isArray(enemy.dropTable) ? enemy.dropTable : [];
 
       for (const drop of dropTable) {
@@ -298,7 +373,7 @@ class BattleManager {
   }
 
   calculateEssenceResonance(defeatedEnemies) {
-    return defeatedEnemies.reduce((total, enemy) => {
+    return this.rewardEligibleEnemies(defeatedEnemies).reduce((total, enemy) => {
       const reward = Number(enemy.resonanceReward);
       return total + (Number.isInteger(reward) && reward > 0 ? reward : 0);
     }, 0);
@@ -874,6 +949,8 @@ class BattleManager {
       }
     }
 
+    this.presentEssencePassiveEvents(battler);
+
     if (this.battlerIsDefeated(battler)) {
       if ($gameParty.battleMembers().includes(battler)) {
         battle.setActorState("defeat", 0, battler);
@@ -931,7 +1008,7 @@ class BattleManager {
   // Combat Resolution
   // =================================
 
-  physicalHitChance(battler) {
+  physicalHitChance(battler, target = null) {
     if (!battler || typeof battler.totalAttackPercent !== "function") {
       return 0;
     }
@@ -942,8 +1019,15 @@ class BattleManager {
         ? battler.physicalAccuracyMultiplier()
         : 1;
     const accuracy = Number.isFinite(baseAccuracy) ? baseAccuracy : 0;
+    const evasion =
+      target && typeof target.physicalEvasionBonus === "function"
+        ? Math.max(0, Math.min(1, Number(target.physicalEvasionBonus()) || 0))
+        : 0;
 
-    return Math.max(0, Math.min(100, accuracy * accuracyMultiplier));
+    return Math.max(
+      0,
+      Math.min(100, accuracy * accuracyMultiplier * (1 - evasion)),
+    );
   }
 
   calculatePhysicalDamage(
@@ -996,6 +1080,35 @@ class BattleManager {
     };
   }
 
+  presentEssencePassiveEvents(battler) {
+    const events = battler?.drainEssencePassiveEvents?.() || [];
+
+    for (const event of events) {
+      if (event.type !== "lowHpSelfStatuses") {
+        continue;
+      }
+
+      const names = (Array.isArray(event.statuses) ? event.statuses : [])
+        .map((key) => DatabaseManager.statusNameByKey?.(key) || key)
+        .filter(Boolean);
+
+      for (const name of names) {
+        this.scene.addBattlePopup(battler, String(name).toUpperCase(), "status");
+      }
+
+      const essenceName =
+        DatabaseManager.essence?.(event.essenceId)?.name || "Essence";
+
+      if (names.length > 0) {
+        this.scene.addBattleMessage(
+          `${essenceName} protects ${battler.name} with ${names.join(", ")}!`,
+        );
+      }
+    }
+
+    return events;
+  }
+
   applyPhysicalDamage(attacker, target, options = {}) {
     const baseDamage = this.calculatePhysicalDamage(attacker, target, options);
     const rearMultiplier =
@@ -1032,6 +1145,8 @@ class BattleManager {
         removedStatuses: [],
       };
     }
+
+    this.presentEssencePassiveEvents(target);
 
     if (rearExposed && result?.damage > 0) {
       this.scene.turnActorTowardEnemies?.(target);
@@ -1381,6 +1496,111 @@ class BattleManager {
     return true;
   }
 
+  presentMagickPassiveResults(caster, target, results = []) {
+    if (!Array.isArray(results) || results.length === 0) {
+      return [];
+    }
+
+    for (const result of results) {
+      if (
+        result.type === "elementSelfStatusChance" &&
+        result.statusResult?.applied === true
+      ) {
+        const name =
+          result.statusResult.name || result.statusResult.key || "STATUS";
+        this.scene.addBattlePopup(caster, String(name).toUpperCase(), "status");
+      }
+
+      if (result.type === "essenceCleanseHeal") {
+        if (result.healing > 0) {
+          this.scene.addBattlePopup(target, `+${result.healing}`, "heal");
+        } else if (result.damage > 0) {
+          this.scene.addBattlePopup(target, `-${result.damage}`, "damage");
+        }
+      }
+
+      if (
+        (result.type === "essenceAbilityMpRefundChance" ||
+          result.type === "essenceAbilityPartialMpRefundChance") &&
+        result.mpRefund > 0
+      ) {
+        this.scene.addBattlePopup(caster, `+${result.mpRefund} MP`, "heal");
+      }
+    }
+
+    return results;
+  }
+
+  resolveBanishEssenceChains(caster, magick, primaryTarget, random = Math.random) {
+    const entries = caster?.essencePassiveEntriesForMagick?.(
+      magick,
+      "banishChainChance",
+    ) || [];
+
+    if (entries.length === 0) {
+      return [];
+    }
+
+    const chained = [];
+    const excluded = new Set([primaryTarget]);
+
+    for (const entry of entries) {
+      const chance = Number(entry.passive.chance);
+      const maxChains = Math.max(0, Number(entry.passive.maxChains) || 0);
+
+      for (let chain = 0; chain < maxChains; chain++) {
+        const candidates = this.scene.enemies.filter(
+          (enemy) =>
+            enemy &&
+            !excluded.has(enemy) &&
+            !this.battlerIsDefeated(enemy) &&
+            caster.isValidMagickTarget?.(magick, enemy) === true,
+        );
+
+        if (candidates.length === 0) {
+          break;
+        }
+
+        const roll = typeof random === "function" ? Number(random()) : Math.random();
+
+        if (!Number.isFinite(chance) || roll >= chance) {
+          break;
+        }
+
+        const target = this.randomBattleTarget(candidates, random);
+
+        if (!target) {
+          break;
+        }
+
+        excluded.add(target);
+        const hpBefore = target.hp;
+        const defeatedBefore = this.battlerIsDefeated(target);
+        const success = caster.useMagick(
+          magick.id,
+          target,
+          false,
+          "single",
+          random,
+          { essenceChain: true },
+        );
+
+        if (!success) {
+          break;
+        }
+
+        this.scene.addBattlePopup(target, "BANISHED", "status");
+        this.scene.addBattleMessage(
+          `${magick.name} chains to ${target.name}! ${target.name} is banished!`,
+        );
+        this.presentDefeatTransition(target, defeatedBefore);
+        chained.push({ target, hpBefore });
+      }
+    }
+
+    return chained;
+  }
+
   resolveMagickEffectOnTarget(
     caster,
     magick,
@@ -1443,6 +1663,9 @@ class BattleManager {
 
     const statusResults = caster.magickStatusResults?.() || [];
     this.presentMagickStatusResults(caster, magick, target, statusResults);
+    const passiveResults = caster.magickPassiveResults?.() || [];
+    this.presentMagickPassiveResults(caster, target, passiveResults);
+    this.presentEssencePassiveEvents(target);
 
     let damageResult = null;
     let healing = 0;
@@ -1504,6 +1727,7 @@ class BattleManager {
       defeatedAfter: this.battlerIsDefeated(target),
       damageResult,
       statusResults,
+      passiveResults,
       ...reflection,
     };
   }
@@ -1540,11 +1764,18 @@ class BattleManager {
         continue;
       }
 
-      if (result.reason === "immune" || result.reason === "resisted") {
+      if (
+        result.reason === "immune" ||
+        result.reason === "resisted" ||
+        result.reason === "negated"
+      ) {
         blocked = true;
       }
 
-      if (result.reason === "unknownStatus") {
+      if (
+        result.reason === "unknownStatus" &&
+        DatabaseValidator.isLegacyStatusPlaceholder?.(result.key) !== true
+      ) {
         console.warn(
           `${magick.name} references unknown status "${result.key}".`,
         );
@@ -1632,8 +1863,15 @@ class BattleManager {
       }
     }
 
+    const elementLabel =
+      typeof magick.element === "string" &&
+      magick.element !== "none" &&
+      magick.element !== "restorative"
+        ? `${magick.element.charAt(0).toUpperCase()}${magick.element.slice(1)} `
+        : "";
+
     battle.addBattleMessage(
-      `${caster.name} casts ${magick.name}! ${target.name} takes ${damage} damage!`,
+      `${caster.name} casts ${magick.name}! ${target.name} takes ${damage} ${elementLabel}damage!`,
     );
 
     return { damage, healing: 0, absorbed: false, elementRate };
@@ -1929,7 +2167,7 @@ class BattleManager {
       return false;
     }
 
-    DebugManager.log(`${battler.name} selected "${command}".`);
+    DebugManager.verbose?.(`${battler.name} selected "${command}".`);
 
     if (
       typeof battler.isPlayerControlled === "function" &&
@@ -2374,7 +2612,7 @@ class BattleManager {
       return;
     }
 
-    const hitChance = this.physicalHitChance(battler);
+    const hitChance = this.physicalHitChance(battler, target);
     const hitRoll = Math.random() * 100;
 
     if (hitRoll >= hitChance) {
@@ -2481,7 +2719,7 @@ class BattleManager {
 
   performSkillDamageTarget(caster, skill, target, random = Math.random) {
     const battle = this.scene;
-    const hitChance = this.physicalHitChance(caster);
+    const hitChance = this.physicalHitChance(caster, target);
     const roll = typeof random === "function" ? Number(random()) : Math.random();
 
     if (roll * 100 >= hitChance) {
@@ -2864,6 +3102,10 @@ class BattleManager {
 
     const target = resolution.target;
 
+    if (magick.effect === "banish") {
+      this.resolveBanishEssenceChains(caster, magick, target);
+    }
+
     battle.magickEffect = magick;
     battle.magickEffectTarget = target;
 
@@ -3052,7 +3294,7 @@ class BattleManager {
 
     battle.setEnemyState("attack", 0.4, enemy);
 
-    const hitChance = this.physicalHitChance(enemy);
+    const hitChance = this.physicalHitChance(enemy, target);
     const roll = typeof random === "function" ? Number(random()) : Math.random();
     const normalizedRoll = Number.isFinite(roll)
       ? Math.max(0, Math.min(0.999999999, roll))

@@ -198,17 +198,17 @@ function testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce() {
 
   const result = manager.finalizeBattle(BattleManager.OUTCOME_VICTORY);
 
-  assert.equal(result.rewards.exp, 100);
+  assert.equal(result.rewards.exp, 50);
   assert.equal(result.rewards.currency, 10);
-  assert.equal(result.rewards.resonance, 10);
+  assert.equal(result.rewards.resonance, 5);
   assert.equal(result.runesBefore, 0);
   assert.equal(result.runesAfter, 10);
   assert.deepEqual(
     Array.from(result.rewards.drops, (drop) => ({ ...drop })),
-    [{ itemId: 1, name: items[1].name, quantity: 2 }],
+    [{ itemId: 1, name: items[1].name, quantity: 1 }],
   );
   assert.equal(party.gil(), 10);
-  assert.equal(party.itemCount(1), 2);
+  assert.equal(party.itemCount(1), 1);
 
   const firstResult = result.party.find((entry) => entry.actorId === 1);
   const secondResult = result.party.find((entry) => entry.actorId === 2);
@@ -216,9 +216,9 @@ function testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce() {
   const secondEssence = second.equippedEssence(4);
 
   assert.equal(firstResult.expBefore, 0);
-  assert.equal(firstResult.expAfter, 0);
+  assert.equal(firstResult.expAfter, 50);
   assert.equal(firstResult.levelBefore, 1);
-  assert.equal(firstResult.levelAfter, 2);
+  assert.equal(firstResult.levelAfter, 1);
   assert.equal(firstEssence.resonance, 1500);
   assert.equal(firstEssence.isMasteryReady(), true);
   assert.equal(firstResult.essenceRewards.length, 1);
@@ -233,10 +233,31 @@ function testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce() {
   const again = manager.finalizeBattle(BattleManager.OUTCOME_VICTORY);
   assert.equal(again, result);
   assert.equal(party.gil(), 10);
-  assert.equal(party.itemCount(1), 2);
+  assert.equal(party.itemCount(1), 1);
   assert.equal(firstEssence.resonance, 1500);
 }
 
+function testAllBanishedVictoryAwardsNoEnemyRewards() {
+  const { BattleManager, party, first, firstEnemy, secondEnemy, scene } = createBattleHarness();
+
+  assert.equal(first.equipEssence(1, 700), true);
+  assert.equal(firstEnemy.banish().success, true);
+  assert.equal(secondEnemy.banish().success, true);
+
+  const manager = new BattleManager(scene);
+  manager.rewardRandom = () => 0;
+  const result = manager.finalizeBattle(BattleManager.OUTCOME_VICTORY);
+
+  assert.deepEqual(
+    { ...result.rewards, drops: Array.from(result.rewards.drops) },
+    { exp: 0, currency: 0, drops: [], resonance: 0 },
+  );
+  assert.equal(party.gil(), 0);
+  assert.equal(party.itemCount(1), 0);
+  assert.equal(first.exp, 0);
+  assert.equal(first.equippedEssence(1).resonance, 700);
+  assert.equal(result.defeatedEnemies.every((enemy) => enemy.banished === true), true);
+}
 
 function testVictoryDropsRespectRemainingInventoryCapacity() {
   const { BattleManager, party, firstEnemy, secondEnemy, scene } = createBattleHarness();
@@ -260,6 +281,7 @@ function run() {
   testCurrencyApi();
   testRewardSchemaValidation();
   testVictoryAwardsCurrencyDropsAndSurvivingEssenceResonanceOnce();
+  testAllBanishedVictoryAwardsNoEnemyRewards();
   testVictoryDropsRespectRemainingInventoryCapacity();
 
   console.log("Battle reward regression tests passed.");

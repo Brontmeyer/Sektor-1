@@ -479,6 +479,8 @@ Do not invent placeholder numeric quest IDs merely to avoid `null`.
 
 Actor Essence capacity belongs in actor data through the positive-integer `essenceSlots` field. UI code must query the actor's slot API rather than assuming a fixed slot count. Essence progression and slot assignment are separate runtime concepts so unequipping does not reset Resonance. Equipped-Essence ability grants must be derived from the equipped `Game_Essence` instances and their unlocked ability records rather than copied into `magickIds`. `magickIds` remains persistent learned Magick ownership; `knownMagick()` is the merged availability surface and must deduplicate permanent and Essence-granted sources.
 
+Level 4 passive behavior must likewise be derived from the equipped `Game_Essence` instance plus its validated `passive.type`/fields. Do not branch on an Essence display name, and do not use a specific Essence ID as a substitute for its passive schema. Specific IDs remain valid identity for progression/equipment bookkeeping and presentation lookup, while behavior belongs to passive metadata. Passive types whose names begin with `essenceAbility` apply only to Magick IDs listed by that Essence; element/status-family passives use their explicit trigger metadata. One-shot battle state (for example `oncePerBattle`) is battle-local and must not be added to Save Runtime unless a future design explicitly requires persistence.
+
 ---
 
 # ✨ Magick Data Conventions
@@ -603,6 +605,8 @@ Use the project's debugging infrastructure when appropriate rather than scatteri
 Warnings are appropriate when the engine encounters an invalid or unsupported state that developers should see, for example a Magick with no legal target group.
 
 Debug output should help answer a specific question.
+
+Battle-resolution messages should be emitted at the presentation/action authority once. Lower-level battler resource mutations belong on `DebugManager.verbose()` rather than ordinary debug logging when a higher-level action message already explains the result. Keep verbose tracing off by default and opt into it only while diagnosing resource flow.
 
 Remove temporary noise after the problem is solved unless the log remains useful for future diagnostics.
 
@@ -806,3 +810,12 @@ Character field menus that show the same actor identity/vitals block should cons
 
 
 Equipment preview calculations should call actor-owned derived-stat helpers with candidate gear rather than duplicating combat formulas in UI code. Equipment mutation must continue through `equip*` / `unequip*` actor APIs. Presentation-only future metadata such as Essence Growth must not affect progression until its runtime contract is implemented.
+
+
+---
+
+# 🧰 Development Helper Conventions
+
+Development console shortcuts belong behind `System.debugMode` and should delegate to existing runtime contracts rather than duplicating gameplay logic. Prefer stable IDs and status keys in helper APIs; display names may be shown in console output but must not own identity. Helpers may mutate live runtime state for testing, but must not rewrite canonical `data/*.json`, silently alter save schemas, or become required by normal gameplay.
+
+The canonical console facade is `$dev`. Add reusable test setup there instead of accumulating undocumented one-off global aliases.

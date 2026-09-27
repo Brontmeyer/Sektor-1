@@ -505,7 +505,15 @@ class Game_Battler {
     return this.statusRate(statusKey) <= 0;
   }
 
-  tryAddStatus(statusKey, baseChance = 1, random = Math.random) {
+  incomingStatusNegateChance(_statusKey, _options = {}) {
+    return 0;
+  }
+
+  statusApplicationOptions(_action, _statusKey) {
+    return { source: this };
+  }
+
+  tryAddStatus(statusKey, baseChance = 1, random = Math.random, options = {}) {
     const definition = this.statusDefinition(statusKey);
 
     if (!definition) {
@@ -544,6 +552,28 @@ class Game_Battler {
       };
     }
 
+    const rawNegateChance = Number(
+      this.incomingStatusNegateChance(statusKey, options),
+    );
+    const negateChance = Number.isFinite(rawNegateChance)
+      ? Math.max(0, Math.min(1, rawNegateChance))
+      : 0;
+
+    if (negateChance > 0) {
+      const negateRoll =
+        typeof random === "function" ? random() : Math.random();
+
+      if (negateRoll < negateChance) {
+        return {
+          applied: false,
+          refreshed: false,
+          reason: "negated",
+          chance: finalChance,
+          negateChance,
+        };
+      }
+    }
+
     const roll = typeof random === "function" ? random() : Math.random();
 
     if (roll >= finalChance) {
@@ -556,7 +586,7 @@ class Game_Battler {
     }
 
     const wasActive = this.hasStatus(statusKey);
-    const applied = this.addStatus(statusKey);
+    const applied = this.addStatus(statusKey, options);
 
     return {
       applied,
@@ -612,6 +642,8 @@ class Game_Battler {
     const conflicts = {
       fury: ["sadness"],
       sadness: ["fury"],
+      haste: ["slow"],
+      slow: ["haste"],
     };
 
     return conflicts[statusKey] || [];
@@ -645,7 +677,26 @@ class Game_Battler {
     return true;
   }
 
-  addStatus(statusKey) {
+  refreshStatusMetadata(runtimeStatus, options = {}) {
+    if (!runtimeStatus || !options || typeof options !== "object") {
+      return false;
+    }
+
+    const multiplier = Number(options.statusDamageMultiplier);
+
+    if (Number.isFinite(multiplier) && multiplier > 1) {
+      const current = Number(runtimeStatus.statusDamageMultiplier);
+      runtimeStatus.statusDamageMultiplier = Math.max(
+        Number.isFinite(current) && current > 0 ? current : 1,
+        multiplier,
+      );
+      return true;
+    }
+
+    return false;
+  }
+
+  addStatus(statusKey, options = {}) {
     const definition = this.statusDefinition(statusKey);
 
     if (!definition) {
@@ -659,12 +710,14 @@ class Game_Battler {
     const existingStatus = this.statusRuntime(statusKey);
 
     if (existingStatus) {
+      this.refreshStatusMetadata(existingStatus, options);
       return this.refreshStatusDuration(existingStatus, definition);
     }
 
     const runtimeStatus = {
       key: definition.key,
     };
+    this.refreshStatusMetadata(runtimeStatus, options);
 
     if (
       definition.duration.type === "turns" ||
@@ -708,7 +761,7 @@ class Game_Battler {
         continue;
       }
 
-      const result = this.applyTriggeredStatusEffects(definition);
+      const result = this.applyTriggeredStatusEffects(definition, runtimeStatus);
 
       processed.push({
         key: definition.key,
@@ -720,7 +773,7 @@ class Game_Battler {
     return processed;
   }
 
-  applyTriggeredStatusEffects(definition) {
+  applyTriggeredStatusEffects(definition, runtimeStatus = null) {
     if (!definition?.effects) {
       return { damage: 0, healing: 0 };
     }
@@ -729,9 +782,17 @@ class Game_Battler {
     let healing = 0;
 
     if (typeof definition.effects.hpDamagePercent === "number") {
+      const statusDamageMultiplier = Math.max(
+        1,
+        Number(runtimeStatus?.statusDamageMultiplier) || 1,
+      );
       damage = Math.max(
         0,
-        Math.floor(this.maxHp * definition.effects.hpDamagePercent),
+        Math.floor(
+          this.maxHp *
+            definition.effects.hpDamagePercent *
+            statusDamageMultiplier,
+        ),
       );
 
       const minimumHp = definition.effects.canKill === true ? 0 : 1;
@@ -1029,7 +1090,12 @@ class Game_Battler {
         continue;
       }
 
-      const application = target.tryAddStatus(statusKey, baseChance, random);
+      const application = target.tryAddStatus(
+        statusKey,
+        baseChance,
+        random,
+        this.statusApplicationOptions(skill, statusKey),
+      );
       results.push({
         key: statusKey,
         name: statusName,
@@ -1043,6 +1109,29 @@ class Game_Battler {
   // =====================================
   // Shared Magick Runtime
   // =====================================
+
+  magickMpCost(magick) {
+    const cost = Number(magick?.mpCost);
+    return Number.isFinite(cost) && cost > 0 ? Math.floor(cost) : 0;
+  }
+
+  magickDamageMultiplier(_magick) {
+    return 1;
+  }
+
+  magickStatusChanceBonus(_magick, _statusKey) {
+    return 0;
+  }
+
+  resolveMagickPassiveEffects(_magick, _target, _context = {}) {
+    return [];
+  }
+
+  magickPassiveResults() {
+    return Array.isArray(this._lastMagickPassiveResults)
+      ? this._lastMagickPassiveResults.map((result) => ({ ...result }))
+      : [];
+  }
 
   canUseMagick(magickId) {
     const magick = DatabaseManager.magick(magickId);
@@ -1062,7 +1151,7 @@ class Game_Battler {
       return false;
     }
 
-    const mpCost = magick.mpCost || 0;
+    const mpCost = this.magickMpCost(magick);
 
     if (!this.canPayMpCost(mpCost)) {
       return false;
@@ -1080,6 +1169,12 @@ class Game_Battler {
       Number.isFinite(Number(magick?.allyStatusChance))
     ) {
       chance = Number(magick.allyStatusChance);
+    }
+
+    const bonus = Number(this.magickStatusChanceBonus(magick));
+
+    if (Number.isFinite(bonus)) {
+      chance += bonus;
     }
 
     return Math.max(0, Math.min(1, chance));
@@ -1203,7 +1298,12 @@ class Game_Battler {
         continue;
       }
 
-      const application = target.tryAddStatus(statusKey, chance, random);
+      const application = target.tryAddStatus(
+        statusKey,
+        chance,
+        random,
+        this.statusApplicationOptions(magick, statusKey),
+      );
 
       results.push({
         key: statusKey,
@@ -1233,6 +1333,7 @@ class Game_Battler {
     const magick = DatabaseManager.magick(magickId);
 
     this._lastMagickStatusResults = [];
+    this._lastMagickPassiveResults = [];
 
     if (!magick) {
       console.warn(`Cannot use magick ${magickId}: magick does not exist.`);
@@ -1256,12 +1357,31 @@ class Game_Battler {
       return false;
     }
 
+    const effectiveMpCost = this.magickMpCost(magick);
+    let paidMpCost = 0;
     const payMagickCost = () => {
       if (!payCost) {
         return true;
       }
 
-      return this.payMpCost(magick.mpCost || 0);
+      if (!this.payMpCost(effectiveMpCost)) {
+        return false;
+      }
+
+      paidMpCost = effectiveMpCost;
+      return true;
+    };
+    const resolvePassives = (extra = {}) => {
+      const results = this.resolveMagickPassiveEffects(magick, target, {
+        payCost,
+        paidMpCost,
+        random,
+        statusResults: this._lastMagickStatusResults,
+        ...extra,
+      });
+
+      this._lastMagickPassiveResults = Array.isArray(results) ? results : [];
+      return this._lastMagickPassiveResults;
     };
 
     // BATTLE-LEVEL ESCAPE EFFECT
@@ -1273,7 +1393,8 @@ class Game_Battler {
         return false;
       }
 
-      DebugManager.log(`${this.name} used ${magick.name}.`);
+      resolvePassives({ effect: "escape" });
+      DebugManager.verbose?.(`${this.name} used ${magick.name}.`);
       return true;
     }
 
@@ -1302,8 +1423,9 @@ class Game_Battler {
         target,
         random,
       );
+      resolvePassives({ effect: "banish", banishment });
 
-      DebugManager.log(`${this.name} used ${magick.name} on ${target.name}.`);
+      DebugManager.verbose?.(`${this.name} used ${magick.name} on ${target.name}.`);
       return true;
     }
 
@@ -1315,7 +1437,7 @@ class Game_Battler {
       }
 
       if (!target.canBeRevived()) {
-        DebugManager.log(`${target.name} cannot be revived by ${magick.name}.`);
+        DebugManager.verbose?.(`${target.name} cannot be revived by ${magick.name}.`);
         return false;
       }
 
@@ -1345,8 +1467,9 @@ class Game_Battler {
         target,
         random,
       );
+      resolvePassives({ effect: "revive", revival });
 
-      DebugManager.log(
+      DebugManager.verbose?.(
         `${this.name} used ${magick.name} on ${target.name}; ` +
           `${target.name} revived with ${target.hp} HP.`,
       );
@@ -1362,7 +1485,7 @@ class Game_Battler {
         typeof target.isFullHp === "function" &&
         target.isFullHp()
       ) {
-        DebugManager.log(`${target.name} is already at full HP.`);
+        DebugManager.verbose?.(`${target.name} is already at full HP.`);
 
         return false;
       }
@@ -1383,8 +1506,9 @@ class Game_Battler {
         target,
         random,
       );
+      resolvePassives({ effect: "heal" });
 
-      DebugManager.log(`${this.name} used ${magick.name} on ${target.name}.`);
+      DebugManager.verbose?.(`${this.name} used ${magick.name} on ${target.name}.`);
 
       return true;
     }
@@ -1421,17 +1545,18 @@ class Game_Battler {
         target,
         random,
       );
+      resolvePassives({ effect: "damage", damageResult });
 
       const resolvedDamage = damageResult?.damage ?? damage;
       const resolvedHealing = damageResult?.healing ?? 0;
 
       if (damageResult?.absorbed) {
-        DebugManager.log(
+        DebugManager.verbose?.(
           `${this.name} used ${magick.name} on ${target.name}; ` +
             `${target.name} absorbed it for ${resolvedHealing} HP.`,
         );
       } else {
-        DebugManager.log(
+        DebugManager.verbose?.(
           `${this.name} used ${magick.name} on ${target.name} for ${resolvedDamage} damage.`,
         );
       }
@@ -1450,8 +1575,9 @@ class Game_Battler {
         target,
         random,
       );
+      resolvePassives({ effect: magick.effect });
 
-      DebugManager.log(`${this.name} used ${magick.name} on ${target.name}.`);
+      DebugManager.verbose?.(`${this.name} used ${magick.name} on ${target.name}.`);
 
       return true;
     }
@@ -1537,6 +1663,10 @@ class Game_Battler {
         : 1;
 
     const scopeMultiplier = this.magickScopeMultiplier(magick, scope);
+    const outgoingMultiplier = Math.max(
+      0,
+      Number(this.magickDamageMultiplier(magick)) || 0,
+    );
     const gravityPercent = Number(magick.gravityPercent);
 
     // Gravity-style damage uses the target's current HP instead of the normal
@@ -1547,14 +1677,20 @@ class Game_Battler {
       return Math.max(
         0,
         Math.floor(
-          target.hp * gravityPercent * elementMultiplier * scopeMultiplier,
+          target.hp *
+            gravityPercent *
+            elementMultiplier *
+            scopeMultiplier *
+            outgoingMultiplier,
         ),
       );
     }
 
     return Math.max(
       0,
-      Math.floor(rawDamage * elementMultiplier * scopeMultiplier),
+      Math.floor(
+        rawDamage * elementMultiplier * scopeMultiplier * outgoingMultiplier,
+      ),
     );
   }
 
@@ -1963,7 +2099,7 @@ class Game_Battler {
 
       const healing = Math.max(0, this.hp - hpBefore);
 
-      DebugManager.log(
+      DebugManager.verbose?.(
         `${this.name} absorbed ${resolvedDamage} ${element || "elemental"} damage.`,
       );
 
@@ -1990,7 +2126,7 @@ class Game_Battler {
         ? this.removeStatusesOnPhysicalDamage()
         : [];
 
-    DebugManager.log(`${this.name} lost ${damage} HP.`);
+    DebugManager.verbose?.(`${this.name} lost ${damage} HP.`);
 
     const result = {
       damage,
@@ -2018,7 +2154,7 @@ class Game_Battler {
 
     this.setHp(this.hp + value);
 
-    DebugManager.log(`${this.name} recovered ${value} HP.`);
+    DebugManager.verbose?.(`${this.name} recovered ${value} HP.`);
 
     return value;
   }
@@ -2038,7 +2174,7 @@ class Game_Battler {
 
     this.setHp(this.hp - value);
 
-    DebugManager.log(`${this.name} lost ${value} HP.`);
+    DebugManager.verbose?.(`${this.name} lost ${value} HP.`);
 
     return value;
   }
@@ -2046,7 +2182,7 @@ class Game_Battler {
   recoverAllHp() {
     this.setHp(this.maxHp);
 
-    DebugManager.log(`${this.name}'s HP was fully restored.`);
+    DebugManager.verbose?.(`${this.name}'s HP was fully restored.`);
   }
 
   isDead() {
@@ -2081,7 +2217,7 @@ class Game_Battler {
     const value = this._validAmount(amount);
     this.mp = Math.min(this.mp + value, this.maxMp);
 
-    DebugManager.log(`${this.name} recovered ${value} MP.`);
+    DebugManager.verbose?.(`${this.name} recovered ${value} MP.`);
 
     return value;
   }
@@ -2090,7 +2226,7 @@ class Game_Battler {
     const value = this._validAmount(amount);
     this.mp = Math.max(this.mp - value, 0);
 
-    DebugManager.log(`${this.name} lost ${value} MP.`);
+    DebugManager.verbose?.(`${this.name} lost ${value} MP.`);
 
     return value;
   }
@@ -2109,7 +2245,7 @@ class Game_Battler {
 
     this.mp -= value;
 
-    DebugManager.log(`${this.name} used ${value} MP.`);
+    DebugManager.verbose?.(`${this.name} used ${value} MP.`);
 
     return true;
   }
@@ -2117,7 +2253,7 @@ class Game_Battler {
   recoverAllMp() {
     this.mp = this.maxMp;
 
-    DebugManager.log(`${this.name}'s MP was fully restored.`);
+    DebugManager.verbose?.(`${this.name}'s MP was fully restored.`);
   }
 
   isFullMp() {

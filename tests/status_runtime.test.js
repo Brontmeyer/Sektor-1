@@ -113,6 +113,15 @@ function testStatusApplicationRefreshAndInteractions() {
   battler.addStatus("sadness");
   assert.equal(battler.hasStatus("fury"), false);
   assert.equal(battler.hasStatus("sadness"), true);
+
+  assert.equal(battler.addStatus("haste"), true);
+  assert.equal(battler.hasStatus("haste"), true);
+  assert.equal(battler.addStatus("slow"), true);
+  assert.equal(battler.hasStatus("haste"), false);
+  assert.equal(battler.hasStatus("slow"), true);
+  assert.equal(battler.addStatus("haste"), true);
+  assert.equal(battler.hasStatus("slow"), false);
+  assert.equal(battler.hasStatus("haste"), true);
 }
 
 function testStatusResistanceAndImmunity() {

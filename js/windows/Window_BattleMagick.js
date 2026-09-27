@@ -246,8 +246,12 @@ class Window_BattleMagick {
       context.fillText(`${prefix}${magick.name}`, this.x + this.padding, drawY);
       context.textAlign = "right";
 
+      const mpCost =
+        typeof this.actor().magickMpCost === "function"
+          ? this.actor().magickMpCost(magick)
+          : magick.mpCost || 0;
       context.fillText(
-        `${magick.mpCost || 0} MP`,
+        `${mpCost} MP`,
         this.x + this.width - this.padding,
         drawY,
       );

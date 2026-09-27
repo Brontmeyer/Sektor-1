@@ -119,10 +119,14 @@ function testTurnSpeedMultiplierIsDataDriven() {
   assert.equal(battler.turnSpeedMultiplier(), 2);
 
   battler.addStatus("slow");
-  assert.equal(battler.turnSpeedMultiplier(), 1);
-
-  battler.removeStatus("haste");
+  assert.equal(battler.hasStatus("haste"), false);
+  assert.equal(battler.hasStatus("slow"), true);
   assert.equal(battler.turnSpeedMultiplier(), 0.5);
+
+  battler.addStatus("haste");
+  assert.equal(battler.hasStatus("slow"), false);
+  assert.equal(battler.hasStatus("haste"), true);
+  assert.equal(battler.turnSpeedMultiplier(), 2);
 }
 
 function testFractionalTurnProgressBuildsInterleavedQueues() {

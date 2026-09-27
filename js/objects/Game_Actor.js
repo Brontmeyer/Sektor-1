@@ -75,6 +75,12 @@ class Game_Actor extends Game_Battler {
     this._essenceSlotCount = actorData.essenceSlots;
     this._essenceProgress = new Map();
     this._equippedEssenceIds = Array(this._essenceSlotCount).fill(null);
+
+    // Level-4 Essence passives are evaluated from equipped progression state.
+    // Battle-local trigger bookkeeping never enters save data.
+    this._essenceBattleStateActive = false;
+    this._essenceBattleTriggers = new Set();
+    this._essencePassiveEvents = [];
   }
 
   // =====================================
@@ -468,6 +474,474 @@ class Game_Actor extends Game_Battler {
     }
 
     return magickIds;
+  }
+
+  activeEssencePassives(type = null) {
+    const entries = [];
+
+    for (const essence of this.equippedEssences()) {
+      const passive = essence.activePassive?.() || null;
+
+      if (!passive || (type && passive.type !== type)) {
+        continue;
+      }
+
+      entries.push({
+        essence,
+        essenceId: essence.essenceId,
+        data: essence.data(),
+        passive,
+      });
+    }
+
+    return entries;
+  }
+
+  essencePassiveEntriesForMagick(magick, type = null) {
+    const magickId = Number(magick?.id);
+
+    if (!Number.isInteger(magickId) || magickId <= 0) {
+      return [];
+    }
+
+    return this.activeEssencePassives(type).filter((entry) =>
+      Array.isArray(entry.data?.abilities) &&
+      entry.data.abilities.some(
+        (ability) => Number(ability?.magickId) === magickId,
+      ),
+    );
+  }
+
+  magickMpCost(magick) {
+    const baseCost = super.magickMpCost(magick);
+
+    if (baseCost <= 0) {
+      return 0;
+    }
+
+    const reduction = this.essencePassiveEntriesForMagick(
+      magick,
+      "essenceAbilityMpCostReduction",
+    ).reduce((total, entry) => {
+      const value = Number(entry.passive.value);
+      return total + (Number.isFinite(value) && value > 0 ? value : 0);
+    }, 0);
+
+    return Math.max(0, Math.floor(baseCost * Math.max(0, 1 - reduction)));
+  }
+
+  magickDamageMultiplier(magick) {
+    let multiplier = super.magickDamageMultiplier(magick);
+
+    for (const entry of this.activeEssencePassives("elementDamageBoost")) {
+      if (entry.passive.element !== magick?.element) {
+        continue;
+      }
+
+      const value = Number(entry.passive.value);
+
+      if (Number.isFinite(value) && value > 0) {
+        multiplier *= 1 + value;
+      }
+    }
+
+    return multiplier;
+  }
+
+  magickStatusChanceBonus(magick) {
+    return this.essencePassiveEntriesForMagick(
+      magick,
+      "essenceAbilityStatusChanceBoost",
+    ).reduce((total, entry) => {
+      const value = Number(entry.passive.value);
+      return total + (Number.isFinite(value) && value > 0 ? value : 0);
+    }, 0);
+  }
+
+  statusApplicationOptions(action, statusKey) {
+    const options = super.statusApplicationOptions(action, statusKey);
+    let damageMultiplier = 1;
+
+    for (const entry of this.activeEssencePassives("statusDamageBoost")) {
+      if (entry.passive.status !== statusKey) {
+        continue;
+      }
+
+      const value = Number(entry.passive.value);
+
+      if (Number.isFinite(value) && value > 0) {
+        damageMultiplier *= 1 + value;
+      }
+    }
+
+    if (damageMultiplier > 1) {
+      options.statusDamageMultiplier = damageMultiplier;
+    }
+
+    return options;
+  }
+
+  statusRate(statusKey) {
+    let rate = super.statusRate(statusKey);
+    const definition = this.statusDefinition(statusKey);
+    const family = definition?.classification?.family;
+
+    if (!family) {
+      return rate;
+    }
+
+    for (const entry of this.activeEssencePassives("statusFamilyResistance")) {
+      if (entry.passive.statusFamily !== family) {
+        continue;
+      }
+
+      const value = Number(entry.passive.value);
+
+      if (Number.isFinite(value) && value > 0) {
+        rate *= Math.max(0, 1 - value);
+      }
+    }
+
+    return Math.max(0, rate);
+  }
+
+  incomingStatusNegateChance(statusKey, options = {}) {
+    const definition = this.statusDefinition(statusKey);
+
+    // Null-style negation protects against hostile negative statuses. It does
+    // not eat the actor's own buffs or intentionally self-applied states.
+    if (
+      definition?.classification?.negative !== true ||
+      options?.source === this
+    ) {
+      return 0;
+    }
+
+    let missProbability = 1;
+
+    for (const entry of this.activeEssencePassives("incomingStatusNegateChance")) {
+      const chance = Number(entry.passive.chance);
+
+      if (Number.isFinite(chance) && chance > 0) {
+        missProbability *= 1 - Math.max(0, Math.min(1, chance));
+      }
+    }
+
+    return 1 - missProbability;
+  }
+
+  physicalEvasionBonus() {
+    let hitProbability = 1;
+
+    for (const entry of this.activeEssencePassives("physicalEvasionBonus")) {
+      const value = Number(entry.passive.value);
+
+      if (Number.isFinite(value) && value > 0) {
+        hitProbability *= 1 - Math.max(0, Math.min(1, value));
+      }
+    }
+
+    return 1 - hitProbability;
+  }
+
+  lowHpPhysicalDamageBoost() {
+    if (!this.isAlive()) {
+      return 0;
+    }
+
+    const hpRate = this.hpRate();
+    let strongestBoost = 0;
+
+    for (const entry of this.activeEssencePassives("lowHpPhysicalDamageBoost")) {
+      const thresholds = Array.isArray(entry.passive.thresholds)
+        ? entry.passive.thresholds
+        : [];
+
+      for (const threshold of thresholds) {
+        const hpThreshold = Number(threshold?.hpThreshold);
+        const value = Number(threshold?.value);
+
+        if (
+          Number.isFinite(hpThreshold) &&
+          Number.isFinite(value) &&
+          hpRate <= hpThreshold
+        ) {
+          strongestBoost = Math.max(strongestBoost, value);
+        }
+      }
+    }
+
+    return Math.max(0, strongestBoost);
+  }
+
+  essenceBattleStatusSummary() {
+    const boost = this.lowHpPhysicalDamageBoost();
+
+    if (boost <= 0) {
+      return "";
+    }
+
+    const entry = this.activeEssencePassives("lowHpPhysicalDamageBoost")[0] || null;
+    const displayName = String(entry?.data?.name || "Essence")
+      .replace(/\s+Essence$/i, "")
+      .trim();
+    const label = displayName ? `${displayName.toUpperCase()} ESS` : "ESSENCE";
+    return `${label} +${Math.round(boost * 100)}%`;
+  }
+
+  physicalDamageMultiplier() {
+    const multiplier = super.physicalDamageMultiplier();
+    return multiplier * (1 + this.lowHpPhysicalDamageBoost());
+  }
+
+  beginEssenceBattleState() {
+    this._essenceBattleStateActive = true;
+    this._essenceBattleTriggers = new Set();
+    this._essencePassiveEvents = [];
+    this.triggerLowHpEssencePassives();
+  }
+
+  endEssenceBattleState() {
+    this._essenceBattleStateActive = false;
+    this._essenceBattleTriggers = new Set();
+  }
+
+  queueEssencePassiveEvent(event) {
+    if (!event || typeof event !== "object") {
+      return false;
+    }
+
+    this._essencePassiveEvents.push({ ...event });
+    return true;
+  }
+
+  drainEssencePassiveEvents() {
+    const events = this._essencePassiveEvents.map((event) => ({ ...event }));
+    this._essencePassiveEvents = [];
+    return events;
+  }
+
+  triggerLowHpEssencePassives() {
+    if (!this._essenceBattleStateActive || !this.isAlive()) {
+      return [];
+    }
+
+    const applied = [];
+
+    for (const entry of this.activeEssencePassives("lowHpSelfStatuses")) {
+      const threshold = Number(entry.passive.hpThreshold);
+      const triggerKey = `lowHpSelfStatuses:${entry.essenceId}`;
+
+      if (
+        !Number.isFinite(threshold) ||
+        this.hpRate() > threshold ||
+        (entry.passive.oncePerBattle === true &&
+          this._essenceBattleTriggers.has(triggerKey))
+      ) {
+        continue;
+      }
+
+      const statuses = Array.isArray(entry.passive.statuses)
+        ? entry.passive.statuses
+        : [];
+      const appliedStatuses = [];
+
+      for (const statusKey of statuses) {
+        if (this.addStatus(statusKey)) {
+          appliedStatuses.push(statusKey);
+        }
+      }
+
+      if (entry.passive.oncePerBattle === true) {
+        this._essenceBattleTriggers.add(triggerKey);
+      }
+
+      if (appliedStatuses.length > 0) {
+        const event = {
+          type: "lowHpSelfStatuses",
+          essenceId: entry.essenceId,
+          statuses: appliedStatuses,
+        };
+        applied.push(event);
+        this.queueEssencePassiveEvent(event);
+      }
+    }
+
+    return applied;
+  }
+
+  setHp(value) {
+    const hp = super.setHp(value);
+    this.triggerLowHpEssencePassives();
+    return hp;
+  }
+
+  restorePostBattleState(stateBeforeRewards = null) {
+    this.endEssenceBattleState();
+    return super.restorePostBattleState(stateBeforeRewards);
+  }
+
+  resolveMagickPassiveEffects(magick, target, context = {}) {
+    const results = [];
+    const random =
+      typeof context.random === "function" ? context.random : Math.random;
+    const statusResults = Array.isArray(context.statusResults)
+      ? context.statusResults
+      : [];
+
+    const appendStatusResult = (statusKey, application, sourceType, essenceId) => {
+      const definition = target?.statusDefinition?.(statusKey) || null;
+      const result = {
+        key: statusKey,
+        name: definition?.name || statusKey,
+        removed: false,
+        ...application,
+      };
+      this._lastMagickStatusResults.push(result);
+      results.push({ type: sourceType, essenceId, statusResult: result });
+      return result;
+    };
+
+    for (const entry of this.activeEssencePassives("elementStatusChance")) {
+      if (entry.passive.triggerElement !== magick?.element || !target) {
+        continue;
+      }
+
+      const application = target.tryAddStatus?.(
+        entry.passive.status,
+        entry.passive.chance,
+        random,
+        { source: this },
+      );
+
+      if (application) {
+        appendStatusResult(
+          entry.passive.status,
+          application,
+          "elementStatusChance",
+          entry.essenceId,
+        );
+      }
+    }
+
+    if (context.payCost === true) {
+      for (const entry of this.activeEssencePassives("elementSelfStatusChance")) {
+        if (entry.passive.triggerElement !== magick?.element) {
+          continue;
+        }
+
+        const application = this.tryAddStatus(
+          entry.passive.status,
+          entry.passive.chance,
+          random,
+          { source: this },
+        );
+        const definition = this.statusDefinition(entry.passive.status);
+        const result = {
+          key: entry.passive.status,
+          name: definition?.name || entry.passive.status,
+          removed: false,
+          ...application,
+        };
+        results.push({
+          type: "elementSelfStatusChance",
+          essenceId: entry.essenceId,
+          target: "self",
+          statusResult: result,
+        });
+      }
+    }
+
+    if (magick?.effect === "removeStatus" && target) {
+      const removedAny = statusResults.some((result) => result?.removed === true);
+
+      if (removedAny) {
+        for (const entry of this.essencePassiveEntriesForMagick(
+          magick,
+          "essenceCleanseHeal",
+        )) {
+          const percent = Number(entry.passive.healPercent);
+          const amount = Math.max(
+            0,
+            Math.floor((Number(target.maxHp) || 0) * (Number.isFinite(percent) ? percent : 0)),
+          );
+          const hpBefore = Number(target.hp) || 0;
+          const recovery = target.applyRestorativeHp?.(amount, { source: this });
+          const healing = recovery?.healing ?? Math.max(0, (Number(target.hp) || 0) - hpBefore);
+          const damage = recovery?.damage ?? Math.max(0, hpBefore - (Number(target.hp) || 0));
+          results.push({
+            type: "essenceCleanseHeal",
+            essenceId: entry.essenceId,
+            healing,
+            damage,
+          });
+        }
+      }
+    }
+
+    if (magick?.effect === "revive" && target && context.revival?.success === true) {
+      for (const entry of this.essencePassiveEntriesForMagick(
+        magick,
+        "reviveGrantStatus",
+      )) {
+        const application = target.tryAddStatus?.(
+          entry.passive.status,
+          1,
+          random,
+          { source: this },
+        );
+
+        if (application) {
+          appendStatusResult(
+            entry.passive.status,
+            application,
+            "reviveGrantStatus",
+            entry.essenceId,
+          );
+        }
+      }
+    }
+
+    if (context.payCost === true && context.paidMpCost > 0) {
+      const refundEntries = [
+        ...this.essencePassiveEntriesForMagick(
+          magick,
+          "essenceAbilityMpRefundChance",
+        ).map((entry) => ({ ...entry, refundPercent: 1 })),
+        ...this.essencePassiveEntriesForMagick(
+          magick,
+          "essenceAbilityPartialMpRefundChance",
+        ).map((entry) => ({
+          ...entry,
+          refundPercent: Number(entry.passive.refundPercent),
+        })),
+      ];
+
+      for (const entry of refundEntries) {
+        const chance = Number(entry.passive.chance);
+        const roll = random();
+
+        if (!Number.isFinite(chance) || roll >= chance) {
+          continue;
+        }
+
+        const percent = Number.isFinite(entry.refundPercent)
+          ? Math.max(0, Math.min(1, entry.refundPercent))
+          : 0;
+        const requested = Math.floor(context.paidMpCost * percent);
+        const mpBefore = this.mp;
+        this.gainMp(requested);
+        const refunded = Math.max(0, this.mp - mpBefore);
+
+        results.push({
+          type: entry.passive.type,
+          essenceId: entry.essenceId,
+          mpRefund: refunded,
+        });
+      }
+    }
+
+    return results;
   }
 
   // =====================================

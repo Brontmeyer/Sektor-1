@@ -413,7 +413,7 @@ Current passive concepts include interactions with:
 - Escape
 - Banish behavior
 
-Level 4 is generally the point where an Essence awakens its unique passive.
+Level 4 is generally the point where an Essence awakens its unique passive. Level 4 Essence Passive Runtime v1 now makes the current 19 passive schemas live directly from equipped progression state: ability-specific passives follow the Essence's assigned Magick IDs, elemental/status passives follow their explicit metadata, and battle-local one-shot triggers reset each encounter rather than entering save data.
 
 A passive should help make the Essence feel different even when two Essences grant abilities of similar numerical strength.
 

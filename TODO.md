@@ -190,7 +190,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Magick availability from equipped Essence progression
 - [ ] Define long-term Essence acquisition / ownership rules
 - [ ] Implement Mastery Trial completion
-- [ ] Implement Level 4 passive effects
+- [x] Implement Level 4 passive effects
 - [ ] Design Mastery Trial quests
 - [ ] Design Essence Evolution recipes
 - [ ] Implement Essence Evolution
@@ -284,6 +284,7 @@ Completed systems and design rules should be documented rather than duplicated h
 # 🛠️ Engine
 
 - [x] Modular engine architecture
+- [x] Development-only `$dev` console test harness for stable-ID runtime setup and Essence passive QA
 - [x] Shared Game_Battler system
 - [x] Party foundation
 - [x] Turn queue

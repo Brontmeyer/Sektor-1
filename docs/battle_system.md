@@ -355,7 +355,7 @@ Countdown statuses use a remaining-turn counter. Their countdown advances when t
 
 Turn-start triggers are processed for the active party member and for enemies. When the enemy sequence finishes, the first party member of the next round receives the same turn-start processing as later party members.
 
-Haste and Slow alter how quickly battlers receive future turn slots through the shared battle scheduler. Each side accumulates fractional turn progress at its round boundary using the battler's combined `turnSpeedMultiplier`. Normal speed produces one slot per side round, Haste's `2.0` produces two, and Slow's `0.5` carries fractional progress so the battler acts every other side round after receiving an opening turn.
+Haste and Slow alter how quickly battlers receive future turn slots through the shared battle scheduler. They are opposing statuses: applying Haste removes Slow, and applying Slow removes Haste, so a battler never carries both speed states at once. Each side accumulates fractional turn progress at its round boundary using the battler's current `turnSpeedMultiplier`. Normal speed produces one slot per side round, Haste's `2.0` produces two, and Slow's `0.5` carries fractional progress so the battler acts every other side round after receiving an opening turn.
 
 Turn slots are interleaved in formation order: every battler's first available slot is placed before any battler's second slot. This prevents a Hasted battler from consuming both actions consecutively ahead of otherwise-ready allies or enemies. Speed changes affect the next side schedule that is built rather than rewriting a queue that is already in progress.
 
@@ -379,7 +379,7 @@ Stop and Paralyze are intentionally distinct. Both prevent acting through the sh
 
 Sleep and Confuse are removed when the afflicted battler actually takes physical damage. A miss or a fully nullified physical hit does not remove them. Confuse reads `effects.forceRandomTarget` through the shared battler runtime: a chosen basic Attack targets a random living battler on either side, enemy basic attacks can likewise redirect to either side, and a chosen single-target Magick selects randomly from the targets that are legal for that Magick. If a future Magick only supports all-target scope, Confuse instead chooses a random legal target group and resolves the Magick against that side. Confuse changes target authority rather than choosing a different action for the battler.
 
-Physical combat modifiers are read from status data rather than status names. Outgoing `physicalDamageMultiplier` values affect basic physical damage, `physicalAccuracyMultiplier` values affect physical hit chance, and target-side `physicalDamageTakenMultiplier` values are applied by the shared incoming-damage resolver. This makes the damage portions of Berserk, Fury, Darkness, Frog, Small, Sadness, Barrier, and Shield reusable even while their unrelated mechanics remain separate work.
+Physical combat modifiers are read from status data rather than status names. Outgoing `physicalDamageMultiplier` values affect basic physical damage, `physicalAccuracyMultiplier` values affect physical hit chance, and target-side `physicalDamageTakenMultiplier` values are applied by the shared incoming-damage resolver. Frog and Small reduce outgoing physical damage to 10% while increasing incoming physical damage to 125%; Magick damage is unchanged by that transformation vulnerability. This keeps the damage portions of Berserk, Fury, Darkness, Frog, Small, Sadness, Barrier, and Shield reusable without status-name branches in the damage formula.
 
 Action restrictions are resolved from status data rather than status names. `effects.allowedActions` narrows the battler to the intersection of all active allowlists, while `effects.blockedActionTypes` blocks matching Magick/action types. Frog currently uses `allowedActions: ["attack"]`, so Attack remains available while Magick, Item, and Defend are disabled. Silence uses `blockedActionTypes: ["magick"]`, so physical attacks, items, and Defend remain available while Magick actions are unusable. The battle command window dims/skips restricted commands, and the execution layer rechecks the same shared rule before resolving an action.
 
@@ -444,31 +444,34 @@ At 1500 Resonance, an Essence becomes **Mastery Ready** and stops gaining Resona
 
 Completing that Essence's future Mastery Trial promotes it to Level 5 MASTERED.
 
-Battle Resonance awards and persistent Essence progression are active. Essence Equipment & Menu v1 adds data-driven actor slots and preserves Resonance when an Essence is unequipped. Equipped Essences grant every Magick unlocked at their current level through the actor's ordinary Magick-availability contract, so both field and battle Magick selectors receive those abilities automatically and newly awakened Magick becomes available as soon as Resonance crosses its threshold. Unequipping removes only that temporary grant; persistent learned Magick remains independently owned. The remaining Essence Runtime work is long-term acquisition / ownership rules, passive evaluation, Mastery Trials, and Essence Evolution.
+Battle Resonance awards and persistent Essence progression are active. Essence Equipment & Menu v1 adds data-driven actor slots and preserves Resonance when an Essence is unequipped. Equipped Essences grant every Magick unlocked at their current level through the actor's ordinary Magick-availability contract, so both field and battle Magick selectors receive those abilities automatically and newly awakened Magick becomes available as soon as Resonance crosses its threshold. Unequipping removes only that temporary grant; persistent learned Magick remains independently owned. Level 4 Essence Passive Runtime v1 now evaluates the canonical passive schemas from equipped progression state. The remaining Essence Runtime work is long-term acquisition / ownership rules, Mastery Trials/mastered state, and Essence Evolution.
 
 ---
 
 # 🧬 Essence Passive Effects
 
-Essence passives should be implemented as reusable engine behaviors rather than one-off checks for specific Essence names.
+Essence passives are reusable engine behaviors rather than one-off checks for specific Essence names or display labels. A passive is active only while its Essence is equipped and the actor's persistent `Game_Essence` progression has reached `passive.unlockLevel` (Level 4 in the current catalog). Unequipping immediately removes the passive without changing Resonance.
 
-The current design includes passive concepts such as:
+The current 19 passive schemas resolve as follows:
 
-- Element damage bonuses
-- Element status-chance bonuses
-- Status-family resistance
-- Magick MP refunds
-- Low-HP self-status effects
-- Incoming-status negation
-- Physical evasion bonuses
-- MP cost reduction
-- Cleanse-triggered healing
-- Revival bonuses
-- Low-HP physical damage bonuses
-- Escape recovery
-- Banish chaining
+- `essenceAbilityMpCostReduction`: reduces the effective MP cost of Magick listed on that Essence; affordability, payment, and field/battle MP-cost presentation all use the same effective cost.
+- `essenceCleanseHeal`: a successful status-removal Magick from that Essence also restores the configured percentage of target Max HP.
+- `reviveGrantStatus`: a successful revival Magick from that Essence applies the configured follow-up status.
+- `elementDamageBoost`: matching outgoing Magick element damage receives the configured multiplier.
+- `elementStatusChance`: matching-element Magick independently attempts the configured status on each resolved target.
+- `elementSelfStatusChance`: the first paid resolution of a matching-element cast independently attempts the configured status on the caster, so all-target/multi-hit casts do not roll the self-buff once per target/hit.
+- `statusDamageBoost`: statuses inflicted by the actor carry their configured damage multiplier on the runtime status instance; current Poison therefore keeps its stronger tick damage on the afflicted target.
+- `statusFamilyResistance`: multiplies incoming application rate for statuses in the configured family.
+- `essenceAbilityStatusChanceBoost`: adds the configured chance to status payloads on Magick listed on that Essence, capped at 100%.
+- `essenceAbilityMpRefundChance` / `essenceAbilityPartialMpRefundChance`: after a successful paid cast from that Essence, roll once to refund all or the configured fraction of the MP actually paid.
+- `lowHpSelfStatuses`: while battle-local passive state is active, entering the configured HP threshold applies the listed self-statuses; `oncePerBattle` is reset when a new battle begins and is not saved.
+- `incomingStatusNegateChance`: independently negates hostile negative status applications; self-applied states and beneficial buffs are not consumed by the protection.
+- `physicalEvasionBonus`: reduces hostile physical hit chance by the configured evasion fraction.
+- `lowHpPhysicalDamageBoost`: uses the strongest currently satisfied HP threshold rather than adding every satisfied threshold together.
+- `successfulEscapePartyRecovery`: successful escape recovers the configured HP/MP percentages for living active party members; multiple active sources combine and are capped at 100%.
+- `banishChainChance`: after a successful paid Banish, the passive may chain to another legal living enemy up to the configured chain cap without paying MP again.
 
-Where multiple multipliers legitimately apply, the battle engine should use the documented stacking rule for that mechanic. For the current Fury and Near-Death Valor-gain design, the multipliers stack multiplicatively.
+Where multiple multiplicative modifiers legitimately apply, they compose through the shared modifier hook rather than replacing status/equipment behavior. Existing status multipliers such as Fury/Sadness/Near-Death therefore remain authoritative in their own systems.
 
 ---
 
@@ -547,6 +550,8 @@ Battle Presentation & Feedback v1 established contextual control hints and the r
 
 Floating battlefield feedback remains the primary result language. Damage/healing numbers, Miss, Weak, Resist, Immune, status feedback, and Critical stay above the affected battler. Critical also triggers a brief presentation-only screen flash through `BattleEffects`; it does not alter critical-damage math. Temporary action/state banners now fade in and out according to the existing Battle Message Speed clock rather than appearing/disappearing as hard cuts. Target cursors use the shared gold battle accent with a dark outline, and contextual control hints sit on a low-opacity backing so changing battlefield art cannot make them unreadable.
 
+Development-console battle narration follows the same resolved-action boundary: ordinary logging emits the action/result line once (for example, `Test Slime casts Ember! G Prime takes 26 Fire damage!`) instead of also printing lower-level HP loss, MP payment, and Magick-use traces. Those model-layer traces remain available through the opt-in verbose debug channel. Known legacy status placeholders such as `deathforce` and `resist` are tolerated quietly until their status definitions are implemented, while genuinely unexpected status keys still warn.
+
 The bottom HUD still reserves four stable party rows, but its information hierarchy is now split into a left name roster, a dedicated middle command/status reserve, and stable right-side HP/MP/Valor columns. `Window_BattleCommand` overlays only that middle reserve while an actor owns command input. Escape and Defend appear only when horizontally requested and are flush with the main command panel's upper-left / upper-right edges. Surge appears above Attack only while the current actor's prepared Valor level is ready, giving full-gauge feedback without replacing the ordinary command list. The main command panel remains visible as the actor's decision anchor while Magick, Skills, Item, Surge, or target selection is open; selectors layer above it instead of replacing it. The two-Art Surge selector is intentionally compact and anchored directly above Attack. The remaining middle reserve stays quiet until real mechanics earn presentation there. `BattleHudLayout` owns only geometry; turn ownership remains in `BattlePartyController` / `BattleManager`. Battle UI / Presentation Polish v1 reduces the overall HUD height and narrows the name/command regions without changing their roles. Command focus now uses a subtle row highlight and gold accent, while Escape/Defend side tabs inherit the active command-row height so they read as attached tabs rather than separate boxes.
 
 The battle scene can present:
@@ -579,16 +584,18 @@ Escape is a third terminal outcome when the encounter permits it.
 
 ## Battle Rewards
 
-Victory totals `expReward` from every defeated enemy in the encounter. That full total is awarded once to every member of `$gameParty.battleMembers()` that participated in the battle.
+Victory totals enemy rewards only from defeated enemies that were actually killed rather than removed by Banish. That eligible EXP total is awarded once to every member of `$gameParty.battleMembers()` that participated in the battle.
 
 This includes active party members who were defeated when victory was earned. Reserve roster members who were not in the active battle party receive no battle EXP.
 
 Defeat and escape award no battle rewards. Victory resolves every reward exactly once through the same idempotent finalization path:
 
-- **EXP:** total `expReward` from every defeated enemy; awarded in full to every active battle-party participant, including defeated participants.
-- **Runes:** total `gilReward` from defeated enemies, except enemies removed by Banish contribute no currency. The result is added to persistent `Game_Party` currency state; `gilReward` remains the legacy internal data key.
-- **Item drops:** each defeated enemy resolves its validated `dropTable` independently. Successful rolls are aggregated by item ID and awarded through `Game_Party.gainItem()`.
-- **Essence Resonance:** total `resonanceReward` from defeated enemies. Every equipped Essence on each **surviving active battle-party participant** receives the full encounter Resonance amount. Defeated participants and reserve roster members receive none.
+- **EXP:** total `expReward` from killed enemies; awarded in full to every active battle-party participant, including defeated participants.
+- **Runes:** total `gilReward` from killed enemies. The result is added to persistent `Game_Party` currency state; `gilReward` remains the legacy internal data key.
+- **Item drops:** each killed enemy resolves its validated `dropTable` independently. Successful rolls are aggregated by item ID and awarded through `Game_Party.gainItem()`.
+- **Essence Resonance:** total `resonanceReward` from killed enemies. Every equipped Essence on each **surviving active battle-party participant** receives the full encounter Resonance amount. Defeated participants and reserve roster members receive none.
+
+Banish still satisfies the shared defeated-state contract for target legality and victory detection, but a banished enemy contributes **no EXP, Runes, item drops, or Essence Resonance** because removal is not a kill.
 
 Essence Resonance caps at the canonical Mastery threshold (1500 with the current data). Per-actor reward results report Essence level changes, awakened Magick IDs, and Mastery-Ready transitions without automatically promoting an Essence to Level 5.
 

@@ -132,7 +132,7 @@ Systems currently being expanded include:
 -   ✅ Status Menu Presentation v1
 -   ✅ Essence Menu Presentation & List Navigation v1
 -   ✅ Essence-granted Magick availability v1
--   🚧 Essence passive runtime
+-   ✅ Level 4 Essence Passive Runtime v1
 -   ✅ Enemy Actions & AI v1
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
@@ -164,7 +164,9 @@ The main menu presents the active four party members through dedicated actor car
 
 # 💎 Essence Menu
 
-**Essence Menu Presentation & List Navigation v1** keeps the established actor-owned Essence equipment/runtime contract but gives it the same modern field-menu presentation language as MAGICK and SKILL. The selected actor uses the shared portrait/name/LV plus stacked HP/MP mini-gauge header. The selected Essence metadata panel shows Type / Element / Level / Resonance, followed by its canonical description. The lower-left surface preserves the real slot workflow: choose an equipped slot, then browse a two-column catalog with shared held-direction repeat, row scrolling, conditional `▲ / ▼` arrows, and duplicate-slot legality. The lower-right progression surface reads persistent `Game_Essence` state for current level, next Resonance milestone, Mastery Ready, and data-driven Magick Awakening entries. The pass does not invent Essence ownership filtering, passive execution, Mastery Trial completion, or Evolution behavior that the runtime does not yet own.
+**Essence Menu Presentation & List Navigation v1** keeps the established actor-owned Essence equipment/runtime contract but gives it the same modern field-menu presentation language as MAGICK and SKILL. The selected actor uses the shared portrait/name/LV plus stacked HP/MP mini-gauge header. The selected Essence metadata panel shows Type / Element / Level / Resonance, followed by its canonical description. The lower-left surface preserves the real slot workflow: choose an equipped slot, then browse a two-column catalog with shared held-direction repeat, row scrolling, conditional `▲ / ▼` arrows, and duplicate-slot legality. The lower-right progression surface reads persistent `Game_Essence` state for current level, next Resonance milestone, Mastery Ready, data-driven Magick Awakening entries, and the Level-4 passive description with locked/ACTIVE state. Long-term Essence ownership filtering, Mastery Trial completion, and Evolution remain later work.
+
+**Level 4 Essence Passive Runtime v1** activates an equipped Essence's canonical `passive` only after that Essence reaches its configured unlock level. The 19 current passive schemas now participate in the shared battle vocabulary rather than branching on Essence names: Essence-ability MP discounts/refunds and status-chance boosts, cleanse healing, revival bonuses, elemental damage/status interactions, source-carried Poison potency, mental-status resistance, hostile negative-status negation, once-per-battle low-HP wards, physical evasion, Fury-style low-HP physical damage, successful-escape party recovery, and Banish chaining. Field and battle Magick both use the effective actor-owned MP-cost contract, while battle-local one-shot state is reset at battle start and never enters save data. Live-QA refinement makes Haste/Slow mutually exclusive, surfaces each passive and its ACTIVE state in ESSENCE, exposes the current low-HP Fury Essence tier in the battle HUD, gives Frog/Small +25% incoming physical vulnerability, and excludes banished enemies from EXP, Runes, drops, and Resonance. Long-term Essence acquisition/ownership, Mastery Trial completion, mastered Level 5 state, and Evolution remain later work.
 
 **Equip Menu Presentation & Stat Preview v1** replaces the old centered equipment box with the same full-screen character-menu language used by MAGICK / SKILL / ESSENCE. The actor summary uses `Window_ActorSummary`; the right header lists current Weapon / Armor / Accessory names in full; a description strip tracks the selected/current gear; and the lower surfaces separate slot/stat comparison from the equipment catalog. Browsing a candidate previews Attack, Attack %, Defense, Defense %, Magic Attack, Magic Defense, Magic Defense %, and Critical using the actor's real calculation APIs before Confirm commits through the existing equip/unequip methods. The list uses shared held-direction repeat plus `Window_ListViewport` scrolling. An **Essence Growth** presentation row currently defaults to `Normal`; it reserves a clean future gear-data contract but does not modify Resonance yet. MAIN MENU portrait placeholders are now square like the shared actor-summary portraits.
 
@@ -395,6 +397,37 @@ Major systems still planned include:
 
 ------------------------------------------------------------------------
 
+# 🧰 Development Console
+
+When `data/System.json` has `debugMode: true`, the runtime exposes a development-only `$dev` console helper after database/game-object initialization. The helper mutates only live runtime state and uses stable IDs/keys; it never rewrites canonical JSON data and is not installed when debug mode is disabled.
+
+Start with:
+
+```js
+$dev.help();
+$dev.passives();
+$dev.statuses();
+$dev.encounters();
+```
+
+Short runtime accessors are available as `$dev.P` (party), `$dev.S` (game system), `$dev.A(actorId)` (actor), and `$dev.E(enemyIndex)` (active-battle enemy). Common setup helpers include `$dev.hp()`, `$dev.mp()`, `$dev.valor()`, `$dev.status()`, `$dev.item()`, `$dev.battle()`, and `$dev.recruitAll()`.
+
+For Essence testing, `$dev.level4(essenceId, actorId, slot)` equips an Essence at its Level-4 Resonance threshold, `$dev.master(...)` moves it to Mastery-ready Resonance, and `$dev.passive(...)` prepares Level 4 and prints a mechanic-specific manual test hint. `$dev.statusChance(actorId, statusKey, baseChance)` deterministically reports the resistance-adjusted application chance, which makes passives such as Mind easy to verify without statistical guesswork.
+
+Normal debug output keeps battle actions readable by favoring the resolved battle message over low-level HP/MP bookkeeping. Use `$dev.verbose(true)` when you specifically want those model-layer resource traces, and `$dev.verbose(false)` to return to the concise default.
+
+See `docs/dev_console.md` for the full command sheet and ready-to-paste Pass 117 passive test recipes.
+
+Example:
+
+```js
+$dev.passive(13); // Level-4 Essence ID 13 on actor 1, slot 0
+$dev.hpRate(1, 0.26);
+$dev.battle(1);
+```
+
+------------------------------------------------------------------------
+
 # 📚 Documentation
 
 Technical and design documentation lives in the `docs/` directory.
@@ -417,6 +450,7 @@ Each document has a specific purpose:
 -   **audit_closure.md** - Completed reconciliation of historical audit findings
 -   **battle_system.md** - Canonical battle rules and mechanics
 -   **coding_style.md** - Project coding and data conventions
+-   **dev_console.md** - Development-only `$dev` console helper and Pass 117 test recipes
 -   **design_bible.md** - Core game-design principles and terminology
 -   **ideas.md** - Experimental and unapproved concepts
 -   **repo_audit.md** - Historical static repository audit
