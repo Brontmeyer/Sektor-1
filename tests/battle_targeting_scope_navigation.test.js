@@ -195,6 +195,39 @@ function testEightEnemyNavigationDoesNotWrapOffscreen() {
   assert.equal(manager.getSelectedEnemy(), enemies[1]);
 }
 
+function testVerticalInputStaysInCurrentTargetLane() {
+  const allies = [
+    battler("Party Top", "ally", 300, 180),
+    battler("Party Bottom", "ally", 300, 340),
+  ];
+  const enemies = [
+    battler("Slime Top", "enemy", 900, 180),
+    battler("Slime Bottom", "enemy", 900, 340),
+  ];
+  const { scene, manager } = createFixture({
+    allies,
+    enemies,
+    definition: null,
+    action: "attack",
+    selectedEnemyIndex: 0,
+    targetGroup: "enemy",
+  });
+
+  assert.equal(manager.moveDirectionalSelection(0, 1), true);
+  assert.equal(manager.getSelectedEnemy(), enemies[1]);
+
+  // A second Down at the bottom of the enemy lane stays put instead of
+  // leaking left into the party merely because Attack can legally target both.
+  assert.equal(manager.moveDirectionalSelection(0, 1), false);
+  assert.equal(scene.targetGroup, "enemy");
+  assert.equal(manager.getSelectedEnemy(), enemies[1]);
+
+  // Crossing target sides remains an explicit horizontal action.
+  assert.equal(manager.moveDirectionalSelection(-1, 0), true);
+  assert.equal(scene.targetGroup, "ally");
+  assert.equal(manager.getSelectedAlly(), allies[1]);
+}
+
 function testPincerAllTargetsOnlySelectedFlankAndCanSwitchFlanks() {
   const enemies = [
     battler("L1", "enemy", 120, 180, "left"),
@@ -388,6 +421,7 @@ function run() {
   testAllOnlyAbilityRemainsAllWithOneTarget();
   testPincerSingleTargetMovesAcrossBothFlanksSpatially();
   testEightEnemyNavigationDoesNotWrapOffscreen();
+  testVerticalInputStaysInCurrentTargetLane();
   testPincerAllTargetsOnlySelectedFlankAndCanSwitchFlanks();
   testPincerDualScopeDoesNotOfferAllForSingleEnemyFlank();
   testPincerAllTargetsIncludeFrontAndBackRowsOnSelectedFlank();

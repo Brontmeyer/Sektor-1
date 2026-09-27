@@ -472,23 +472,26 @@ class BattleTargetManager {
     return distance + sideways * 0.75;
   }
 
-  moveDirectionalSelection(
-    dx,
-    dy,
-    definition = this.currentActionDefinition(),
-  ) {
-    const current = this.getSelectedTarget();
+  directionalTargetGroups(dx, dy, definition = this.currentActionDefinition()) {
+    const groups = this.navigableTargetGroups(definition);
+    const currentGroup = this.scene.targetGroup;
 
-    if (!this.isSelectableTarget(current, definition)) {
-      const firstBucket = this.targetBuckets(definition)[0] || null;
-      return this.selectTargetBucket(firstBucket, definition) !== null;
+    // Up/down is lane-local. Repeated vertical input should never leak from an
+    // enemy stack into the party (or vice versa) simply because no farther
+    // battler exists in that direction. Horizontal input remains the explicit
+    // way to cross sides when the action legally permits both groups.
+    if (dy !== 0 && dx === 0 && groups.includes(currentGroup)) {
+      return [currentGroup];
     }
 
-    const currentPosition = this.targetPosition(this.scene.targetGroup, current);
+    return groups;
+  }
+
+  bestDirectionalTarget(groups, current, currentPosition, dx, dy, definition) {
     let bestTarget = null;
     let bestScore = Infinity;
 
-    for (const group of this.navigableTargetGroups(definition)) {
+    for (const group of groups) {
       for (const battler of this.selectableBattlers(group, definition)) {
         if (battler === current) {
           continue;
@@ -502,6 +505,47 @@ class BattleTargetManager {
           bestTarget = battler;
         }
       }
+    }
+
+    return bestTarget;
+  }
+
+  moveDirectionalSelection(
+    dx,
+    dy,
+    definition = this.currentActionDefinition(),
+  ) {
+    const current = this.getSelectedTarget();
+
+    if (!this.isSelectableTarget(current, definition)) {
+      const firstBucket = this.targetBuckets(definition)[0] || null;
+      return this.selectTargetBucket(firstBucket, definition) !== null;
+    }
+
+    const currentGroup = this.scene.targetGroup;
+    const currentPosition = this.targetPosition(currentGroup, current);
+    const groups = this.directionalTargetGroups(dx, dy, definition);
+    let bestTarget = this.bestDirectionalTarget(
+      groups.filter((group) => group === currentGroup),
+      current,
+      currentPosition,
+      dx,
+      dy,
+      definition,
+    );
+
+    // Horizontal input prefers the current lane first, including front/back
+    // enemy rows and pincer flanks. Only when that lane has no candidate in
+    // the requested direction may selection cross to another legal side.
+    if (!bestTarget && dx !== 0) {
+      bestTarget = this.bestDirectionalTarget(
+        groups.filter((group) => group !== currentGroup),
+        current,
+        currentPosition,
+        dx,
+        dy,
+        definition,
+      );
     }
 
     if (!bestTarget) {
@@ -522,21 +566,35 @@ class BattleTargetManager {
     }
 
     const currentPosition = this.bucketCenter(current);
-    let bestBucket = null;
-    let bestScore = Infinity;
+    const scoreBuckets = (candidates) => {
+      let bestBucket = null;
+      let bestScore = Infinity;
 
-    for (const bucket of buckets) {
-      if (bucket.key === current.key) {
-        continue;
+      for (const bucket of candidates) {
+        if (bucket.key === current.key) {
+          continue;
+        }
+
+        const position = this.bucketCenter(bucket);
+        const score = this.directionalScore(currentPosition, position, dx, dy);
+
+        if (score < bestScore) {
+          bestScore = score;
+          bestBucket = bucket;
+        }
       }
 
-      const position = this.bucketCenter(bucket);
-      const score = this.directionalScore(currentPosition, position, dx, dy);
+      return bestBucket;
+    };
 
-      if (score < bestScore) {
-        bestScore = score;
-        bestBucket = bucket;
-      }
+    let bestBucket = scoreBuckets(
+      buckets.filter((bucket) => bucket.group === current.group),
+    );
+
+    if (!bestBucket && dx !== 0) {
+      bestBucket = scoreBuckets(
+        buckets.filter((bucket) => bucket.group !== current.group),
+      );
     }
 
     if (!bestBucket) {

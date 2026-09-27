@@ -512,6 +512,7 @@ Battle-presentation directions and current status:
 - ✅ Battle HUD & Message Layout v1 with reusable four-row HUD geometry
 - ✅ Battle Presentation & Feedback v2 with transient action/state banners, integrated command/HUD columns, battlefield Critical/Weak/Resist/Immune feedback, fixed enemy-slot groundwork, and physical rear-exposure rules
 - ✅ Battle Targeting & Scope Navigation v2 with four-direction spatial selection, one-target scope collapse, and pincer flank-limited All targeting
+- ✅ Battle Target Memory & Navigation Polish v1 with per-actor/per-stable-action remembered legal battlers and lane-preserving directional selection
 - ✅ Valor & Escape Rules v1 with hostile-source Valor gain, explicit Valor-support Skills, and Agility/retry-based Escape attempts
 - ✅ Enemy Formation Rows v1 for up to eight centered/customizable front/back-row enemies with pincer-aware flank geometry
 - ✅ Scan & Tactical Help v1 for battle-local per-enemy HP/MP and elemental weakness/resistance/immunity details while targeting

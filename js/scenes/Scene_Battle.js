@@ -275,10 +275,24 @@ class Scene_Battle extends Scene_Base {
         const target = this.targetManager.getSelectedTarget();
 
         if (target && this.targetManager.isSelectableTarget(target)) {
+          const action = this.enemyTargetAction;
+          const definition =
+            action === "skill"
+              ? this.pendingSkill
+              : action === "magick"
+                ? this.pendingMagick
+                : action === "item"
+                  ? this.pendingItem
+                  : null;
+          const actor = this.partyController?.currentBattler?.() || null;
+
           if (this.targetGroup === "enemy") {
             this.enemy = target;
           }
 
+          // Only a target the player actually confirms becomes cursor memory.
+          // Forced/random targets therefore never overwrite player intent.
+          this.rememberBattleTarget(actor, action, definition, target);
           this.selectingEnemyTarget = false;
 
           if (this.enemyTargetAction === "attack") {
@@ -425,6 +439,7 @@ class Scene_Battle extends Scene_Base {
         skillId: null,
         surgeId: null,
         itemId: null,
+        targets: new Map(),
       });
     }
 
@@ -493,6 +508,83 @@ class Scene_Battle extends Scene_Base {
     const id = property ? Number(entry?.[property]) : NaN;
 
     return Number.isInteger(id) && id > 0 ? id : null;
+  }
+
+  battleTargetMemoryContext(actor, action, definition = null) {
+    if (action === "attack") {
+      return "attack";
+    }
+
+    const id = Number(definition?.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return null;
+    }
+
+    if (action === "skill") {
+      const kind = actor?.isValorArt?.(definition) === true ? "surge" : "skill";
+      return `${kind}:${id}`;
+    }
+
+    return ["magick", "item"].includes(action) ? `${action}:${id}` : null;
+  }
+
+  rememberBattleTarget(actor, action, definition, target) {
+    if (!this.battleCursorMemoryEnabled() || !target) {
+      return false;
+    }
+
+    const context = this.battleTargetMemoryContext(actor, action, definition);
+    const entry = this.battleCursorMemoryEntry(actor, { create: true });
+
+    if (!context || !entry) {
+      return false;
+    }
+
+    if (!(entry.targets instanceof Map)) {
+      entry.targets = new Map();
+    }
+
+    // Target memory is battle-local, so retaining the battler object itself is
+    // safer than display names or mutable list indexes. Legality is rechecked
+    // every time the action opens.
+    entry.targets.set(context, target);
+    return true;
+  }
+
+  rememberedBattleTarget(actor, action, definition = null) {
+    if (!this.battleCursorMemoryEnabled()) {
+      return null;
+    }
+
+    const context = this.battleTargetMemoryContext(actor, action, definition);
+    const entry = this.battleCursorMemoryEntry(actor);
+
+    return context && entry?.targets instanceof Map
+      ? entry.targets.get(context) || null
+      : null;
+  }
+
+  restoreRememberedBattleTarget(actor, action, definition = null) {
+    const target = this.rememberedBattleTarget(actor, action, definition);
+
+    if (!target) {
+      return null;
+    }
+
+    const context = this.battleTargetMemoryContext(actor, action, definition);
+    const entry = this.battleCursorMemoryEntry(actor);
+    const present =
+      this.enemies.includes(target) || $gameParty.battleMembers().includes(target);
+    const legal =
+      present && this.targetManager?.isSelectableTarget?.(target, definition) === true;
+
+    if (!legal || !this.targetManager?.selectBattler?.(target)) {
+      entry?.targets?.delete?.(context);
+      return null;
+    }
+
+    return target;
   }
 
   prepareBattleCommandCursor(actor) {

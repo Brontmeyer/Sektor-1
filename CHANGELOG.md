@@ -1,3 +1,12 @@
+## Pass 119 - Battle Target Memory & Navigation Polish v1
+
+- Extended configuration-driven Battle Cursor Memory so each actor remembers the last player-confirmed battler per stable action context (Attack or stable Skill / Valor Art / Magick / Item ID) for the current battle.
+- Reopens a remembered target only while that exact battler is still present and legal for the action; dead, removed, or newly illegal targets are discarded and normal safe initial-target preference takes over.
+- Kept forced/random Confuse targeting out of target memory so AI-imposed choices never overwrite the player's remembered intent.
+- Refined spatial target movement so Up/Down stays inside the current ally/enemy lane, preventing repeated vertical input at the end of an enemy stack from unexpectedly jumping into the party.
+- Horizontal input now prefers valid targets on the current side first, including enemy rows/pincer geometry, and crosses ally/enemy sides only when no same-side target exists farther in that direction and the action legally permits the other side.
+- Applied the same lane-preserving rule to All-target bucket navigation.
+- Added regression coverage for actor/action-specific target memory, stable-ID rename safety, dead-target fallback, memory-off behavior, and lane-preserving directional targeting.
 
 ## Pass 118 - Battle Action Confirmation v1
 

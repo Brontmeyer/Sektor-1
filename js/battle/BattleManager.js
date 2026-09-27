@@ -2224,7 +2224,8 @@ class BattleManager {
         }
 
         battle.targetGroup = "enemy";
-        battle.targetManager.selectFirstLivingEnemy();
+        battle.restoreRememberedBattleTarget?.(battler, "attack", null) ||
+          battle.targetManager.selectFirstLivingEnemy();
         battle.enemyTargetAction = "attack";
         battle.selectingEnemyTarget = true;
         break;
@@ -2314,7 +2315,9 @@ class BattleManager {
     // Target preference is centralized with the spatial selector: restorative
     // actions begin on the acting battler when legal, while offensive actions
     // keep the established enemy-first default.
-    const selectedTarget = battle.targetManager.selectInitialTarget(skill);
+    const selectedTarget =
+      battle.restoreRememberedBattleTarget?.(battler, "skill", skill) ||
+      battle.targetManager.selectInitialTarget(skill);
 
     if (!selectedTarget) {
       battle.addBattleMessage(`${skill.name} has no valid targets.`);
@@ -2435,7 +2438,9 @@ class BattleManager {
     // Restorative Magick opens on the caster when that battler is legal, but
     // the player can still move to any other legal ally/enemy. Offensive
     // Magick retains the established enemy-first opening target.
-    const selectedTarget = battle.targetManager.selectInitialTarget(magick);
+    const selectedTarget =
+      battle.restoreRememberedBattleTarget?.(battler, "magick", magick) ||
+      battle.targetManager.selectInitialTarget(magick);
 
     if (!selectedTarget) {
       battle.addBattleMessage(`${magick.name} has no valid targets.`);
@@ -2528,7 +2533,9 @@ class BattleManager {
     // Restorative Items begin on the acting battler when legal, but may cross
     // to any other legal battler. Explicit target metadata can still narrow
     // either side through the shared target contract.
-    const selectedTarget = battle.targetManager.selectInitialTarget(item);
+    const selectedTarget =
+      battle.restoreRememberedBattleTarget?.(battler, "item", item) ||
+      battle.targetManager.selectInitialTarget(item);
 
     if (!selectedTarget) {
       battle.addBattleMessage(`${item.name} has no valid targets.`);

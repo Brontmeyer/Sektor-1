@@ -19,11 +19,16 @@ function storageHarness() {
 }
 
 function loadScenePrototype() {
+  const gameParty = {
+    members: [],
+    battleMembers() { return this.members; },
+  };
   const context = vm.createContext({
     console,
     localStorage: storageHarness(),
     Scene_Base: class {},
     BattleManager: { OUTCOME_VICTORY: "victory" },
+    $gameParty: gameParty,
   });
 
   vm.runInContext(
@@ -33,7 +38,7 @@ function loadScenePrototype() {
   );
 
   context.__classes.ConfigManager.initialize();
-  return context.__classes;
+  return { ...context.__classes, gameParty };
 }
 
 function makeSceneMemoryHarness(Scene_Battle) {
@@ -136,10 +141,86 @@ function testInitialModeResetsCommandCursor() {
   assert.equal(scene.rememberedBattleSelectionId(actor, "item"), null);
 }
 
+function testTargetMemoryIsPerActorPerActionAndFallsBackWhenIllegal() {
+  const { ConfigManager, Scene_Battle, gameParty } = loadScenePrototype();
+  const scene = makeSceneMemoryHarness(Scene_Battle);
+  const tyler = { actorId: 1, isValorArt: () => false };
+  const sarah = { actorId: 2, isValorArt: () => false };
+  const enemyA = { name: "A", alive: true };
+  const enemyB = { name: "B", alive: true };
+  const ember = { id: 10, name: "Renamed Ember" };
+  const frost = { id: 13, name: "Renamed Frost" };
+
+  gameParty.members = [tyler, sarah];
+  scene.enemies = [enemyA, enemyB];
+  scene.targetGroup = "enemy";
+  scene.selectedEnemyIndex = 0;
+  scene.targetManager = {
+    isSelectableTarget(target) { return target?.alive !== false; },
+    selectBattler(target) {
+      const enemyIndex = scene.enemies.indexOf(target);
+      if (enemyIndex >= 0) {
+        scene.targetGroup = "enemy";
+        scene.selectedEnemyIndex = enemyIndex;
+        return target;
+      }
+      const allyIndex = gameParty.members.indexOf(target);
+      if (allyIndex >= 0) {
+        scene.targetGroup = "ally";
+        scene.selectedAllyIndex = allyIndex;
+        return target;
+      }
+      return null;
+    },
+  };
+
+  ConfigManager.set("battleCursorMemory", "memory", { persist: false });
+  assert.equal(scene.rememberBattleTarget(tyler, "magick", ember, enemyB), true);
+  assert.equal(scene.rememberBattleTarget(sarah, "magick", ember, enemyA), true);
+
+  // Stable action ID, not display name, owns the remembered target.
+  assert.equal(
+    scene.restoreRememberedBattleTarget(
+      tyler,
+      "magick",
+      { id: 10, name: "Ember Renamed Again" },
+    ),
+    enemyB,
+  );
+  assert.equal(scene.selectedEnemyIndex, 1);
+  assert.equal(scene.rememberedBattleTarget(tyler, "magick", frost), null);
+  assert.equal(scene.rememberedBattleTarget(sarah, "magick", ember), enemyA);
+
+  // Dead/removed/otherwise illegal targets are forgotten and callers may use
+  // their normal first-target fallback.
+  enemyB.alive = false;
+  assert.equal(scene.restoreRememberedBattleTarget(tyler, "magick", ember), null);
+  assert.equal(scene.rememberedBattleTarget(tyler, "magick", ember), null);
+
+  ConfigManager.set("battleCursorMemory", "initial", { persist: false });
+  assert.equal(scene.rememberBattleTarget(tyler, "attack", null, enemyA), false);
+  assert.equal(scene.rememberedBattleTarget(sarah, "magick", ember), null);
+}
+
+function testBattleTargetMemoryIsWiredIntoActionOpenAndConfirmation() {
+  const managerSource = read("js/battle/BattleManager.js");
+  const sceneSource = read("js/scenes/Scene_Battle.js");
+  const restores = managerSource.match(/restoreRememberedBattleTarget\?\.\(/g) || [];
+
+  assert.equal(restores.length, 4);
+  assert.match(managerSource, /restoreRememberedBattleTarget\?\.\(battler, "attack", null\)/);
+  assert.match(managerSource, /restoreRememberedBattleTarget\?\.\(battler, "skill", skill\)/);
+  assert.match(managerSource, /restoreRememberedBattleTarget\?\.\(battler, "magick", magick\)/);
+  assert.match(managerSource, /restoreRememberedBattleTarget\?\.\(battler, "item", item\)/);
+  assert.match(sceneSource, /rememberBattleTarget\(actor, action, definition, target\)/);
+}
+
 function run() {
   testMemoryIsActorSpecificAndUsesStableIds();
   testSelectorsRestoreByIdAndFallbackWhenEntryDisappears();
   testInitialModeResetsCommandCursor();
+  testTargetMemoryIsPerActorPerActionAndFallsBackWhenIllegal();
+  testBattleTargetMemoryIsWiredIntoActionOpenAndConfirmation();
   console.log("Per-actor battle cursor memory regression tests passed.");
 }
 

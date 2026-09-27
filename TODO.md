@@ -103,8 +103,8 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Collapse optional All scope when only one legal target exists in the current target bucket
 - [x] Support four-direction spatial targeting across normal/back-attack/pincer layouts without wraparound
 - [x] Limit Pincer All targeting to one selected enemy flank at a time and allow left/right flank switching
-- [ ] Preserve the last confirmed battle target per actor/action context when that battler is still alive and legal; fall back safely when the remembered target is unavailable
-- [ ] Refine spatial target navigation so repeated directional input stays within the geometrically intended enemy/ally lane instead of jumping sides unexpectedly when battlers overlap vertically
+- [x] Preserve the last confirmed battle target per actor/action context when that battler is still alive and legal; fall back safely when the remembered target is unavailable
+- [x] Refine spatial target navigation so repeated directional input stays within the geometrically intended enemy/ally lane instead of jumping sides unexpectedly when battlers overlap vertically
 - [ ] Add pre-emptive battle opening rules/presentation
 - [ ] Revisit front/back row combat mechanics for physical damage dealt/received by actors and enemies; current player row state is presentation-only outside existing formation/rear-exposure rules
 - [ ] Refine victory spoils pacing so Confirm starts each tally, Confirm during counting snaps to the final total, and the next Confirm advances to the next results stage
@@ -352,4 +352,5 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Pass 116: Reject guaranteed no-effect heal/status-cleanse targets, add custom Restore/Attack/Indirect/Advanced Magick category priority with stable-ID ordering inside each category, make Battle Cursor Memory actor-specific by stable action identity, and organize AREA MAP Landmarks/Exits with Discovery / Name / Distance ordering
 - [x] Pass 117: Implement all 19 Level-4 Essence passives, add the development-only `$dev` console harness, expose passive/Fury feedback, enforce Haste/Slow opposition, make Small/Frog physically vulnerable, exclude banished enemies from rewards, and simplify battle-console narration
 - [x] Pass 118: Route Retreat through the shared battlefield target/group confirmation flow so cast-level escape follows Magick → battlefield confirmation before MP/turn commitment, then completes the caster Magick presentation and exits battle automatically; keep random-per-hit Magick as the intentional no-fake-target exception
+- [x] Pass 119: Extend per-actor Battle Cursor Memory to last confirmed legal targets by stable action context and keep repeated vertical target navigation inside the current ally/enemy lane
 - [ ] Remove the temporary in-game Load shortcut for the release menu once development/QA no longer needs rapid prepared-save access
