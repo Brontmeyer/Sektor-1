@@ -184,10 +184,23 @@ function testRecruitmentCommandValidationAndMapFixture() {
   const { DatabaseValidator } = createHarness();
   const map = readData("Map001.json");
   const errors = [];
-  const event = map.events.find((entry) => entry.id === 15);
+  const event = map.events.find((entry) =>
+    entry.pages?.some((page) =>
+      page.commands?.some(
+        (command) => command.code === "recruitActor" && command.actorId === 2,
+      ),
+    ),
+  );
 
   assert.ok(event, "Map001 should contain the Sarah recruitment fixture.");
-  assert.equal(event.pages[0].commands.some((command) => command.code === "recruitActor"), true);
+  assert.equal(
+    event.pages.some((page) =>
+      page.commands?.some(
+        (command) => command.code === "recruitActor" && command.actorId === 2,
+      ),
+    ),
+    true,
+  );
 
   DatabaseValidator.validateMapData(map, {
     system: systemData,

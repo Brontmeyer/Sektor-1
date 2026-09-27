@@ -197,7 +197,13 @@ function testStartupDefersNamingUntilStoryEvent() {
   const main = read("js/main.js");
   const index = read("index.html");
   const map = JSON.parse(read("data/Map001.json"));
-  const namingEvent = map.events.find((event) => event?.id === 19);
+  const namingEvent = map.events.find((event) =>
+    event.pages?.some((page) =>
+      page.commands?.some(
+        (command) => command.code === "nameActor" && command.actorId === 1,
+      ),
+    ),
+  );
 
   assert.doesNotMatch(main, /SceneManager\.goto\(Scene_NameEntry/);
   assert.match(main, /SceneManager\.goto\(Scene_Map\)/);

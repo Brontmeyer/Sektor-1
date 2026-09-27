@@ -2046,25 +2046,10 @@ class BattleManager {
       ? "single"
       : scopes[0] || "single";
 
-    // Start on the first allowed group that actually contains a legal target.
-    // Enemy-first matches Attack and Magick while still allowing ally/self
-    // techniques through the same data-driven target contract.
-    const preferredGroups = ["enemy", "ally"].filter((group) =>
-      targetGroups.includes(group),
-    );
-    let selectedTarget = null;
-
-    for (const group of preferredGroups) {
-      battle.targetGroup = group;
-      selectedTarget =
-        group === "enemy"
-          ? battle.targetManager.selectFirstSelectableEnemy(skill)
-          : battle.targetManager.selectFirstSelectableAlly(skill);
-
-      if (selectedTarget) {
-        break;
-      }
-    }
+    // Target preference is centralized with the spatial selector: restorative
+    // actions begin on the acting battler when legal, while offensive actions
+    // keep the established enemy-first default.
+    const selectedTarget = battle.targetManager.selectInitialTarget(skill);
 
     if (!selectedTarget) {
       battle.addBattleMessage(`${skill.name} has no valid targets.`);
@@ -2180,26 +2165,10 @@ class BattleManager {
       return this.commitPartyAction("magick");
     }
 
-    // Start on the first allowed group that actually contains a legal target.
-    // Enemy-first preserves the established offensive targeting preference,
-    // while revive/cleanse magick can select defeated allies through the same
-    // target-validity contract used by execution.
-    const preferredGroups = ["enemy", "ally"].filter((group) =>
-      targetGroups.includes(group),
-    );
-    let selectedTarget = null;
-
-    for (const group of preferredGroups) {
-      battle.targetGroup = group;
-      selectedTarget =
-        group === "enemy"
-          ? battle.targetManager.selectFirstSelectableEnemy(magick)
-          : battle.targetManager.selectFirstSelectableAlly(magick);
-
-      if (selectedTarget) {
-        break;
-      }
-    }
+    // Restorative Magick opens on the caster when that battler is legal, but
+    // the player can still move to any other legal ally/enemy. Offensive
+    // Magick retains the established enemy-first opening target.
+    const selectedTarget = battle.targetManager.selectInitialTarget(magick);
 
     if (!selectedTarget) {
       battle.addBattleMessage(`${magick.name} has no valid targets.`);
@@ -2287,24 +2256,10 @@ class BattleManager {
       ? "single"
       : scopes[0] || "single";
 
-    // Items default to the party side for convenience, but may cross to any
-    // legal enemy target. Explicit target metadata can narrow either side.
-    const preferredGroups = ["ally", "enemy"].filter((group) =>
-      targetGroups.includes(group),
-    );
-    let selectedTarget = null;
-
-    for (const group of preferredGroups) {
-      battle.targetGroup = group;
-      selectedTarget =
-        group === "enemy"
-          ? battle.targetManager.selectFirstSelectableEnemy(item)
-          : battle.targetManager.selectFirstSelectableAlly(item);
-
-      if (selectedTarget) {
-        break;
-      }
-    }
+    // Restorative Items begin on the acting battler when legal, but may cross
+    // to any other legal battler. Explicit target metadata can still narrow
+    // either side through the shared target contract.
+    const selectedTarget = battle.targetManager.selectInitialTarget(item);
 
     if (!selectedTarget) {
       battle.addBattleMessage(`${item.name} has no valid targets.`);

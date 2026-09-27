@@ -446,6 +446,30 @@ class Game_Actor extends Game_Battler {
     return results;
   }
 
+  essenceGrantedMagickIds() {
+    const magickIds = [];
+    const seen = new Set();
+
+    for (const essence of this.equippedEssences()) {
+      for (const magick of essence.unlockedMagick()) {
+        const magickId = Number(magick?.id);
+
+        if (
+          !Number.isInteger(magickId) ||
+          magickId <= 0 ||
+          seen.has(magickId)
+        ) {
+          continue;
+        }
+
+        seen.add(magickId);
+        magickIds.push(magickId);
+      }
+    }
+
+    return magickIds;
+  }
+
   // =====================================
   // Equipment Management
   // =====================================
@@ -562,19 +586,24 @@ class Game_Actor extends Game_Battler {
   // =====================================
 
   learnMagick(magickId) {
-    if (!DatabaseManager.magick(magickId)) {
+    const id = Number(magickId);
+
+    if (!Number.isInteger(id) || id <= 0 || !DatabaseManager.magick(id)) {
       console.warn(`Cannot learn magick ${magickId}: magick does not exist.`);
       return false;
     }
 
-    if (this.knowsMagick(magickId)) {
+    // Permanent learned Magick and temporary Essence-granted Magick are
+    // separate ownership paths. An actor may permanently learn an ability
+    // while an equipped Essence is currently granting access to it.
+    if (this.magickIds.includes(id)) {
       return false;
     }
 
-    this.magickIds.push(magickId);
+    this.magickIds.push(id);
 
     DebugManager.log(
-      `${this.name} learned ${DatabaseManager.magickName(magickId)}.`,
+      `${this.name} learned ${DatabaseManager.magickName(id)}.`,
     );
 
     return true;
@@ -597,11 +626,34 @@ class Game_Actor extends Game_Battler {
   }
 
   knowsMagick(magickId) {
-    return this.magickIds.includes(magickId);
+    const id = Number(magickId);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return false;
+    }
+
+    return (
+      this.magickIds.includes(id) ||
+      this.essenceGrantedMagickIds().includes(id)
+    );
   }
 
   knownMagick() {
-    return this.magickIds
+    const magickIds = [
+      ...this.magickIds,
+      ...this.essenceGrantedMagickIds(),
+    ];
+    const seen = new Set();
+
+    return magickIds
+      .filter((magickId) => {
+        if (seen.has(magickId)) {
+          return false;
+        }
+
+        seen.add(magickId);
+        return true;
+      })
       .map((magickId) => DatabaseManager.magick(magickId))
       .filter((magick) => magick !== null);
   }

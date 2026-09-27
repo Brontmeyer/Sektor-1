@@ -165,7 +165,7 @@ Battle Targeting & Scope Navigation v2 treats targeting geometry and action scop
 
 Normal and Back Attack enemy All targeting resolves against the legal enemy side. In a Pincer encounter, the left and right enemy flanks are separate All-target buckets: choosing All marks only the currently selected flank, and left/right input can switch the active flank. Single-target pincer navigation uses the same spatial movement contract, so left-side and right-side enemies can both be reached with ordinary directional input.
 
-Action data should determine which target groups and scopes are legal. `BattleTargetManager` determines the effective scope and current target bucket; effect resolution consumes those resolved targets rather than redefining targeting rules. When a Magick permits both allies and enemies, the command flow still prefers the enemy group as the initial selection while allowing spatial movement into every legal target group.
+Action data should determine which target groups and scopes are legal. `BattleTargetManager` determines the effective scope, initial target preference, and current target bucket; effect resolution consumes those resolved targets rather than redefining targeting rules. Restorative/healing actions prefer the ally side and the acting battler when that battler is a legal target, while offensive actions retain enemy-first selection. This preference never narrows legality: dual-side restorative actions can still move to legal enemies for interactions such as restorative damage against undead battlers, and offensive dual-side actions can still move to legal allies. If the caster is not legal (for example, a revival action), selection falls back to the first legal battler in the preferred group.
 
 ---
 
@@ -444,7 +444,7 @@ At 1500 Resonance, an Essence becomes **Mastery Ready** and stops gaining Resona
 
 Completing that Essence's future Mastery Trial promotes it to Level 5 MASTERED.
 
-Battle Resonance awards and persistent Essence progression are active. Essence Equipment & Menu v1 adds data-driven actor slots and preserves Resonance when an Essence is unequipped. The remaining Essence Runtime work is long-term acquisition / ownership rules, ability availability, passive evaluation, Mastery Trials, and Essence Evolution.
+Battle Resonance awards and persistent Essence progression are active. Essence Equipment & Menu v1 adds data-driven actor slots and preserves Resonance when an Essence is unequipped. Equipped Essences grant every Magick unlocked at their current level through the actor's ordinary Magick-availability contract, so both field and battle Magick selectors receive those abilities automatically and newly awakened Magick becomes available as soon as Resonance crosses its threshold. Unequipping removes only that temporary grant; persistent learned Magick remains independently owned. The remaining Essence Runtime work is long-term acquisition / ownership rules, passive evaluation, Mastery Trials, and Essence Evolution.
 
 ---
 

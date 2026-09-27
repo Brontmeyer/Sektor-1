@@ -43,6 +43,7 @@ function createFixture({
   targetGroup = "enemy",
   targetScope = "single",
   action = "magick",
+  casterIndex = 0,
 } = {}) {
   const gameParty = {
     battleMembers() {
@@ -50,7 +51,7 @@ function createFixture({
     },
   };
   const BattleTargetManager = loadTargetManager(gameParty);
-  const caster = allies[0] || battler("Caster", "ally", 500, 300);
+  const caster = allies[casterIndex] || battler("Caster", "ally", 500, 300);
 
   caster.isValidMagickTarget = (ability, target) =>
     ability.target.includes(target.side);
@@ -291,6 +292,80 @@ function testAlliedSingleAllScopeUsesWholePartyBucket() {
   assert.deepEqual(Array.from(manager.getCurrentTargets()), allies);
 }
 
+function testRestorativeDualTargetStartsOnCaster() {
+  const allies = [
+    battler("Ally", "ally", 480, 180),
+    battler("Caster", "ally", 480, 320),
+  ];
+  const enemy = battler("Enemy", "enemy", 900, 240);
+  const definition = {
+    id: 1,
+    name: "Test Mend",
+    type: "magick",
+    category: "restore",
+    element: "restorative",
+    effect: "heal",
+    target: ["ally", "enemy"],
+    scope: ["single", "all"],
+  };
+  const { scene, manager, caster } = createFixture({
+    allies,
+    enemies: [enemy],
+    definition,
+    casterIndex: 1,
+  });
+
+  assert.deepEqual(Array.from(manager.preferredTargetGroups(definition)), [
+    "ally",
+    "enemy",
+  ]);
+  assert.equal(manager.selectInitialTarget(definition), caster);
+  assert.equal(scene.targetGroup, "ally");
+  assert.equal(scene.selectedAllyIndex, 1);
+}
+
+function testOffensiveDualTargetStillStartsOnEnemy() {
+  const allies = [
+    battler("Ally", "ally", 480, 180),
+    battler("Caster", "ally", 480, 320),
+  ];
+  const enemy = battler("Enemy", "enemy", 900, 240);
+  const definition = {
+    id: 10,
+    name: "Test Ember",
+    type: "magick",
+    category: "attack",
+    element: "fire",
+    effect: "damage",
+    target: ["ally", "enemy"],
+    scope: ["single", "all"],
+  };
+  const { scene, manager } = createFixture({
+    allies,
+    enemies: [enemy],
+    definition,
+    casterIndex: 1,
+  });
+
+  assert.deepEqual(Array.from(manager.preferredTargetGroups(definition)), [
+    "enemy",
+    "ally",
+  ]);
+  assert.equal(manager.selectInitialTarget(definition), enemy);
+  assert.equal(scene.targetGroup, "enemy");
+  assert.equal(scene.selectedEnemyIndex, 0);
+}
+
+function testBattleManagerUsesSharedInitialTargetSelection() {
+  const source = fs.readFileSync(
+    path.join(projectRoot, "js/battle/BattleManager.js"),
+    "utf8",
+  );
+  const calls = source.match(/targetManager\.selectInitialTarget\(/g) || [];
+
+  assert.equal(calls.length, 3);
+}
+
 function testSceneAndRendererUseSharedTargetingContract() {
   const sceneSource = fs.readFileSync(
     path.join(projectRoot, "js/scenes/Scene_Battle.js"),
@@ -317,6 +392,9 @@ function run() {
   testPincerDualScopeDoesNotOfferAllForSingleEnemyFlank();
   testPincerAllTargetsIncludeFrontAndBackRowsOnSelectedFlank();
   testAlliedSingleAllScopeUsesWholePartyBucket();
+  testRestorativeDualTargetStartsOnCaster();
+  testOffensiveDualTargetStillStartsOnEnemy();
+  testBattleManagerUsesSharedInitialTargetSelection();
   testSceneAndRendererUseSharedTargetingContract();
 
   console.log("Battle targeting and scope navigation regression tests passed.");

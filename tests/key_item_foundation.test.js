@@ -99,12 +99,20 @@ function testMapCommentsAndTestKeyFixtureAreCanonical() {
   const map = readData("Map001.json");
   assert.equal(DatabaseValidator.validateMapData(map, database, 1), true);
 
-  const chest = map.events.find((event) => event.id === 13);
+  const chest = map.events.find((event) =>
+    event.pages?.some((page) =>
+      page.commands?.some(
+        (command) => command.code === "gainItemMessage" && command.itemId === 3,
+      ),
+    ),
+  );
   assert.ok(chest, "Map001 should contain the Test Key development chest");
 
-  const grant = chest.pages[0].commands.find(
-    (command) => command.code === "gainItemMessage",
-  );
+  const grant = chest.pages
+    .flatMap((page) => page.commands || [])
+    .find(
+      (command) => command.code === "gainItemMessage" && command.itemId === 3,
+    );
   assert.ok(grant);
   assert.equal(grant.itemId, 3);
   assert.equal(grant.amount, 1);

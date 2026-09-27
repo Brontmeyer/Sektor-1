@@ -169,7 +169,7 @@ The design principle is:
 
 > **Target legality and effect interpretation are separate decisions.**
 
-Do not unnecessarily restrict a Magick's targeting merely because its most common use suggests one obvious target.
+Do not unnecessarily restrict a Magick's targeting merely because its most common use suggests one obvious target. Initial cursor placement may still express intent: restorative/healing actions should open on the acting battler when legal, while offensive actions should open on an enemy. That convenience is presentation/navigation preference, not a change to the action's legal target space.
 
 ---
 
@@ -326,7 +326,9 @@ Current playable actors have **3 Essence slots**, with the count defined in acto
 
 An actor cannot equip the same Essence definition in more than one of their own slots at the same time. Slot assignment and Essence progression are separate: removing an Essence from a slot does **not** erase its Resonance, level, or Mastery Ready progress.
 
-Essence Equipment & Menu v1 exposes the complete canonical Essence catalog because acquisition / ownership rules have not yet been established as canon. When those rules are designed, they should filter which Essences appear as equippable without changing the underlying slot or progression contracts.
+While equipped, an Essence grants the Magick unlocked at its current level. Crossing a Resonance threshold makes the newly awakened Magick available immediately. Unequipping removes that temporary access without erasing the Essence's progression. Permanent learned Magick is a separate actor-owned source, so the same Magick may be learned permanently while an Essence grants it; player-facing availability still shows that Magick only once.
+
+Essence Equipment & Menu v1 exposes the complete canonical Essence catalog because acquisition / ownership rules have not yet been established as canon. When those rules are designed, they should filter which Essences appear as equippable without changing the underlying slot, progression, or ability-grant contracts.
 
 ---
 

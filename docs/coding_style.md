@@ -270,7 +270,7 @@ Reusable presentation images belong behind `UIAssetManager`. Do not hard-code UI
 
 Battlefield positions belong to `BattleFormationManager`. Do not hard-code actor names, actor IDs, enemy names, or formation-specific coordinates into `BattleRenderer`, `BattlePartyController`, effects, targeting, or animation code. Those consumers should ask the formation owner for positions, scales, and facing/advance direction. Rear-exposure detection also belongs to this geometry owner, but the resulting physical-damage multiplier is applied by `BattleManager`; Magick must not consult facing state.
 
-Target navigation belongs to `BattleTargetManager`. Scene input should pass directional intent into the target manager rather than encoding left/right formation assumptions itself. Effective Single/All availability must come from the current legal target bucket, and Pincer All targeting must resolve one flank bucket at a time. Rendering may display the resolved bucket/cursors but must not independently reconstruct which battlers an All action will affect.
+Target navigation and initial target preference belong to `BattleTargetManager`. Scene input and action dispatch should ask the target manager for the initial legal battler rather than duplicating ally-first/enemy-first loops. Restorative/healing actions should prefer the acting battler when legal; offensive actions should prefer enemies. Preference must never be encoded as target legality, because dual-side actions must remain free to cross sides when their data permits it. Effective Single/All availability must come from the current legal target bucket, and Pincer All targeting must resolve one flank bucket at a time. Rendering may display the resolved bucket/cursors but must not independently reconstruct which battlers an All action will affect.
 
 Scan knowledge belongs to `BattleScanManager`. Do not store scanned flags on `Game_Enemy`, SaveManager, rendering code, or `Enemies.json`. Tactical presentation must derive weakness/resistance/immunity from the target's existing runtime `elementRates`; do not create duplicate scan-only affinity fields. `Scene_Battle` may toggle the help presentation and `BattleManager` may invoke Scan through Skill execution, but neither should reconstruct tactical profile rules independently.
 
@@ -389,6 +389,8 @@ Playable actors follow the same rule: `actorId` is canonical identity and `Game_
 
 The same boundary applies to the rest of canonical content. Map/event/encounter/enemy/item/equipment/Magick/Skill/Enemy Skill/Valor/Essence names are presentation labels, not behavior keys. Use record IDs for database identity, status/location keys for keyed concepts, `shopType` for merchant category behavior, and effect/category metadata for mechanics. A regression test that reads canonical data should derive any expected display text from that record unless the exact wording itself is the feature under test.
 
+Stable IDs/keys are authoring identities, not forbidden-to-edit text. During development they may be deliberately reorganized or renamed, but that is an identity migration: existing save references such as event self-switch state or Area Map discovery IDs do not automatically follow the change. Regression tests should avoid pinning incidental fixture IDs when the behavior under test can be identified by its command/effect contract; only tests whose purpose is identity persistence should require a particular key.
+
 ---
 
 # 🧪 Status Naming
@@ -471,7 +473,7 @@ Until the quest system exists, Mastery records may intentionally use:
 
 Do not invent placeholder numeric quest IDs merely to avoid `null`.
 
-Actor Essence capacity belongs in actor data through the positive-integer `essenceSlots` field. UI code must query the actor's slot API rather than assuming a fixed slot count. Essence progression and slot assignment are separate runtime concepts so unequipping does not reset Resonance.
+Actor Essence capacity belongs in actor data through the positive-integer `essenceSlots` field. UI code must query the actor's slot API rather than assuming a fixed slot count. Essence progression and slot assignment are separate runtime concepts so unequipping does not reset Resonance. Equipped-Essence ability grants must be derived from the equipped `Game_Essence` instances and their unlocked ability records rather than copied into `magickIds`. `magickIds` remains persistent learned Magick ownership; `knownMagick()` is the merged availability surface and must deduplicate permanent and Essence-granted sources.
 
 ---
 

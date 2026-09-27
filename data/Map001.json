@@ -8,20 +8,32 @@
     "y": 350
   },
   "areaMap": {
-    "_comment": "Area Map foundation fixture. Locations are revealed by proximity or initiallyDiscovered.",
     "enabled": true,
     "locations": [
       {
-        "id": "test-plaza",
-        "name": "Test Plaza",
+        "_comment": "Dev Zone 1 Plaza",
+        "id": "dev-zone-1-plaza",
+        "name": "Dev Zone 1 Plaza",
         "type": "landmark",
         "x": 630,
         "y": 325,
         "discoverRadius": 140,
         "initiallyDiscovered": true,
-        "description": "The central testing grounds."
+        "description": "Dev Zone 1 Plaza."
       },
       {
+        "_comment": "Dev Zone 2 Passage",
+        "id": "dev-zone-2-passage",
+        "name": "Dev Zone 2 Passage",
+        "type": "exit",
+        "x": 630,
+        "y": 125,
+        "discoverRadius": 135,
+        "initiallyDiscovered": false,
+        "description": "The passage to Dev Zone 2."
+      },
+      {
+        "_comment": "Merchant Row",
         "id": "merchant-row",
         "name": "Merchant Row",
         "type": "landmark",
@@ -32,16 +44,7 @@
         "description": "A cluster of development merchants."
       },
       {
-        "id": "north-passage",
-        "name": "North Passage",
-        "type": "exit",
-        "x": 630,
-        "y": 125,
-        "discoverRadius": 135,
-        "initiallyDiscovered": false,
-        "description": "A passage leading to another area."
-      },
-      {
+        "_comment": "Party Recruitment area.",
         "id": "party-recruitment",
         "name": "Party Recruitment",
         "type": "landmark",
@@ -52,6 +55,7 @@
         "description": "Where you can recruit companions to your party."
       },
       {
+        "_comment": "Battle Row",
         "id": "battle-row",
         "name": "Battle Row",
         "type": "landmark",
@@ -63,6 +67,7 @@
       }
     ]
   },
+
   "obstacles": [
     {
       "x": 300,
@@ -113,8 +118,10 @@
       "height": 150
     }
   ],
+
   "transfers": [
     {
+      "_comment": "Transfer to Dev Zone 2.",
       "x": 555,
       "y": 50,
       "width": 150,
@@ -124,6 +131,7 @@
       "targetY": 300
     }
   ],
+
   "events": [
     {
       "_comment": "ID 1: Test NPC",
@@ -561,8 +569,34 @@
       ]
     },
     {
-      "_comment": "ID 13: Test Key Item",
+      "_comment": "ID 13: Test Rows Back Attack",
       "id": 13,
+      "name": "Rows Back Attack Tester",
+      "x": 900,
+      "y": 200,
+      "width": 32,
+      "height": 32,
+      "solid": true,
+      "pages": [
+        {
+          "conditions": {},
+          "commands": [
+            {
+              "code": "battle",
+              "encounterId": 7
+            },
+            {
+              "code": "text",
+              "speaker": "System",
+              "text": "The back-attack test encounter has ended."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "_comment": "ID 14: Test Key Item",
+      "id": 14,
       "name": "Test Key Chest",
       "x": 420,
       "y": 100,
@@ -610,8 +644,8 @@
       ]
     },
     {
-      "_comment": "ID 14: Test Key Lock",
-      "id": 14,
+      "_comment": "ID 15: Test Key Lock",
+      "id": 15,
       "name": "Test Key Lock",
       "x": 420,
       "y": 200,
@@ -671,8 +705,8 @@
       ]
     },
     {
-      "_comment": "ID 15: Sarah recruitment fixture",
-      "id": 15,
+      "_comment": "ID 16: Sarah recruitment fixture",
+      "id": 16,
       "name": "Sarah Recruiter",
       "x": 510,
       "y": 600,
@@ -728,8 +762,8 @@
       ]
     },
     {
-      "_comment": "ID 16: Aboo recruitment fixture",
-      "id": 16,
+      "_comment": "ID 17: Aboo recruitment fixture",
+      "id": 17,
       "name": "Aboo Recruiter",
       "x": 610,
       "y": 600,
@@ -785,8 +819,8 @@
       ]
     },
     {
-      "_comment": "ID 17: G Prime recruitment fixture",
-      "id": 17,
+      "_comment": "ID 18: G Prime recruitment fixture",
+      "id": 18,
       "name": "G Prime Recruiter",
       "x": 710,
       "y": 600,
@@ -836,32 +870,6 @@
               "code": "text",
               "speaker": "{actor:4}",
               "text": "I am with you."
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "_comment": "ID 18: Test Rows Back Attack",
-      "id": 18,
-      "name": "Rows Back Attack Tester",
-      "x": 900,
-      "y": 200,
-      "width": 32,
-      "height": 32,
-      "solid": true,
-      "pages": [
-        {
-          "conditions": {},
-          "commands": [
-            {
-              "code": "battle",
-              "encounterId": 7
-            },
-            {
-              "code": "text",
-              "speaker": "System",
-              "text": "The back-attack test encounter has ended."
             }
           ]
         }

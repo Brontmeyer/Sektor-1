@@ -137,6 +137,45 @@ class BattleTargetManager {
     return this.allowedTargetGroups(definition).includes(group);
   }
 
+  actionEffectType(definition) {
+    if (!definition) {
+      return null;
+    }
+
+    if (typeof definition.effect === "string") {
+      return definition.effect;
+    }
+
+    if (definition.effect && typeof definition.effect.type === "string") {
+      return definition.effect.type;
+    }
+
+    return null;
+  }
+
+  prefersAllyFirst(definition) {
+    if (!definition) {
+      return false;
+    }
+
+    const effectType = this.actionEffectType(definition);
+
+    return (
+      definition.category === "restore" ||
+      definition.element === "restorative" ||
+      ["heal", "healHp", "revive"].includes(effectType)
+    );
+  }
+
+  preferredTargetGroups(definition = this.currentActionDefinition()) {
+    const allowedGroups = this.allowedTargetGroups(definition);
+    const preference = this.prefersAllyFirst(definition)
+      ? ["ally", "enemy"]
+      : ["enemy", "ally"];
+
+    return preference.filter((group) => allowedGroups.includes(group));
+  }
+
   currentActionDefinition() {
     return (
       this.scene.pendingSkill ||
@@ -545,6 +584,33 @@ class BattleTargetManager {
 
     this.scene.selectedAllyIndex = index;
     return allies[index];
+  }
+
+  selectPreferredAlly(definition = this.currentActionDefinition()) {
+    const caster = this.currentCaster();
+
+    if (caster && this.isSelectableTarget(caster, definition)) {
+      return this.selectBattler(caster);
+    }
+
+    return this.selectFirstSelectableAlly(definition);
+  }
+
+  selectInitialTarget(definition = this.currentActionDefinition()) {
+    for (const group of this.preferredTargetGroups(definition)) {
+      this.scene.targetGroup = group;
+
+      const target =
+        group === "enemy"
+          ? this.selectFirstSelectableEnemy(definition)
+          : this.selectPreferredAlly(definition);
+
+      if (target) {
+        return target;
+      }
+    }
+
+    return null;
   }
 
   selectFirstLivingEnemy() {

@@ -171,9 +171,19 @@ function testIfKeyItemValidationProtectsAuthoringContract() {
 
   assert.equal(DatabaseValidator.validateMapData(map, database, 1), true);
 
-  const lock = map.events.find((event) => event.id === 14);
+  const findTestKeyLock = (mapData) =>
+    mapData.events.find((event) =>
+      event.pages?.some((page) =>
+        page.commands?.some(
+          (entry) => entry.code === "ifKeyItem" && entry.itemId === 3,
+        ),
+      ),
+    );
+  const lock = findTestKeyLock(map);
   assert.ok(lock, "Map001 should contain the consumable Test Key lock fixture");
-  const command = lock.pages[0].commands.find((entry) => entry.code === "ifKeyItem");
+  const command = lock.pages
+    .flatMap((page) => page.commands || [])
+    .find((entry) => entry.code === "ifKeyItem" && entry.itemId === 3);
   assert.ok(command);
   assert.equal(command.itemId, 3);
   assert.equal(command.consume, true);
@@ -188,8 +198,11 @@ function testIfKeyItemValidationProtectsAuthoringContract() {
   );
 
   const wrongTypeMap = clone(map);
-  const wrongTypeLock = wrongTypeMap.events.find((event) => event.id === 14);
-  wrongTypeLock.pages[0].commands[0].itemId = 1;
+  const wrongTypeLock = findTestKeyLock(wrongTypeMap);
+  const wrongTypeCommand = wrongTypeLock.pages
+    .flatMap((page) => page.commands || [])
+    .find((entry) => entry.code === "ifKeyItem" && entry.itemId === 3);
+  wrongTypeCommand.itemId = 1;
   assert.throws(
     () => DatabaseValidator.validateMapData(wrongTypeMap, database, 1),
     /itemId must reference an item with keyItem: true/,

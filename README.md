@@ -131,7 +131,8 @@ Systems currently being expanded include:
 -   ✅ Config Menu Presentation v1
 -   ✅ Status Menu Presentation v1
 -   ✅ Essence Menu Presentation & List Navigation v1
--   🚧 Essence ability grants and passive runtime
+-   ✅ Essence-granted Magick availability v1
+-   🚧 Essence passive runtime
 -   ✅ Enemy Actions & AI v1
 -   ✅ Enemy Skills & AI Integration v1
 -   ✅ Boss / Phase AI v1
@@ -155,7 +156,7 @@ Config Runtime v3 stores player preferences independently from Save Runtime v14,
 
 The main menu presents the active four party members through dedicated actor cards with Level, live HP/MP/Valor, current Status, and Next Level EXP, plus compact **RUNES**, TIME, and location panels. The redundant PARTY INFORMATION label is removed so the four cards use more of the vertical space, and the neutral near-black scene backdrop stays visually separate from the swappable window skin. The development command stack follows the approved singular vocabulary: **Item / Magick / Skill / Essence / Equip / Status / Order / ROSTER / Map / Valor / Config / Save / Load**. Load remains a development convenience and is still planned to leave the final in-game menu. There is no redundant game-title or COMMANDS heading. Magick, Skill, Essence, Equip, Status, and Valor transfer focus into the active-party cards first; confirming an actor opens the existing character screen on that actor (including the dedicated Valor progression screen). **Order** transfers focus directly into the visible party cards with no intermediate Order screen: left/right edits persistent Back/Front presentation, while Confirm picks up a card and Confirm on another slot swaps the two actors' visual formation positions. The menu, battle HUD roster, and battlefield consume that visual order, but active-party membership, turn scheduling, stats, damage, targeting eligibility, and action priority remain independent of slot position. The saved row choice now also drives battlefield presentation: back-row actors stand farther from the enemy side in Normal/Back Attack, while Pincer front-row actors step outward toward their stable flank and back-row actors remain closer to party center. This row offset is deliberately excluded from target-selection heuristics and rear-damage calculations. `MenuAccessPolicy` owns command visibility/enabled state; **ROSTER (Remote Operative Selection Tactical Engagement Registry)** appears once the party has recruited a supporting operative and owns active/reserve party switching, while maps may optionally restrict Save/Load and debug mode keeps development permissive. Persistent play time is now canonical on `Game_System`: the main menu presents live `HH:MM:SS`, and SAVE/LOAD persist the same elapsed-time value in save metadata so loading a file resumes its clock instead of restarting or deriving time from timestamps.
 
-**Area Map Foundation v1** adds **Map** as a direct MAIN MENU destination. Each map may publish validated `areaMap.locations` records for landmarks and exits; discovery is proximity-driven or explicitly initial, while `Game_System` stores only the player's discovered location IDs. The AREA MAP screen scales the current map footprint and obstacle geometry, marks the player's current position, and lists only discovered landmarks/exits so undiscovered location names are not leaked. Field exploration also has a remappable **Quick Map** action (`M` by default) that opens the same live Area Map snapshot through a scope-aware route seam. That seam is intentionally ready for a later overworld to resolve Quick Map to a World Map without replacing the current Area Map or creating a second discovery store. Save Runtime v14 persists the shared discovery state.
+**Area Map Foundation v1** adds **Map** as a direct MAIN MENU destination. Each map may publish validated `areaMap.locations` records for landmarks and exits; discovery is proximity-driven or explicitly initial, while `Game_System` stores only the player's discovered location IDs. The AREA MAP screen scales the current map footprint and obstacle geometry, marks the player's current position, and lists only discovered landmarks/exits so undiscovered location names are not leaked. Field exploration also has a remappable **Quick Map** action (`M` by default) that opens the same live Area Map snapshot through a scope-aware route seam. That seam is intentionally ready for a later overworld to resolve Quick Map to a World Map without replacing the current Area Map or creating a second discovery store. Save Runtime v14 persists the shared discovery state. Area Map location `id` values are the persisted discovery identity: they may be intentionally changed while authoring, but doing so is a save-data migration rather than a display rename, so existing discovery records will not automatically follow the new key.
 
 **Actor Naming + Story Identity Foundation v2** keeps character display names runtime-owned while actor IDs stay canonical. A new game now enters the map immediately with the configured protagonist shown as **Unknown**, while the current `Actors.json` database name remains available as the later naming screen's Default choice. Story events invoke the validated `nameActor` command when identity is revealed. The project-styled naming screen provides upper/lowercase letter rows, Space / Delete / Select / Default side commands, 16 visible name slots, direct keyboard typing, and the same gold cursor/dim selection language used by the rest of the menus. `Game_Actor` continues to enforce Unicode letters plus single spaces only. Event dialogue can use `{actor:1}` (or another actor ID) in text, speaker names, prompts, and choice labels so the unidentified/custom name follows runtime identity automatically. Supporting actors keep their database defaults but may enter the same naming scene before recruitment presentation reveals that runtime name; the Map001 development fixtures demonstrate that unidentified-introduction flow. Save Runtime v14 continues to persist the current runtime names alongside world discovery state.
 
@@ -203,7 +204,11 @@ behavior to be expanded without hard-coding individual spells throughout
 the engine. Battlers may declare `undead: true`; HP-restoring Magick then
 uses the shared restorative path as direct restorative damage against that
 target. Healing Skills/Valor Arts and HP-restoring Items inherit the same
-target-side rule, including against a full-HP undead battler.
+target-side rule, including against a full-HP undead battler. Restorative and
+healing actions now open target selection on the acting battler when legal,
+while offensive dual-side actions retain enemy-first selection; this is only an
+initial cursor preference, so every target group permitted by the action data
+remains reachable.
 
 Summon Magick is a future Magick category. **Skills** owns ordinary non-Magick techniques, while **Valor Arts** now live in their own `data/Valor.json` database and actor-owned runtime. Both remain separate from Magick ownership, MP costs, and spell terminology.
 
@@ -256,7 +261,9 @@ The system is also designed to support future **Essence Evolution**.
 
 Essence Equipment & Menu v1 gives every current actor **3 data-driven Essence slots**, party-member switching in the menu, progression details, and a scrollable canonical Essence catalog. Resonance belongs to the actor's Essence progression state rather than to the slot, so unequipping and re-equipping an Essence preserves its growth.
 
-The v1 selector intentionally exposes the canonical Essence catalog while long-term acquisition / ownership rules remain undecided. Future acquisition can filter that catalog without changing the actor slot API.
+Equipped Essences now grant the Magick awakened at their current Resonance level. Those grants flow through the same `knownMagick()` / `canUseMagick()` contract consumed by field and battle Magick menus, so crossing a Resonance threshold makes the newly awakened ability available immediately. Unequipping removes the temporary grant without erasing progression; permanently learned Magick remains independent and duplicate sources collapse to one available entry.
+
+The v1 selector intentionally exposes the canonical Essence catalog while long-term acquisition / ownership rules remain undecided. Future acquisition can filter that catalog without changing the actor slot or ability-grant APIs.
 
 ------------------------------------------------------------------------
 

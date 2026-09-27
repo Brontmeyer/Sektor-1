@@ -153,7 +153,7 @@ Summon Magick remains later Magick design work and is not required to complete t
 
 # 💎 Milestone 3: Essence Runtime
 
-The Essence data model, database loading, validation, and progression rules are established, but the player-facing runtime system remains to be built.
+The Essence data model, database loading, validation, equipment UI, progression, and first ability-grant runtime are established. The remaining runtime work is now concentrated on ownership, passives, and Mastery support.
 
 Completed runtime foundation now includes:
 
@@ -162,13 +162,13 @@ Completed runtime foundation now includes:
 - Persistent actor-owned Essence progression that survives unequipping
 - Battle Resonance gain for surviving active participants
 - Resonance-capped Essence leveling and next-milestone reporting
+- Equipped-Essence Magick availability through the actor's shared Magick contract, including immediate newly awakened ability access
 - Mastery Ready transition at 1500 Resonance
 - Save / Load persistence for Essence progression and slot assignments
 
 Primary remaining work includes:
 
 - Define long-term Essence acquisition / ownership rules for filtering the equip catalog
-- Implement ability availability from equipped Essences
 - Implement Level 4 passive effects
 - Implement full Mastery state / Trial support
 

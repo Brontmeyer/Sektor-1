@@ -70,6 +70,41 @@ function testGameSystemOwnsPersistentSharedDiscoveryState() {
 
 function testGameMapDiscoversNearbyLocationsAndBuildsSnapshot() {
   const mapData = readData("Map001.json");
+  mapData.areaMap = {
+    enabled: true,
+    locations: [
+      {
+        id: "test-plaza",
+        name: "Test Plaza",
+        type: "landmark",
+        x: 630,
+        y: 325,
+        discoverRadius: 140,
+        initiallyDiscovered: true,
+        description: "Nearby landmark fixture.",
+      },
+      {
+        id: "north-passage",
+        name: "North Passage",
+        type: "exit",
+        x: 630,
+        y: 125,
+        discoverRadius: 135,
+        initiallyDiscovered: false,
+        description: "Undiscovered exit fixture.",
+      },
+      {
+        id: "merchant-row",
+        name: "Merchant Row",
+        type: "landmark",
+        x: 385,
+        y: 325,
+        discoverRadius: 105,
+        initiallyDiscovered: false,
+        description: "Second landmark fixture.",
+      },
+    ],
+  };
   const discoveries = new Map();
   const key = (mapId, locationId) => `${mapId}:${locationId}`;
   const context = vm.createContext({

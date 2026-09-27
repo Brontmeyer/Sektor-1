@@ -470,7 +470,13 @@ function testItemGainNormalizesQuantitiesAndRejectsInvalidInput() {
 
 function testMap001ContainsStoryDrivenNamingFixtures() {
   const map = readData("Map001.json");
-  const protagonistEvent = map.events.find((event) => event?.id === 19);
+  const protagonistEvent = map.events.find((event) =>
+    event.pages?.some((page) =>
+      page.commands?.some(
+        (command) => command.code === "nameActor" && command.actorId === 1,
+      ),
+    ),
+  );
 
   assert.ok(protagonistEvent, "Map001 should contain the protagonist naming fixture.");
   assert.equal(
@@ -498,9 +504,16 @@ function testMap001ContainsStoryDrivenNamingFixtures() {
     true,
   );
 
-  for (const [eventId, actorId] of [[15, 2], [16, 3], [17, 4]]) {
-    const event = map.events.find((entry) => entry?.id === eventId);
+  for (const actorId of [2, 3, 4]) {
+    const event = map.events.find((entry) =>
+      entry.pages?.some((page) =>
+        page.commands?.some(
+          (command) => command.code === "recruitActor" && command.actorId === actorId,
+        ),
+      ),
+    );
     const commands = event?.pages?.[0]?.commands || [];
+    const eventId = event?.id ?? "?";
     const recruitIndex = commands.findIndex(
       (command) => command.code === "recruitActor" && command.actorId === actorId,
     );
