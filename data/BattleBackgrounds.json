@@ -1,0 +1,23 @@
+[
+  null,
+  {
+    "_comment": "Prototype battleback for Dev Zone 1. Stable gameplay identity is the key, not the display name or filename.",
+    "id": 1,
+    "key": "devZone1",
+    "name": "Dev Zone 1",
+    "image": "js/sprites/battlebacks/dev_zone_1.svg",
+    "fallbackColor": "#14212b",
+    "positionX": 0.5,
+    "positionY": 0.5
+  },
+  {
+    "_comment": "Prototype battleback for Dev Zone 2.",
+    "id": 2,
+    "key": "devZone2",
+    "name": "Dev Zone 2",
+    "image": "js/sprites/battlebacks/dev_zone_2.svg",
+    "fallbackColor": "#17231f",
+    "positionX": 0.5,
+    "positionY": 0.5
+  }
+]

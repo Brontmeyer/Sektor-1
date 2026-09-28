@@ -700,6 +700,14 @@ Major battle features still planned include:
 
 These are planned architecture, not claims about currently completed runtime behavior.
 
+## Battle Backgrounds
+
+Battle backgrounds are presentation data, not combat rules. `data/BattleBackgrounds.json` owns stable background keys and replaceable visual metadata. Maps may provide `battleBackgroundKey` as their normal environmental battleback, encounters may optionally override that key for special arenas, and `System.defaultBattleBackgroundKey` is the final configured fallback when a battle has no map-specific context.
+
+Resolution order is **encounter override → originating map → system default**. `SceneManager.startBattle()` carries the originating map context into `Scene_Battle`; `BattleBackgroundManager` resolves and loads the image, while `BattleRenderer` draws it before battlers/effects/HUD. Background identity never depends on display names. Missing or failed images are non-fatal: the manager paints the configured fallback color so battle remains playable and diagnosable.
+
+The current Dev Zone 1 and Dev Zone 2 SVG battlebacks are prototype content intended to prove the pipeline. They can be replaced later without changing encounter logic as long as the stable keys remain valid.
+
 ---
 
 # 🧱 Responsibility Rules
@@ -715,6 +723,9 @@ Game_Battler / Game_Actor / Game_Enemy
 
 BattleManager
     Coordinates turn and action flow
+
+BattleBackgroundManager
+    Resolves and draws battleback presentation data
 
 BattleTargetManager
     Owns target-selection rules and current target state
@@ -749,6 +760,7 @@ Battle documentation and data have different responsibilities.
 data/Magick.json       Canonical Magick definitions
 data/Essences.json     Canonical Essence definitions
 data/Statuses.json     Canonical status definitions
+data/BattleBackgrounds.json  Canonical battleback registry / stable keys
 
 docs/battle_system.md  Canonical battle rules and interactions
 docs/architecture.md   Engine structure and ownership

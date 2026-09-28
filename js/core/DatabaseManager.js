@@ -23,6 +23,7 @@ class DatabaseManager {
     this.statuses = await this.loadJSON("data/Statuses.json");
     this.enemies = await this.loadJSON("data/Enemies.json");
     this.encounters = await this.loadJSON("data/Encounters.json");
+    this.battleBackgrounds = await this.loadJSON("data/BattleBackgrounds.json");
 
     DatabaseValidator.validate(this);
 
@@ -109,6 +110,31 @@ class DatabaseManager {
 
   static encounterName(id) {
     return this.indexedRecordName(this.encounters, id, "Encounter");
+  }
+
+  // =================================
+  // Battle Backgrounds
+  // =================================
+
+  static battleBackground(id) {
+    return this.indexedRecord(this.battleBackgrounds, id);
+  }
+
+  static battleBackgroundByKey(key) {
+    if (!Array.isArray(this.battleBackgrounds) || typeof key !== "string") {
+      return null;
+    }
+
+    const normalizedKey = key.trim();
+    if (!normalizedKey) {
+      return null;
+    }
+
+    return (
+      this.battleBackgrounds.find(
+        (background) => background?.key === normalizedKey,
+      ) || null
+    );
   }
 
   // =================================

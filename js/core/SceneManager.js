@@ -60,6 +60,19 @@ class SceneManager {
     return true;
   }
 
+  static battleContextForCurrentScene() {
+    const map = this.currentScene?.map || null;
+
+    return {
+      mapId: Number.isInteger(map?.id) ? map.id : null,
+      mapName: typeof map?.name === "string" ? map.name : null,
+      battleBackgroundKey:
+        typeof map?.battleBackgroundKey === "string"
+          ? map.battleBackgroundKey
+          : null,
+    };
+  }
+
   static startBattle(encounterId, onComplete = null) {
     const encounter = DatabaseManager.encounter(encounterId);
 
@@ -68,7 +81,8 @@ class SceneManager {
       return false;
     }
 
-    this.push(Scene_Battle, encounter, onComplete);
+    const battleContext = this.battleContextForCurrentScene();
+    this.push(Scene_Battle, encounter, onComplete, battleContext);
     return true;
   }
 

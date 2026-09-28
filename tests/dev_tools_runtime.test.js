@@ -105,12 +105,12 @@ function makeHarness(debugMode = true) {
     console: { log() {}, warn() {}, table() {} },
     DatabaseManager,
     DebugManager: { log() {} },
-    SceneManager,
+    __sceneManagerRuntime: SceneManager,
     $gameParty: party,
     $gameSystem: system,
   });
 
-  vm.runInContext(`${read("js/core/DevTools.js")}\nglobalThis.__DevTools = DevTools;`, context);
+  vm.runInContext(`const SceneManager = globalThis.__sceneManagerRuntime;\n${read("js/core/DevTools.js")}\nglobalThis.__DevTools = DevTools;`, context);
   return { context, DevTools: context.__DevTools, actor, party, system, SceneManager };
 }
 
@@ -128,7 +128,7 @@ function testInstallIsDebugOnlyAndExposesShortRuntimeAliases() {
 }
 
 function testResourceStatusAndBattleHelpersUseRuntimeContracts() {
-  const { DevTools, actor, party, SceneManager } = makeHarness(true);
+  const { context, DevTools, actor, party, SceneManager } = makeHarness(true);
   const tools = DevTools.install();
 
   assert.equal(tools.hp(1, 250), 250);
@@ -147,8 +147,13 @@ function testResourceStatusAndBattleHelpersUseRuntimeContracts() {
   assert.equal(tools.runes(500), true);
   assert.equal(typeof tools.gil, "undefined");
   assert.equal(party._runes, 500);
+  assert.equal(typeof context.SceneManager, "undefined");
   assert.equal(tools.battle(1), true);
   assert.equal(SceneManager.startedEncounterId, 1);
+
+  const enemy = { enemyId: 1 };
+  SceneManager.currentScene = { enemies: [enemy] };
+  assert.equal(tools.E(0), enemy);
 }
 
 function testEssenceLevelFourMasteryAndPassivePrepUseStableIds() {

@@ -1,7 +1,7 @@
 "use strict";
 
 class Scene_Battle extends Scene_Base {
-  constructor(encounter, onComplete = null) {
+  constructor(encounter, onComplete = null, battleContext = null) {
     super();
 
     if (!encounter || !Array.isArray(encounter.members)) {
@@ -10,6 +10,9 @@ class Scene_Battle extends Scene_Base {
 
     this.encounter = encounter;
     this.onComplete = typeof onComplete === "function" ? onComplete : null;
+    this.battleContext = battleContext && typeof battleContext === "object"
+      ? { ...battleContext }
+      : {};
     this.outcome = null;
     this.result = null;
     this.battleExited = false;
@@ -111,6 +114,10 @@ class Scene_Battle extends Scene_Base {
     this.formationManager = new BattleFormationManager(this);
     this.partyController = new BattlePartyController(this);
     this.hudLayout = new BattleHudLayout(this);
+    this.backgroundManager =
+      typeof BattleBackgroundManager !== "undefined"
+        ? new BattleBackgroundManager(this, this.battleContext)
+        : null;
     this.renderer = new BattleRenderer(this);
 
     // PENDING ITEM ACTION

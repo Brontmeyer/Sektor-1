@@ -2,6 +2,7 @@
   "gameTitle": "Sektor 1",
   "startMapId": 1,
   "battleView": "side",
+  "defaultBattleBackgroundKey": "devZone1",
   "debugMode": true,
   "protagonistActorId": 1,
   "unidentifiedActorName": "Unknown",

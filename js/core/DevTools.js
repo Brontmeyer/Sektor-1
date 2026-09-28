@@ -50,7 +50,7 @@ class DevTools {
   }
 
   currentBattle() {
-    const scene = globalThis.SceneManager?.currentScene || null;
+    const scene = SceneManager.currentScene || null;
     return Array.isArray(scene?.enemies) ? scene : null;
   }
 
@@ -107,7 +107,7 @@ class DevTools {
       console.warn(`$dev: encounter ID ${encounterId} does not exist.`);
       return false;
     }
-    return globalThis.SceneManager?.startBattle?.(id) === true;
+    return SceneManager.startBattle(id) === true;
   }
 
   recruit(actorId) {

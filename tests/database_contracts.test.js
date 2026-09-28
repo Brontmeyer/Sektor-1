@@ -44,6 +44,7 @@ function projectDatabase() {
     valorArts: readData("Valor.json"),
     essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),
+    battleBackgrounds: readData("BattleBackgrounds.json"),
   };
 }
 

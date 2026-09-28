@@ -15,6 +15,10 @@ class Game_Map {
     this.obstacles = mapData.obstacles || [];
     this.transfers = mapData.transfers || [];
     this.menuAccess = mapData.menuAccess || {};
+    this.battleBackgroundKey =
+      typeof mapData.battleBackgroundKey === "string"
+        ? mapData.battleBackgroundKey.trim() || null
+        : null;
     this.areaMap = this.normalizeAreaMap(mapData.areaMap);
 
     this.events = (mapData.events || []).map(

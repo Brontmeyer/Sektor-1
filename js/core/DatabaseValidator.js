@@ -8,7 +8,13 @@ class DatabaseValidator {
   static validate(database) {
     const errors = [];
 
-    this.validateSystem(database.system, database.mapInfos, errors, database.actors);
+    this.validateSystem(
+      database.system,
+      database.mapInfos,
+      errors,
+      database.actors,
+      database.battleBackgrounds,
+    );
 
     for (const [name, records] of [
       ["Actors", database.actors],
@@ -24,6 +30,7 @@ class DatabaseValidator {
       ["Valor", database.valorArts],
       ["Essences", database.essences],
       ["Statuses", database.statuses],
+      ["BattleBackgrounds", database.battleBackgrounds],
     ]) {
       this.validateIndexedDatabase(name, records, errors);
     }
@@ -58,7 +65,13 @@ class DatabaseValidator {
       database.statuses,
       errors,
     );
-    this.validateEncounters(database.encounters, database.enemies, errors);
+    this.validateBattleBackgrounds(database.battleBackgrounds, errors);
+    this.validateEncounters(
+      database.encounters,
+      database.enemies,
+      errors,
+      database.battleBackgrounds,
+    );
 
     if (errors.length > 0) {
       const details = errors.map((error) => `- ${error}`).join("\n");
@@ -123,7 +136,13 @@ class DatabaseValidator {
     }
   }
 
-  static validateSystem(system, mapInfos, errors, actors = null) {
+  static validateSystem(
+    system,
+    mapInfos,
+    errors,
+    actors = null,
+    battleBackgrounds = null,
+  ) {
     if (!system || typeof system !== "object") {
       errors.push("System.json must contain an object.");
       return;
@@ -191,6 +210,27 @@ class DatabaseValidator {
       typeof system.debugMode !== "boolean"
     ) {
       errors.push("System.debugMode must be true or false when provided.");
+    }
+
+    if (system.defaultBattleBackgroundKey !== undefined) {
+      if (
+        typeof system.defaultBattleBackgroundKey !== "string" ||
+        system.defaultBattleBackgroundKey.trim() === ""
+      ) {
+        errors.push(
+          "System.defaultBattleBackgroundKey must be a non-empty string when provided.",
+        );
+      } else if (
+        Array.isArray(battleBackgrounds) &&
+        !this.battleBackgroundByKey(
+          battleBackgrounds,
+          system.defaultBattleBackgroundKey,
+        )
+      ) {
+        errors.push(
+          `System.defaultBattleBackgroundKey references unknown battle background key "${system.defaultBattleBackgroundKey}".`,
+        );
+      }
     }
 
     if (
@@ -299,6 +339,7 @@ class DatabaseValidator {
         "events",
         "menuAccess",
         "areaMap",
+        "battleBackgroundKey",
         "_comment",
       ],
       errors,
@@ -314,6 +355,25 @@ class DatabaseValidator {
 
     if (typeof mapData.name !== "string" || mapData.name.trim() === "") {
       errors.push("Map name must be a non-empty string.");
+    }
+
+    if (mapData.battleBackgroundKey !== undefined) {
+      if (
+        typeof mapData.battleBackgroundKey !== "string" ||
+        mapData.battleBackgroundKey.trim() === ""
+      ) {
+        errors.push("Map battleBackgroundKey must be a non-empty string when provided.");
+      } else if (
+        Array.isArray(database?.battleBackgrounds) &&
+        !this.battleBackgroundByKey(
+          database.battleBackgrounds,
+          mapData.battleBackgroundKey,
+        )
+      ) {
+        errors.push(
+          `Map battleBackgroundKey references unknown battle background key "${mapData.battleBackgroundKey}".`,
+        );
+      }
     }
 
     const widthValid = this.validateFiniteNumber(
@@ -2922,7 +2982,90 @@ class DatabaseValidator {
     }
   }
 
-  static validateEncounters(encounters, enemies, errors) {
+  static battleBackgroundByKey(battleBackgrounds, key) {
+    if (!Array.isArray(battleBackgrounds) || typeof key !== "string") {
+      return null;
+    }
+
+    const normalizedKey = key.trim();
+    return (
+      battleBackgrounds.find(
+        (background) => background?.key === normalizedKey,
+      ) || null
+    );
+  }
+
+  static validateBattleBackgrounds(battleBackgrounds, errors) {
+    if (!Array.isArray(battleBackgrounds)) {
+      return;
+    }
+
+    const keys = new Set();
+    const colorPattern = /^#[0-9a-f]{6}$/i;
+
+    for (let index = 1; index < battleBackgrounds.length; index++) {
+      const background = battleBackgrounds[index];
+      if (!background) {
+        continue;
+      }
+
+      const label = `BattleBackground ${index}`;
+      this.validateKnownKeys(
+        label,
+        background,
+        [
+          "id",
+          "key",
+          "name",
+          "image",
+          "fallbackColor",
+          "positionX",
+          "positionY",
+          "_comment",
+        ],
+        errors,
+      );
+
+      if (typeof background.key !== "string" || background.key.trim() === "") {
+        errors.push(`${label} key must be a non-empty string.`);
+      } else if (keys.has(background.key)) {
+        errors.push(`${label} key "${background.key}" must be unique.`);
+      } else {
+        keys.add(background.key);
+      }
+
+      if (typeof background.image !== "string" || background.image.trim() === "") {
+        errors.push(`${label} image must be a non-empty string.`);
+      }
+
+      if (
+        typeof background.fallbackColor !== "string" ||
+        !colorPattern.test(background.fallbackColor)
+      ) {
+        errors.push(`${label} fallbackColor must be a six-digit hex color.`);
+      }
+
+      for (const axis of ["positionX", "positionY"]) {
+        if (background[axis] === undefined) {
+          continue;
+        }
+
+        this.validateFiniteNumber(
+          `${label} ${axis}`,
+          background[axis],
+          errors,
+          { min: 0, max: 1 },
+        );
+      }
+    }
+  }
+
+  static validateEncounters(
+    encounters,
+    enemies,
+    errors,
+    battleBackgrounds = null,
+  ) {
     if (!Array.isArray(encounters) || !Array.isArray(enemies)) {
       return;
     }
@@ -2940,6 +3083,27 @@ class DatabaseValidator {
 
       if (typeof encounter.canEscape !== "boolean") {
         errors.push(`Encounter ${index} canEscape must be a boolean.`);
+      }
+
+      if (encounter.battleBackgroundKey !== undefined) {
+        if (
+          typeof encounter.battleBackgroundKey !== "string" ||
+          encounter.battleBackgroundKey.trim() === ""
+        ) {
+          errors.push(
+            `Encounter ${index} battleBackgroundKey must be a non-empty string when provided.`,
+          );
+        } else if (
+          Array.isArray(battleBackgrounds) &&
+          !this.battleBackgroundByKey(
+            battleBackgrounds,
+            encounter.battleBackgroundKey,
+          )
+        ) {
+          errors.push(
+            `Encounter ${index} battleBackgroundKey references unknown battle background key "${encounter.battleBackgroundKey}".`,
+          );
+        }
       }
 
       const formation = encounter.formation || "normal";

@@ -18,9 +18,7 @@ class BattleRenderer {
     // Battle background
     // -----------------------------
 
-    context.fillStyle = "#202020";
-
-    context.fillRect(0, 0, Graphics.width, Graphics.height);
+    this.drawBattleBackground(context);
 
     // -----------------------------
     // Battle presentation
@@ -58,6 +56,18 @@ class BattleRenderer {
     }
 
     context.restore();
+  }
+
+  drawBattleBackground(context) {
+    const manager = this.scene?.backgroundManager;
+
+    if (manager && typeof manager.draw === "function") {
+      manager.draw(context, Graphics.width, Graphics.height);
+      return;
+    }
+
+    context.fillStyle = "#202020";
+    context.fillRect(0, 0, Graphics.width, Graphics.height);
   }
 
   selectionWindows() {

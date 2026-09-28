@@ -291,11 +291,14 @@ Current battle modules include:
 
 ```text
 BattleAnimationController.js
+BattleBackgroundManager.js
 BattleEffects.js
+BattleFormationManager.js
 BattleManager.js
 BattleTimeManager.js
 BattlePartyController.js
 BattleRenderer.js
+BattleScanManager.js
 BattleTargetManager.js
 ```
 
@@ -340,6 +343,12 @@ As Magick, Statuses, and Essences gain more runtime behavior, reusable effect me
 `BattleAnimationController` coordinates battle animation behavior separately from the underlying gameplay result.
 
 A Magick's mechanical resolution and its visual presentation should remain separable so visual changes do not require rewriting game rules.
+
+## BattleBackgroundManager
+
+`BattleBackgroundManager` owns battleback presentation resolution and image fitting without owning combat state. `SceneManager.startBattle()` snapshots the originating map ID/name/background key before pushing the battle scene. The manager then resolves one stable background key in priority order: an optional encounter override, the originating map's `battleBackgroundKey`, then `System.defaultBattleBackgroundKey`. `BattleBackgrounds.json` maps that stable key to replaceable presentation metadata such as image path, fallback color, and crop anchors.
+
+Rendering is deliberately resilient. The configured fallback color is painted first every frame; a ready image is cover-fitted over it, while a missing or failed asset simply leaves the fallback visible and reports the load failure. `BattleRenderer` delegates only the background layer to this manager before drawing battlers, HUD, effects, popups, banners, and windows. `BattleManager` never needs to know which background is displayed.
 
 ## BattleRenderer
 

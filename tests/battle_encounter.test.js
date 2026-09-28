@@ -140,6 +140,7 @@ function testProjectDatabaseValidation() {
     valorArts: readData("Valor.json"),
     essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),
+    battleBackgrounds: readData("BattleBackgrounds.json"),
   };
 
   assert.equal(DatabaseValidator.validate(database), true);

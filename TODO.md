@@ -109,6 +109,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Revisit front/back row combat mechanics for physical damage dealt/received by actors and enemies; current player row state is presentation-only outside existing formation/rear-exposure rules
 - [x] Pass 120: Refine victory spoils pacing so Confirm starts each tally, Confirm during counting snaps to the final total, and the next Confirm advances to the next results stage
 - [x] Pass 121: Rename the active economy/runtime contract to Runes, migrate legacy save currency into Save Runtime v15, and decouple reward-engine tests from enemy balance values
+- [x] Pass 122: Add data-driven battle background resolution with map defaults, encounter overrides, safe fallback rendering, and two replaceable Dev Zone prototype battlebacks
 - [x] Implement Scan & Tactical Help v1 with battle-local per-enemy knowledge, H-toggle help, live HP/MP, and elemental Weak/Resist/Immune detail
 - [x] Implement Game Options / Config Foundation v1 with save-slot-independent persistence
 - [x] Add Battle Speed, Battle Message Speed, Field Message Speed, Battle Cursor Memory, and Magick Order runtime settings

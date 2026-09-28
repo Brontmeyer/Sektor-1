@@ -1,3 +1,12 @@
+## Pass 122 - Battle Background Foundation v1
+
+- Replaced the battle renderer's hard-coded `#202020` void with a dedicated `BattleBackgroundManager` presentation layer that paints a safe fallback first and then cover-fits the resolved battleback when its asset is ready.
+- Added `BattleBackgrounds.json` as the stable-key registry for battleback presentation metadata, including image path, fallback color, and crop anchors; display names and filenames are not gameplay identity.
+- Added map-level `battleBackgroundKey` ownership plus optional encounter-level override support. Resolution priority is encounter override → originating map → `System.defaultBattleBackgroundKey`.
+- Added two replaceable prototype battlebacks for Dev Zone 1 and Dev Zone 2, with missing/failed image loads falling back non-fatally to the configured background color.
+- Carried originating map context through `SceneManager.startBattle()` without moving background rules into `BattleManager`, and added focused validation/rendering/load-order regression coverage.
+- Fixed the development console battle/enemy helpers to use the browser's `SceneManager` lexical runtime binding rather than incorrectly assuming the class exists on `globalThis`; `$dev.battle(id)` now starts encounters in the live browser as documented.
+
 ## Pass 121 - Runes Runtime Cleanup + Balance-Safe Reward Tests v1
 
 - Renamed the active economy contract from legacy Gil terminology to native Runes terminology across `Game_Party`, shops, battle rewards/results, enemy reward data, developer tools, menus, validation, and current documentation.

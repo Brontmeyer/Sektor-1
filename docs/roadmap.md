@@ -53,6 +53,7 @@ Completed engine foundations include:
 - Battle Command Navigation & Side Actions with a four-command core list, hidden-on-demand Escape/Defend side panels, ready-only Surge chip, and one-level target-cancel restoration
 - Battle Action Confirmation v1 with Retreat routed through the shared allied battlefield confirmation surface before MP/turn commitment, followed by the caster's normal Magick presentation and automatic escape-scene exit; random-per-hit Magick avoids misleading fake-target selection
 - Battle Results Screen v2 for project-styled sequential EXP/Resonance and Runes/Item feedback, including level-up and Essence progression detail
+- Battle Background Foundation v1 with stable-key map defaults, encounter overrides, safe fallback rendering, and two replaceable Dev Zone prototype battlebacks
 
 Completed canonical battle-data foundations include:
 
