@@ -92,6 +92,41 @@ class Scene_Menu extends Scene_Base {
     this.pendingActorCommand = null;
   }
 
+  shouldReturnToActorSelection(command) {
+    return command === "Magick" || command === "Skill";
+  }
+
+  returnToActorSelection(command, actor) {
+    if (!this.shouldReturnToActorSelection(command) || !actor) {
+      return false;
+    }
+
+    if (
+      typeof this.partyWindow.selectActor === "function" &&
+      !this.partyWindow.selectActor(actor)
+    ) {
+      return false;
+    }
+
+    if (!this.partyWindow.activate("actor")) {
+      return false;
+    }
+
+    this.pendingActorCommand = command;
+    return true;
+  }
+
+  updateActorDestination(window, command) {
+    const actor = window?.actor || null;
+    window?.update?.();
+
+    if (window?.isOpen?.() !== false) {
+      return;
+    }
+
+    this.returnToActorSelection(command, actor);
+  }
+
   openActorDestination(command, actor) {
     if (!actor) {
       return false;
@@ -199,12 +234,12 @@ class Scene_Menu extends Scene_Base {
     }
 
     if (this.magickWindow.isOpen()) {
-      this.magickWindow.update();
+      this.updateActorDestination(this.magickWindow, "Magick");
       return;
     }
 
     if (this.skillsWindow.isOpen()) {
-      this.skillsWindow.update();
+      this.updateActorDestination(this.skillsWindow, "Skill");
       return;
     }
 

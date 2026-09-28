@@ -1,3 +1,11 @@
+## Pass 123 - Main Menu Actor Return Focus v1
+
+- Returning from actor-confirmed MAGICK or SKILL now reactivates the MAIN MENU party cards on the actor who was just viewed instead of dropping focus back to the command column.
+- The pending destination is preserved while actor-card focus is active, so Up/Down can choose another active actor and Confirm immediately reopens the same MAGICK or SKILL destination for that actor.
+- Cancel from the returned actor-card focus still exits cleanly to the ordinary MAIN MENU command column.
+- EQUIP, ESSENCE, STATUS, and VALOR keep their existing internal actor-navigation/return contracts rather than inheriting this MAGICK/SKILL-specific handoff.
+- Added focused regression coverage for actor-card restoration, actor identity preservation, and destination isolation.
+
 ## Pass 122 - Battle Background Foundation v1
 
 - Replaced the battle renderer's hard-coded `#202020` void with a dedicated `BattleBackgroundManager` presentation layer that paints a safe fallback first and then cover-fits the resolved battleback when its asset is ready.

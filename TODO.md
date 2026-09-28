@@ -153,7 +153,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
 - [x] Add canonical persistent play-time tracking with main-menu HH:MM:SS and Save/Load persistence
 - [x] Implement Main Menu Actor Selection & Order Foundation v1 with shared party-card focus, actor handoff, persistent front/back row state, portrait-position row language, and ROSTER hidden-by-default policy
-- [ ] When backing out of actor-confirmed Main Menu destinations such as Magick/Skill, return focus to the actor cards so another actor can be chosen immediately; destinations with internal actor switching such as Equip/Essence keep their own navigation contract
+- [x] Pass 123: When backing out of actor-confirmed Main Menu destinations such as Magick/Skill, return focus to the actor cards so another actor can be chosen immediately; destinations with internal actor switching such as Equip/Essence keep their own navigation contract
 - [x] Extend Order with persistent active-party visual formation swapping (positions 1-4) without changing mechanical party/turn order
 - [x] Streamline Order back into direct active-party-card control so selecting Order immediately edits rows and visual formation slots without an intermediate full-screen window
 - [x] Connect player front/back row state to battlefield geometry as presentation only; keep row/slot position free of damage, weapon, targeting, or stat advantages unless the design is explicitly revisited

@@ -51,6 +51,7 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Battle Targeting & Scope Navigation v2
 -   ✅ Battle Target Memory & Navigation Polish v1
 -   ✅ Battle Background Foundation v1
+-   ✅ Main Menu Actor Return Focus v1
 -   ✅ Valor & Escape Rules v1
 -   ✅ Enemy Formation Rows v1
 -   ✅ Scan & Tactical Help v1

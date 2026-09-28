@@ -51,6 +51,19 @@ class Window_MainMenuParty {
     return this.members()[this.index] || null;
   }
 
+  selectActor(actorOrId) {
+    const actorId = Number(actorOrId?.actorId ?? actorOrId);
+    const members = this.members();
+    const index = members.findIndex((member) => member?.actorId === actorId);
+
+    if (index < 0) {
+      return false;
+    }
+
+    this.index = index;
+    return true;
+  }
+
   changeSelection(offset) {
     const members = this.members();
 

@@ -160,6 +160,12 @@ function testActorSelectionFocusWrapsAndConfirms() {
   assert.equal(window.activate("actor"), true);
   assert.equal(window.currentActor(), members[0]);
 
+  assert.equal(window.selectActor(members[2]), true);
+  assert.equal(window.currentActor(), members[2]);
+  assert.equal(window.selectActor(999), false);
+  assert.equal(window.currentActor(), members[2]);
+  assert.equal(window.selectActor(members[0]), true);
+
   let result = trigger(window, triggered, "up");
   assert.equal(result.type, "move");
   assert.equal(window.currentActor(), members[3]);
