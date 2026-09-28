@@ -106,7 +106,7 @@ class Window_Order {
       ["Active Party", String(members.length)],
       ["Front Row", String(rows.front)],
       ["Back Row", String(rows.back)],
-      ["Slots", String(Math.min(4, members.length))],
+      ["Slots", String(Math.min(this.party?.constructor?.MAX_BATTLE_MEMBERS || 3, members.length))],
     ];
     const metricsX = bounds.x + 20;
     const metricsWidth = bounds.width - 40;

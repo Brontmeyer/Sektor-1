@@ -346,7 +346,7 @@ class Window_BattleResults {
   buildActorRows(result) {
     const party = Array.isArray(result.party) ? result.party : [];
 
-    return party.slice(0, 4).map((actor) => {
+    return party.slice(0, 3).map((actor) => {
       const levelBefore = Math.max(1, Number(actor?.levelBefore) || 1);
       const levelAfter = Math.max(levelBefore, Number(actor?.levelAfter) || levelBefore);
       const expGained = Math.max(0, Number(actor?.expGained) || 0);

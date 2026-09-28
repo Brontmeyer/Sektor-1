@@ -117,7 +117,7 @@ function testCommandNamingContractAndNoCommandHeading() {
   assert.equal(text.includes("Options"), false);
 }
 
-function testPartyWindowDrawsTheActiveFourWithRealStats() {
+function testPartyWindowDrawsTheActiveThreeWithRealStats() {
   const { Window_MainMenuParty, calls } = loadMenuWindows();
   const members = [
     actor("Tyler", 21, 640, 750, 124, 145, 45, 100, 68),
@@ -125,7 +125,7 @@ function testPartyWindowDrawsTheActiveFourWithRealStats() {
     actor("Aboo", 20, 580, 680, 105, 120, 15, 100, 58),
     actor("G Prime", 20, 510, 620, 155, 175, 65, 100, 42),
   ];
-  const party = { battleMembers: () => members };
+  const party = { battleMembers: () => members.slice(0, 3) };
   const window = new Window_MainMenuParty(party, {
     x: 24,
     y: 82,
@@ -139,9 +139,10 @@ function testPartyWindowDrawsTheActiveFourWithRealStats() {
     .map((call) => String(call[1]));
 
   assert.equal(text.includes("PARTY INFORMATION"), false);
-  for (const member of members) {
+  for (const member of members.slice(0, 3)) {
     assert.equal(text.includes(member.name), true);
   }
+  assert.equal(text.includes("G Prime"), false);
   assert.equal(text.includes("HP"), true);
   assert.equal(text.includes("640/750"), true);
   assert.equal(text.includes("MP"), true);
@@ -277,7 +278,7 @@ function testSingularHeadingContractAndLoadOrder() {
 
 function run() {
   testCommandNamingContractAndNoCommandHeading();
-  testPartyWindowDrawsTheActiveFourWithRealStats();
+  testPartyWindowDrawsTheActiveThreeWithRealStats();
   testActorIdentityAndStatsUseTheCardWidthMoreEvenly();
   testLayoutKeepsPartyAndUtilityAreasSeparate();
   testSceneUsesMainMenuHeadingAndHonestPlaceholderDestinations();

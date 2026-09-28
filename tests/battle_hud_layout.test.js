@@ -91,7 +91,7 @@ function testLayoutSeparatesNamesCommandReserveAndStableStats() {
   const command = layout.commandBounds();
   const stats = layout.statsBounds();
   const selector = layout.selectorBounds();
-  const rows = Array.from({ length: 4 }, (_, index) =>
+  const rows = Array.from({ length: 3 }, (_, index) =>
     layout.partyRowBounds(index),
   );
 
@@ -193,16 +193,15 @@ function testSurgeContextPanelTracksSelectedArtBesideCompactSelector() {
   assert.equal(second.y - first.y, skillsWindow.lineHeight);
 }
 
-function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
+function testHudRendersThreeNamesAndKeepsResourceColumnsRightOfCommandReserve() {
   const context = createContext();
   const Graphics = { width: 1600, height: 900, context };
   const party = [
     actor("Tyler", 85, 22, 40),
     actor("Sarah", 100, 30, 100),
     actor("Aboo", 67, 18, 10),
-    actor("G Prime", 0, 12, 0),
   ];
-  const formation = [party[2], party[1], party[3], party[0]];
+  const formation = [party[2], party[1], party[0]];
   const globals = {
     Graphics,
     $gameParty: {
@@ -215,7 +214,6 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
     [party[0], 25],
     [party[1], 100],
     [party[2], 60],
-    [party[3], 0],
   ]);
   const scene = {
     outcome: null,
@@ -246,7 +244,7 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
   );
   assert.deepEqual(
     renderedNames,
-    ["Aboo", "Sarah", "G Prime", "Tyler"],
+    ["Aboo", "Sarah", "Tyler"],
     "battle HUD roster must follow visual formation order",
   );
 
@@ -266,7 +264,7 @@ function testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve() {
 
   assert.equal(text.includes("VALOR"), true);
   assert.equal(text.includes("TIME"), true);
-  assert.equal(text.includes("DEFEATED"), true);
+  assert.equal(text.includes("DEFEATED"), false);
   assert.equal(
     text.filter((entry) => entry === "READY").length,
     1,
@@ -404,7 +402,7 @@ function run() {
   testBannerIsCompactAndDoesNotSpanTheScreen();
   testContextHelpIsExpandedAndCenteredAboveHud();
   testSurgeContextPanelTracksSelectedArtBesideCompactSelector();
-  testHudRendersFourNamesAndKeepsResourceColumnsRightOfCommandReserve();
+  testHudRendersThreeNamesAndKeepsResourceColumnsRightOfCommandReserve();
   testHudShowsActiveEssenceBattleIndicator();
   testHudLayoutLoadsBeforeRendererAndBattleScene();
 

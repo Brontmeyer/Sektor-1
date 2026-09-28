@@ -77,9 +77,9 @@
     ]
   },
   {
-    "_comment": "ID 5: Eight Slime Rows - Auto Centered",
+    "_comment": "ID 5: Six Slime Rows - Auto Centered",
     "id": 5,
-    "name": "Eight Slime Rows",
+    "name": "Six Slime Rows",
     "canEscape": true,
     "formation": "normal",
     "members": [
@@ -97,14 +97,6 @@
       },
       {
         "enemyId": 1,
-        "row": "front"
-      },
-      {
-        "enemyId": 1,
-        "row": "back"
-      },
-      {
-        "enemyId": 1,
         "row": "back"
       },
       {
@@ -118,9 +110,9 @@
     ]
   },
   {
-    "_comment": "ID 6: Eight Slime Pincer Rows - Custom Slots",
+    "_comment": "ID 6: Six Slime Pincer Rows - Custom Slots",
     "id": 6,
-    "name": "Eight Slime Pincer Rows",
+    "name": "Six Slime Pincer Rows",
     "canEscape": true,
     "formation": "pincer",
     "members": [
@@ -128,7 +120,7 @@
         "enemyId": 1,
         "side": "left",
         "row": "front",
-        "slot": 1
+        "slot": 0
       },
       {
         "enemyId": 1,
@@ -144,15 +136,9 @@
       },
       {
         "enemyId": 1,
-        "side": "left",
-        "row": "back",
-        "slot": 2
-      },
-      {
-        "enemyId": 1,
         "side": "right",
         "row": "front",
-        "slot": 1
+        "slot": 0
       },
       {
         "enemyId": 1,
@@ -165,19 +151,13 @@
         "side": "right",
         "row": "back",
         "slot": 1
-      },
-      {
-        "enemyId": 1,
-        "side": "right",
-        "row": "back",
-        "slot": 2
       }
     ]
   },
   {
-    "_comment": "ID 7: Eight Slime Rows Back Attack",
+    "_comment": "ID 7: Six Slime Rows Back Attack",
     "id": 7,
-    "name": "Eight Slime Rows Back Attack",
+    "name": "Six Slime Rows Back Attack",
     "canEscape": true,
     "formation": "backAttack",
     "members": [
@@ -192,14 +172,6 @@
       {
         "enemyId": 1,
         "row": "front"
-      },
-      {
-        "enemyId": 1,
-        "row": "front"
-      },
-      {
-        "enemyId": 1,
-        "row": "back"
       },
       {
         "enemyId": 1,

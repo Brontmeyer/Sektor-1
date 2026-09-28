@@ -8,7 +8,7 @@ class Window_Roster {
     this.activeIndex = 0;
     this.reserveIndex = 0;
     this.pendingReserveId = 0;
-    this.activeViewport = new Window_ListViewport(4);
+    this.activeViewport = new Window_ListViewport(this.party?.constructor?.MAX_BATTLE_MEMBERS || 3);
     this.reserveViewport = new Window_ListViewport(4);
     this.refreshLayout();
   }
@@ -188,7 +188,7 @@ class Window_Roster {
       return reserved;
     }
 
-    if (this.activeMembers().length < 4) {
+    if (this.activeMembers().length < (this.party?.constructor?.MAX_BATTLE_MEMBERS || 3)) {
       const activated = this.party?.activateBattleActor?.(actor) === true;
       this.clampIndices();
       return activated;
@@ -321,7 +321,8 @@ class Window_Roster {
     context.textBaseline = "middle";
     context.fillStyle = this.focus === focusName ? "#ffd75a" : "#78f0d2";
     context.font = "600 18px sans-serif";
-    const suffix = focusName === "active" ? `${members.length}/4` : String(members.length);
+    const activeLimit = this.party?.constructor?.MAX_BATTLE_MEMBERS || 3;
+    const suffix = focusName === "active" ? `${members.length}/${activeLimit}` : String(members.length);
     context.fillText(`${title}  ${suffix}`, bounds.x + 16, bounds.y + 24);
 
     context.strokeStyle = "rgba(210, 222, 242, 0.24)";
@@ -394,10 +395,10 @@ class Window_Roster {
 
       return this.activeMembers().length <= 1
         ? `${actor.name} is the last active operative and cannot be moved to reserve.`
-        : `Move ${actor.name} to reserve. Active battle parties may contain up to four operatives.`;
+        : `Move ${actor.name} to reserve. Active battle parties may contain up to three operatives.`;
     }
 
-    return this.activeMembers().length < 4
+    return this.activeMembers().length < (this.party?.constructor?.MAX_BATTLE_MEMBERS || 3)
       ? `Move ${actor.name} into the active battle party.`
       : `The active party is full. Select ${actor.name}, then choose the active operative they should replace.`;
   }

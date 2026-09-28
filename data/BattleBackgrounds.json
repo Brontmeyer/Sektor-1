@@ -1,7 +1,7 @@
 [
   null,
   {
-    "_comment": "Layered prototype battleback for Dev Zone 1. Layers draw bottom-to-top; stable gameplay identity is the key, not filenames.",
+    "_comment": "Dev Zone 1",
     "id": 1,
     "key": "devZone1",
     "name": "Dev Zone 1",
@@ -13,20 +13,29 @@
         "positionY": 0.5
       },
       {
-        "image": "js/sprites/battlebacks/Forest.png",
+        "image": "js/sprites/battlebacks2/Forest.png",
         "positionX": 0.5,
         "positionY": 0.5
       }
     ]
   },
   {
-    "_comment": "Prototype battleback for Dev Zone 2.",
+    "_comment": "Dev Zone 2",
     "id": 2,
     "key": "devZone2",
     "name": "Dev Zone 2",
-    "image": "js/sprites/battlebacks/dev_zone_2.svg",
     "fallbackColor": "#17231f",
-    "positionX": 0.5,
-    "positionY": 0.5
+    "layers": [
+      {
+        "image": "js/sprites/battlebacks/Lava2.png",
+        "positionX": 0.5,
+        "positionY": 0.5
+      },
+      {
+        "image": "js/sprites/battlebacks2/Lava.png",
+        "positionX": 0.5,
+        "positionY": 0.5
+      }
+    ]
   }
 ]

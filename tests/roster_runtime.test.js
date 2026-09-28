@@ -49,20 +49,22 @@ function testPartyOwnsActiveReserveSwitchingContract() {
   ];
   const party = new Game_Party(actors);
 
-  assert.deepEqual(Array.from(party.battleActorIds()), [1, 2, 3, 4]);
-  assert.deepEqual(Array.from(party.reserveMembers(), (actor) => actor.actorId), [5]);
+  assert.equal(Game_Party.MAX_BATTLE_MEMBERS, 3);
+  assert.deepEqual(Array.from(party.battleActorIds()), [1, 2, 3]);
+  assert.deepEqual(Array.from(party.reserveMembers(), (actor) => actor.actorId), [4, 5]);
   assert.equal(party.isBattleActor(2), true);
   assert.equal(party.isBattleActor(5), false);
 
   assert.equal(party.replaceBattleActor(2, 5), true);
-  assert.deepEqual(Array.from(party.battleActorIds()), [1, 5, 3, 4]);
-  assert.deepEqual(Array.from(party.battleFormationActorIds()), [1, 5, 3, 4]);
-  assert.deepEqual(Array.from(party.reserveMembers(), (actor) => actor.actorId), [2]);
+  assert.deepEqual(Array.from(party.battleActorIds()), [1, 5, 3]);
+  assert.deepEqual(Array.from(party.battleFormationActorIds()), [1, 5, 3]);
+  assert.deepEqual(Array.from(party.reserveMembers(), (actor) => actor.actorId), [2, 4]);
 
   assert.equal(party.reserveBattleActor(3), true);
-  assert.deepEqual(Array.from(party.battleActorIds()), [1, 5, 4]);
+  assert.deepEqual(Array.from(party.battleActorIds()), [1, 5]);
   assert.equal(party.activateBattleActor(2), true);
-  assert.deepEqual(Array.from(party.battleActorIds()), [1, 5, 4, 2]);
+  assert.deepEqual(Array.from(party.battleActorIds()), [1, 5, 2]);
+  assert.equal(party.activateBattleActor(4), false, "a fourth actor must remain in reserve");
 }
 
 function testRosterWindowFullPartySwapFlow() {
@@ -71,11 +73,14 @@ function testRosterWindowFullPartySwapFlow() {
     { actorId: 1, name: "Tyler" },
     { actorId: 2, name: "Sarah" },
     { actorId: 3, name: "Aboo" },
-    { actorId: 4, name: "G Prime" },
   ];
-  const reserve = [{ actorId: 5, name: "Reserve" }];
+  const reserve = [
+    { actorId: 4, name: "G Prime" },
+    { actorId: 5, name: "Reserve" },
+  ];
   const all = [...active, ...reserve];
   const party = {
+    maxBattleMembers: () => 3,
     battleMembers: () => active,
     members: () => all,
     reserveMembers: () => reserve,
@@ -111,6 +116,7 @@ function testRosterWindowFullPartySwapFlow() {
   const window = new context.__Roster(party);
   window.show();
   window.switchFocus("reserve");
+  window.reserveIndex = 1;
   assert.equal(window.currentActor().name, "Reserve");
   assert.equal(window.confirmSelection(), true);
   assert.equal(window.pendingReserveId, 5);
@@ -127,7 +133,7 @@ function testRosterWindowFullPartySwapFlow() {
   assert.equal(window.pendingReserveId, 0);
   assert.equal(active[0].name, "Tyler");
   assert.equal(active[1].name, "Reserve");
-  assert.equal(reserve[0].name, "Sarah");
+  assert.equal(reserve[1].name, "Sarah");
 }
 
 function testRosterTerminologyAndMenuRouting() {

@@ -19,7 +19,7 @@ function loadClass(relativePath, className, globals = {}) {
 }
 
 function createFormationFixture(formation = "normal") {
-  const actors = Array.from({ length: 4 }, (_, index) => ({
+  const actors = Array.from({ length: 3 }, (_, index) => ({
     actorId: index + 1,
     name: `Actor ${index + 1}`,
     battleSpriteWidth: 190,

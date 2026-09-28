@@ -279,25 +279,23 @@ function testPincerAllTargetsIncludeFrontAndBackRowsOnSelectedFlank() {
   const enemies = [
     battler("LF1", "enemy", 220, 180, "left"),
     battler("LF2", "enemy", 220, 340, "left"),
-    battler("LB1", "enemy", 100, 180, "left"),
-    battler("LB2", "enemy", 100, 340, "left"),
+    battler("LB1", "enemy", 100, 260, "left"),
     battler("RF1", "enemy", 780, 180, "right"),
     battler("RF2", "enemy", 780, 340, "right"),
-    battler("RB1", "enemy", 900, 180, "right"),
-    battler("RB2", "enemy", 900, 340, "right"),
+    battler("RB1", "enemy", 900, 260, "right"),
   ];
   const { manager } = createFixture({
     formation: "pincer",
     enemies,
     definition: dualEnemyMagick(),
-    selectedEnemyIndex: 4,
+    selectedEnemyIndex: 3,
   });
 
   assert.equal(manager.toggleScope(), "all");
-  assert.deepEqual(Array.from(manager.getCurrentTargets()), enemies.slice(4));
+  assert.deepEqual(Array.from(manager.getCurrentTargets()), enemies.slice(3));
 
   assert.equal(manager.moveTargetBucket(-1, 0), true);
-  assert.deepEqual(Array.from(manager.getCurrentTargets()), enemies.slice(0, 4));
+  assert.deepEqual(Array.from(manager.getCurrentTargets()), enemies.slice(0, 3));
 }
 
 function testAlliedSingleAllScopeUsesWholePartyBucket() {
@@ -305,7 +303,6 @@ function testAlliedSingleAllScopeUsesWholePartyBucket() {
     battler("A1", "ally", 480, 140),
     battler("A2", "ally", 480, 240),
     battler("A3", "ally", 480, 340),
-    battler("A4", "ally", 480, 440),
   ];
   const definition = {
     id: 1,

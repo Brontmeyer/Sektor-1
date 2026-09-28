@@ -1,7 +1,7 @@
 "use strict";
 
 class BattleHudLayout {
-  static PARTY_SLOTS = 4;
+  static PARTY_SLOTS = 3;
 
   constructor(scene) {
     this.scene = scene;

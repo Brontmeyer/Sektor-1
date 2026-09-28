@@ -614,7 +614,15 @@ class BattleRenderer {
     context.restore();
   }
 
-  drawAssetBattleShadow(context, x, y, scale = 1, alpha = 0.55) {
+  drawAssetBattleShadow(
+    context,
+    x,
+    y,
+    scale = 1,
+    alpha = 0.82,
+    width = 82,
+    height = 20,
+  ) {
     if (
       typeof UIAssetManager === "undefined" ||
       typeof UIAssetManager.drawBattleShadow !== "function"
@@ -625,7 +633,23 @@ class BattleRenderer {
     return UIAssetManager.drawBattleShadow(context, x, y, {
       scale: Math.max(0.45, Number(scale) || 1),
       alpha,
+      width: Math.max(48, Number(width) || 82),
+      height: Math.max(12, Number(height) || 20),
     });
+  }
+
+  actorShadowMetrics(actor) {
+    return {
+      width: Math.max(96, (Number(actor?.battleSpriteWidth) || 190) * 0.68),
+      height: Math.max(16, (Number(actor?.battleSpriteHeight) || 166) * 0.12),
+    };
+  }
+
+  enemyShadowMetrics(enemy) {
+    return {
+      width: Math.max(78, (Number(enemy?.battleSpriteWidth) || 128) * 0.72),
+      height: Math.max(14, (Number(enemy?.battleSpriteHeight) || 96) * 0.16),
+    };
   }
 
   drawActorSprite(context, x, y, actor) {
@@ -1146,12 +1170,15 @@ class BattleRenderer {
       const drawX = position.x + battleData.visualX;
       const scale = this.scene.getEnemyFormationScale(enemy);
 
+      const shadow = this.enemyShadowMetrics(enemy);
       this.drawAssetBattleShadow(
         context,
         drawX,
-        position.y + 7,
+        position.y + 2,
         scale,
-        this.scene.getEnemyVisualAlpha(enemy) * 0.5,
+        this.scene.getEnemyVisualAlpha(enemy) * 0.9,
+        shadow.width,
+        shadow.height,
       );
       this.drawEnemySprite(context, drawX, position.y, enemy, battleData);
     }
@@ -1283,12 +1310,15 @@ class BattleRenderer {
       const visualY = battleData?.visualY || 0;
       const drawX = position.x + visualX;
 
+      const shadow = this.actorShadowMetrics(actor);
       this.drawAssetBattleShadow(
         context,
         drawX,
-        position.y + 7,
+        position.y + 2,
         this.scene.getActorRenderScale(actor),
-        this.scene.getActorVisualAlpha(actor) * 0.5,
+        this.scene.getActorVisualAlpha(actor) * 0.9,
+        shadow.width,
+        shadow.height,
       );
       this.drawActorSprite(
         context,

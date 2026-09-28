@@ -519,9 +519,9 @@
       ]
     },
     {
-      "_comment": "ID 11: Test Eight Enemy Rows Battle",
+      "_comment": "ID 11: Test Six Enemy Rows Battle",
       "id": 11,
-      "name": "Eight Enemy Rows Tester",
+      "name": "Six Enemy Rows Tester",
       "x": 900,
       "y": 400,
       "width": 32,
@@ -538,7 +538,7 @@
             {
               "code": "text",
               "speaker": "System",
-              "text": "The eight-enemy row test encounter has ended."
+              "text": "The six-enemy row test encounter has ended."
             }
           ]
         }

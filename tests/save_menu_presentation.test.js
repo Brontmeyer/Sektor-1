@@ -31,7 +31,7 @@ function createHarness() {
     measureText(text) { return { width: String(text).length * 8 }; },
   };
   const saveData = {
-    version: 15,
+    version: 16,
     metadata: {
       actorName: "Tyler",
       level: 12,
@@ -43,8 +43,13 @@ function createHarness() {
       { actorId: 1, name: "Tyler", level: 12 },
       { actorId: 2, name: "Sarah", level: 11 },
       { actorId: 3, name: "Aboo", level: 10 },
+      { actorId: 4, name: "G Prime", level: 10 },
     ],
-    party: { runes: 2345, actorIds: [1] },
+    party: {
+      runes: 2345,
+      actorIds: [1, 2, 3, 4],
+      battleActorIds: [1, 2, 3],
+    },
     location: { mapId: 2, x: 4, y: 8 },
   };
 
@@ -161,12 +166,12 @@ function testLoadUsesSameFileCardLanguageWithPersistentPlayTime() {
   assert.match(source, /playTimeSeconds/);
 }
 
-function testSaveSlotPartyPreviewUsesRecruitedActorIds() {
+function testSaveSlotPartyPreviewUsesActiveBattleActorIds() {
   const harness = createHarness();
   const summary = harness.window.slotSummary(1);
 
-  assert.equal(summary.party.length, 1);
-  assert.equal(summary.party[0].name, "Tyler");
+  assert.equal(summary.party.length, 3);
+  assert.deepEqual(summary.party.map((actor) => actor.name), ["Tyler", "Sarah", "Aboo"]);
   assert.equal(summary.actorName, "Tyler");
 }
 
@@ -175,7 +180,7 @@ function run() {
   testHeaderTracksCurrentlySelectedFile();
   testSaveSlotNavigationAndResultRemainRuntimeCompatible();
   testLoadUsesSameFileCardLanguageWithPersistentPlayTime();
-  testSaveSlotPartyPreviewUsesRecruitedActorIds();
+  testSaveSlotPartyPreviewUsesActiveBattleActorIds();
   console.log("Save menu presentation regression tests passed.");
 }
 

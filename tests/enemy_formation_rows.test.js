@@ -12,7 +12,7 @@ const readData = (filename) =>
   JSON.parse(fs.readFileSync(path.join(projectRoot, "data", filename), "utf8"));
 
 function loadFormationManager(members, formation = "normal") {
-  const actors = Array.from({ length: 4 }, (_, index) => ({
+  const actors = Array.from({ length: 3 }, (_, index) => ({
     actorId: index + 1,
     battleSpriteWidth: 190,
     battleSpriteHeight: 166,
@@ -52,7 +52,7 @@ function loadFormationManager(members, formation = "normal") {
   return { manager, scene, actors, enemies, Graphics };
 }
 
-function testCanonicalEightEnemyRowsAreAutoCentered() {
+function testCanonicalSixEnemyRowsAreAutoCentered() {
   const encounters = readData("Encounters.json");
   const encounter = encounters[5];
   const { manager } = loadFormationManager(encounter.members, encounter.formation);
@@ -63,14 +63,14 @@ function testCanonicalEightEnemyRowsAreAutoCentered() {
     .map((member, index) => ({ member, position: manager.enemyPosition(index) }))
     .filter(({ member }) => member.row === "back");
 
-  assert.equal(encounter.members.length, 8);
-  assert.equal(front.length, 4);
-  assert.equal(back.length, 4);
+  assert.equal(encounter.members.length, 6);
+  assert.equal(front.length, 3);
+  assert.equal(back.length, 3);
   assert.equal(new Set(front.map(({ position }) => position.x)).size, 1);
   assert.equal(new Set(back.map(({ position }) => position.x)).size, 1);
   assert.equal(front[0].position.x < back[0].position.x, true);
-  assert.equal(new Set(front.map(({ position }) => position.y)).size, 4);
-  assert.equal(new Set(back.map(({ position }) => position.y)).size, 4);
+  assert.equal(new Set(front.map(({ position }) => position.y)).size, 3);
+  assert.equal(new Set(back.map(({ position }) => position.y)).size, 3);
 }
 
 function testAutomaticRowsCenterOneTwoAndThreeMembers() {
@@ -95,7 +95,7 @@ function testAutomaticRowsCenterOneTwoAndThreeMembers() {
 
 function testExplicitSlotsAllowHandcraftedEncounterPlacement() {
   const members = [
-    { enemyId: 1, row: "front", slot: 3 },
+    { enemyId: 1, row: "front", slot: 2 },
     { enemyId: 1, row: "front", slot: 0 },
     { enemyId: 1, row: "back", slot: 2 },
     { enemyId: 1, row: "back", slot: 1 },
@@ -197,12 +197,12 @@ function testRowSchemaValidationCatchesAmbiguousAndInvalidLayouts() {
 
   context.__Validator.validateEncounters(encounters, enemies, errors);
 
-  assert.equal(errors.some((error) => error.includes("at most 8 enemy members")), true);
-  assert.equal(errors.some((error) => error.includes("front row may contain at most 4 enemies")), true);
+  assert.equal(errors.some((error) => error.includes("at most 6 enemy members")), true);
+  assert.equal(errors.some((error) => error.includes("front row may contain at most 3 enemies")), true);
   assert.equal(errors.some((error) => error.includes("all explicit slots or all automatic centering")), true);
   assert.equal(errors.some((error) => error.includes("back row slot 2 more than once")), true);
   assert.equal(errors.some((error) => error.includes("row must be front or back")), true);
-  assert.equal(errors.some((error) => error.includes("slot must be an integer from 0 to 3")), true);
+  assert.equal(errors.some((error) => error.includes("slot must be an integer from 0 to 2")), true);
 }
 
 function testCanonicalMapExposesRowPlaytestEncounters() {
@@ -220,7 +220,7 @@ function testCanonicalMapExposesRowPlaytestEncounters() {
 }
 
 function run() {
-  testCanonicalEightEnemyRowsAreAutoCentered();
+  testCanonicalSixEnemyRowsAreAutoCentered();
   testAutomaticRowsCenterOneTwoAndThreeMembers();
   testExplicitSlotsAllowHandcraftedEncounterPlacement();
   testEnemyPositionsRemainStableAfterDeaths();

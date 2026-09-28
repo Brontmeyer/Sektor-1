@@ -191,8 +191,18 @@ class Window_SaveSlots {
             source.indexOf(actorId) === index,
           )
       : [];
-    const displayParty = partyActorIds.length > 0
-      ? partyActorIds.map((actorId) => actorById.get(actorId)).filter(Boolean)
+    const battleActorIds = Array.isArray(saveData.party?.battleActorIds)
+      ? saveData.party.battleActorIds
+          .map((actorId) => Number(actorId))
+          .filter((actorId, index, source) =>
+            Number.isInteger(actorId) &&
+            actorById.has(actorId) &&
+            source.indexOf(actorId) === index,
+          )
+      : [];
+    const displayIds = battleActorIds.length > 0 ? battleActorIds : partyActorIds;
+    const displayParty = displayIds.length > 0
+      ? displayIds.map((actorId) => actorById.get(actorId)).filter(Boolean)
       : actors;
     const leader = displayParty[0] || actors[0] || {};
     const metadata = saveData.metadata || {};
@@ -210,7 +220,7 @@ class Window_SaveSlots {
       level: metadata.level ?? leader.level ?? "?",
       location: mapName,
       timestamp: metadata.timestamp || null,
-      party: displayParty.slice(0, 4),
+      party: displayParty.slice(0, 3),
       runes: Number.isFinite(runes) ? runes : null,
       playTimeSeconds: Math.max(0, Number(metadata.playTimeSeconds) || 0),
     };
@@ -377,7 +387,8 @@ class Window_SaveSlots {
     const innerHeight = bounds.height - 28;
     const portraitSize = Math.max(64, Math.min(84, Math.floor(innerHeight * 0.54)));
     const portraitGap = 8;
-    const partyWidth = portraitSize * 4 + portraitGap * 3;
+    const partySlots = 3;
+    const partyWidth = portraitSize * partySlots + portraitGap * (partySlots - 1);
     const infoX = innerX + partyWidth + 36;
     const rightWidth = Math.max(224, Math.floor(bounds.width * 0.2));
     const rightX = bounds.x + bounds.width - rightWidth - 18;
@@ -399,7 +410,7 @@ class Window_SaveSlots {
     );
 
     const portraitY = innerY + 30;
-    for (let index = 0; index < 4; index++) {
+    for (let index = 0; index < partySlots; index++) {
       const actor = summary.party[index];
       const x = innerX + index * (portraitSize + portraitGap);
 

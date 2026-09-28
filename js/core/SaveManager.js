@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 15;
+    return 16;
   }
 
   static clearError() {
@@ -156,6 +156,45 @@ class SaveManager {
         const { gil: legacyGil, ...currentParty } = sourceParty;
         const rawRunes = sourceParty.runes ?? legacyGil;
         const runes = Number(rawRunes);
+        const maxBattleMembers = 3;
+        const normalizeActorIds = (source) =>
+          Array.isArray(source)
+            ? source
+                .map((actorId) => Number(actorId))
+                .filter(
+                  (actorId, index, values) =>
+                    Number.isInteger(actorId) &&
+                    actorId > 0 &&
+                    values.indexOf(actorId) === index,
+                )
+            : [];
+        const actorIds = normalizeActorIds(
+          Array.isArray(sourceParty.actorIds)
+            ? sourceParty.actorIds
+            : Array.isArray(data.actors)
+              ? data.actors.map((actor) => actor?.actorId)
+              : [],
+        );
+        const battleActorIds = normalizeActorIds(
+          Array.isArray(sourceParty.battleActorIds)
+            ? sourceParty.battleActorIds
+            : actorIds,
+        )
+          .filter((actorId) => actorIds.includes(actorId))
+          .slice(0, maxBattleMembers);
+        const rawFormationIds = normalizeActorIds(
+          Array.isArray(sourceParty.battleFormationActorIds)
+            ? sourceParty.battleFormationActorIds
+            : battleActorIds,
+        );
+        const battleFormationActorIds = rawFormationIds
+          .filter((actorId) => battleActorIds.includes(actorId));
+
+        for (const actorId of battleActorIds) {
+          if (!battleFormationActorIds.includes(actorId)) {
+            battleFormationActorIds.push(actorId);
+          }
+        }
 
         return {
           ...currentParty,
@@ -166,23 +205,12 @@ class SaveManager {
           battleRows: this.isPlainObject(sourceParty.battleRows)
             ? sourceParty.battleRows
             : {},
-          actorIds: Array.isArray(sourceParty.actorIds)
-            ? sourceParty.actorIds
-            : Array.isArray(data.actors)
-              ? data.actors.map((actor) => actor?.actorId).filter((actorId) => Number.isInteger(Number(actorId)))
-              : [],
+          actorIds,
           metActorIds: Array.isArray(sourceParty.metActorIds)
-            ? sourceParty.metActorIds
-            : Array.isArray(sourceParty.actorIds)
-              ? sourceParty.actorIds
-              : Array.isArray(data.actors)
-                ? data.actors.map((actor) => actor?.actorId).filter((actorId) => Number.isInteger(Number(actorId)))
-                : [],
-          battleFormationActorIds: Array.isArray(sourceParty.battleFormationActorIds)
-            ? sourceParty.battleFormationActorIds
-            : Array.isArray(sourceParty.battleActorIds)
-              ? sourceParty.battleActorIds
-              : [],
+            ? normalizeActorIds(sourceParty.metActorIds)
+            : [...actorIds],
+          battleActorIds,
+          battleFormationActorIds: battleFormationActorIds.slice(0, maxBattleMembers),
         };
       })(),
       world: {
@@ -197,9 +225,11 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if ([14, 13, 12, 11, 10, 9].includes(inferredVersion)) {
-      // v14 and older saves may still carry the retired party.gil field;
-      // upgradeToCurrent migrates it to party.runes. v9+ already owns explicit
+    if ([15, 14, 13, 12, 11, 10, 9].includes(inferredVersion)) {
+      // v15 saves may contain four active actors. upgradeToCurrent keeps the full
+      // recruited roster but migrates active/formation state to the three-member
+      // battle cap. v14 and older saves may also carry retired party.gil; the
+      // same boundary migrates it to party.runes. v9+ already owns explicit
       // Skill state, while v14 separated Valor Arts into their own runtime.
       return upgradeToCurrent(saveData, { extractLegacyValorArts: true });
     }
@@ -560,6 +590,29 @@ class SaveManager {
         !Array.isArray(saveData.party.battleActorIds)
       ) {
         errors.push("Party battleActorIds must be an array.");
+      } else if (Array.isArray(saveData.party.battleActorIds)) {
+        if (saveData.party.battleActorIds.length > 3) {
+          errors.push("Party battleActorIds may contain at most 3 active actors.");
+        }
+
+        const recruitedIds = new Set(
+          Array.isArray(saveData.party.actorIds)
+            ? saveData.party.actorIds.map((actorId) => Number(actorId))
+            : [],
+        );
+        const seenBattleIds = new Set();
+
+        for (const rawActorId of saveData.party.battleActorIds) {
+          const actorId = Number(rawActorId);
+          if (seenBattleIds.has(actorId)) {
+            errors.push(`Party battleActorIds contains duplicate actor ${rawActorId}.`);
+          }
+          seenBattleIds.add(actorId);
+
+          if (recruitedIds.size > 0 && !recruitedIds.has(actorId)) {
+            errors.push(`Party battleActorIds references non-recruited actor ${rawActorId}.`);
+          }
+        }
       }
 
       if (
@@ -567,6 +620,29 @@ class SaveManager {
         !Array.isArray(saveData.party.battleFormationActorIds)
       ) {
         errors.push("Party battleFormationActorIds must be an array.");
+      } else if (Array.isArray(saveData.party.battleFormationActorIds)) {
+        if (saveData.party.battleFormationActorIds.length > 3) {
+          errors.push("Party battleFormationActorIds may contain at most 3 active actors.");
+        }
+
+        const activeIds = new Set(
+          Array.isArray(saveData.party.battleActorIds)
+            ? saveData.party.battleActorIds.map((actorId) => Number(actorId))
+            : [],
+        );
+        const seenFormationIds = new Set();
+
+        for (const rawActorId of saveData.party.battleFormationActorIds) {
+          const actorId = Number(rawActorId);
+          if (seenFormationIds.has(actorId)) {
+            errors.push(`Party battleFormationActorIds contains duplicate actor ${rawActorId}.`);
+          }
+          seenFormationIds.add(actorId);
+
+          if (activeIds.size > 0 && !activeIds.has(actorId)) {
+            errors.push(`Party battleFormationActorIds references inactive actor ${rawActorId}.`);
+          }
+        }
       }
 
       if (

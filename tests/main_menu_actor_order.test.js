@@ -84,8 +84,8 @@ function createParty() {
     actor(3, "Aboo"),
     actor(4, "G Prime"),
   ];
-  const battleMembers = [...members];
-  const formationMembers = [...members];
+  const battleMembers = members.slice(0, 3);
+  const formationMembers = members.slice(0, 3);
   const rows = new Map(members.map((member) => [member.actorId, "front"]));
 
   return {
@@ -95,6 +95,7 @@ function createParty() {
     rows,
     party: {
       members: () => members,
+      maxBattleMembers: () => 3,
       battleMembers: () => battleMembers,
       battleFormationMembers: () => formationMembers,
       swapBattleFormationSlots(firstIndex, secondIndex) {
@@ -168,7 +169,7 @@ function testActorSelectionFocusWrapsAndConfirms() {
 
   let result = trigger(window, triggered, "up");
   assert.equal(result.type, "move");
-  assert.equal(window.currentActor(), members[3]);
+  assert.equal(window.currentActor(), members[2]);
 
   result = trigger(window, triggered, "down");
   assert.equal(result.type, "move");
@@ -218,11 +219,11 @@ function testOrderModeMovesRowsAndSwapsVisualFormationOnly() {
   assert.equal(result.type, "swap");
   assert.deepEqual(
     formationMembers.map((member) => member.name),
-    ["Aboo", "Sarah", "Tyler", "G Prime"],
+    ["Aboo", "Sarah", "Tyler"],
   );
   assert.deepEqual(
     battleMembers.map((member) => member.name),
-    ["Tyler", "Sarah", "Aboo", "G Prime"],
+    ["Tyler", "Sarah", "Aboo"],
     "visual formation swaps must not rewrite active-party mechanical order",
   );
   assert.equal(window.currentActor(), members[0]);
@@ -273,11 +274,11 @@ function testActorNavigatorUsesActivePartyAndCanSelectExplicitActor() {
   const reserve = actor(5, "Reserve");
   const party = {
     members: () => [...members, reserve],
-    battleMembers: () => members,
+    battleMembers: () => members.slice(0, 3),
   };
   const navigator = new Window_ActorNavigator(party);
 
-  assert.equal(navigator.members().length, 4);
+  assert.equal(navigator.members().length, 3);
   assert.equal(navigator.selectActor(members[2]), true);
   assert.equal(navigator.actor(), members[2]);
   assert.equal(navigator.selectActor(reserve), false);

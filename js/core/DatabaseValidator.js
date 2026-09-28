@@ -3202,8 +3202,8 @@ class DatabaseValidator {
       return;
     }
 
-    const maxEnemies = 8;
-    const rowSlotCount = 4;
+    const maxEnemies = 6;
+    const rowSlotCount = 3;
     const validRows = new Set(["front", "back"]);
 
     for (let index = 1; index < encounters.length; index++) {

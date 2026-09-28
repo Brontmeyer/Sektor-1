@@ -1,3 +1,12 @@
+## Pass 125 - Three-Active / Six-Enemy Battle Composition v1
+
+- Reduced the active battle-party cap from four to three while preserving the full recruited roster and ROSTER reserve/replacement workflow. `Game_Party.MAX_BATTLE_MEMBERS` is the runtime authority used by activation, formation order, MAIN MENU cards, and ROSTER capacity.
+- Advanced Save Runtime to v16. v15 saves with four active actors retain all recruited actors but migrate the first three valid active IDs into battle; the displaced fourth actor remains recruited in reserve, visual formation order is filtered safely, and saved row preference is preserved for reserve actors.
+- Reduced encounter capacity from eight enemies to six and row capacity from four slots to three. Normal/back-attack test formations now prove three front + three back, while pincer fixtures prove the same six-enemy encounter-wide ceiling with deterministic flank rows.
+- Rebalanced side-view formation geometry around three party lanes and three enemy row slots, keeping enemy survivors fixed in their authored slots rather than collapsing after defeats.
+- Strengthened side-view battler shadows by sizing them from battler sprite width, moving them directly under the feet anchor, and increasing usable opacity so they ground sprites against bright battlebacks.
+- Updated MAIN MENU, ROSTER, encounter validation, development fixtures, documentation, and regression coverage for the new 3-active / 6-enemy contract.
+
 ## Pass 124 - Main Menu Focus Stability + Audio Foundation v1
 
 - Stabilized MAIN MENU actor-card focus rendering: selected cards keep the exact same base frame as unselected cards. Follow-up 90% browser-zoom QA moved all focus pixels into a dedicated selector rail outside the card, so the card itself is now byte-for-byte presentation-identical while focus changes. Single-member parties no longer report fake Up/Down movement, and returning from MAGICK/SKILL skips the actor-picker handoff entirely when only one active actor exists.

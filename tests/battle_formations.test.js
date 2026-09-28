@@ -21,7 +21,7 @@ function loadClass(relativePath, className, globals = {}) {
 }
 
 function createFormationFixture(formation, members) {
-  const actors = Array.from({ length: 4 }, (_, index) => ({
+  const actors = Array.from({ length: 3 }, (_, index) => ({
     actorId: index + 1,
     name: `Actor ${index + 1}`,
     battleSpriteWidth: 190,
@@ -80,11 +80,11 @@ function testCanonicalEncounterFormationData() {
     encounters[4].members.map((member) => `${member.side}:${member.row}`),
     ["left:front", "left:front", "right:front", "right:front"],
   );
-  assert.equal(encounters[5].members.length, 8);
-  assert.equal(encounters[6].members.length, 8);
+  assert.equal(encounters[5].members.length, 6);
+  assert.equal(encounters[6].members.length, 6);
 }
 
-function testNormalFormationUsesFourVerticalPartyLanesAndSafeScale() {
+function testNormalFormationUsesThreeVerticalPartyLanesAndSafeScale() {
   const { manager, actors } = createFormationFixture("normal", [
     { enemyId: 1, slot: 0 },
     { enemyId: 1, slot: 1 },
@@ -94,8 +94,8 @@ function testNormalFormationUsesFourVerticalPartyLanesAndSafeScale() {
   assert.equal(new Set(positions.map((position) => position.x)).size, 1);
   assert.equal(positions[0].x < manager.enemyPosition(0).x, true);
   assert.equal(positions.every((position, index) => index === 0 || position.y > positions[index - 1].y), true);
-  assert.equal(manager.partyScale() < 1, true);
-  assert.equal(manager.partyScale() >= 0.35, true);
+  assert.equal(manager.partyScale() <= 1.08, true);
+  assert.equal(manager.partyScale() >= 0.8, true);
   assert.equal(manager.actorFacing(actors[0]), 1);
   assert.equal(manager.enemyFacing(manager.scene.enemies[0]), 1);
 }
@@ -251,8 +251,8 @@ function testFormationSchemaValidation() {
   assert.equal(errors.some((error) => error.includes("left front row slot 0 more than once")), true);
   assert.equal(errors.some((error) => error.includes("side must be left or right")), true);
   assert.equal(errors.some((error) => error.includes("side is only valid for a pincer")), true);
-  assert.equal(errors.some((error) => error.includes("at most 8 enemy members")), true);
-  assert.equal(errors.some((error) => error.includes("front row may contain at most 4 enemies")), true);
+  assert.equal(errors.some((error) => error.includes("at most 6 enemy members")), true);
+  assert.equal(errors.some((error) => error.includes("front row may contain at most 3 enemies")), true);
 }
 
 function testFormationManagerLoadsBeforeFormationConsumers() {
@@ -344,7 +344,7 @@ function testRendererAndEffectsUseFormationAwareSpriteGeometry() {
 
 function run() {
   testCanonicalEncounterFormationData();
-  testNormalFormationUsesFourVerticalPartyLanesAndSafeScale();
+  testNormalFormationUsesThreeVerticalPartyLanesAndSafeScale();
   testBackAttackKeepsPartyLeftAndUsesFacingExposure();
   testPincerPlacesEnemiesOnBothSidesOfCenteredParty();
   testVisualPartyOrderChangesPlacementWithoutChangingPincerFacing();

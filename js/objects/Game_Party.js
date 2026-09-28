@@ -2,6 +2,7 @@
 
 class Game_Party {
   static MAX_INVENTORY_QUANTITY = 99;
+  static MAX_BATTLE_MEMBERS = 3;
 
   constructor(initialActors = []) {
     this.items = {};
@@ -13,7 +14,7 @@ class Game_Party {
 
     // Party roster and active battle party are intentionally separate.
     // This lets the project grow into a larger roster later while keeping
-    // a maximum of four active battle members.
+    // a maximum of three active battle members.
     this._actors = [];
     this._battleActorIds = [];
     this._battleFormationActorIds = [];
@@ -26,7 +27,7 @@ class Game_Party {
 
     if (this._actors.length > 0 && this._battleActorIds.length === 0) {
       this._battleActorIds = this._actors
-        .slice(0, 4)
+        .slice(0, Game_Party.MAX_BATTLE_MEMBERS)
         .map((actor) => actor.actorId);
     }
   }
@@ -112,7 +113,7 @@ class Game_Party {
       this._battleRows[actor.actorId],
     );
 
-    if (this._battleActorIds.length < 4) {
+    if (this._battleActorIds.length < Game_Party.MAX_BATTLE_MEMBERS) {
       this._battleActorIds.push(actor.actorId);
       this._battleFormationActorIds.push(actor.actorId);
     }
@@ -213,10 +214,12 @@ class Game_Party {
       this.markActorMet(actor.actorId);
     }
 
-    this._battleActorIds = this._battleActorIds.filter((actorId) => this.actorById(actorId));
+    this._battleActorIds = this._battleActorIds
+      .filter((actorId) => this.actorById(actorId))
+      .slice(0, Game_Party.MAX_BATTLE_MEMBERS);
 
     for (const actor of this._actors) {
-      if (this._battleActorIds.length >= 4) {
+      if (this._battleActorIds.length >= Game_Party.MAX_BATTLE_MEMBERS) {
         break;
       }
 
@@ -253,7 +256,7 @@ class Game_Party {
 
       validIds.push(id);
 
-      if (validIds.length >= 4) {
+      if (validIds.length >= Game_Party.MAX_BATTLE_MEMBERS) {
         break;
       }
     }
@@ -294,7 +297,7 @@ class Game_Party {
       !actorId ||
       !this.actorById(actorId) ||
       this.isBattleActor(actorId) ||
-      this._battleActorIds.length >= 4
+      this._battleActorIds.length >= Game_Party.MAX_BATTLE_MEMBERS
     ) {
       return false;
     }
@@ -363,7 +366,7 @@ class Game_Party {
       }
     }
 
-    this._battleFormationActorIds = orderedIds.slice(0, 4);
+    this._battleFormationActorIds = orderedIds.slice(0, Game_Party.MAX_BATTLE_MEMBERS);
     return [...this._battleFormationActorIds];
   }
 
@@ -399,7 +402,7 @@ class Game_Party {
       }
     }
 
-    this._battleFormationActorIds = orderedIds.slice(0, 4);
+    this._battleFormationActorIds = orderedIds.slice(0, Game_Party.MAX_BATTLE_MEMBERS);
     return this._battleFormationActorIds.length === activeIds.length;
   }
 

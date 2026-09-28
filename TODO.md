@@ -98,7 +98,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Keep damage / Weak / Resist / Immune / Critical feedback on the battlefield; add brief Critical screen flash
 - [x] Integrate actor names, command reserve, and HP/MP/Valor columns in one stable bottom HUD
 - [x] Keep Back Attack party positions on the left and apply rear-exposure bonus only to physical damage
-- [x] Implement Enemy Formation Rows v1 with an eight-enemy cap, four front/four back slots, auto-centering, explicit placement, and pincer-aware flank rows
+- [x] Implement Enemy Formation Rows v1 with a six-enemy cap, three front/three back slots, auto-centering, explicit placement, and pincer-aware flank rows
 - [x] Implement Battle Targeting & Scope Navigation v2
 - [x] Collapse optional All scope when only one legal target exists in the current target bucket
 - [x] Support four-direction spatial targeting across normal/back-attack/pincer layouts without wraparound
@@ -127,7 +127,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Vertically center shared character-menu description strips while preserving left alignment and consistent wrapped-text bounds
 - [x] Unify field dialogue / choices with the shared tintable window-panel language and configured Window Color palette
 - [x] Remove permanent key-legend footers from established menu destinations while preserving contextual instructions for specialized editors / interactions
-- [x] Align EQUIP / ESSENCE lower panes to one shared center split and move ITEM tabs above the item-side pane so four actor cards retain full HP/MP presentation
+- [x] Align EQUIP / ESSENCE lower panes to one shared center split and move ITEM tabs above the item-side pane so three actor cards retain full HP/MP presentation
 - [x] Add Magick Menu Presentation & List Navigation v1 with actor summary, selected-Magick details, three-column scrolling grid, conditional arrows, shared held-direction repeat, Config naming, and white RUNES value presentation
 - [x] Add Skill Menu Presentation & List Navigation v1 with ordinary-technique filtering, actor summary/detail hierarchy, three-column scrolling grid, conditional arrows, shared held-direction repeat, and MAGICK/main-menu identity-layout consistency
 - [x] Add Equip Menu Presentation & Stat Preview v1 with shared actor summary, full Weapon/Armor/Accessories labels, description strip, held-repeat equipment browsing, live stat comparison, and square main-menu portrait consistency
@@ -147,7 +147,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Refine ITEM interaction to Use → Item → Target focus, persistent pending-item identity, hierarchical cancel, and automatic Arrange-heading return after sort apply
 - [x] Add Status Menu Presentation v1 with shared actor summary, Main / Element / Effect pages, actor-safe page switching, live elemental/status runtime presentation, and Equip footer-overlap cleanup
 - [x] Add Essence Menu Presentation & List Navigation v1 with shared stacked-vitals actor summary, slot/catalog equipment flow, two-column held-repeat catalog navigation, progression/Mastery Ready preview, and Magick Awakening presentation
-- [x] Implement Main Menu Information & Command Layout v1 with four active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels
+- [x] Implement Main Menu Information & Command Layout v1 with three active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels
 - [x] Unify field-menu outer geometry through shared `MenuScreenLayout`: full-screen safe inset/gap/backdrop, aligned outer bounds, and one compact title-bar height across MAIN MENU / ROSTER / SAVE-LOAD / AREA MAP while preserving character/config internal layouts
 - [x] Implement Main Menu Refinement & Command Availability Foundation v1 with RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and map-based Save restrictions; Load remains outside the final in-game main menu; development temporarily restores it for QA
 - [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
@@ -155,9 +155,9 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Main Menu Actor Selection & Order Foundation v1 with shared party-card focus, actor handoff, persistent front/back row state, portrait-position row language, and ROSTER hidden-by-default policy
 - [x] Pass 123: When backing out of actor-confirmed Main Menu destinations such as Magick/Skill, return focus to the actor cards so another actor can be chosen immediately; destinations with internal actor switching such as Equip/Essence keep their own navigation contract
 - [x] Pass 124: Stabilize Main Menu actor-card focus/one-actor return behavior, including a card-external selector rail for fractional browser zoom; add centralized stable-key Audio Foundation v1 with gesture-gated startup playback, retryable browser recovery, field/battle BGM transitions, speaker-audible midrange prototype BGM, UI SE hooks, Config Runtime v6 volume controls, development audio diagnostics, and layered battleback composition for paired ground/upper assets
-- [ ] Revisit active battle-party and enemy formation caps after layered-battleback QA; current hands-on target is three active battlers with reserve-roster ownership and at most six enemies so formations stay inside the readable battlefield.
-- [ ] Revisit battle-shadow scale/offset/opacity with the three-active/six-enemy formation pass; current shadows are technically present but too small/misaligned to contribute useful grounding on composed battlebacks.
-- [x] Extend Order with persistent active-party visual formation swapping (positions 1-4) without changing mechanical party/turn order
+- [x] Pass 125: Adopt a three-active battle-party cap with reserve-roster ownership, a six-enemy encounter cap, three-lane formation geometry, and Save Runtime v16 migration for legacy four-active saves.
+- [x] Rework battler shadow width/height, feet anchoring, and opacity alongside the three-active/six-enemy formation geometry so actors and enemies read as grounded on composed battlebacks.
+- [x] Extend Order with persistent active-party visual formation swapping (positions 1-3) without changing mechanical party/turn order
 - [x] Streamline Order back into direct active-party-card control so selecting Order immediately edits rows and visual formation slots without an intermediate full-screen window
 - [x] Connect player front/back row state to battlefield geometry as presentation only; keep row/slot position free of damage, weapon, targeting, or stat advantages unless the design is explicitly revisited
 - [x] Separate player-facing multi-level Valor progression from the ordinary Skill menu while reusing the shared Skill action runtime
@@ -301,7 +301,7 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Turn queue
 - [x] Multi-character turns
 - [x] Save / Load
-- [x] Save Runtime v15 with native `party.runes`, v14 legacy-currency migration, dedicated Valor Art ownership, area-location discovery, learned Skills/Valor/equipment/Essence/party-row/visual-formation state, and preserved older migrations
+- [x] Save Runtime v16 with three-active-party migration plus native `party.runes`, v14 legacy-currency migration, dedicated Valor Art ownership, area-location discovery, learned Skills/Valor/equipment/Essence/party-row/visual-formation state, and preserved older migrations
 - [x] Harden current core database runtime contracts
 - [x] Validate loaded map/event contracts before runtime use
 - [x] Centralize actor/party ownership and retire active `$gameActor` dependencies
@@ -337,7 +337,7 @@ Completed systems and design rules should be documented rather than duplicated h
 
 - [x] Add Party Recruitment Foundation with hero-only New Game start, recruited/met actor tracking, event-side recruitment, and save/load roster preservation.
 - [ ] Build companion join presentation / onboarding flow for story scenes.
-- [x] Add reserve-roster management through ROSTER with a four-member active battle-party cap.
+- [x] Add reserve-roster management through ROSTER with a three-member active battle-party cap.
 
 - [x] Pass 94: Add Essence slot scroll affordance, Item Arrange overflow cue, and Battle HUD breathing-room cleanup
 - [x] Pass 95: Add Active Time Battle Foundation v1 and TIME HUD presentation without replacing the proven round scheduler
@@ -358,4 +358,5 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Pass 117: Implement all 19 Level-4 Essence passives, add the development-only `$dev` console harness, expose passive/Fury feedback, enforce Haste/Slow opposition, make Small/Frog physically vulnerable, exclude banished enemies from rewards, and simplify battle-console narration
 - [x] Pass 118: Route Retreat through the shared battlefield target/group confirmation flow so cast-level escape follows Magick → battlefield confirmation before MP/turn commitment, then completes the caster Magick presentation and exits battle automatically; keep random-per-hit Magick as the intentional no-fake-target exception
 - [x] Pass 119: Extend per-actor Battle Cursor Memory to last confirmed legal targets by stable action context and keep repeated vertical target navigation inside the current ally/enemy lane
+- [x] Pass 125: Reduce battle composition to three active actors plus reserves and six enemies, migrate v15 four-active saves safely to Save Runtime v16, and strengthen battlefield shadow grounding
 - [ ] Remove the temporary in-game Load shortcut for the release menu once development/QA no longer needs rapid prepared-save access

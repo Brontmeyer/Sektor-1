@@ -22,7 +22,7 @@ class Window_MainMenuParty {
       this.party?.battleFormationMembers?.() ||
       this.party?.battleMembers?.() ||
       [];
-    return members.slice(0, 4);
+    return members.slice(0, this.party?.constructor?.MAX_BATTLE_MEMBERS || 3);
   }
 
   activate(mode = "actor") {
@@ -401,17 +401,18 @@ class Window_MainMenuParty {
     });
 
     const cardGap = 10;
+    const slotCount = this.party?.constructor?.MAX_BATTLE_MEMBERS || 3;
     const contentTop = this.y + 12;
     const contentBottom = this.y + this.height - 12;
     const cardHeight = Math.max(
       96,
-      (contentBottom - contentTop - cardGap * 3) / 4,
+      (contentBottom - contentTop - cardGap * (slotCount - 1)) / slotCount,
     );
     const selectorRailWidth = 22;
     const cardX = this.x + 12 + selectorRailWidth;
     const cardWidth = this.width - 24 - selectorRailWidth;
 
-    for (let index = 0; index < 4; index++) {
+    for (let index = 0; index < slotCount; index++) {
       const actor = members[index] || null;
       const cardY = contentTop + index * (cardHeight + cardGap);
       const selected = this.active && index === this.index;

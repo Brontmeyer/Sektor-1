@@ -7,8 +7,8 @@ class BattleFormationManager {
   static FRONT_ROW = "front";
   static BACK_ROW = "back";
   static REAR_PHYSICAL_DAMAGE_MULTIPLIER = 1.5;
-  static MAX_ENEMIES = 8;
-  static ROW_SLOT_COUNT = 4;
+  static MAX_ENEMIES = 6;
+  static ROW_SLOT_COUNT = 3;
   static PARTY_BACK_ROW_OFFSET = 0.04;
   static PINCER_FRONT_ROW_OFFSET = 0.035;
 
@@ -43,15 +43,23 @@ class BattleFormationManager {
   }
 
   verticalPartyPositions(count = this.partyMembers().length) {
-    const safeCount = Math.max(1, Number(count) || 1);
+    const safeCount = Math.max(
+      1,
+      Math.min($gameParty?.constructor?.MAX_BATTLE_MEMBERS || 3, Number(count) || 1),
+    );
     const top = this.battlefieldTop();
     const bottom = this.battlefieldBottom();
     const span = bottom - top;
-    const step = span / safeCount;
+    const layouts = {
+      1: [0.5],
+      2: [0.34, 0.66],
+      3: [0.2, 0.5, 0.8],
+    };
+    const fractions = layouts[safeCount] || layouts[3];
 
-    return Array.from({ length: safeCount }, (_, index) => ({
+    return fractions.map((fraction) => ({
       x: 0,
-      y: top + step * (index + 0.9),
+      y: top + span * fraction,
     }));
   }
 
@@ -169,8 +177,8 @@ class BattleFormationManager {
   }
 
   rowX(side, row) {
-    const frontX = side === "left" ? 0.2 : 0.8;
-    const backX = side === "left" ? 0.1 : 0.9;
+    const frontX = side === "left" ? 0.22 : 0.78;
+    const backX = side === "left" ? 0.13 : 0.87;
 
     return (
       Graphics.width *
@@ -179,15 +187,14 @@ class BattleFormationManager {
   }
 
   fixedSlotFractions() {
-    return [0.18, 0.39, 0.61, 0.82];
+    return [0.22, 0.5, 0.78];
   }
 
   automaticRowFractions(count) {
     const layouts = {
       1: [0.5],
       2: [0.38, 0.62],
-      3: [0.26, 0.5, 0.74],
-      4: this.fixedSlotFractions(),
+      3: this.fixedSlotFractions(),
     };
 
     return layouts[

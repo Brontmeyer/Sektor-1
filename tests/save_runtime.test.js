@@ -217,7 +217,7 @@ function serializeLegacyActorWithValorInSkills(actor, SaveManager) {
   };
 }
 
-function testV15SaveSerializesSkillAndValorArtStateValorLevelEquipmentRunesEssencesStatusesRowsFormationAndDiscovery() {
+function testV16SaveSerializesSkillAndValorArtStateValorLevelEquipmentRunesEssencesStatusesRowsFormationAndDiscovery() {
   const { localStorage, party, partyActors, SaveManager, gameSystem } = createHarness();
   const second = partyActors[1];
 
@@ -249,7 +249,7 @@ function testV15SaveSerializesSkillAndValorArtStateValorLevelEquipmentRunesEssen
   const saveData = rawSave(localStorage, SaveManager);
   const savedSecond = saveData.actors.find((actor) => actor.actorId === 2);
 
-  assert.equal(saveData.version, 15);
+  assert.equal(saveData.version, 16);
   assert.equal(saveData.metadata.playTimeSeconds, 5025);
   assert.deepEqual(saveData.world.areaDiscoveries, {
     1: ["test-plaza", "merchant-row"],
@@ -270,8 +270,8 @@ function testV15SaveSerializesSkillAndValorArtStateValorLevelEquipmentRunesEssen
     Array.from(savedSecond.statuses, (status) => status.key),
     ["fury"],
   );
-  assert.deepEqual(saveData.party.battleActorIds, [1, 2, 3, 4]);
-  assert.deepEqual(saveData.party.battleFormationActorIds, [3, 2, 1, 4]);
+  assert.deepEqual(saveData.party.battleActorIds, [1, 2, 3]);
+  assert.deepEqual(saveData.party.battleFormationActorIds, [3, 2, 1]);
   assert.deepEqual(saveData.party.battleRows, {
     1: "front",
     2: "back",
@@ -288,7 +288,7 @@ function testV15SaveSerializesSkillAndValorArtStateValorLevelEquipmentRunesEssen
   assert.deepEqual(Array.from(savedSecond.equippedEssenceIds), [1, null, null]);
 }
 
-async function testV15LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFormationDiscoveryAndNormalizesInventory() {
+async function testV16LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFormationDiscoveryAndNormalizesInventory() {
   const { localStorage, party, partyActors, SaveManager, gameSystem } = createHarness();
   const second = partyActors[1];
 
@@ -307,7 +307,7 @@ async function testV15LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFo
   party.accessories = { 1: 1, 2: 2 };
   assert.equal(party.gainRunes(120), true);
   assert.equal(party.setBattleRow(second, "back"), true);
-  assert.equal(party.swapBattleFormationSlots(0, 3), true);
+  assert.equal(party.swapBattleFormationSlots(0, 2), true);
   gameSystem.seconds = 3723;
   gameSystem.areaDiscoveries = { 1: ["test-plaza"] };
 
@@ -354,8 +354,8 @@ async function testV15LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFo
   assert.equal(party.itemCount(999), 0);
   assert.equal(party.runes(), 120);
   assert.equal(party.battleRow(second), "back");
-  assert.deepEqual(Array.from(party.battleFormationActorIds()), [4, 2, 3, 1]);
-  assert.deepEqual(Array.from(party.battleActorIds()), [1, 2, 3, 4]);
+  assert.deepEqual(Array.from(party.battleFormationActorIds()), [3, 2, 1]);
+  assert.deepEqual(Array.from(party.battleActorIds()), [1, 2, 3]);
   assert.equal(second.accessoryId, 1);
   assert.equal(party.accessoryCount(1), 1);
   assert.equal(party.accessoryCount(2), 2);
@@ -365,6 +365,37 @@ async function testV15LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFo
   assert.deepEqual(gameSystem.areaDiscoveries, { 1: ["test-plaza"] });
 }
 
+
+async function testVersionFifteenMigratesFourActiveActorsToThreePlusReserve() {
+  const { party, partyActors, SaveManager } = createHarness();
+  const legacySave = {
+    version: 15,
+    metadata: { actorName: partyActors[0].name, level: 1, timestamp: Date.now() },
+    actors: partyActors.map((actor) => SaveManager.serializeActor(actor)),
+    party: {
+      items: {}, weapons: {}, armors: {}, accessories: {}, runes: 50,
+      actorIds: [1, 2, 3, 4], metActorIds: [1, 2, 3, 4],
+      battleActorIds: [1, 2, 3, 4],
+      battleFormationActorIds: [4, 2, 1, 3],
+      battleRows: { 1: "front", 2: "back", 3: "front", 4: "back" },
+    },
+    world: { areaDiscoveries: {} },
+    switches: { data: {} }, variables: { data: {} }, selfSwitches: { data: {} },
+    location: { mapId: 1, x: 7, y: 8 },
+  };
+
+  const migrated = SaveManager.prepareSaveData(legacySave);
+  assert.equal(migrated.version, 16);
+  assert.deepEqual(Array.from(migrated.party.actorIds), [1, 2, 3, 4]);
+  assert.deepEqual(Array.from(migrated.party.battleActorIds), [1, 2, 3]);
+  assert.deepEqual(Array.from(migrated.party.battleFormationActorIds), [2, 1, 3]);
+
+  SaveManager.restoreParty(migrated.party);
+  assert.deepEqual(Array.from(party.battleActorIds()), [1, 2, 3]);
+  assert.deepEqual(Array.from(party.reserveMembers(), (actor) => actor.actorId), [4]);
+  assert.deepEqual(Array.from(party.battleFormationActorIds()), [2, 1, 3]);
+  assert.equal(party.battleRow(4), "back");
+}
 
 async function testVersionFourteenMigratesLegacyGilFieldToRunes() {
   const { localStorage, party, partyActors, SaveManager } = createHarness();
@@ -390,7 +421,7 @@ async function testVersionFourteenMigratesLegacyGilFieldToRunes() {
   assert.equal(party.runes(), 4321);
 
   const migrated = SaveManager.prepareSaveData(legacySave);
-  assert.equal(migrated.version, 15);
+  assert.equal(migrated.version, 16);
   assert.equal(migrated.party.runes, 4321);
   assert.equal(Object.hasOwn(migrated.party, "gil"), false);
 }
@@ -487,7 +518,7 @@ async function testVersionTenSaveMigratesFormationWithoutReinjectingForgottenSki
 
   assert.equal(await SaveManager.load(1), true);
   assert.deepEqual(Array.from(second.valorArtIds), []);
-  assert.deepEqual(Array.from(party.battleFormationActorIds()), [1, 2, 3, 4]);
+  assert.deepEqual(Array.from(party.battleFormationActorIds()), [1, 2, 3]);
   assert.equal(party.battleRow(second), "back");
 }
 
@@ -930,8 +961,9 @@ function testSaveStorageFailureReturnsFalse() {
 }
 
 async function run() {
-  testV15SaveSerializesSkillAndValorArtStateValorLevelEquipmentRunesEssencesStatusesRowsFormationAndDiscovery();
-  await testV15LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFormationDiscoveryAndNormalizesInventory();
+  testV16SaveSerializesSkillAndValorArtStateValorLevelEquipmentRunesEssencesStatusesRowsFormationAndDiscovery();
+  await testV16LoadRestoresSkillAndValorArtStateValorLevelAccessoryRowsFormationDiscoveryAndNormalizesInventory();
+  await testVersionFifteenMigratesFourActiveActorsToThreePlusReserve();
   await testVersionFourteenMigratesLegacyGilFieldToRunes();
   await testVersionThirteenMigratesValorArtsOutOfLegacySkillState();
   await testVersionElevenSaveMigratesEmptyAreaDiscoveryState();

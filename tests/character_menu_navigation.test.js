@@ -233,7 +233,7 @@ function testSharedNavigatorWrapsPartyMembers() {
 
   assert.equal(navigator.actor(), partyActors[0]);
   assert.equal(navigator.changeActor(-1), true);
-  assert.equal(navigator.actor(), partyActors[3]);
+  assert.equal(navigator.actor(), partyActors[2]);
   assert.equal(navigator.changeActor(1), true);
   assert.equal(navigator.actor(), partyActors[0]);
 
