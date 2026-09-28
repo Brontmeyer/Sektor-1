@@ -531,6 +531,8 @@ The core battle command presentation should stay compact. The persistent list is
 
 Style can become expressive without sacrificing information.
 
+Audio Foundation v1 establishes technical ownership without declaring final sound direction. Runtime callers request stable BGM/SE keys from one registry, maps and battles own contextual music identity, and Config owns Master/Music/Sound volume. The initial Dev Zone field/battle/UI clips are replaceable integration prototypes whose purpose is to prove transitions, looping, volume, and failure behavior. Prototype source levels should be mastered into an audible working range before per-asset and Config volume multipliers are applied. They should also carry meaningful midrange content so ordinary laptop/desktop speaker paths do not hide a technically loud but bass-heavy mix; Config remains the player-facing loudness authority.
+
 Detailed final art direction, UI language, animation standards, music direction, and audio identity remain open design areas until deliberately established.
 
 ---

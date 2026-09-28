@@ -38,8 +38,13 @@ class Scene_Map extends Scene_Base {
     this.map.updateAreaDiscovery?.(this.player);
 
     this.loading = false;
+    SceneManager.syncAudioForCurrentScene?.();
 
     DebugManager.log("Map scene ready.");
+  }
+
+  audioBgmKey() {
+    return this.map ? this.map.bgmKey : undefined;
   }
 
   quickMapRoute() {
@@ -243,6 +248,7 @@ class Scene_Map extends Scene_Base {
 
       this.camera.follow(this.player);
       this.map.updateAreaDiscovery?.(this.player);
+      SceneManager.syncAudioForCurrentScene?.();
 
       DebugManager.log(`Transfer complete: ${this.map.name}`);
     } catch (error) {

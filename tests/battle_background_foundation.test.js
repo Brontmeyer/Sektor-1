@@ -29,12 +29,22 @@ function testRegistryAndPrototypeAssets() {
   assert.notEqual(backgrounds[1].key, backgrounds[2].key);
 
   for (const background of backgrounds.filter(Boolean)) {
-    assert.equal(
-      fs.existsSync(path.join(projectRoot, background.image)),
-      true,
-      `${background.image} must exist`,
-    );
+    const images = Array.isArray(background.layers)
+      ? background.layers.map((layer) => layer.image)
+      : [background.image];
+    for (const image of images) {
+      assert.equal(
+        fs.existsSync(path.join(projectRoot, image)),
+        true,
+        `${image} must exist`,
+      );
+    }
   }
+  assert.deepEqual(
+    backgrounds[1].layers.map((layer) => path.basename(layer.image)),
+    ["GrassMaze.png", "Forest.png"],
+    "layered battlebacks draw the ground before the transparent upper scenery",
+  );
 
   const map1 = readData("Map001.json");
   const map2 = readData("Map002.json");
@@ -121,6 +131,49 @@ function testBackgroundManagerPriorityFallbackAndCoverCrop() {
   systemDefault.image = null;
   assert.equal(systemDefault.draw(fallbackContext, 1280, 720), false);
   assert.equal(fallbackCalls[0][0], backgrounds[1].fallbackColor);
+}
+
+
+function testLayeredBackgroundDrawsBottomToTop() {
+  const backgrounds = readData("BattleBackgrounds.json");
+  const DatabaseManager = {
+    system: { defaultBattleBackgroundKey: "devZone1" },
+    battleBackgroundByKey(key) {
+      return backgrounds.find((entry) => entry?.key === key) || null;
+    },
+  };
+
+  class FakeImage {
+    constructor() {
+      this.complete = true;
+      this.naturalWidth = 1000;
+      this.naturalHeight = 740;
+      this.loadFailed = false;
+      this._src = "";
+    }
+    set src(value) { this._src = value; }
+    get src() { return this._src; }
+  }
+
+  const { Class: BattleBackgroundManager } = loadClass(
+    "js/battle/BattleBackgroundManager.js",
+    "BattleBackgroundManager",
+    { DatabaseManager, Image: FakeImage },
+  );
+  const manager = new BattleBackgroundManager({ encounter: {} }, {});
+  assert.equal(manager.layers.length, 2);
+  assert.match(manager.layers[0].image.src, /GrassMaze\.png$/);
+  assert.match(manager.layers[1].image.src, /Forest\.png$/);
+
+  const calls = [];
+  const context = {
+    fillStyle: "",
+    fillRect() {},
+    drawImage(image) { calls.push(image.src); },
+  };
+  assert.equal(manager.draw(context, 1280, 720), true);
+  assert.match(calls[0], /GrassMaze\.png$/);
+  assert.match(calls[1], /Forest\.png$/);
 }
 
 function testGameMapCarriesStableBackgroundKey() {
@@ -277,6 +330,7 @@ function run() {
   testRegistryAndPrototypeAssets();
   testDatabaseAccessUsesStableKey();
   testBackgroundManagerPriorityFallbackAndCoverCrop();
+  testLayeredBackgroundDrawsBottomToTop();
   testGameMapCarriesStableBackgroundKey();
   testSceneManagerCarriesMapContextIntoBattle();
   testMapAndEncounterBackgroundValidation();

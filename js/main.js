@@ -6,6 +6,7 @@ async function startGame() {
   Graphics.initialize();
   Input.initialize();
   ConfigManager.initialize();
+  AudioManager.initialize();
   SceneManager.initialize();
 
   // Presentation assets load before the first scene. Failures are non-fatal:
@@ -17,6 +18,7 @@ async function startGame() {
   // =====================================
 
   await DatabaseManager.loadDatabase();
+  AudioManager.configure(DatabaseManager.audio);
 
   // =====================================
   // CREATE GAME OBJECTS

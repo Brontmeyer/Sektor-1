@@ -81,6 +81,7 @@ class DevTools {
       ["$dev.A(id) / $dev.actor(id)", "Actor runtime object (default actor 1)"],
       ["$dev.E(index) / $dev.enemy(index)", "Enemy runtime object in the active battle"],
       ["$dev.battle(encounterId)", "Start a database encounter (default 1)"],
+      ["$dev.bgm(key) / $dev.se(key) / $dev.audio()", "Preview stable-key audio and inspect the audio registry"],
       ["$dev.recruit(actorId) / $dev.recruitAll()", "Recruit actors for testing"],
       ["$dev.hp(actorId, value) / $dev.hpRate(actorId, rate)", "Set actor HP directly"],
       ["$dev.mp(actorId, value) / $dev.valor(actorId, value)", "Set actor MP / Valor"],
@@ -108,6 +109,36 @@ class DevTools {
       return false;
     }
     return SceneManager.startBattle(id) === true;
+  }
+
+  bgm(key = "battle.standard") {
+    return typeof AudioManager !== "undefined"
+      ? AudioManager.playBgm?.(String(key || "").trim(), { fadeSeconds: 0.2 }) === true
+      : false;
+  }
+
+  se(key = "ui.confirm") {
+    return typeof AudioManager !== "undefined"
+      ? AudioManager.playSe?.(String(key || "").trim()) === true
+      : false;
+  }
+
+  audio() {
+    if (typeof AudioManager === "undefined") {
+      return null;
+    }
+    const summary = AudioManager.summary?.() || null;
+    if (summary) {
+      console.table([
+        ...summary.bgmKeys.map((key) => ({ channel: "BGM", key })),
+        ...summary.seKeys.map((key) => ({ channel: "SE", key })),
+      ]);
+      console.log(`Current BGM: ${summary.currentBgmKey || "none"}`);
+      if (summary.bgmPlayback) {
+        console.table([summary.bgmPlayback]);
+      }
+    }
+    return summary;
   }
 
   recruit(actorId) {

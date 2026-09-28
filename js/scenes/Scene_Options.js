@@ -16,6 +16,7 @@ class Scene_Options extends Scene_Base {
     }
 
     if (Input.isActionTriggered("cancel")) {
+      if (typeof AudioManager !== "undefined") AudioManager.playSe?.("ui.cancel");
       SceneManager.pop();
       return;
     }

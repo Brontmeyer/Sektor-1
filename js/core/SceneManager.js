@@ -34,6 +34,7 @@ class SceneManager {
     this.currentScene = new sceneClass(...args);
 
     this.currentScene.start();
+    this.syncAudioForCurrentScene();
 
     DebugManager.log("Scene changed to:", sceneClass.name);
   }
@@ -46,8 +47,40 @@ class SceneManager {
     this.currentScene = new sceneClass(...args);
 
     this.currentScene.start();
+    this.syncAudioForCurrentScene();
 
     DebugManager.log(`Scene pushed: ${sceneClass.name}`);
+  }
+
+  static syncAudioForCurrentScene({ fadeSeconds = 0.35 } = {}) {
+    if (typeof AudioManager === "undefined") {
+      return false;
+    }
+
+    const scenes = [
+      this.currentScene,
+      ...(Array.isArray(this.sceneStack) ? [...this.sceneStack].reverse() : []),
+    ];
+    let key;
+
+    for (const scene of scenes) {
+      if (typeof scene?.audioBgmKey !== "function") {
+        continue;
+      }
+      const candidate = scene.audioBgmKey();
+      if (candidate !== undefined) {
+        key = candidate;
+        break;
+      }
+    }
+
+    if (key === undefined) {
+      return false;
+    }
+    if (key === null || key === "") {
+      return AudioManager.stopBgm?.({ fadeSeconds }) === true;
+    }
+    return AudioManager.playBgm?.(key, { fadeSeconds }) === true;
   }
 
   static startShop(shopData) {
@@ -98,6 +131,7 @@ class SceneManager {
     }
 
     this.currentScene = this.sceneStack.pop();
+    this.syncAudioForCurrentScene();
 
     DebugManager.log(`Returned to scene: ${this.currentScene.constructor.name}`);
   }

@@ -2,15 +2,16 @@
 
 class ConfigManager {
   static currentVersion() {
-    return 5;
+    return 6;
   }
 
   static storageKey() {
-    return "Sektor1_Config_v5";
+    return "Sektor1_Config_v6";
   }
 
   static legacyStorageKeys() {
     return [
+      "Sektor1_Config_v5",
       "Sektor1_Config_v4",
       "Sektor1_Config_v3",
       "Sektor1_Config_v2",
@@ -25,6 +26,9 @@ class ConfigManager {
       battleMessageSpeed: "normal",
       fieldMessageSpeed: "normal",
       battleCursorMemory: "initial",
+      masterVolume: 100,
+      bgmVolume: 80,
+      seVolume: 90,
       magickCategoryOrder: this.defaultMagickCategoryOrder(),
     };
   }
@@ -100,6 +104,30 @@ class ConfigManager {
         values: ["initial", "memory"],
         labels: { initial: "Initial", memory: "Memory" },
         description: "Initial resets battle lists; Memory keeps the last cursor this battle.",
+      },
+      {
+        key: "masterVolume",
+        label: "Master Volume",
+        values: Array.from({ length: 21 }, (_, index) => index * 5),
+        clamp: true,
+        format: "percent",
+        description: "Controls the overall volume of music and sound effects.",
+      },
+      {
+        key: "bgmVolume",
+        label: "Music Volume",
+        values: Array.from({ length: 21 }, (_, index) => index * 5),
+        clamp: true,
+        format: "percent",
+        description: "Controls background music volume without changing sound effects.",
+      },
+      {
+        key: "seVolume",
+        label: "Sound Volume",
+        values: Array.from({ length: 21 }, (_, index) => index * 5),
+        clamp: true,
+        format: "percent",
+        description: "Controls interface and gameplay sound-effect volume.",
       },
     ];
   }
@@ -477,6 +505,10 @@ class ConfigManager {
 
     this.data[key] = value;
 
+    if (this.audioVolumeKeys().includes(key) && typeof AudioManager !== "undefined") {
+      AudioManager.refreshVolumes?.();
+    }
+
     if (persist) {
       this.save();
     }
@@ -494,8 +526,9 @@ class ConfigManager {
     const current = this.get(key);
     const currentIndex = Math.max(0, option.values.indexOf(current));
     const offset = Number(direction) < 0 ? -1 : 1;
-    const nextIndex =
-      (currentIndex + offset + option.values.length) % option.values.length;
+    const nextIndex = option.clamp === true
+      ? Math.max(0, Math.min(option.values.length - 1, currentIndex + offset))
+      : (currentIndex + offset + option.values.length) % option.values.length;
     const value = option.values[nextIndex];
 
     this.set(key, value);
@@ -625,7 +658,23 @@ class ConfigManager {
   static displayValue(key) {
     const option = this.definition(key);
     const value = this.get(key);
+
+    if (option?.format === "percent") {
+      return `${Math.round(Number(value) || 0)}%`;
+    }
+
     return option?.labels?.[value] || String(value ?? "");
+  }
+
+  static audioVolumeKeys() {
+    return ["masterVolume", "bgmVolume", "seVolume"];
+  }
+
+  static audioVolumeRate(key) {
+    if (!this.audioVolumeKeys().includes(key)) {
+      return 1;
+    }
+    return Math.max(0, Math.min(1, (Number(this.get(key)) || 0) / 100));
   }
 
   static battleSpeedMultiplier() {

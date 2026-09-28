@@ -3,6 +3,7 @@
   "startMapId": 1,
   "battleView": "side",
   "defaultBattleBackgroundKey": "devZone1",
+  "defaultBattleBgmKey": "battle.standard",
   "debugMode": true,
   "protagonistActorId": 1,
   "unidentifiedActorName": "Unknown",

@@ -166,6 +166,16 @@ class Scene_Battle extends Scene_Base {
     DebugManager.log(`Battle started: ${this.encounter.name}.`);
   }
 
+  audioBgmKey() {
+    const encounterKey = typeof this.encounter?.battleBgmKey === "string"
+      ? this.encounter.battleBgmKey.trim()
+      : "";
+    const systemKey = typeof DatabaseManager.system?.defaultBattleBgmKey === "string"
+      ? DatabaseManager.system.defaultBattleBgmKey.trim()
+      : "";
+    return encounterKey || systemKey || null;
+  }
+
   update(deltaTime) {
     const battleDeltaTime = Scene_Battle.prototype.battleDeltaTime.call(
       this,

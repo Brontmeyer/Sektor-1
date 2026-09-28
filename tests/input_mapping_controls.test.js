@@ -62,7 +62,7 @@ function testLegacyConfigMigratesWithoutLosingOptions() {
   const storage = localStorageHarness({ Sektor1_Config_v1: legacy });
   const { ConfigManager } = loadCore(storage);
 
-  assert.equal(ConfigManager.currentVersion(), 5);
+  assert.equal(ConfigManager.currentVersion(), 6);
   assert.equal(ConfigManager.get("battleSpeed"), "fast");
   assert.equal(ConfigManager.get("atbMode"), "active");
   assert.equal(ConfigManager.get("battleCursorMemory"), "memory");
@@ -77,7 +77,7 @@ function testLegacyConfigMigratesWithoutLosingOptions() {
     JSON.parse(JSON.stringify(ConfigManager.getWindowColors())),
     JSON.parse(JSON.stringify(ConfigManager.windowColorDefaults())),
   );
-  assert.equal(storage.store.has("Sektor1_Config_v5"), true);
+  assert.equal(storage.store.has("Sektor1_Config_v6"), true);
 }
 
 function testNamedActionsReadRemappedPrimaryAndSecondaryBindings() {

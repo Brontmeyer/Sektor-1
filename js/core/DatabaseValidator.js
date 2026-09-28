@@ -14,6 +14,7 @@ class DatabaseValidator {
       errors,
       database.actors,
       database.battleBackgrounds,
+      database.audio,
     );
 
     for (const [name, records] of [
@@ -66,11 +67,13 @@ class DatabaseValidator {
       errors,
     );
     this.validateBattleBackgrounds(database.battleBackgrounds, errors);
+    this.validateAudio(database.audio, errors);
     this.validateEncounters(
       database.encounters,
       database.enemies,
       errors,
       database.battleBackgrounds,
+      database.audio,
     );
 
     if (errors.length > 0) {
@@ -142,6 +145,7 @@ class DatabaseValidator {
     errors,
     actors = null,
     battleBackgrounds = null,
+    audio = null,
   ) {
     if (!system || typeof system !== "object") {
       errors.push("System.json must contain an object.");
@@ -229,6 +233,24 @@ class DatabaseValidator {
       ) {
         errors.push(
           `System.defaultBattleBackgroundKey references unknown battle background key "${system.defaultBattleBackgroundKey}".`,
+        );
+      }
+    }
+
+    if (system.defaultBattleBgmKey !== undefined) {
+      if (
+        typeof system.defaultBattleBgmKey !== "string" ||
+        system.defaultBattleBgmKey.trim() === ""
+      ) {
+        errors.push(
+          "System.defaultBattleBgmKey must be a non-empty string when provided.",
+        );
+      } else if (
+        this.isPlainObject(audio) &&
+        !this.audioDefinition(audio, "bgm", system.defaultBattleBgmKey)
+      ) {
+        errors.push(
+          `System.defaultBattleBgmKey references unknown BGM key "${system.defaultBattleBgmKey}".`,
         );
       }
     }
@@ -340,6 +362,7 @@ class DatabaseValidator {
         "menuAccess",
         "areaMap",
         "battleBackgroundKey",
+        "bgmKey",
         "_comment",
       ],
       errors,
@@ -373,6 +396,17 @@ class DatabaseValidator {
         errors.push(
           `Map battleBackgroundKey references unknown battle background key "${mapData.battleBackgroundKey}".`,
         );
+      }
+    }
+
+    if (mapData.bgmKey !== undefined) {
+      if (typeof mapData.bgmKey !== "string" || mapData.bgmKey.trim() === "") {
+        errors.push("Map bgmKey must be a non-empty string when provided.");
+      } else if (
+        this.isPlainObject(database?.audio) &&
+        !this.audioDefinition(database.audio, "bgm", mapData.bgmKey)
+      ) {
+        errors.push(`Map bgmKey references unknown BGM key "${mapData.bgmKey}".`);
       }
     }
 
@@ -2982,6 +3016,61 @@ class DatabaseValidator {
     }
   }
 
+  static audioDefinition(audio, channel, key) {
+    if (!this.isPlainObject(audio) || !this.isPlainObject(audio[channel])) {
+      return null;
+    }
+    const normalized = typeof key === "string" ? key.trim() : "";
+    return normalized ? audio[channel][normalized] || null : null;
+  }
+
+  static validateAudio(audio, errors) {
+    if (!this.isPlainObject(audio)) {
+      errors.push("Audio.json must contain an object.");
+      return;
+    }
+
+    this.validateKnownKeys("Audio", audio, ["_comment", "bgm", "se"], errors);
+
+    for (const channel of ["bgm", "se"]) {
+      const group = audio[channel];
+      if (!this.isPlainObject(group)) {
+        errors.push(`Audio.${channel} must contain an object keyed by stable audio identity.`);
+        continue;
+      }
+
+      for (const [key, definition] of Object.entries(group)) {
+        const label = `Audio.${channel}.${key}`;
+        if (!key.trim()) {
+          errors.push(`Audio.${channel} keys must be non-empty strings.`);
+          continue;
+        }
+        if (!this.isPlainObject(definition)) {
+          errors.push(`${label} must contain an object.`);
+          continue;
+        }
+        this.validateKnownKeys(
+          label,
+          definition,
+          ["file", "loop", "volume", "_comment"],
+          errors,
+        );
+        if (typeof definition.file !== "string" || definition.file.trim() === "") {
+          errors.push(`${label}.file must be a non-empty string.`);
+        }
+        if (definition.volume !== undefined) {
+          this.validateFiniteNumber(`${label}.volume`, definition.volume, errors, {
+            min: 0,
+            max: 1,
+          });
+        }
+        if (definition.loop !== undefined && typeof definition.loop !== "boolean") {
+          errors.push(`${label}.loop must be true or false when provided.`);
+        }
+      }
+    }
+  }
+
   static battleBackgroundByKey(battleBackgrounds, key) {
     if (!Array.isArray(battleBackgrounds) || typeof key !== "string") {
       return null;
@@ -3018,6 +3107,7 @@ class DatabaseValidator {
           "key",
           "name",
           "image",
+          "layers",
           "fallbackColor",
           "positionX",
           "positionY",
@@ -3034,8 +3124,49 @@ class DatabaseValidator {
         keys.add(background.key);
       }
 
-      if (typeof background.image !== "string" || background.image.trim() === "") {
-        errors.push(`${label} image must be a non-empty string.`);
+      const hasImage =
+        typeof background.image === "string" && background.image.trim() !== "";
+      const hasLayers = Array.isArray(background.layers) && background.layers.length > 0;
+
+      if (hasImage === hasLayers) {
+        errors.push(`${label} must define exactly one image or a non-empty layers array.`);
+      }
+
+      if (background.layers !== undefined) {
+        if (!Array.isArray(background.layers) || background.layers.length === 0) {
+          errors.push(`${label} layers must be a non-empty array when provided.`);
+        } else {
+          background.layers.forEach((layer, layerIndex) => {
+            const layerLabel = `${label} layer ${layerIndex + 1}`;
+            if (!this.isPlainObject(layer)) {
+              errors.push(`${layerLabel} must be an object.`);
+              return;
+            }
+
+            this.validateKnownKeys(
+              layerLabel,
+              layer,
+              ["image", "positionX", "positionY"],
+              errors,
+            );
+
+            if (typeof layer.image !== "string" || layer.image.trim() === "") {
+              errors.push(`${layerLabel} image must be a non-empty string.`);
+            }
+
+            for (const axis of ["positionX", "positionY"]) {
+              if (layer[axis] === undefined) {
+                continue;
+              }
+              this.validateFiniteNumber(
+                `${layerLabel} ${axis}`,
+                layer[axis],
+                errors,
+                { min: 0, max: 1 },
+              );
+            }
+          });
+        }
       }
 
       if (
@@ -3065,6 +3196,7 @@ class DatabaseValidator {
     enemies,
     errors,
     battleBackgrounds = null,
+    audio = null,
   ) {
     if (!Array.isArray(encounters) || !Array.isArray(enemies)) {
       return;
@@ -3102,6 +3234,24 @@ class DatabaseValidator {
         ) {
           errors.push(
             `Encounter ${index} battleBackgroundKey references unknown battle background key "${encounter.battleBackgroundKey}".`,
+          );
+        }
+      }
+
+      if (encounter.battleBgmKey !== undefined) {
+        if (
+          typeof encounter.battleBgmKey !== "string" ||
+          encounter.battleBgmKey.trim() === ""
+        ) {
+          errors.push(
+            `Encounter ${index} battleBgmKey must be a non-empty string when provided.`,
+          );
+        } else if (
+          this.isPlainObject(audio) &&
+          !this.audioDefinition(audio, "bgm", encounter.battleBgmKey)
+        ) {
+          errors.push(
+            `Encounter ${index} battleBgmKey references unknown BGM key "${encounter.battleBgmKey}".`,
           );
         }
       }

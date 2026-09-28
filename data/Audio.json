@@ -1,0 +1,34 @@
+{
+  "_comment": "Pass 124 audio registry. Keys are stable runtime identity; files and prototype audio may be replaced without changing gameplay callers.",
+  "bgm": {
+    "field.devZone1": {
+      "file": "audio/bgm/field_dev_zone_1.ogg",
+      "loop": true,
+      "volume": 1.0
+    },
+    "field.devZone2": {
+      "file": "audio/bgm/field_dev_zone_2.ogg",
+      "loop": true,
+      "volume": 1.0
+    },
+    "battle.standard": {
+      "file": "audio/bgm/battle_standard.ogg",
+      "loop": true,
+      "volume": 1.0
+    }
+  },
+  "se": {
+    "ui.cursor": {
+      "file": "audio/se/ui_cursor.ogg",
+      "volume": 0.7
+    },
+    "ui.confirm": {
+      "file": "audio/se/ui_confirm.ogg",
+      "volume": 0.78
+    },
+    "ui.cancel": {
+      "file": "audio/se/ui_cancel.ogg",
+      "volume": 0.72
+    }
+  }
+}

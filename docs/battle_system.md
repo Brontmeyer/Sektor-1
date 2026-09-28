@@ -704,9 +704,9 @@ These are planned architecture, not claims about currently completed runtime beh
 
 Battle backgrounds are presentation data, not combat rules. `data/BattleBackgrounds.json` owns stable background keys and replaceable visual metadata. Maps may provide `battleBackgroundKey` as their normal environmental battleback, encounters may optionally override that key for special arenas, and `System.defaultBattleBackgroundKey` is the final configured fallback when a battle has no map-specific context.
 
-Resolution order is **encounter override → originating map → system default**. `SceneManager.startBattle()` carries the originating map context into `Scene_Battle`; `BattleBackgroundManager` resolves and loads the image, while `BattleRenderer` draws it before battlers/effects/HUD. Background identity never depends on display names. Missing or failed images are non-fatal: the manager paints the configured fallback color so battle remains playable and diagnosable.
+Resolution order is **encounter override → originating map → system default**. `SceneManager.startBattle()` carries the originating map context into `Scene_Battle`; `BattleBackgroundManager` resolves and loads either the single image or each ordered image layer, while `BattleRenderer` draws the result before battlers/effects/HUD. Background identity never depends on display names. Missing or failed images are non-fatal: the manager paints the configured fallback color so battle remains playable and diagnosable.
 
-The current Dev Zone 1 and Dev Zone 2 SVG battlebacks are prototype content intended to prove the pipeline. They can be replaced later without changing encounter logic as long as the stable keys remain valid.
+A background may use one `image`, or a non-empty `layers` array drawn bottom-to-top. Each layer owns its own crop anchors, so paired battleback packs can keep their original ground/upper-scenery split. Dev Zone 1 currently proves that contract with the supplied `GrassMaze.png` ground plus transparent `Forest.png` upper layer; Dev Zone 2 remains a single-image prototype so both formats stay exercised. These assets can be replaced later without changing encounter logic as long as the stable keys remain valid.
 
 ---
 

@@ -19,6 +19,10 @@ class Game_Map {
       typeof mapData.battleBackgroundKey === "string"
         ? mapData.battleBackgroundKey.trim() || null
         : null;
+    this.bgmKey =
+      typeof mapData.bgmKey === "string"
+        ? mapData.bgmKey.trim() || null
+        : null;
     this.areaMap = this.normalizeAreaMap(mapData.areaMap);
 
     this.events = (mapData.events || []).map(

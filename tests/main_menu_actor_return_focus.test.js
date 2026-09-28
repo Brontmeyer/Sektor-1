@@ -9,8 +9,14 @@ const projectRoot = path.resolve(__dirname, "..");
 const read = (relativePath) =>
   fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
 
-function loadSceneMenuClass() {
-  const context = vm.createContext({ console });
+function loadSceneMenuClass(memberCount = 4) {
+  const members = Array.from({ length: memberCount }, (_, index) => ({
+    actorId: index + 1,
+  }));
+  const context = vm.createContext({
+    console,
+    $gameParty: { battleFormationMembers: () => members },
+  });
   vm.runInContext(
     `class Scene_Base {}\n${read("js/scenes/Scene_Menu.js")}\n` +
       `globalThis.__Scene_Menu = Scene_Menu;`,
@@ -73,6 +79,27 @@ function testMagickAndSkillReturnToActorCards() {
   }
 }
 
+
+function testSingleActorReturnsDirectlyToCommandColumn() {
+  const Scene_Menu = loadSceneMenuClass(1);
+  const actor = { actorId: 1 };
+
+  for (const command of ["Magick", "Skill"]) {
+    const { scene, calls } = makeScene(Scene_Menu);
+    scene.partyWindow.active = true;
+    scene.pendingActorCommand = command;
+    scene.partyWindow.deactivate = function () {
+      calls.push(["deactivate"]);
+      this.active = false;
+    };
+
+    assert.equal(scene.returnToActorSelection(command, actor), false);
+    assert.equal(scene.partyWindow.active, false);
+    assert.equal(scene.pendingActorCommand, null);
+    assert.deepEqual(calls, [["deactivate"]]);
+  }
+}
+
 function testOtherCharacterDestinationsKeepTheirOwnReturnContract() {
   const Scene_Menu = loadSceneMenuClass();
   const actor = { actorId: 4 };
@@ -109,6 +136,7 @@ function testSceneUpdateRoutesOnlyMagickAndSkillThroughReturnHelper() {
 
 function run() {
   testMagickAndSkillReturnToActorCards();
+  testSingleActorReturnsDirectlyToCommandColumn();
   testOtherCharacterDestinationsKeepTheirOwnReturnContract();
   testSceneUpdateRoutesOnlyMagickAndSkillThroughReturnHelper();
   console.log("Main menu actor return-focus regression tests passed.");

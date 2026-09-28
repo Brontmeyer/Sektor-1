@@ -54,6 +54,12 @@ class Window_Options {
     return this.options[this.index] || null;
   }
 
+  playSe(key) {
+    if (typeof AudioManager !== "undefined") {
+      AudioManager.playSe?.(key);
+    }
+  }
+
   isEditingMagickOrder() {
     return this.magickOrderEditing;
   }
@@ -87,17 +93,20 @@ class Window_Options {
 
     if (Input.isActionTriggered("cancel") || Input.isActionTriggered("confirm")) {
       this.magickOrderEditing = false;
+      this.playSe(Input.isActionTriggered("cancel") ? "ui.cancel" : "ui.confirm");
       return true;
     }
 
     if (Input.isActionTriggered("up")) {
       this.magickOrderIndex =
         (this.magickOrderIndex - 1 + order.length) % order.length;
+      this.playSe("ui.cursor");
       return true;
     }
 
     if (Input.isActionTriggered("down")) {
       this.magickOrderIndex = (this.magickOrderIndex + 1) % order.length;
+      this.playSe("ui.cursor");
       return true;
     }
 
@@ -108,6 +117,7 @@ class Window_Options {
         category,
         direction,
       );
+      this.playSe("ui.cursor");
       return true;
     }
 
@@ -122,26 +132,33 @@ class Window_Options {
     if (Input.isActionTriggered("up")) {
       this.index =
         (this.index - 1 + this.options.length) % this.options.length;
+      this.playSe("ui.cursor");
       return true;
     }
 
     if (Input.isActionTriggered("down")) {
       this.index = (this.index + 1) % this.options.length;
+      this.playSe("ui.cursor");
       return true;
     }
 
     if (Input.isActionTriggered("left")) {
-      this.cycleCurrent(-1);
+      if (this.cycleCurrent(-1) !== null) {
+        this.playSe("ui.cursor");
+      }
       return true;
     }
 
     if (Input.isActionTriggered("right")) {
-      this.cycleCurrent(1);
+      if (this.cycleCurrent(1) !== null) {
+        this.playSe("ui.cursor");
+      }
       return true;
     }
 
     if (Input.isActionTriggered("confirm")) {
       const option = this.currentOption();
+      this.playSe("ui.confirm");
 
       if (option?.type === "controls") {
         this.onControls?.();

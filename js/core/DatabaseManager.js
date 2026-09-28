@@ -24,6 +24,7 @@ class DatabaseManager {
     this.enemies = await this.loadJSON("data/Enemies.json");
     this.encounters = await this.loadJSON("data/Encounters.json");
     this.battleBackgrounds = await this.loadJSON("data/BattleBackgrounds.json");
+    this.audio = await this.loadJSON("data/Audio.json");
 
     DatabaseValidator.validate(this);
 
@@ -135,6 +136,26 @@ class DatabaseManager {
         (background) => background?.key === normalizedKey,
       ) || null
     );
+  }
+
+  // =================================
+  // Audio
+  // =================================
+
+  static audioDefinition(channel, key) {
+    const group = this.audio?.[channel];
+    const normalized = typeof key === "string" ? key.trim() : "";
+    return group && typeof group === "object" && normalized
+      ? group[normalized] || null
+      : null;
+  }
+
+  static bgm(key) {
+    return this.audioDefinition("bgm", key);
+  }
+
+  static se(key) {
+    return this.audioDefinition("se", key);
   }
 
   // =================================

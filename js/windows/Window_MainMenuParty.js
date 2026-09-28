@@ -78,10 +78,16 @@ class Window_MainMenuParty {
       return false;
     }
 
+    if (members.length <= 1) {
+      this.index = 0;
+      return false;
+    }
+
+    const previousIndex = this.index;
     this.index =
       ((this.index + numericOffset) % members.length + members.length) %
       members.length;
-    return true;
+    return this.index !== previousIndex;
   }
 
   actorRow(actor) {
@@ -106,13 +112,19 @@ class Window_MainMenuParty {
     }
 
     if (Input.isActionTriggered("up")) {
-      this.changeSelection(-1);
-      return { type: "move", actor: this.currentActor() };
+      if (this.changeSelection(-1)) {
+        if (typeof AudioManager !== "undefined") AudioManager.playSe?.("ui.cursor");
+        return { type: "move", actor: this.currentActor() };
+      }
+      return null;
     }
 
     if (Input.isActionTriggered("down")) {
-      this.changeSelection(1);
-      return { type: "move", actor: this.currentActor() };
+      if (this.changeSelection(1)) {
+        if (typeof AudioManager !== "undefined") AudioManager.playSe?.("ui.cursor");
+        return { type: "move", actor: this.currentActor() };
+      }
+      return null;
     }
 
     if (Input.isActionTriggered("cancel")) {
@@ -121,6 +133,7 @@ class Window_MainMenuParty {
         return { type: "swapCancel", actor: this.currentActor() };
       }
 
+      if (typeof AudioManager !== "undefined") AudioManager.playSe?.("ui.cancel");
       return { type: "cancel", actor: this.currentActor() };
     }
 
@@ -171,6 +184,7 @@ class Window_MainMenuParty {
     }
 
     if (Input.isActionTriggered("confirm")) {
+      if (typeof AudioManager !== "undefined") AudioManager.playSe?.("ui.confirm");
       return { type: "confirm", actor };
     }
 
@@ -255,22 +269,13 @@ class Window_MainMenuParty {
   }
 
   drawActorCard(context, actor, index, x, y, width, height) {
-    const selected = this.active && index === this.index;
-    const swapSource =
-      this.active && this.mode === "order" && index === this.swapSourceIndex;
+    // Actor focus never repaints the card itself. At fractional browser zoom
+    // (the QA capture is at 90%), even a translucent focus fill inside a
+    // nine-slice card can read as a tiny card-size shimmer. The selector now
+    // lives entirely in the reserved margin outside the immutable card.
     this.drawPanel(context, x, y, width, height, {
       assetAlpha: index % 2 === 0 ? 0.42 : 0.36,
       shadow: false,
-      fallbackStroke: swapSource
-        ? "rgba(139, 220, 255, 0.96)"
-        : selected
-          ? "rgba(255, 215, 90, 0.92)"
-          : undefined,
-      innerStroke: swapSource
-        ? "rgba(139, 220, 255, 0.28)"
-        : selected
-          ? "rgba(255, 230, 140, 0.25)"
-          : undefined,
     });
 
     const padding = 12;
@@ -384,13 +389,6 @@ class Window_MainMenuParty {
       );
     });
 
-    if (selected) {
-      context.fillStyle = "#ffd75a";
-      context.font = "20px sans-serif";
-      context.textAlign = "left";
-      context.textBaseline = "middle";
-      context.fillText("▶", x + 4, y + height / 2);
-    }
   }
 
   draw() {
@@ -409,12 +407,39 @@ class Window_MainMenuParty {
       96,
       (contentBottom - contentTop - cardGap * 3) / 4,
     );
-    const cardX = this.x + 12;
-    const cardWidth = this.width - 24;
+    const selectorRailWidth = 22;
+    const cardX = this.x + 12 + selectorRailWidth;
+    const cardWidth = this.width - 24 - selectorRailWidth;
 
     for (let index = 0; index < 4; index++) {
       const actor = members[index] || null;
       const cardY = contentTop + index * (cardHeight + cardGap);
+      const selected = this.active && index === this.index;
+      const swapSource =
+        this.active && this.mode === "order" && index === this.swapSourceIndex;
+
+      if (actor && (selected || swapSource)) {
+        context.save();
+        context.fillStyle = swapSource
+          ? "rgba(139, 220, 255, 0.12)"
+          : "rgba(255, 215, 90, 0.12)";
+        context.fillRect(
+          this.x + 12,
+          cardY + 4,
+          selectorRailWidth,
+          cardHeight - 8,
+        );
+        context.fillStyle = swapSource ? "#8bdcff" : "#ffd75a";
+        context.font = "20px sans-serif";
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        context.fillText(
+          swapSource && !selected ? "◆" : "▶",
+          this.x + 12 + selectorRailWidth / 2,
+          cardY + cardHeight / 2,
+        );
+        context.restore();
+      }
 
       if (actor) {
         this.drawActorCard(

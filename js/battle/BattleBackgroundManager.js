@@ -10,10 +10,11 @@ class BattleBackgroundManager {
       : {};
     this.key = this.resolveBackgroundKey();
     this.definition = this.resolveDefinition(this.key);
+    this.layers = [];
     this.image = null;
     this.loadFailed = false;
 
-    this.loadImage();
+    this.loadImages();
   }
 
   resolveBackgroundKey() {
@@ -55,37 +56,74 @@ class BattleBackgroundManager {
       : BattleBackgroundManager.FALLBACK_COLOR;
   }
 
-  imagePath() {
-    const path = this.definition?.image;
-    return typeof path === "string" && path.trim() ? path.trim() : null;
+  normalizedAnchor(value, fallback = 0.5) {
+    const number = Number(value);
+    return Number.isFinite(number)
+      ? Math.max(0, Math.min(1, number))
+      : fallback;
   }
 
-  loadImage() {
-    const path = this.imagePath();
-    if (!path || typeof Image !== "function") {
+  layerDefinitions() {
+    if (Array.isArray(this.definition?.layers) && this.definition.layers.length > 0) {
+      return this.definition.layers;
+    }
+
+    const path = this.definition?.image;
+    if (typeof path !== "string" || !path.trim()) {
+      return [];
+    }
+
+    return [
+      {
+        image: path.trim(),
+        positionX: this.definition?.positionX,
+        positionY: this.definition?.positionY,
+      },
+    ];
+  }
+
+  loadImages() {
+    const definitions = this.layerDefinitions();
+    if (definitions.length === 0 || typeof Image !== "function") {
       return false;
     }
 
-    const image = new Image();
-    image.loadFailed = false;
-    image.onerror = () => {
-      image.loadFailed = true;
-      this.loadFailed = true;
-      console.warn(
-        `Failed to load battle background '${this.key || "unknown"}': ${path}`,
-      );
-    };
-    image.onload = () => {
+    this.layers = definitions.map((definition, index) => {
+      const path = typeof definition?.image === "string"
+        ? definition.image.trim()
+        : "";
+      const image = new Image();
+      const state = {
+        definition,
+        image,
+        loadFailed: false,
+      };
+
       image.loadFailed = false;
-      this.loadFailed = false;
-    };
-    image.src = path;
-    this.image = image;
-    return true;
+      image.onerror = () => {
+        image.loadFailed = true;
+        state.loadFailed = true;
+        this.loadFailed = this.layers.some((layer) => layer.loadFailed === true);
+        console.warn(
+          `Failed to load battle background '${this.key || "unknown"}' layer ${index + 1}: ${path || "unknown asset"}`,
+        );
+      };
+      image.onload = () => {
+        image.loadFailed = false;
+        state.loadFailed = false;
+        this.loadFailed = this.layers.some((layer) => layer.loadFailed === true);
+      };
+      image.src = path;
+      return state;
+    });
+
+    // Keep the original single-image surface available for compatibility with
+    // existing diagnostics/tests while layered definitions use `layers`.
+    this.image = this.layers.length === 1 ? this.layers[0].image : null;
+    return this.layers.length > 0;
   }
 
-  imageReady() {
-    const image = this.image;
+  imageReady(image) {
     if (!image || image.loadFailed || image.complete === false) {
       return false;
     }
@@ -95,14 +133,7 @@ class BattleBackgroundManager {
     return width > 0 && height > 0;
   }
 
-  normalizedAnchor(value, fallback = 0.5) {
-    const number = Number(value);
-    return Number.isFinite(number)
-      ? Math.max(0, Math.min(1, number))
-      : fallback;
-  }
-
-  coverSourceRect(image, width, height) {
+  coverSourceRect(image, width, height, definition = this.definition) {
     const sourceWidth = Number(image?.naturalWidth || image?.width || 0);
     const sourceHeight = Number(image?.naturalHeight || image?.height || 0);
     const destinationWidth = Math.max(1, Number(width) || 1);
@@ -123,8 +154,8 @@ class BattleBackgroundManager {
       cropHeight = sourceWidth / destinationAspect;
     }
 
-    const anchorX = this.normalizedAnchor(this.definition?.positionX, 0.5);
-    const anchorY = this.normalizedAnchor(this.definition?.positionY, 0.5);
+    const anchorX = this.normalizedAnchor(definition?.positionX, 0.5);
+    const anchorY = this.normalizedAnchor(definition?.positionY, 0.5);
 
     return {
       x: (sourceWidth - cropWidth) * anchorX,
@@ -132,6 +163,30 @@ class BattleBackgroundManager {
       width: cropWidth,
       height: cropHeight,
     };
+  }
+
+  drawImageLayer(context, image, definition, width, height) {
+    if (!this.imageReady(image) || typeof context.drawImage !== "function") {
+      return false;
+    }
+
+    const source = this.coverSourceRect(image, width, height, definition);
+    if (!source) {
+      return false;
+    }
+
+    context.drawImage(
+      image,
+      source.x,
+      source.y,
+      source.width,
+      source.height,
+      0,
+      0,
+      width,
+      height,
+    );
+    return true;
   }
 
   draw(context, width, height) {
@@ -145,30 +200,29 @@ class BattleBackgroundManager {
     context.fillStyle = this.fallbackColor();
     context.fillRect(0, 0, destinationWidth, destinationHeight);
 
-    if (!this.imageReady() || typeof context.drawImage !== "function") {
-      return false;
+    let drewImage = false;
+
+    if (this.layers.length > 0) {
+      for (const layer of this.layers) {
+        drewImage =
+          this.drawImageLayer(
+            context,
+            layer.image,
+            layer.definition,
+            destinationWidth,
+            destinationHeight,
+          ) || drewImage;
+      }
+      return drewImage;
     }
 
-    const source = this.coverSourceRect(
+    // Compatibility path for a manually supplied single image in diagnostics.
+    return this.drawImageLayer(
+      context,
       this.image,
+      this.definition,
       destinationWidth,
       destinationHeight,
     );
-    if (!source) {
-      return false;
-    }
-
-    context.drawImage(
-      this.image,
-      source.x,
-      source.y,
-      source.width,
-      source.height,
-      0,
-      0,
-      destinationWidth,
-      destinationHeight,
-    );
-    return true;
   }
 }

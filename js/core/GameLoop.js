@@ -13,6 +13,7 @@ class GameLoop {
 
   static update(deltaTime) {
     Input.update(deltaTime);
+    AudioManager.update(deltaTime);
     Graphics.clear();
 
     SceneManager.update(deltaTime);

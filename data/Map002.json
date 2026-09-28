@@ -8,6 +8,7 @@
     "y": 300
   },
   "battleBackgroundKey": "devZone2",
+  "bgmKey": "field.devZone2",
   "areaMap": {
     "enabled": true,
     "locations": [

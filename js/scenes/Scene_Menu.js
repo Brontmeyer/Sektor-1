@@ -101,6 +101,16 @@ class Scene_Menu extends Scene_Base {
       return false;
     }
 
+    // One-member parties skip the actor picker on the way into character
+    // destinations, so they must also skip it on the way back out. Reopening
+    // the picker here caused a visible focus flash/jitter before returning to
+    // the command column.
+    const members = $gameParty?.battleFormationMembers?.() || [];
+    if (members.length <= 1) {
+      this.endPartySelection();
+      return false;
+    }
+
     if (
       typeof this.partyWindow.selectActor === "function" &&
       !this.partyWindow.selectActor(actor)

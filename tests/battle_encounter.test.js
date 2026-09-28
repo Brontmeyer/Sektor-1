@@ -141,6 +141,7 @@ function testProjectDatabaseValidation() {
     essences: readData("Essences.json"),
     statuses: readData("Statuses.json"),
     battleBackgrounds: readData("BattleBackgrounds.json"),
+    audio: readData("Audio.json"),
   };
 
   assert.equal(DatabaseValidator.validate(database), true);
