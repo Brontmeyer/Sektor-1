@@ -833,7 +833,7 @@ class Window_Inventory {
     this.drawPanel(context, bounds);
 
     context.save();
-    const subtitle = `${this.pageTitle()}  ${this.pageIndex + 1}/${Window_Inventory.PAGE_COUNT}`;
+    const subtitle = this.pageTitle();
     const heading = CharacterMenuLayout.drawInfoHeading(context, bounds, {
       title: "ITEM",
       subtitle,
@@ -1157,7 +1157,9 @@ class Window_Inventory {
     const availableCardHeight = Math.floor(
       (columns.leftHeight - gap * (members.length - 1)) / members.length,
     );
-    const cardHeight = Math.max(96, Math.min(108, availableCardHeight));
+    // With three active members, let the roster cards consume the available
+    // vertical column instead of leaving a large dead zone underneath them.
+    const cardHeight = Math.max(96, Math.min(132, availableCardHeight));
 
     members.forEach((member, index) => {
       this.drawPartyMemberRow(

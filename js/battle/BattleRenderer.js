@@ -380,16 +380,16 @@ class BattleRenderer {
         bounds.width,
         bounds.height,
         {
-          fallbackFill: "rgba(7, 10, 15, 0.7)",
+          fallbackFill: "rgba(7, 10, 15, 0.52)",
           fallbackStroke: "rgba(151, 196, 229, 0.5)",
           lineWidth: 1.25,
-          assetAlpha: 0.32,
+          assetAlpha: 0.2,
           sourceMargin: 12,
           destMargin: 8,
         },
       );
     } else {
-      context.fillStyle = "rgba(7, 10, 15, 0.7)";
+      context.fillStyle = "rgba(7, 10, 15, 0.52)";
       context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
       context.strokeStyle = "rgba(151, 196, 229, 0.5)";
       context.lineWidth = 1.25;

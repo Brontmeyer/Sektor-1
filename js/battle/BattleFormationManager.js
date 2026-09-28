@@ -11,6 +11,7 @@ class BattleFormationManager {
   static ROW_SLOT_COUNT = 3;
   static PARTY_BACK_ROW_OFFSET = 0.04;
   static PINCER_FRONT_ROW_OFFSET = 0.035;
+  static PARTY_VERTICAL_OFFSET = 0.05;
 
   constructor(scene) {
     this.scene = scene;
@@ -59,7 +60,10 @@ class BattleFormationManager {
 
     return fractions.map((fraction) => ({
       x: 0,
-      y: top + span * fraction,
+      y: Math.min(
+        bottom - 8,
+        top + span * fraction + Graphics.height * BattleFormationManager.PARTY_VERTICAL_OFFSET,
+      ),
     }));
   }
 

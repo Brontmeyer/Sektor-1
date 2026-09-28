@@ -12,7 +12,7 @@ class BattleHudLayout {
 
     return {
       x: 18,
-      y: Graphics.height - height - 12,
+      y: Graphics.height - height - 4,
       width: Math.max(640, Graphics.width - 36),
       height,
     };
