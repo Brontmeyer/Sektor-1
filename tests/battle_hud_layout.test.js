@@ -159,8 +159,8 @@ function testContextHelpIsExpandedAndCenteredAboveHud() {
   const hud = layout.hudBounds();
   const help = layout.tacticalHelpBounds();
 
-  assert.equal(help.height, 64);
-  assert.equal(help.width > hud.width * 0.7, true);
+  assert.equal(help.height, 48);
+  assert.equal(help.width > hud.width * 0.6, true);
   assert.equal(help.width < hud.width, true);
   assert.equal(help.x > hud.x, true);
   assert.equal(help.x + help.width < hud.x + hud.width, true);

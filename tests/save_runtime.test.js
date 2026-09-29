@@ -249,7 +249,7 @@ function testV16SaveSerializesSkillAndValorArtStateValorLevelEquipmentRunesEssen
   const saveData = rawSave(localStorage, SaveManager);
   const savedSecond = saveData.actors.find((actor) => actor.actorId === 2);
 
-  assert.equal(saveData.version, 16);
+  assert.equal(saveData.version, 17);
   assert.equal(saveData.metadata.playTimeSeconds, 5025);
   assert.deepEqual(saveData.world.areaDiscoveries, {
     1: ["test-plaza", "merchant-row"],
@@ -385,7 +385,7 @@ async function testVersionFifteenMigratesFourActiveActorsToThreePlusReserve() {
   };
 
   const migrated = SaveManager.prepareSaveData(legacySave);
-  assert.equal(migrated.version, 16);
+  assert.equal(migrated.version, 17);
   assert.deepEqual(Array.from(migrated.party.actorIds), [1, 2, 3, 4]);
   assert.deepEqual(Array.from(migrated.party.battleActorIds), [1, 2, 3]);
   assert.deepEqual(Array.from(migrated.party.battleFormationActorIds), [2, 1, 3]);
@@ -421,7 +421,7 @@ async function testVersionFourteenMigratesLegacyGilFieldToRunes() {
   assert.equal(party.runes(), 4321);
 
   const migrated = SaveManager.prepareSaveData(legacySave);
-  assert.equal(migrated.version, 16);
+  assert.equal(migrated.version, 17);
   assert.equal(migrated.party.runes, 4321);
   assert.equal(Object.hasOwn(migrated.party, "gil"), false);
 }

@@ -162,7 +162,9 @@ class ConfigManager {
     this.bindings = this.defaultBindings();
     this.windowColors = this.windowColorDefaults();
     this.lastError = "";
-    this.load();
+    // Config is game state. A fresh runtime starts from canonical defaults;
+    // SaveManager restores the snapshot belonging to a loaded slot.
+    this.resetToDefaults();
   }
 
   static ensureInitialized() {
@@ -411,6 +413,42 @@ class ConfigManager {
     return this.getWindowColors();
   }
 
+  static resetToDefaults() {
+    this.data = this.defaults();
+    this.bindings = this.defaultBindings();
+    this.windowColors = this.windowColorDefaults();
+    this.lastError = "";
+    if (typeof AudioManager !== "undefined") AudioManager.refreshVolumes?.();
+    return true;
+  }
+
+  static snapshot() {
+    this.ensureInitializedWithoutLoad();
+    return {
+      version: this.currentVersion(),
+      options: { ...this.data, magickCategoryOrder: this.magickCategoryOrder() },
+      bindings: Object.fromEntries(
+        Object.entries(this.bindings).map(([action, slots]) => [action, [...slots]]),
+      ),
+      windowColors: { ...this.windowColors },
+    };
+  }
+
+  static restoreSnapshot(snapshot) {
+    this.ensureInitializedWithoutLoad();
+    const source = snapshot && typeof snapshot === "object" ? snapshot : {};
+    this.data = this.sanitize(source.options || source);
+    this.bindings = this.sanitizeBindings(source.bindings);
+    this.windowColors = this.sanitizeWindowColors(source.windowColors);
+    this.lastError = "";
+    if (typeof UIAssetManager !== "undefined") {
+      UIAssetManager._windowColorTextureKey = "";
+      UIAssetManager._windowColorTexture = null;
+    }
+    if (typeof AudioManager !== "undefined") AudioManager.refreshVolumes?.();
+    return true;
+  }
+
   static readStoredPayload() {
     const keys = [this.storageKey(), ...this.legacyStorageKeys()];
 
@@ -463,31 +501,11 @@ class ConfigManager {
   }
 
   static save() {
+    // Kept as an API boundary for option windows. Persistence belongs to the
+    // game save slot, not browser-global localStorage.
     this.ensureInitializedWithoutLoad();
-
-    try {
-      const payload = {
-        version: this.currentVersion(),
-        options: {
-          ...this.data,
-          magickCategoryOrder: this.magickCategoryOrder(),
-        },
-        bindings: Object.fromEntries(
-          Object.entries(this.bindings).map(([action, slots]) => [
-            action,
-            [...slots],
-          ]),
-        ),
-        windowColors: { ...this.windowColors },
-      };
-      localStorage.setItem(this.storageKey(), JSON.stringify(payload));
-      this.lastError = "";
-      return true;
-    } catch (error) {
-      this.lastError = "Could not save configuration.";
-      console.warn(this.lastError, error);
-      return false;
-    }
+    this.lastError = "";
+    return true;
   }
 
   static get(key) {

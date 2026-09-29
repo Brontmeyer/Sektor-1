@@ -130,19 +130,23 @@ class Window_WindowColor {
     }
 
     if (typeof Input.isActionRepeated === "function" ? Input.isActionRepeated("left") : Input.isActionTriggered("left")) {
+      const held = Math.max(0, Number(Input.repeatStates?.left?.elapsed) || 0);
+      const acceleratedStep = held >= 2.5 ? 6 : held >= 1.5 ? 4 : held >= 0.75 ? 2 : this.step;
       ConfigManager.adjustWindowColorChannel(
         entry.key,
         this.currentChannel(),
-        -this.step,
+        -acceleratedStep,
       );
       return true;
     }
 
     if (typeof Input.isActionRepeated === "function" ? Input.isActionRepeated("right") : Input.isActionTriggered("right")) {
+      const held = Math.max(0, Number(Input.repeatStates?.right?.elapsed) || 0);
+      const acceleratedStep = held >= 2.5 ? 6 : held >= 1.5 ? 4 : held >= 0.75 ? 2 : this.step;
       ConfigManager.adjustWindowColorChannel(
         entry.key,
         this.currentChannel(),
-        this.step,
+        acceleratedStep,
       );
       return true;
     }

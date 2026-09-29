@@ -169,6 +169,7 @@ class Window_SaveSlots {
         party: [],
         runes: null,
         playTimeSeconds: 0,
+        windowColors: null,
       };
     }
 
@@ -223,6 +224,7 @@ class Window_SaveSlots {
       party: displayParty.slice(0, 3),
       runes: Number.isFinite(runes) ? runes : null,
       playTimeSeconds: Math.max(0, Number(metadata.playTimeSeconds) || 0),
+      windowColors: saveData.config?.windowColors || null,
     };
   }
 
@@ -385,8 +387,8 @@ class Window_SaveSlots {
     const innerX = bounds.x + 18;
     const innerY = bounds.y + 14;
     const innerHeight = bounds.height - 28;
-    const portraitSize = Math.max(64, Math.min(84, Math.floor(innerHeight * 0.54)));
-    const portraitGap = 8;
+    const portraitSize = Math.max(72, Math.min(96, Math.floor(innerHeight * 0.62)));
+    const portraitGap = 10;
     const partySlots = 3;
     const partyWidth = portraitSize * partySlots + portraitGap * (partySlots - 1);
     const infoX = innerX + partyWidth + 36;
@@ -409,7 +411,7 @@ class Window_SaveSlots {
       slotLabelY,
     );
 
-    const portraitY = innerY + 30;
+    const portraitY = innerY + 32;
     for (let index = 0; index < partySlots; index++) {
       const actor = summary.party[index];
       const x = innerX + index * (portraitSize + portraitGap);
@@ -485,10 +487,21 @@ class Window_SaveSlots {
   drawSlot(context, summary, bounds, selected) {
     this.drawPanel(context, bounds, {
       assetAlpha: selected ? 0.46 : 0.34,
+      windowTint: !summary.exists || !summary.windowColors,
       fallbackStroke: selected
         ? "rgba(255, 215, 90, 0.9)"
         : "rgba(150, 176, 220, 0.5)",
     });
+
+    // Populated slots preview the window colors saved inside that slot rather
+    // than inheriting the currently-running Config skin. The surrounding
+    // Save/Load chrome still follows the current game configuration.
+    if (summary.exists && summary.windowColors && typeof UIAssetManager !== "undefined") {
+      UIAssetManager.drawWindowColorOverlay?.(context, bounds.x, bounds.y, bounds.width, bounds.height, {
+        alpha: 0.62,
+        colors: summary.windowColors,
+      });
+    }
 
     if (!summary.exists) {
       this.drawEmptySlot(context, summary, bounds, selected);

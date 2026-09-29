@@ -7,7 +7,7 @@ class Window_Roster {
     this.focus = "active";
     this.activeIndex = 0;
     this.reserveIndex = 0;
-    this.pendingReserveId = 0;
+    this.pendingActiveId = 0;
     this.activeViewport = new Window_ListViewport(this.party?.constructor?.MAX_BATTLE_MEMBERS || 3);
     this.reserveViewport = new Window_ListViewport(4);
     this.refreshLayout();
@@ -52,14 +52,14 @@ class Window_Roster {
   show() {
     this.visible = true;
     this.focus = "active";
-    this.pendingReserveId = 0;
+    this.pendingActiveId = 0;
     this.refreshLayout();
     this.clampIndices();
   }
 
   hide() {
     this.visible = false;
-    this.pendingReserveId = 0;
+    this.pendingActiveId = 0;
   }
 
   isOpen() {
@@ -101,8 +101,8 @@ class Window_Roster {
     return this.focusedMembers()[this.focusedIndex()] || null;
   }
 
-  pendingReserveActor() {
-    return this.party?.actorById?.(this.pendingReserveId) || null;
+  pendingActiveActor() {
+    return this.party?.actorById?.(this.pendingActiveId) || null;
   }
 
   clampIndices() {
@@ -158,7 +158,10 @@ class Window_Roster {
       return false;
     }
 
-    if (this.pendingReserveId) {
+    // ROSTER is a direct active <-> reserve exchange. The active party never
+    // temporarily shrinks: choose an active source first, then its reserve
+    // replacement.
+    if (!this.pendingActiveId) {
       if (this.focus !== "active") {
         this.switchFocus("active");
         return true;
@@ -168,35 +171,28 @@ class Window_Roster {
         return false;
       }
 
-      const reserveActor = this.pendingReserveActor();
-      const replaced = this.party?.replaceBattleActor?.(actor, reserveActor) === true;
-      if (replaced) {
-        this.pendingReserveId = 0;
-        this.switchFocus("active");
-      }
-      this.clampIndices();
-      return replaced;
-    }
-
-    if (this.focus === "active") {
-      if (this.isRosterLockedActor(actor)) {
+      if (this.reserveMembers().length === 0) {
         return false;
       }
 
-      const reserved = this.party?.reserveBattleActor?.(actor) === true;
-      this.clampIndices();
-      return reserved;
+      this.pendingActiveId = actor.actorId;
+      this.switchFocus("reserve");
+      return true;
     }
 
-    if (this.activeMembers().length < (this.party?.constructor?.MAX_BATTLE_MEMBERS || 3)) {
-      const activated = this.party?.activateBattleActor?.(actor) === true;
-      this.clampIndices();
-      return activated;
+    if (this.focus !== "reserve") {
+      this.switchFocus("reserve");
+      return true;
     }
 
-    this.pendingReserveId = actor.actorId;
-    this.switchFocus("active");
-    return true;
+    const activeActor = this.pendingActiveActor();
+    const replaced = this.party?.replaceBattleActor?.(activeActor, actor) === true;
+    if (replaced) {
+      this.pendingActiveId = 0;
+      this.switchFocus("active");
+    }
+    this.clampIndices();
+    return replaced;
   }
 
   update() {
@@ -205,9 +201,9 @@ class Window_Roster {
     }
 
     if (Input.isActionTriggered("cancel")) {
-      if (this.pendingReserveId) {
-        this.pendingReserveId = 0;
-        this.switchFocus("reserve");
+      if (this.pendingActiveId) {
+        this.pendingActiveId = 0;
+        this.switchFocus("active");
       } else {
         this.hide();
       }
@@ -215,12 +211,16 @@ class Window_Roster {
     }
 
     if (Input.isActionTriggered("left")) {
-      this.switchFocus("active");
+      // ROSTER uses Cancel/Back as the only way to abandon a pending swap.
+      // Left remains inert while choosing a reserve so directional input never
+      // doubles as a hidden cancel command.
       return;
     }
 
     if (Input.isActionTriggered("right")) {
-      this.switchFocus("reserve");
+      // Reserve selection is entered by confirming an active actor. Keeping
+      // horizontal focus locked until then makes ROSTER mirror Order's
+      // pick-up -> destination interaction instead of acting like two lists.
       return;
     }
 
@@ -279,11 +279,36 @@ class Window_Roster {
   }
 
   drawActorCard(context, actor, bounds, selected, statusLabel) {
-    if (selected) {
-      this.drawSelection(context, bounds.x, bounds.y, bounds.width, bounds.height);
+    this.drawPanel(context, bounds, { assetAlpha: 0.34 });
+    const pending = Number(actor?.actorId) === Number(this.pendingActiveId);
+    if (selected || pending) {
+      context.save();
+      const pulse = pending
+        ? 0.55 + 0.45 * Math.sin((globalThis.performance?.now?.() || Date.now()) / 180)
+        : 1;
+      context.strokeStyle = `rgba(255, 215, 90, ${0.9 * pulse})`;
+      context.lineWidth = 3;
+      const inset = 2;
+      const radius = 11;
+      context.beginPath();
+      if (typeof context.roundRect === "function") {
+        context.roundRect(
+          bounds.x + inset,
+          bounds.y + inset,
+          bounds.width - inset * 2,
+          bounds.height - inset * 2,
+          radius,
+        );
+      } else {
+        context.rect(bounds.x + inset, bounds.y + inset, bounds.width - inset * 2, bounds.height - inset * 2);
+      }
+      context.stroke();
+      context.fillStyle = `rgba(255, 215, 90, ${0.07 * pulse})`;
+      context.fill();
+      context.restore();
     }
 
-    const portraitSize = Math.min(58, bounds.height - 14);
+    const portraitSize = Math.min(92, bounds.height - 20);
     const portraitX = bounds.x + 10;
     const portraitY = bounds.y + (bounds.height - portraitSize) / 2;
     Window_ActorSummary.drawPortraitPlaceholder(
@@ -298,20 +323,94 @@ class Window_Roster {
     context.textAlign = "left";
     context.textBaseline = "middle";
     context.fillStyle = selected ? "#ffd75a" : (UIThemePalette?.primary?.() || "#ffffff");
-    context.font = selected ? "600 17px sans-serif" : "17px sans-serif";
-    context.fillText(actor?.name || "Unknown", textX, bounds.y + 23);
+    context.font = selected ? "600 19px sans-serif" : "600 18px sans-serif";
+    context.fillText(actor?.name || "Unknown", textX, bounds.y + bounds.height / 2 - 18);
     context.fillStyle = UIThemePalette?.secondary?.() || "#aebbd0";
     context.font = "13px sans-serif";
-    context.fillText(
-      `LV ${actor?.level ?? "?"}   HP ${Math.floor(actor?.hp ?? 0)}/${Math.floor(actor?.maxHp ?? 0)}   MP ${Math.floor(actor?.mp ?? 0)}/${Math.floor(actor?.maxMp ?? 0)}`,
-      textX,
-      bounds.y + 48,
-    );
+    context.fillText(`LV ${actor?.level ?? "?"}`, textX, bounds.y + bounds.height / 2 + 8);
+
+    const gaugeX = textX;
+    const gaugeWidth = Math.max(76, Math.min(112, bounds.width - (gaugeX - bounds.x) - 138));
+    const hpY = bounds.y + bounds.height / 2 + 24;
+    const mpY = hpY + 20;
+    context.fillStyle = UIThemePalette?.secondary?.() || "#aebbd0";
+    context.font = "11px sans-serif";
+    context.fillText(`HP ${Math.floor(actor?.hp ?? 0)}/${Math.floor(actor?.maxHp ?? 0)}`, gaugeX, hpY);
+    Window_ActorSummary.drawGauge(context, actor?.hp ?? 0, actor?.maxHp ?? 0, gaugeX, hpY + 5, gaugeWidth, "hp");
+    context.fillText(`MP ${Math.floor(actor?.mp ?? 0)}/${Math.floor(actor?.maxMp ?? 0)}`, gaugeX + gaugeWidth + 12, hpY);
+    Window_ActorSummary.drawGauge(context, actor?.mp ?? 0, actor?.maxMp ?? 0, gaugeX + gaugeWidth + 12, hpY + 5, gaugeWidth, "mp");
 
     context.textAlign = "right";
     context.fillStyle = statusLabel === "ACTIVE" ? "#78f0d2" : "#c7a7ff";
     context.font = "600 12px sans-serif";
-    context.fillText(statusLabel, bounds.x + bounds.width - 12, bounds.y + 23);
+    context.fillText(statusLabel, bounds.x + bounds.width - 14, bounds.y + bounds.height / 2 - 18);
+  }
+
+  drawReserveInfo(context, bounds, actor) {
+    // The reserve-info region is permanent so the panel never changes shape.
+    // Its contents appear only while a reserve actor is actually highlighted.
+    const x = bounds.x + 22;
+    const y = bounds.y + 58;
+    context.save();
+
+    // Permanent divider: this reserves the info box even while it is empty.
+    context.strokeStyle = "rgba(210, 222, 242, 0.3)";
+    context.lineWidth = 1;
+    context.beginPath();
+    context.moveTo(bounds.x + 18, y + 58);
+    context.lineTo(bounds.x + bounds.width - 18, y + 58);
+    context.stroke();
+
+    if (actor && this.focus === "reserve" && this.pendingActiveId) {
+      context.textAlign = "left";
+      context.textBaseline = "middle";
+      context.fillStyle = UIThemePalette?.primary?.() || "#ffffff";
+      context.font = "600 19px sans-serif";
+      context.fillText(actor.name || "Unknown", x, y + 12);
+      context.fillStyle = UIThemePalette?.secondary?.() || "#aebbd0";
+      context.font = "14px sans-serif";
+      context.fillText(`LV ${actor.level ?? "?"}`, x, y + 36);
+
+      const gaugeX = x + 82;
+      const gaugeGap = 22;
+      const gaugeWidth = Math.max(92, Math.floor((bounds.width - 150 - gaugeGap) / 2));
+      const hpX = gaugeX;
+      const mpX = gaugeX + gaugeWidth + gaugeGap;
+      context.fillText(`HP ${Math.floor(actor.hp ?? 0)}/${Math.floor(actor.maxHp ?? 0)}`, hpX, y + 30);
+      context.fillText(`MP ${Math.floor(actor.mp ?? 0)}/${Math.floor(actor.maxMp ?? 0)}`, mpX, y + 30);
+      Window_ActorSummary.drawGauge(context, actor?.hp ?? 0, actor?.maxHp ?? 0, hpX, y + 43, gaugeWidth, "hp");
+      Window_ActorSummary.drawGauge(context, actor?.mp ?? 0, actor?.maxMp ?? 0, mpX, y + 43, gaugeWidth, "mp");
+    }
+    context.restore();
+  }
+
+  drawReserveGrid(context, bounds, members) {
+    const index = this.reserveIndex;
+    const showInfo = this.focus === "reserve" && Boolean(this.pendingActiveId);
+    this.drawReserveInfo(context, bounds, showInfo ? members[index] : null);
+    const gridX = bounds.x + 24;
+    // Keep the portrait grid fixed below the permanent reserve-info region.
+    const gridY = bounds.y + 140;
+    const size = 92;
+    const gap = 18;
+    const columns = Math.max(1, Math.floor((bounds.width - 48 + gap) / (size + gap)));
+    members.forEach((actor, i) => {
+      const col = i % columns;
+      const row = Math.floor(i / columns);
+      const x = gridX + col * (size + gap);
+      const y = gridY + row * (size + gap);
+      const selected = this.focus === "reserve" && i === index;
+      if (selected) {
+        context.save();
+        context.strokeStyle = "rgba(255, 215, 90, 0.95)";
+        context.lineWidth = 3;
+        context.strokeRect(x - 5, y - 5, size + 10, size + 10);
+        context.fillStyle = "rgba(255, 215, 90, 0.08)";
+        context.fillRect(x - 4, y - 4, size + 8, size + 8);
+        context.restore();
+      }
+      Window_ActorSummary.drawPortraitPlaceholder(context, actor, x, y, size);
+    });
   }
 
   drawColumn(context, bounds, title, members, focusName, viewport) {
@@ -321,9 +420,7 @@ class Window_Roster {
     context.textBaseline = "middle";
     context.fillStyle = this.focus === focusName ? "#ffd75a" : "#78f0d2";
     context.font = "600 18px sans-serif";
-    const activeLimit = this.party?.constructor?.MAX_BATTLE_MEMBERS || 3;
-    const suffix = focusName === "active" ? `${members.length}/${activeLimit}` : String(members.length);
-    context.fillText(`${title}  ${suffix}`, bounds.x + 16, bounds.y + 24);
+    context.fillText(title, bounds.x + 16, bounds.y + 24);
 
     context.strokeStyle = "rgba(210, 222, 242, 0.24)";
     context.beginPath();
@@ -343,17 +440,32 @@ class Window_Roster {
       return;
     }
 
+    if (focusName === "reserve") {
+      this.drawReserveGrid(context, bounds, members);
+      context.restore();
+      return;
+    }
+
     const index = focusName === "active" ? this.activeIndex : this.reserveIndex;
     const range = viewport.visibleRange(index, members.length);
-    const cardGap = 8;
-    const cardHeight = Math.min(82, Math.floor((bounds.height - 68 - cardGap * 3) / 4));
+    const cardGap = 10;
+    const visibleCount = Math.max(1, range.end - range.start);
+    const availableHeight = bounds.height - 68;
+    const activeSlots = this.party?.constructor?.MAX_BATTLE_MEMBERS || 3;
+    const fillCount = focusName === "active" ? activeSlots : Math.min(3, Math.max(1, visibleCount));
+    const naturalHeight = Math.floor(
+      (availableHeight - cardGap * (fillCount - 1)) / fillCount,
+    );
+    const cardHeight = focusName === "reserve"
+      ? Math.max(96, Math.min(132, naturalHeight))
+      : Math.max(82, naturalHeight);
     let row = 0;
 
     for (let i = range.start; i < range.end; i++, row++) {
       const card = {
-        x: bounds.x + 12,
+        x: bounds.x + 18,
         y: bounds.y + 56 + row * (cardHeight + cardGap),
-        width: bounds.width - 24,
+        width: bounds.width - 36,
         height: cardHeight,
       };
       this.drawActorCard(
@@ -378,9 +490,12 @@ class Window_Roster {
   }
 
   footerText() {
-    const pending = this.pendingReserveActor();
+    const pending = this.pendingActiveActor();
     if (pending) {
-      return `Choose an active operative to replace with ${pending.name}. Back cancels the pending swap.`;
+      const reserve = this.currentActor();
+      return reserve
+        ? `Swap ${pending.name} with ${reserve.name}. Confirm swaps; Back cancels.`
+        : `Choose a reserve operative to replace ${pending.name}. Back cancels.`;
     }
 
     const actor = this.currentActor();
@@ -392,15 +507,12 @@ class Window_Roster {
       if (this.isRosterLockedActor(actor)) {
         return `${actor.name} is story-locked as the protagonist and cannot be moved to reserve here.`;
       }
-
-      return this.activeMembers().length <= 1
-        ? `${actor.name} is the last active operative and cannot be moved to reserve.`
-        : `Move ${actor.name} to reserve. Active battle parties may contain up to three operatives.`;
+      return this.reserveMembers().length > 0
+        ? `Select ${actor.name}, then choose the reserve operative who should take their active slot.`
+        : "No reserve operatives are available to swap into the active party.";
     }
 
-    return this.activeMembers().length < (this.party?.constructor?.MAX_BATTLE_MEMBERS || 3)
-      ? `Move ${actor.name} into the active battle party.`
-      : `The active party is full. Select ${actor.name}, then choose the active operative they should replace.`;
+    return `Reserve: ${actor.name}. Select an active operative first to begin a swap.`;
   }
 
   drawFooter(context) {

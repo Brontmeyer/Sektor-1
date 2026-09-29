@@ -111,8 +111,8 @@ class BattleHudLayout {
 
   tacticalHelpBounds() {
     const hud = this.hudBounds();
-    const width = Math.min(1200, Math.max(640, hud.width * 0.78));
-    const height = 64;
+    const width = Math.min(1040, Math.max(600, hud.width * 0.72));
+    const height = 48;
 
     return {
       x: hud.x + (hud.width - width) / 2,

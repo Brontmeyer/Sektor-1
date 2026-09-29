@@ -111,7 +111,7 @@ function testRegistryAssetsAndStableKeys() {
   assert.equal(readData("System.json").defaultBattleBgmKey, "battle.standard");
 }
 
-function testConfigRuntimeV6PersistsAndMigratesAudioVolumes() {
+function testConfigRuntimeV6StartsFreshAndSnapshotsAudioVolumes() {
   const storage = localStorageHarness({
     Sektor1_Config_v5: JSON.stringify({
       version: 5,
@@ -132,18 +132,20 @@ function testConfigRuntimeV6PersistsAndMigratesAudioVolumes() {
 
   assert.equal(ConfigManager.currentVersion(), 6);
   assert.equal(ConfigManager.storageKey(), "Sektor1_Config_v6");
-  assert.equal(ConfigManager.get("battleSpeed"), "fast");
-  assert.equal(ConfigManager.get("atbMode"), "wait");
+  assert.equal(ConfigManager.get("battleSpeed"), "normal");
+  assert.equal(ConfigManager.get("atbMode"), "active");
   assert.equal(ConfigManager.get("masterVolume"), 100);
   assert.equal(ConfigManager.get("bgmVolume"), 80);
   assert.equal(ConfigManager.get("seVolume"), 90);
-  assert.equal(storage.store.has("Sektor1_Config_v6"), true);
+  assert.equal(storage.store.has("Sektor1_Config_v6"), false);
 
   ConfigManager.set("masterVolume", 55);
   ConfigManager.set("bgmVolume", 35);
   ConfigManager.set("seVolume", 75);
-  ConfigManager.data = null;
+  const snapshot = ConfigManager.snapshot();
   ConfigManager.initialize();
+  assert.equal(ConfigManager.get("masterVolume"), 100);
+  ConfigManager.restoreSnapshot(snapshot);
   assert.equal(ConfigManager.get("masterVolume"), 55);
   assert.equal(ConfigManager.get("bgmVolume"), 35);
   assert.equal(ConfigManager.get("seVolume"), 75);
@@ -349,7 +351,7 @@ function testLoadOrderAndRuntimeHooks() {
 
 async function run() {
   testRegistryAssetsAndStableKeys();
-  testConfigRuntimeV6PersistsAndMigratesAudioVolumes();
+  testConfigRuntimeV6StartsFreshAndSnapshotsAudioVolumes();
   testBgmCrossfadeSeAndLiveVolumeRefresh();
   await testStartupBgmWaitsForUserGesture();
   await testBlockedOrAbortedBgmRetriesOnLaterUserGesture();

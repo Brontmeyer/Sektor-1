@@ -12,6 +12,7 @@ class BattleFormationManager {
   static PARTY_BACK_ROW_OFFSET = 0.04;
   static PINCER_FRONT_ROW_OFFSET = 0.035;
   static PARTY_VERTICAL_OFFSET = 0.05;
+  static ENEMY_VERTICAL_OFFSET = 0.05;
 
   constructor(scene) {
     this.scene = scene;
@@ -216,7 +217,10 @@ class BattleFormationManager {
     if (Number.isInteger(member.slot)) {
       const fractions = this.fixedSlotFractions();
       const slot = Math.max(0, Math.min(member.slot, fractions.length - 1));
-      return top + span * fractions[slot];
+      return Math.min(
+        bottom - 8,
+        top + span * fractions[slot] + Graphics.height * BattleFormationManager.ENEMY_VERTICAL_OFFSET,
+      );
     }
 
     const automaticIndexes = groupIndexes.filter(
@@ -226,7 +230,12 @@ class BattleFormationManager {
     const autoIndex = Math.max(0, automaticIndexes.indexOf(index));
     const fractions = this.automaticRowFractions(automaticIndexes.length);
 
-    return top + span * fractions[Math.min(autoIndex, fractions.length - 1)];
+    return Math.min(
+      bottom - 8,
+      top +
+        span * fractions[Math.min(autoIndex, fractions.length - 1)] +
+        Graphics.height * BattleFormationManager.ENEMY_VERTICAL_OFFSET,
+    );
   }
 
   enemyPosition(index) {

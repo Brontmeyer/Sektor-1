@@ -51,40 +51,23 @@ function loadConfig(extra = {}) {
   return { ConfigManager: context.__ConfigManager, context, localStorage };
 }
 
-function testConfigPersistsIndependentlyFromSaveSlots() {
+function testConfigSnapshotsAsGameState() {
   const localStorage = localStorageHarness();
   const { ConfigManager } = loadConfig({ localStorage });
 
   ConfigManager.initialize();
   assert.equal(ConfigManager.get("battleSpeed"), "normal");
-  assert.equal(ConfigManager.get("atbMode"), "active");
-  assert.equal(ConfigManager.storageKey().startsWith("Sektor1_Save_"), false);
-
   assert.equal(ConfigManager.set("battleSpeed", "fast"), true);
   assert.equal(ConfigManager.set("battleCursorMemory", "memory"), true);
-  assert.equal(ConfigManager.set("atbMode", "wait"), true);
-  assert.equal(
-    ConfigManager.setMagickCategoryOrder([
-      "attack",
-      "restore",
-      "advanced",
-      "indirect",
-    ]),
-    true,
-  );
-  assert.equal(localStorage.store.has(ConfigManager.storageKey()), true);
+  const snapshot = ConfigManager.snapshot();
+  assert.equal(localStorage.store.has(ConfigManager.storageKey()), false);
 
-  ConfigManager.data = null;
   ConfigManager.initialize();
+  assert.equal(ConfigManager.get("battleSpeed"), "normal");
+  ConfigManager.restoreSnapshot(snapshot);
   assert.equal(ConfigManager.get("battleSpeed"), "fast");
   assert.equal(ConfigManager.get("battleCursorMemory"), "memory");
-  assert.equal(ConfigManager.get("atbMode"), "wait");
-  assert.deepEqual(
-    Array.from(ConfigManager.magickCategoryOrder()),
-    ["attack", "restore", "advanced", "indirect"],
-  );
   assert.equal(ConfigManager.set("battleSpeed", "warp"), false);
-  assert.equal(ConfigManager.get("battleSpeed"), "fast");
 }
 
 function testSpeedMappingsAndMagickOrderingAreDeterministic() {
@@ -199,7 +182,7 @@ function testOptionsWindowCyclesAndPersistsSettings() {
   triggered = new Set(["ArrowLeft"]);
   window.update();
   assert.equal(ConfigManager.get("atbMode"), "wait");
-  assert.equal(localStorage.store.has(ConfigManager.storageKey()), true);
+  assert.equal(localStorage.store.has(ConfigManager.storageKey()), false);
 
   while (window.currentOption().type !== "magickOrder") {
     triggered = new Set(["ArrowDown"]);
@@ -526,7 +509,7 @@ function testOptionsAreReachableAndLoadBeforeConsumers() {
 }
 
 function run() {
-  testConfigPersistsIndependentlyFromSaveSlots();
+  testConfigSnapshotsAsGameState();
   testSpeedMappingsAndMagickOrderingAreDeterministic();
   testOptionsWindowCyclesAndPersistsSettings();
   testFieldMessageSpeedControlsRevealAndConfirmBehavior();

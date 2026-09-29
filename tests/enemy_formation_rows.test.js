@@ -79,9 +79,11 @@ function testAutomaticRowsCenterOneTwoAndThreeMembers() {
       enemyId: 1,
       row: "front",
     }));
-    const { manager } = loadFormationManager(members);
+    const { manager, Graphics } = loadFormationManager(members);
     const positions = members.map((_member, index) => manager.enemyPosition(index));
-    const center = (manager.battlefieldTop() + manager.battlefieldBottom()) / 2;
+    const center =
+      (manager.battlefieldTop() + manager.battlefieldBottom()) / 2 +
+      Graphics.height * 0.05;
 
     if (count === 1) {
       assert.equal(positions[0].y, center);

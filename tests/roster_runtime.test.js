@@ -115,22 +115,24 @@ function testRosterWindowFullPartySwapFlow() {
 
   const window = new context.__Roster(party);
   window.show();
-  window.switchFocus("reserve");
-  window.reserveIndex = 1;
-  assert.equal(window.currentActor().name, "Reserve");
-  assert.equal(window.confirmSelection(), true);
-  assert.equal(window.pendingReserveId, 5);
-  assert.equal(window.focus, "active");
 
-  // The protagonist is story-locked against ordinary ROSTER replacement.
+  // Direct exchange starts from an active actor and never temporarily shrinks
+  // the active party. Tyler remains story-locked.
   assert.equal(window.currentActor().name, "Tyler");
   assert.equal(window.confirmSelection(), false);
-  assert.equal(window.pendingReserveId, 5);
+  assert.equal(window.pendingActiveId, 0);
 
   window.activeIndex = 1;
   assert.equal(window.currentActor().name, "Sarah");
   assert.equal(window.confirmSelection(), true);
-  assert.equal(window.pendingReserveId, 0);
+  assert.equal(window.pendingActiveId, 2);
+  assert.equal(window.focus, "reserve");
+
+  window.reserveIndex = 1;
+  assert.equal(window.currentActor().name, "Reserve");
+  assert.equal(window.confirmSelection(), true);
+  assert.equal(window.pendingActiveId, 0);
+  assert.equal(window.focus, "active");
   assert.equal(active[0].name, "Tyler");
   assert.equal(active[1].name, "Reserve");
   assert.equal(reserve[1].name, "Sarah");

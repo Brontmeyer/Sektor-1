@@ -533,7 +533,7 @@ class UIAssetManager {
     y,
     width,
     height,
-    { alpha = 0.62, strips = 24 } = {},
+    { alpha = 0.62, strips = 24, colors = null } = {},
   ) {
     if (
       !context ||
@@ -545,10 +545,25 @@ class UIAssetManager {
       return false;
     }
 
-    const colors = this.configuredWindowColors();
+    const sourceColors = colors || this.configuredWindowColors();
 
-    if (!colors) {
+    if (!sourceColors) {
       return false;
+    }
+
+    // Save snapshots store window colors as hex strings, while the renderer's
+    // interpolation helpers operate on RGB objects. Normalize caller-supplied
+    // palettes here so per-save previews and live Config rendering share the
+    // same path.
+    const overlayColors = {};
+    for (const key of ["topLeft", "topRight", "bottomLeft", "bottomRight"]) {
+      const value = sourceColors[key];
+      overlayColors[key] = typeof value === "string"
+        ? this.parseHexColor(value)
+        : value;
+      if (!overlayColors[key]) {
+        return false;
+      }
     }
 
     const stripCount = Math.max(8, Math.min(48, Math.round(Number(strips) || 24)));
@@ -561,7 +576,7 @@ class UIAssetManager {
     context.globalAlpha = previousAlpha * this.clampAlpha(alpha, 0.62);
     context.globalCompositeOperation = "source-atop";
 
-    const texture = this.windowColorTexture(colors);
+    const texture = this.windowColorTexture(overlayColors);
 
     if (texture && typeof context.drawImage === "function") {
       context.imageSmoothingEnabled = true;
@@ -572,8 +587,8 @@ class UIAssetManager {
 
     for (let index = 0; index < stripCount; index++) {
       const rate = stripCount === 1 ? 0 : index / (stripCount - 1);
-      const top = this.mixRgb(colors.topLeft, colors.topRight, rate);
-      const bottom = this.mixRgb(colors.bottomLeft, colors.bottomRight, rate);
+      const top = this.mixRgb(overlayColors.topLeft, overlayColors.topRight, rate);
+      const bottom = this.mixRgb(overlayColors.bottomLeft, overlayColors.bottomRight, rate);
       const gradient = context.createLinearGradient(0, y, 0, y + height);
       gradient.addColorStop(0, this.rgbCss(top));
       gradient.addColorStop(1, this.rgbCss(bottom));

@@ -347,8 +347,9 @@ function testArrangeApplyReturnsFocusToArrangeHeading() {
   assert.equal(includes(texts, "Tyler"), true);
   assert.equal(includes(texts, "Sarah"), true);
 
-  press(harness, "down");
-  press(harness, "down");
+  for (let index = 0; index < 5; index++) {
+    press(harness, "down");
+  }
   assert.equal(harness.window.currentArrangeOption().mode, "most");
   press(harness, "confirm");
 
@@ -363,7 +364,10 @@ function testArrangeApplyReturnsFocusToArrangeHeading() {
   assert.equal(includes(texts, "Tyler"), true);
 
   const source = read("js/windows/Window_Inventory.js");
-  assert.doesNotMatch(source, /Customize|Field|Battle|Throw/);
+  assert.match(source, /label: "Type"/);
+  assert.match(source, /label: "Field"/);
+  assert.match(source, /label: "Battle"/);
+  assert.doesNotMatch(source, /Customize|Throw/);
 }
 
 function testKeyItemsKeepReferenceTabFlowAndPartyRowsShowHpAndMp() {
@@ -520,7 +524,7 @@ function testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter() {
 
   const source = read("js/windows/Window_Inventory.js");
   assert.match(source, /const rhythm = this\.contentRhythm\(columns\)/);
-  assert.match(source, /width: Math\.max\(0, columns\.leftWidth - 14\)/);
+  assert.match(source, /width: Math\.max\(0, columns\.leftWidth - horizontalInset \* 2\)/);
   assert.doesNotMatch(source, /columns\.rightBodyY \+ 46/);
 }
 

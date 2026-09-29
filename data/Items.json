@@ -13,7 +13,12 @@
     "effect": {
       "type": "healHp",
       "value": 50
-    }
+    },
+    "arrangeCategory": "restorative",
+    "useContexts": [
+      "field",
+      "battle"
+    ]
   },
   {
     "_comment": "ID 2: Hi-Potion",
@@ -28,7 +33,12 @@
     "effect": {
       "type": "healHp",
       "value": 200
-    }
+    },
+    "arrangeCategory": "restorative",
+    "useContexts": [
+      "field",
+      "battle"
+    ]
   },
   {
     "_comment": "ID 3: Test Key Item (consumable development fixture)",

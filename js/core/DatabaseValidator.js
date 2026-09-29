@@ -1924,6 +1924,8 @@ class DatabaseValidator {
           "sellable",
           "target",
           "scope",
+          "arrangeCategory",
+          "useContexts",
         ],
         errors,
       );
@@ -1963,6 +1965,26 @@ class DatabaseValidator {
           for (const scope of item.scope) {
             if (!validScopes.has(scope)) {
               errors.push(`${label} scope has unsupported value "${scope}".`);
+            }
+          }
+        }
+      }
+
+      if (
+        item.arrangeCategory !== undefined &&
+        (typeof item.arrangeCategory !== "string" || item.arrangeCategory.trim() === "")
+      ) {
+        errors.push(`${label} arrangeCategory must be a non-empty string when provided.`);
+      }
+
+      if (item.useContexts !== undefined) {
+        const validUseContexts = new Set(["field", "battle"]);
+        if (!Array.isArray(item.useContexts) || item.useContexts.length === 0) {
+          errors.push(`${label} useContexts must be a non-empty array when provided.`);
+        } else {
+          for (const context of item.useContexts) {
+            if (!validUseContexts.has(context)) {
+              errors.push(`${label} useContexts has unsupported value "${context}".`);
             }
           }
         }

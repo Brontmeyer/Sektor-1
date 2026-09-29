@@ -58,26 +58,18 @@ function testMultipleActorsMoveWithoutTouchingEmptySlots() {
   assert.equal(harness.window.index, 0);
 }
 
-function testSelectedCardKeepsStableBaseFrame() {
-  const actorCardStart = source.indexOf("drawActorCard(context, actor, index");
-  const drawStart = source.indexOf("\n  draw() {", actorCardStart);
-  const actorCardSource = source.slice(actorCardStart, drawStart);
-
-  assert.doesNotMatch(
-    actorCardSource,
-    /selected|swapSource|rgba\(255, 215, 90/,
-    "actor-card pixels must be identical regardless of focus",
-  );
-  assert.match(source, /selectorRailWidth = 22/);
-  assert.match(source, /cardX = this\.x \+ 12 \+ selectorRailWidth/);
-  assert.match(source, /rgba\(255, 215, 90, 0\.12\)/);
-  assert.match(source, /swapSource && !selected \? "◆" : "▶"/);
+function testSelectedCardUsesBorderIndicatorWithoutSelectorRail() {
+  assert.doesNotMatch(source, /selectorRailWidth/);
+  assert.match(source, /cardX = this\.x \+ 12/);
+  assert.match(source, /context\.strokeRect\(cardX \+ 2, cardY \+ 2/);
+  assert.match(source, /const pulse = swapSource/);
+  assert.match(source, /Math\.sin/);
 }
 
 function run() {
   testSingleActorDoesNotReportFakeMovement();
   testMultipleActorsMoveWithoutTouchingEmptySlots();
-  testSelectedCardKeepsStableBaseFrame();
+  testSelectedCardUsesBorderIndicatorWithoutSelectorRail();
   console.log("Main menu actor focus-stability regression tests passed.");
 }
 

@@ -61,6 +61,7 @@ function testLegacyConfigMigratesWithoutLosingOptions() {
   });
   const storage = localStorageHarness({ Sektor1_Config_v1: legacy });
   const { ConfigManager } = loadCore(storage);
+  ConfigManager.load();
 
   assert.equal(ConfigManager.currentVersion(), 6);
   assert.equal(ConfigManager.get("battleSpeed"), "fast");
@@ -77,7 +78,7 @@ function testLegacyConfigMigratesWithoutLosingOptions() {
     JSON.parse(JSON.stringify(ConfigManager.getWindowColors())),
     JSON.parse(JSON.stringify(ConfigManager.windowColorDefaults())),
   );
-  assert.equal(storage.store.has("Sektor1_Config_v6"), true);
+  assert.equal(storage.store.has("Sektor1_Config_v6"), false);
 }
 
 function testNamedActionsReadRemappedPrimaryAndSecondaryBindings() {

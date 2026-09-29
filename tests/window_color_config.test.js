@@ -52,6 +52,7 @@ function testConfigV6PersistsAndMigratesWindowColors() {
   });
   const storage = localStorageHarness({ Sektor1_Config_v2: oldPayload });
   const { ConfigManager } = loadConfig(storage);
+  ConfigManager.load();
 
   assert.equal(ConfigManager.currentVersion(), 6);
   assert.equal(ConfigManager.storageKey(), "Sektor1_Config_v6");
@@ -62,7 +63,7 @@ function testConfigV6PersistsAndMigratesWindowColors() {
     JSON.parse(JSON.stringify(ConfigManager.getWindowColors())),
     JSON.parse(JSON.stringify(ConfigManager.windowColorDefaults())),
   );
-  assert.equal(storage.store.has("Sektor1_Config_v6"), true);
+  assert.equal(storage.store.has("Sektor1_Config_v6"), false);
 }
 
 function testWindowColorsSanitizePersistAndClampChannels() {
@@ -84,14 +85,14 @@ function testWindowColorsSanitizePersistAndClampChannels() {
   );
   assert.equal(ConfigManager.windowColorChannel("bottomRight", "b"), 0);
 
-  ConfigManager.save();
-  const payload = JSON.parse(storage.store.get("Sektor1_Config_v6"));
+  const payload = ConfigManager.snapshot();
   assert.equal(payload.version, 6);
   assert.equal(payload.windowColors.topLeft, "#a1b2c3");
   assert.equal(payload.windowColors.bottomRight, "#fffe00");
 
-  ConfigManager.windowColors = null;
   ConfigManager.initialize();
+  assert.notEqual(ConfigManager.windowColor("topLeft"), "#a1b2c3");
+  ConfigManager.restoreSnapshot(payload);
   assert.equal(ConfigManager.windowColor("topLeft"), "#a1b2c3");
   assert.equal(ConfigManager.windowColor("bottomRight"), "#fffe00");
 }
@@ -110,6 +111,7 @@ function testInvalidStoredWindowColorsFallBackPerCorner() {
   });
   const storage = localStorageHarness({ Sektor1_Config_v3: payload });
   const { ConfigManager } = loadConfig(storage);
+  ConfigManager.load();
   const defaults = ConfigManager.windowColorDefaults();
 
   assert.equal(ConfigManager.windowColor("topLeft"), "#123456");

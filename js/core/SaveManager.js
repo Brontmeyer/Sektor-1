@@ -2,7 +2,7 @@
 
 class SaveManager {
   static currentVersion() {
-    return 16;
+    return 17;
   }
 
   static clearError() {
@@ -213,6 +213,9 @@ class SaveManager {
           battleFormationActorIds: battleFormationActorIds.slice(0, maxBattleMembers),
         };
       })(),
+      config: this.isPlainObject(data.config)
+        ? data.config
+        : (typeof ConfigManager !== "undefined" ? ConfigManager.snapshot() : {}),
       world: {
         ...(this.isPlainObject(data.world) ? data.world : {}),
         areaDiscoveries: this.isPlainObject(data.world?.areaDiscoveries)
@@ -225,7 +228,7 @@ class SaveManager {
       return upgradeToCurrent(saveData);
     }
 
-    if ([15, 14, 13, 12, 11, 10, 9].includes(inferredVersion)) {
+    if ([16, 15, 14, 13, 12, 11, 10, 9].includes(inferredVersion)) {
       // v15 saves may contain four active actors. upgradeToCurrent keeps the full
       // recruited roster but migrates active/formation state to the three-member
       // battle cap. v14 and older saves may also carry retired party.gil; the
@@ -1126,6 +1129,10 @@ class SaveManager {
         );
       }
 
+      if (typeof ConfigManager !== "undefined") {
+        ConfigManager.restoreSnapshot(saveData.config);
+      }
+
       await this.restoreLocation(saveData.location);
 
       DebugManager.log(`Game loaded from slot ${slotId}.`);
@@ -1209,6 +1216,8 @@ class SaveManager {
               ? $gameParty.battleRows()
               : {},
         },
+
+        config: typeof ConfigManager !== "undefined" ? ConfigManager.snapshot() : {},
 
         world: {
           areaDiscoveries:

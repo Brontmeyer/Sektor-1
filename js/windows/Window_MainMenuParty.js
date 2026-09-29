@@ -280,8 +280,8 @@ class Window_MainMenuParty {
 
     const padding = 12;
     const portraitSize = Math.max(78, Math.min(112, height - padding * 2));
-    const rowTravel = Math.max(20, Math.min(30, Math.floor(portraitSize * 0.28)));
-    const portraitBaseX = x + padding + 8;
+    const rowTravel = Math.max(16, Math.min(24, Math.floor(portraitSize * 0.22)));
+    const portraitBaseX = x + padding + 2;
     const portraitX =
       portraitBaseX + (this.actorRow(actor) === "front" ? rowTravel : 0);
     const portraitY = y + (height - portraitSize) / 2;
@@ -295,7 +295,7 @@ class Window_MainMenuParty {
 
     // Identity/stats remain fixed while only the portrait shifts horizontally.
     // The shift itself is the menu's visual language for battle row position.
-    const infoX = portraitBaseX + rowTravel + portraitSize + 18;
+    const infoX = portraitBaseX + rowTravel + portraitSize + 12;
     const infoWidth = Math.max(220, width - (infoX - x) - padding);
     const identityWidth = Math.max(
       148,
@@ -408,9 +408,8 @@ class Window_MainMenuParty {
       96,
       (contentBottom - contentTop - cardGap * (slotCount - 1)) / slotCount,
     );
-    const selectorRailWidth = 22;
-    const cardX = this.x + 12 + selectorRailWidth;
-    const cardWidth = this.width - 24 - selectorRailWidth;
+    const cardX = this.x + 12;
+    const cardWidth = this.width - 24;
 
     for (let index = 0; index < slotCount; index++) {
       const actor = members[index] || null;
@@ -418,29 +417,6 @@ class Window_MainMenuParty {
       const selected = this.active && index === this.index;
       const swapSource =
         this.active && this.mode === "order" && index === this.swapSourceIndex;
-
-      if (actor && (selected || swapSource)) {
-        context.save();
-        context.fillStyle = swapSource
-          ? "rgba(139, 220, 255, 0.12)"
-          : "rgba(255, 215, 90, 0.12)";
-        context.fillRect(
-          this.x + 12,
-          cardY + 4,
-          selectorRailWidth,
-          cardHeight - 8,
-        );
-        context.fillStyle = swapSource ? "#8bdcff" : "#ffd75a";
-        context.font = "20px sans-serif";
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        context.fillText(
-          swapSource && !selected ? "◆" : "▶",
-          this.x + 12 + selectorRailWidth / 2,
-          cardY + cardHeight / 2,
-        );
-        context.restore();
-      }
 
       if (actor) {
         this.drawActorCard(
@@ -452,6 +428,23 @@ class Window_MainMenuParty {
           cardWidth,
           cardHeight,
         );
+
+        if (selected || swapSource) {
+          context.save();
+          const pulse = swapSource
+            ? 0.55 + 0.45 * Math.sin((globalThis.performance?.now?.() || Date.now()) / 180)
+            : 1;
+          context.strokeStyle = swapSource && !selected
+            ? `rgba(139, 220, 255, ${0.65 * pulse})`
+            : `rgba(255, 215, 90, ${0.78 * pulse})`;
+          context.lineWidth = this.mode === "order" ? 3 : 2;
+          context.strokeRect(cardX + 2, cardY + 2, cardWidth - 4, cardHeight - 4);
+          context.fillStyle = swapSource && !selected
+            ? `rgba(139, 220, 255, ${0.08 * pulse})`
+            : `rgba(255, 215, 90, ${0.07 * pulse})`;
+          context.fillRect(cardX + 3, cardY + 3, cardWidth - 6, cardHeight - 6);
+          context.restore();
+        }
       } else {
         this.drawPanel(context, cardX, cardY, cardWidth, cardHeight, {
           assetAlpha: 0.24,

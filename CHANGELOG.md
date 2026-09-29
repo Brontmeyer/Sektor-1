@@ -889,3 +889,14 @@ If the answer is still "we plan to," it does not belong here yet. 😄
 ---
 
 Built with ❤️ by **Sarah & Tyler**
+
+## Pass 127 working
+- Converted the Item Use list to a two-column, row-major layout with left/right column navigation and up/down row navigation.
+- Expanded Arrange with Type, Field, and Battle sort modes; item records can now declare `arrangeCategory` and `useContexts` metadata.
+- Lowered enemy formations by the same battlefield offset as the active party.
+- Reduced the tactical help bar footprint while preserving its translucent treatment.
+
+### Pass 127 working v4
+- Save/Load slot cards now preview each slot's own saved four-corner window colors while the surrounding screen follows the current Config skin.
+- ROSTER now uses direct active-to-reserve swapping: choose an active actor first, then choose the reserve replacement; the active party never temporarily shrinks.
+- Reserve presentation now uses a portrait grid with a focused actor summary showing name, level, HP, and MP.

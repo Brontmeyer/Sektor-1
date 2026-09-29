@@ -227,8 +227,36 @@ class Window_Inventory {
     const ids = itemIds.slice();
     const nameOf = (itemId) => String(this.itemRecord(itemId)?.name || "");
     const countOf = (itemId) => this.itemCount(itemId);
+    const categoryOf = (itemId) =>
+      String(this.itemRecord(itemId)?.arrangeCategory || this.itemRecord(itemId)?.type || "item");
+    const contextsOf = (itemId) => {
+      const contexts = this.itemRecord(itemId)?.useContexts;
+      return Array.isArray(contexts) && contexts.length > 0
+        ? contexts.map((entry) => String(entry).toLowerCase())
+        : ["field", "battle"];
+    };
+    const usableIn = (itemId, context) => contextsOf(itemId).includes(context);
 
     switch (mode) {
+      case "type":
+        ids.sort(
+          (a, b) =>
+            categoryOf(a).localeCompare(categoryOf(b)) ||
+            nameOf(a).localeCompare(nameOf(b)) ||
+            a - b,
+        );
+        break;
+
+      case "field":
+      case "battle":
+        ids.sort(
+          (a, b) =>
+            Number(usableIn(b, mode)) - Number(usableIn(a, mode)) ||
+            categoryOf(a).localeCompare(categoryOf(b)) ||
+            nameOf(a).localeCompare(nameOf(b)) ||
+            a - b,
+        );
+        break;
       case "name":
         ids.sort((a, b) => nameOf(a).localeCompare(nameOf(b)) || a - b);
         break;
@@ -283,6 +311,21 @@ class Window_Inventory {
         mode: "default",
         label: "Default",
         description: "Show items in stable database order.",
+      },
+      {
+        mode: "type",
+        label: "Type",
+        description: "Group items by their database category, then by name.",
+      },
+      {
+        mode: "field",
+        label: "Field",
+        description: "Put items usable from the field menu first.",
+      },
+      {
+        mode: "battle",
+        label: "Battle",
+        description: "Put items usable in battle first.",
       },
       {
         mode: "name",
@@ -476,7 +519,7 @@ class Window_Inventory {
       }
     }
 
-    this.itemViewport.maxVisibleRows = this.useVisibleRows();
+    this.itemViewport.maxVisibleRows = this.useVisibleRows() * 2;
     this.itemViewport.ensureVisible(this.itemIndex, inventoryEntries.length);
     this.keyItemViewport.maxVisibleRows = this.keyVisibleRows() * 2;
     this.keyItemViewport.ensureVisible(this.keyItemIndex, keyItems.length);
@@ -555,14 +598,35 @@ class Window_Inventory {
       return;
     }
 
+    if (this.directionRepeated("left")) {
+      if (this.itemIndex % 2 === 1) {
+        this.itemIndex -= 1;
+      }
+      this.itemViewport.ensureVisible(this.itemIndex, entries.length);
+      return;
+    }
+
+    if (this.directionRepeated("right")) {
+      if (this.itemIndex % 2 === 0 && this.itemIndex + 1 < entries.length) {
+        this.itemIndex += 1;
+      }
+      this.itemViewport.ensureVisible(this.itemIndex, entries.length);
+      return;
+    }
+
     if (this.directionRepeated("up")) {
-      this.itemIndex = (this.itemIndex - 1 + entries.length) % entries.length;
+      this.itemIndex = Math.max(0, this.itemIndex - 2);
       this.itemViewport.ensureVisible(this.itemIndex, entries.length);
       return;
     }
 
     if (this.directionRepeated("down")) {
-      this.itemIndex = (this.itemIndex + 1) % entries.length;
+      const candidate = this.itemIndex + 2;
+      if (candidate < entries.length) {
+        this.itemIndex = candidate;
+      } else if (this.itemIndex % 2 === 1 && entries.length % 2 === 1) {
+        this.itemIndex = entries.length - 1;
+      }
       this.itemViewport.ensureVisible(this.itemIndex, entries.length);
       return;
     }
@@ -1154,21 +1218,26 @@ class Window_Inventory {
     }
 
     const gap = 6;
+    const horizontalInset = 10;
+    const usableHeight = Math.max(0, columns.leftHeight - 20);
     const availableCardHeight = Math.floor(
-      (columns.leftHeight - gap * (members.length - 1)) / members.length,
+      (usableHeight - gap * (members.length - 1)) / members.length,
     );
-    // With three active members, let the roster cards consume the available
-    // vertical column instead of leaving a large dead zone underneath them.
     const cardHeight = Math.max(96, Math.min(132, availableCardHeight));
+    const stackHeight = cardHeight * members.length + gap * (members.length - 1);
+    // Use the same outer inset on the top, left, and right. This keeps a short
+    // party anchored to the panel geometry instead of floating in the middle;
+    // a full three-member party naturally fills the column toward the bottom.
+    const stackTop = columns.leftTop + horizontalInset;
 
     members.forEach((member, index) => {
       this.drawPartyMemberRow(
         context,
         member,
         {
-          x: columns.leftX,
-          y: columns.leftTop + index * (cardHeight + gap),
-          width: Math.max(0, columns.leftWidth - 14),
+          x: columns.leftX + horizontalInset,
+          y: stackTop + index * (cardHeight + gap),
+          width: Math.max(0, columns.leftWidth - horizontalInset * 2),
           height: cardHeight,
         },
         index,
@@ -1234,14 +1303,24 @@ class Window_Inventory {
       return;
     }
 
-    const row = this.contentRowGeometry(columns);
+    const visibleRows = this.useVisibleRows();
+    this.itemViewport.maxVisibleRows = visibleRows * 2;
     const range = this.itemViewport.visibleRange(this.itemIndex, entries.length);
+    range.start -= range.start % 2;
+    range.end = Math.min(entries.length, range.start + visibleRows * 2);
+    const gutter = 20;
+    const columnWidth = (columns.rightWidth - gutter) / 2;
 
     for (let i = range.start; i < range.end; i++) {
       const entry = entries[i];
       const itemId = entry?.id;
       const item = entry?.record;
-      const y = row.firstRowY + (i - range.start) * row.rowHeight;
+      const localIndex = i - range.start;
+      const columnIndex = localIndex % 2;
+      const rowIndex = Math.floor(localIndex / 2);
+      const cellX = columns.rightX + columnIndex * (columnWidth + gutter);
+      const row = this.contentRowGeometry(columns, { x: cellX, width: columnWidth });
+      const y = row.firstRowY + rowIndex * row.rowHeight;
       const itemFocus =
         this.focusArea === Window_Inventory.FOCUS.ITEMS && i === this.itemIndex;
       const pending =
@@ -1251,9 +1330,9 @@ class Window_Inventory {
       if (itemFocus || pending) {
         this.drawSelection(
           context,
-          columns.rightX + 6,
+          cellX + 4,
           y - 15,
-          columns.rightWidth - 16,
+          columnWidth - 8,
           29,
           pending
             ? { fallbackFill: "rgba(127, 240, 213, 0.11)" }
@@ -1325,7 +1404,7 @@ class Window_Inventory {
       x: Math.round(columns.rightX + (columns.rightWidth - overlayWidth) / 2),
       y: columns.tabBottom + 8,
       width: overlayWidth,
-      height: 194,
+      height: Math.max(194, 54 + this.arrangeOptions().length * 30 + 12),
     };
 
     this.drawPanel(context, bounds, { assetAlpha: 0.72 });
@@ -1397,7 +1476,7 @@ class Window_Inventory {
     context.textBaseline = "middle";
     context.fillStyle = "#7ff0d5";
     context.font = "600 18px sans-serif";
-    context.fillText("PREVIEW", columns.rightX + 6, rhythm.headingY);
+    context.fillText("ITEMS", columns.rightX + 6, rhythm.headingY);
 
     if (previewEntries.length === 0) {
       context.fillStyle = "#8897ac";
@@ -1413,30 +1492,33 @@ class Window_Inventory {
     }
 
     const row = this.contentRowGeometry(columns);
-    const previewVisible = Math.max(
+    const visibleRows = Math.max(
       5,
-      Math.min(
-        11,
-        Math.floor((columns.rightBodyHeight - 34) / row.rowHeight),
-      ),
+      Math.min(11, Math.floor((columns.rightBodyHeight - 34) / row.rowHeight)),
     );
+    const previewVisible = visibleRows * 2;
+    const gutter = 20;
+    const columnWidth = (columns.rightWidth - gutter) / 2;
 
     previewEntries.slice(0, previewVisible).forEach((entry, index) => {
-      const y = row.firstRowY + index * row.rowHeight;
+      const column = index % 2;
+      const visualRow = Math.floor(index / 2);
+      const cellX = columns.rightX + column * (columnWidth + gutter);
+      const y = row.firstRowY + visualRow * row.rowHeight;
       const disabled = entry?.usable === false;
       const typeTag = disabled
         ? ` [${entry.type === "accessory" ? "ACC" : entry.type.toUpperCase()}]`
         : "";
       context.fillStyle = disabled ? "#6f7d92" : "#ffffff";
       context.font = "17px sans-serif";
+      context.textAlign = "left";
       context.fillText(
         `${entry?.record?.name || `Item ${entry?.id}`}${typeTag}`,
-        row.textX,
+        cellX + 34,
         y,
       );
       context.textAlign = "right";
-      context.fillText(`x${entry?.quantity ?? 0}`, row.quantityX, y);
-      context.textAlign = "left";
+      context.fillText(`x${entry?.quantity ?? 0}`, cellX + columnWidth - 8, y);
     });
 
     this.drawScrollIndicators(
