@@ -24,10 +24,12 @@ function createHarness() {
     restore() {},
     fillRect() {},
     strokeRect() {},
+    rect() {},
     beginPath() {},
     moveTo() {},
     lineTo() {},
     stroke() {},
+    fill() {},
     fillText(...args) {
       drawCalls.push(String(args[0]));
       drawMetrics.push({
@@ -524,7 +526,14 @@ function testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter() {
 
   const source = read("js/windows/Window_Inventory.js");
   assert.match(source, /const rhythm = this\.contentRhythm\(columns\)/);
-  assert.match(source, /width: Math\.max\(0, columns\.leftWidth - horizontalInset \* 2\)/);
+  assert.match(source, /const paneLeft = this\.contentBounds\.x/);
+  assert.match(source, /const paneRight = columns\.dividerX/);
+  assert.match(source, /const outerGap = 20/);
+  assert.match(source, /const cardLeft = paneLeft \+ outerGap/);
+  assert.match(source, /const cardWidth = Math\.max\(0, paneWidth - outerGap \* 2\)/);
+  assert.match(source, /const maxPartySlots = 3/);
+  assert.match(source, /const stackTop = paneTop \+ outerGap/);
+  assert.match(source, /context\.roundRect\(/);
   assert.doesNotMatch(source, /columns\.rightBodyY \+ 46/);
 }
 

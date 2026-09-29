@@ -1132,13 +1132,32 @@ class Window_Inventory {
     });
 
     if (focused) {
-      this.drawSelection(
-        context,
-        bounds.x + 7,
-        bounds.y + 6,
-        bounds.width - 14,
-        bounds.height - 12,
-      );
+      context.save();
+      context.strokeStyle = "rgba(255, 215, 90, 0.9)";
+      context.lineWidth = 3;
+      context.fillStyle = "rgba(255, 215, 90, 0.07)";
+      const inset = 2;
+      const radius = 11;
+      context.beginPath();
+      if (typeof context.roundRect === "function") {
+        context.roundRect(
+          bounds.x + inset,
+          bounds.y + inset,
+          bounds.width - inset * 2,
+          bounds.height - inset * 2,
+          radius,
+        );
+      } else {
+        context.rect(
+          bounds.x + inset,
+          bounds.y + inset,
+          bounds.width - inset * 2,
+          bounds.height - inset * 2,
+        );
+      }
+      context.stroke();
+      context.fill();
+      context.restore();
     }
 
     context.save();
@@ -1218,26 +1237,37 @@ class Window_Inventory {
     }
 
     const gap = 6;
-    const horizontalInset = 10;
-    const usableHeight = Math.max(0, columns.leftHeight - 20);
-    const availableCardHeight = Math.floor(
-      (usableHeight - gap * (members.length - 1)) / members.length,
+    // Always use the full three-slot layout as the geometry reference.
+    // Party size only controls how many top-down slots are rendered.
+    const paneLeft = this.contentBounds.x;
+    const paneRight = columns.dividerX;
+    const paneTop = this.contentBounds.y;
+    const paneBottom = this.contentBounds.y + this.contentBounds.height;
+    const paneWidth = Math.max(0, paneRight - paneLeft);
+    const paneHeight = Math.max(0, paneBottom - paneTop);
+    const outerGap = 20;
+    const maxPartySlots = 3;
+    const cardHeight = Math.max(
+      96,
+      Math.min(
+        132,
+        Math.floor(
+          (paneHeight - outerGap * 2 - gap * (maxPartySlots - 1)) / maxPartySlots,
+        ),
+      ),
     );
-    const cardHeight = Math.max(96, Math.min(132, availableCardHeight));
-    const stackHeight = cardHeight * members.length + gap * (members.length - 1);
-    // Use the same outer inset on the top, left, and right. This keeps a short
-    // party anchored to the panel geometry instead of floating in the middle;
-    // a full three-member party naturally fills the column toward the bottom.
-    const stackTop = columns.leftTop + horizontalInset;
+    const cardLeft = paneLeft + outerGap;
+    const cardWidth = Math.max(0, paneWidth - outerGap * 2);
+    const stackTop = paneTop + outerGap;
 
     members.forEach((member, index) => {
       this.drawPartyMemberRow(
         context,
         member,
         {
-          x: columns.leftX + horizontalInset,
+          x: cardLeft,
           y: stackTop + index * (cardHeight + gap),
-          width: Math.max(0, columns.leftWidth - horizontalInset * 2),
+          width: cardWidth,
           height: cardHeight,
         },
         index,

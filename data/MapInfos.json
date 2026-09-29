@@ -1,13 +1,13 @@
 [
     {
         "id": 1,
-        "name": "Sektor 1 Test Zone",
+        "name": "Dev Zone 1",
         "file": "Map001.json"
     },
 
     {
         "id": 2,
-        "name": "Second Test Zone",
+        "name": "Dev Zone 2",
         "file": "Map002.json"
     }
 ]

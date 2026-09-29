@@ -7,6 +7,7 @@
     "x": 610,
     "y": 350
   },
+
   "battleBackgroundKey": "devZone1",
   "bgmKey": "field.devZone1",
   "areaMap": {
@@ -133,7 +134,6 @@
       "targetY": 300
     }
   ],
-
   "events": [
     {
       "_comment": "ID 1: Test NPC",

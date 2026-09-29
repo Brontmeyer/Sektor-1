@@ -9,12 +9,10 @@
     "battleSpriteHeight": 166,
     "battleSpriteFrames": 4,
     "battleSpriteRows": 5,
-
     "level": 1,
     "exp": 0,
     "maxHp": 500,
     "maxMp": 100,
-
     "strength": 10,
     "vitality": 10,
     "dexterity": 10,
@@ -22,7 +20,6 @@
     "magic": 10,
     "spirit": 10,
     "luck": 10,
-
     "attack": 10,
     "attackPercent": 100,
     "defense": 8,
@@ -30,7 +27,6 @@
     "magicAttack": 10,
     "magicDefense": 8,
     "magicDefensePercent": 0,
-
     "growth": {
       "maxHp": 10,
       "maxMp": 3,
@@ -46,12 +42,18 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-
-    "initialMagickIds": [1, 10],
-    "initialSkillIds": [6],
+    "initialMagickIds": [
+      1,
+      10
+    ],
+    "initialSkillIds": [
+      6
+    ],
     "essenceSlots": 3,
     "maxValor": 100,
-    "initialValorArtIds": [1]
+    "initialValorArtIds": [
+      1
+    ]
   },
   {
     "_comment": "Sarah",
@@ -62,12 +64,10 @@
     "battleSpriteHeight": 166,
     "battleSpriteFrames": 4,
     "battleSpriteRows": 5,
-
     "level": 1,
     "exp": 0,
     "maxHp": 500,
     "maxMp": 100,
-
     "strength": 10,
     "vitality": 10,
     "dexterity": 10,
@@ -75,7 +75,6 @@
     "magic": 10,
     "spirit": 10,
     "luck": 10,
-
     "attack": 10,
     "attackPercent": 100,
     "defense": 8,
@@ -83,7 +82,6 @@
     "magicAttack": 10,
     "magicDefense": 8,
     "magicDefensePercent": 0,
-
     "growth": {
       "maxHp": 10,
       "maxMp": 3,
@@ -99,12 +97,16 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-
-    "initialMagickIds": [1, 10],
+    "initialMagickIds": [
+      1,
+      10
+    ],
     "initialSkillIds": [],
     "essenceSlots": 3,
     "maxValor": 100,
-    "initialValorArtIds": [2]
+    "initialValorArtIds": [
+      2
+    ]
   },
   {
     "_comment": "Aboo",
@@ -115,12 +117,10 @@
     "battleSpriteHeight": 166,
     "battleSpriteFrames": 4,
     "battleSpriteRows": 5,
-
     "level": 1,
     "exp": 0,
     "maxHp": 500,
     "maxMp": 100,
-
     "strength": 10,
     "vitality": 10,
     "dexterity": 10,
@@ -128,7 +128,6 @@
     "magic": 10,
     "spirit": 10,
     "luck": 10,
-
     "attack": 10,
     "attackPercent": 100,
     "defense": 8,
@@ -136,7 +135,6 @@
     "magicAttack": 10,
     "magicDefense": 8,
     "magicDefensePercent": 0,
-
     "growth": {
       "maxHp": 10,
       "maxMp": 3,
@@ -152,12 +150,16 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-
-    "initialMagickIds": [1, 10],
+    "initialMagickIds": [
+      1,
+      10
+    ],
     "initialSkillIds": [],
     "essenceSlots": 3,
     "maxValor": 100,
-    "initialValorArtIds": [3]
+    "initialValorArtIds": [
+      3
+    ]
   },
   {
     "_comment": "G Prime",
@@ -168,12 +170,10 @@
     "battleSpriteHeight": 166,
     "battleSpriteFrames": 4,
     "battleSpriteRows": 5,
-
     "level": 1,
     "exp": 0,
     "maxHp": 500,
     "maxMp": 100,
-
     "strength": 10,
     "vitality": 10,
     "dexterity": 10,
@@ -181,7 +181,6 @@
     "magic": 10,
     "spirit": 10,
     "luck": 10,
-
     "attack": 10,
     "attackPercent": 100,
     "defense": 8,
@@ -189,7 +188,6 @@
     "magicAttack": 10,
     "magicDefense": 8,
     "magicDefensePercent": 0,
-
     "growth": {
       "maxHp": 10,
       "maxMp": 3,
@@ -205,11 +203,15 @@
       "magicAttack": 2,
       "magicDefense": 2
     },
-
-    "initialMagickIds": [1, 10],
+    "initialMagickIds": [
+      1,
+      10
+    ],
     "initialSkillIds": [],
     "essenceSlots": 3,
     "maxValor": 100,
-    "initialValorArtIds": [4]
+    "initialValorArtIds": [
+      4
+    ]
   }
 ]

@@ -13,8 +13,14 @@
     "power": 5,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -33,8 +39,14 @@
     "power": 35,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -53,8 +65,14 @@
     "power": 130,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -75,8 +93,12 @@
     "status": {
       "poison": 1.0
     },
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 5: ✨ Soul Cleanse - Cure Multiple Statuses",
@@ -105,8 +127,12 @@
       "paralyze": 1.0,
       "darkness": 1.0
     },
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 6: ✨ Unchanging Will - Inflict Resist",
@@ -123,8 +149,12 @@
     "status": {
       "resist": 1.0
     },
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 7: 🌱 Rekindle - Revive with 25% HP",
@@ -139,8 +169,12 @@
     "revivePercent": 0.25,
     "reflectable": true,
     "status": {},
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 8: 🌱 Reawakening - Revive with Full HP",
@@ -155,8 +189,12 @@
     "revivePercent": 1.0,
     "reflectable": true,
     "status": {},
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 9: 🌱 Lifebloom - Gradual HP Restore with Regen",
@@ -173,8 +211,12 @@
     "status": {
       "regen": 1.0
     },
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 10: 🔥 Ember - Low Fire Damage",
@@ -189,8 +231,14 @@
     "power": 8,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -209,8 +257,14 @@
     "power": 20,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -229,8 +283,14 @@
     "power": 64,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -249,8 +309,14 @@
     "power": 8,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -269,8 +335,14 @@
     "power": 20,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -289,8 +361,14 @@
     "power": 64,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -309,8 +387,14 @@
     "power": 8,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -329,8 +413,14 @@
     "power": 20,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -349,8 +439,14 @@
     "power": 64,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -369,8 +465,14 @@
     "power": 11,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -389,8 +491,14 @@
     "power": 24,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -409,8 +517,14 @@
     "power": 70,
     "reflectable": true,
     "status": {},
-    "target": ["ally", "enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -431,8 +545,12 @@
     "status": {
       "poison": 0.48
     },
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 23: ☠️ Toxic Surge - Moderate Poison Damage",
@@ -449,8 +567,12 @@
     "status": {
       "poison": 0.48
     },
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 24: ☠️ Plague Nova - High Poison Damage",
@@ -467,8 +589,12 @@
     "status": {
       "poison": 0.72
     },
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 25: 🌀 Burden - Low Gravity Damage",
@@ -483,8 +609,13 @@
     "gravityPercent": 0.25,
     "reflectable": false,
     "status": {},
-    "target": ["enemy"],
-    "scope": ["single", "all"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ]
   },
   {
     "_comment": "ID 26: 🌀 Heavyfall - Moderate Gravity Damage",
@@ -499,8 +630,13 @@
     "gravityPercent": 0.5,
     "reflectable": false,
     "status": {},
-    "target": ["enemy"],
-    "scope": ["single", "all"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ]
   },
   {
     "_comment": "ID 27: 🌀 Cataclysm - High Gravity Damage",
@@ -515,8 +651,13 @@
     "gravityPercent": 0.75,
     "reflectable": false,
     "status": {},
-    "target": ["enemy"],
-    "scope": ["single", "all"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ]
   },
   {
     "_comment": "ID 28: 💤 Dreambind - Inflict Sleep",
@@ -533,8 +674,12 @@
     "status": {
       "sleep": 0.72
     },
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 29: 😵‍💫 Mindtwist - Inflict Confuse",
@@ -551,8 +696,12 @@
     "status": {
       "confuse": 0.6
     },
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 30: 🔇 Spellseal - Inflict Silence",
@@ -569,8 +718,12 @@
     "status": {
       "silence": 0.6
     },
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 31: 🤏 Diminish - Inflict or Cure Small",
@@ -589,8 +742,13 @@
     },
     "allyStatusChance": 1.0,
     "toggleStatus": true,
-    "target": ["ally", "enemy"],
-    "scope": ["single"]
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 32: 🐸 Beastshape - Inflict or Cure Frog",
@@ -609,8 +767,13 @@
     },
     "allyStatusChance": 1.0,
     "toggleStatus": true,
-    "target": ["ally", "enemy"],
-    "scope": ["single"]
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 33: 😡 Bloodrage - Inflict Berserk",
@@ -628,8 +791,13 @@
       "berserk": 0.8
     },
     "allyStatusChance": 1.0,
-    "target": ["ally", "enemy"],
-    "scope": ["single"]
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 34: ⏩ Quickening - Grant Haste",
@@ -646,8 +814,12 @@
     "status": {
       "haste": 1.0
     },
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 35: 🐌 Time Bind - Inflict Slow",
@@ -664,8 +836,12 @@
     "status": {
       "slow": 1.0
     },
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 36: 🛑 Time Lock - Inflict Stop",
@@ -682,8 +858,12 @@
     "status": {
       "stop": 0.6
     },
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 37: 🛡️ Iron Veil - Reduce Physical Damage",
@@ -700,8 +880,12 @@
     "status": {
       "barrier": 1.0
     },
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 38: 🔮 Mystic Veil - Reduce Magical Damage",
@@ -718,8 +902,12 @@
     "status": {
       "mbarrier": 1.0
     },
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 39: 🪞 Mirror Ward - Grant Reflect",
@@ -736,8 +924,12 @@
     "status": {
       "reflect": 1.0
     },
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 40: 🛡 Wardbreaker - Remove Barrier, MBarrier, Reflect, and Shield",
@@ -757,8 +949,12 @@
       "reflect": 1.0,
       "shield": 1.0
     },
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 41: 🎀 Nulify - Remove Multiple Statuses",
@@ -784,8 +980,13 @@
       "deathforce": 1.0,
       "resist": 1.0
     },
-    "target": ["ally", "enemy"],
-    "scope": ["single"]
+    "target": [
+      "ally",
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 42: 💀 Final Tol - Inflict Death with 44% chance",
@@ -802,8 +1003,12 @@
     "status": {
       "death": 0.44
     },
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 43: 🏳️ Retreat - Instantly escape from an escapable battle",
@@ -818,8 +1023,12 @@
     "power": 0,
     "reflectable": false,
     "status": {},
-    "target": ["ally"],
-    "scope": ["all"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "all"
+    ]
   },
   {
     "_comment": "ID 44: 🚫 Banish - Remove an enemy from battle and flag as Dead",
@@ -834,8 +1043,12 @@
     "power": 0,
     "reflectable": false,
     "status": {},
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 45: 🛡️🔮 Twin Aegis - Grant Barrier and MBarrier",
@@ -853,8 +1066,12 @@
       "barrier": 1.0,
       "mbarrier": 1.0
     },
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 46: 🌠 Starfall - Major non-elemental damage",
@@ -869,8 +1086,12 @@
     "power": 80,
     "reflectable": false,
     "status": {},
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 47: ☄️ Meteor Barrage - Moderate non-elemental damage to random enemies. Four attacks",
@@ -887,8 +1108,12 @@
     "randomTargetPerHit": true,
     "reflectable": false,
     "status": {},
-    "target": ["enemy"],
-    "scope": ["single"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 48: ❄️ Winter's Grasp - High ice-elemental damage. 68% chance of inflicting Stop.",
@@ -905,8 +1130,13 @@
     "status": {
       "stop": 0.68
     },
-    "target": ["enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -927,8 +1157,13 @@
     "status": {
       "petrify": 0.32
     },
-    "target": ["enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -949,8 +1184,13 @@
     "status": {
       "confuse": 0.32
     },
-    "target": ["enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -969,8 +1209,13 @@
     "power": 115,
     "reflectable": true,
     "status": {},
-    "target": ["enemy"],
-    "scope": ["single", "all"],
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "single",
+      "all"
+    ],
     "scopePower": {
       "single": 1.0,
       "all": 0.6666666667
@@ -989,8 +1234,12 @@
     "healPercent": 1.0,
     "reflectable": false,
     "status": {},
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 53: 🌟 Astral Bulwark - Extreme magick defense. Cannot be reflected.",
@@ -1007,8 +1256,12 @@
     "status": {
       "shield": 1.0
     },
-    "target": ["ally"],
-    "scope": ["single"]
+    "target": [
+      "ally"
+    ],
+    "scope": [
+      "single"
+    ]
   },
   {
     "_comment": "ID 54: 💫 Genesis Nova - Heavy non-elemental magick damage to all enemies. Cannot be reflected.",
@@ -1023,7 +1276,11 @@
     "power": 105,
     "reflectable": false,
     "status": {},
-    "target": ["enemy"],
-    "scope": ["all"]
+    "target": [
+      "enemy"
+    ],
+    "scope": [
+      "all"
+    ]
   }
 ]

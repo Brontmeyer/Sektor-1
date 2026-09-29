@@ -123,17 +123,27 @@ class Window_SaveSlots {
   }
 
   drawSelection(context, x, y, width, height) {
-    const drawn =
+    const radius = 12;
+    context.save();
+    const rounded =
       typeof UIAssetManager !== "undefined" &&
-      typeof UIAssetManager.drawSelectionPanel === "function" &&
-      UIAssetManager.drawSelectionPanel(context, x, y, width, height, {
-        alpha: 0.2,
-      });
+      typeof UIAssetManager.roundedRectPath === "function" &&
+      UIAssetManager.roundedRectPath(context, x, y, width, height, radius);
 
-    if (!drawn) {
-      context.fillStyle = "rgba(255, 215, 90, 0.1)";
+    if (rounded) {
+      context.fillStyle = "rgba(255, 215, 90, 0.08)";
+      context.fill();
+      context.strokeStyle = "rgba(255, 215, 90, 0.92)";
+      context.lineWidth = 2;
+      context.stroke();
+    } else {
+      context.fillStyle = "rgba(255, 215, 90, 0.08)";
       context.fillRect(x, y, width, height);
+      context.strokeStyle = "rgba(255, 215, 90, 0.92)";
+      context.lineWidth = 2;
+      context.strokeRect(x, y, width, height);
     }
+    context.restore();
   }
 
   readSlot(slotId) {
@@ -348,10 +358,10 @@ class Window_SaveSlots {
     if (selected) {
       this.drawSelection(
         context,
-        bounds.x + 7,
-        bounds.y + 6,
-        bounds.width - 14,
-        bounds.height - 12,
+        bounds.x + 2,
+        bounds.y + 2,
+        bounds.width - 4,
+        bounds.height - 4,
       );
     }
 
@@ -377,10 +387,10 @@ class Window_SaveSlots {
     if (selected) {
       this.drawSelection(
         context,
-        bounds.x + 7,
-        bounds.y + 6,
-        bounds.width - 14,
-        bounds.height - 12,
+        bounds.x + 2,
+        bounds.y + 2,
+        bounds.width - 4,
+        bounds.height - 4,
       );
     }
 
@@ -497,10 +507,26 @@ class Window_SaveSlots {
     // than inheriting the currently-running Config skin. The surrounding
     // Save/Load chrome still follows the current game configuration.
     if (summary.exists && summary.windowColors && typeof UIAssetManager !== "undefined") {
+      // Keep each save's stored color preview inside the same rounded card
+      // silhouette as the rest of the menu. Without this clip the rectangular
+      // tint overlay squared off the corners drawn by drawPanel().
+      context.save();
+      if (typeof UIAssetManager.roundedRectPath === "function") {
+        UIAssetManager.roundedRectPath(
+          context,
+          bounds.x,
+          bounds.y,
+          bounds.width,
+          bounds.height,
+          14,
+        );
+        context.clip();
+      }
       UIAssetManager.drawWindowColorOverlay?.(context, bounds.x, bounds.y, bounds.width, bounds.height, {
         alpha: 0.62,
         colors: summary.windowColors,
       });
+      context.restore();
     }
 
     if (!summary.exists) {

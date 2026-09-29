@@ -61,7 +61,9 @@ function testMultipleActorsMoveWithoutTouchingEmptySlots() {
 function testSelectedCardUsesBorderIndicatorWithoutSelectorRail() {
   assert.doesNotMatch(source, /selectorRailWidth/);
   assert.match(source, /cardX = this\.x \+ 12/);
-  assert.match(source, /context\.strokeRect\(cardX \+ 2, cardY \+ 2/);
+  assert.match(source, /context\.roundRect\(/);
+  assert.match(source, /cardX \+ inset/);
+  assert.match(source, /cardY \+ inset/);
   assert.match(source, /const pulse = swapSource/);
   assert.match(source, /Math\.sin/);
 }

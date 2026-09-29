@@ -438,11 +438,30 @@ class Window_MainMenuParty {
             ? `rgba(139, 220, 255, ${0.65 * pulse})`
             : `rgba(255, 215, 90, ${0.78 * pulse})`;
           context.lineWidth = this.mode === "order" ? 3 : 2;
-          context.strokeRect(cardX + 2, cardY + 2, cardWidth - 4, cardHeight - 4);
+          const inset = 2;
+          const radius = 11;
+          context.beginPath();
+          if (typeof context.roundRect === "function") {
+            context.roundRect(
+              cardX + inset,
+              cardY + inset,
+              cardWidth - inset * 2,
+              cardHeight - inset * 2,
+              radius,
+            );
+          } else {
+            context.rect(
+              cardX + inset,
+              cardY + inset,
+              cardWidth - inset * 2,
+              cardHeight - inset * 2,
+            );
+          }
+          context.stroke();
           context.fillStyle = swapSource && !selected
             ? `rgba(139, 220, 255, ${0.08 * pulse})`
             : `rgba(255, 215, 90, ${0.07 * pulse})`;
-          context.fillRect(cardX + 3, cardY + 3, cardWidth - 6, cardHeight - 6);
+          context.fill();
           context.restore();
         }
       } else {
