@@ -1160,6 +1160,10 @@ class Window_Inventory {
       context.restore();
     }
 
+    // Keep the proven card geometry untouched; only lower the internal
+    // actor-information stack so it sits more naturally centered vertically.
+    const contentOffsetY = 11;
+
     context.save();
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
@@ -1168,16 +1172,16 @@ class Window_Inventory {
     context.fillText(
       `${focused ? "▶ " : "  "}${actor?.name || "Unknown"}`,
       bounds.x + 12,
-      bounds.y + 23,
+      bounds.y + 23 + contentOffsetY,
     );
 
     context.fillStyle = "#ffd75a";
     context.font = "600 13px sans-serif";
-    context.fillText(`LV ${actor?.level ?? "?"}`, bounds.x + 14, bounds.y + 43);
+    context.fillText(`LV ${actor?.level ?? "?"}`, bounds.x + 14, bounds.y + 43 + contentOffsetY);
 
     context.fillStyle = "#aebbd0";
     context.font = "12px sans-serif";
-    context.fillText(this.statusText(actor), bounds.x + 92, bounds.y + 43);
+    context.fillText(this.statusText(actor), bounds.x + 92, bounds.y + 43 + contentOffsetY);
 
     const gaugeX = bounds.x + 14;
     const gaugeWidth = Math.max(80, bounds.width - 28);
@@ -1187,14 +1191,14 @@ class Window_Inventory {
     context.fillText(
       `HP ${Math.floor(actor?.hp ?? 0)}/${Math.floor(actor?.maxHp ?? 0)}`,
       gaugeX,
-      bounds.y + 59,
+      bounds.y + 59 + contentOffsetY,
     );
     Window_ActorSummary.drawGauge(
       context,
       actor?.hp ?? 0,
       actor?.maxHp ?? 0,
       gaugeX,
-      bounds.y + 64,
+      bounds.y + 64 + contentOffsetY,
       gaugeWidth,
       "hp",
     );
@@ -1203,14 +1207,14 @@ class Window_Inventory {
     context.fillText(
       `MP ${Math.floor(actor?.mp ?? 0)}/${Math.floor(actor?.maxMp ?? 0)}`,
       gaugeX,
-      bounds.y + 81,
+      bounds.y + 81 + contentOffsetY,
     );
     Window_ActorSummary.drawGauge(
       context,
       actor?.mp ?? 0,
       actor?.maxMp ?? 0,
       gaugeX,
-      bounds.y + 86,
+      bounds.y + 86 + contentOffsetY,
       gaugeWidth,
       "mp",
     );
