@@ -59,11 +59,11 @@ function makeClosingWindow(actor) {
   };
 }
 
-function testMagickAndSkillReturnToActorCards() {
+function testCharacterDestinationsReturnToActorCards() {
   const Scene_Menu = loadSceneMenuClass();
 
-  for (const command of ["Magick", "Skill"]) {
-    const actor = { actorId: command === "Magick" ? 2 : 3 };
+  for (const [index, command] of ["Magick", "Skill", "Essence", "Equip", "Status", "Valor"].entries()) {
+    const actor = { actorId: index + 1 };
     const { scene, calls } = makeScene(Scene_Menu);
     const window = makeClosingWindow(actor);
 
@@ -84,7 +84,7 @@ function testSingleActorReturnsDirectlyToCommandColumn() {
   const Scene_Menu = loadSceneMenuClass(1);
   const actor = { actorId: 1 };
 
-  for (const command of ["Magick", "Skill"]) {
+  for (const command of ["Magick", "Skill", "Essence", "Equip", "Status", "Valor"]) {
     const { scene, calls } = makeScene(Scene_Menu);
     scene.partyWindow.active = true;
     scene.pendingActorCommand = command;
@@ -100,20 +100,7 @@ function testSingleActorReturnsDirectlyToCommandColumn() {
   }
 }
 
-function testOtherCharacterDestinationsKeepTheirOwnReturnContract() {
-  const Scene_Menu = loadSceneMenuClass();
-  const actor = { actorId: 4 };
-
-  for (const command of ["Equip", "Essence", "Status", "Valor"]) {
-    const { scene, calls } = makeScene(Scene_Menu);
-    assert.equal(scene.returnToActorSelection(command, actor), false);
-    assert.equal(scene.partyWindow.active, false);
-    assert.equal(scene.pendingActorCommand, null);
-    assert.deepEqual(calls, []);
-  }
-}
-
-function testSceneUpdateRoutesOnlyMagickAndSkillThroughReturnHelper() {
+function testSceneUpdateRoutesAllCharacterDestinationsThroughReturnHelper() {
   const source = read("js/scenes/Scene_Menu.js");
 
   assert.match(
@@ -124,21 +111,28 @@ function testSceneUpdateRoutesOnlyMagickAndSkillThroughReturnHelper() {
     source,
     /updateActorDestination\(this\.skillsWindow, "Skill"\)/,
   );
-  assert.doesNotMatch(
+  assert.match(
     source,
     /updateActorDestination\(this\.equipmentWindow, "Equip"\)/,
   );
-  assert.doesNotMatch(
+  assert.match(
     source,
     /updateActorDestination\(this\.essenceWindow, "Essence"\)/,
+  );
+  assert.match(
+    source,
+    /updateActorDestination\(this\.statusWindow, "Status"\)/,
+  );
+  assert.match(
+    source,
+    /updateActorDestination\(this\.valorWindow, "Valor"\)/,
   );
 }
 
 function run() {
-  testMagickAndSkillReturnToActorCards();
+  testCharacterDestinationsReturnToActorCards();
   testSingleActorReturnsDirectlyToCommandColumn();
-  testOtherCharacterDestinationsKeepTheirOwnReturnContract();
-  testSceneUpdateRoutesOnlyMagickAndSkillThroughReturnHelper();
+  testSceneUpdateRoutesAllCharacterDestinationsThroughReturnHelper();
   console.log("Main menu actor return-focus regression tests passed.");
 }
 

@@ -93,7 +93,7 @@ class Scene_Menu extends Scene_Base {
   }
 
   shouldReturnToActorSelection(command) {
-    return command === "Magick" || command === "Skill";
+    return ["Magick", "Skill", "Essence", "Equip", "Status", "Valor"].includes(command);
   }
 
   returnToActorSelection(command, actor) {
@@ -127,7 +127,9 @@ class Scene_Menu extends Scene_Base {
   }
 
   updateActorDestination(window, command) {
-    const actor = window?.actor || null;
+    const actor = typeof window?.actor === "function"
+      ? window.actor()
+      : window?.actor || null;
     window?.update?.();
 
     if (window?.isOpen?.() !== false) {
@@ -254,22 +256,22 @@ class Scene_Menu extends Scene_Base {
     }
 
     if (this.essenceWindow.isOpen()) {
-      this.essenceWindow.update();
+      this.updateActorDestination(this.essenceWindow, "Essence");
       return;
     }
 
     if (this.statusWindow.isOpen()) {
-      this.statusWindow.update();
+      this.updateActorDestination(this.statusWindow, "Status");
       return;
     }
 
     if (this.valorWindow.isOpen()) {
-      this.valorWindow.update();
+      this.updateActorDestination(this.valorWindow, "Valor");
       return;
     }
 
     if (this.equipmentWindow.isOpen()) {
-      this.equipmentWindow.update();
+      this.updateActorDestination(this.equipmentWindow, "Equip");
       return;
     }
 

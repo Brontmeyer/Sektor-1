@@ -264,7 +264,7 @@ function testUseFlowKeepsChosenItemArmedUntilCancelOrQuantityRunsOut() {
   let texts = drawText(harness);
   assert.equal(includes(texts, "▶"), true);
   assert.equal(includes(texts, "Potion"), true);
-  assert.equal(includes(texts, "SELECT ITEM"), true);
+  assert.equal(includes(texts, "SELECT ITEM"), false);
   assert.equal(includes(texts, "Restores a small amount of HP."), true);
 
   press(harness, "confirm");
@@ -520,8 +520,7 @@ function testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter() {
   const columns = harness.window.contentColumns();
   const rhythm = harness.window.contentRhythm(columns);
 
-  assert.equal(rhythm.headingY > columns.rightBodyY, true);
-  assert.equal(rhythm.firstRowY > rhythm.headingY, true);
+  assert.equal(rhythm.firstRowY > columns.rightBodyY, true);
   assert.equal(rhythm.emptyY, rhythm.firstRowY);
 
   const source = read("js/windows/Window_Inventory.js");
@@ -597,6 +596,28 @@ function testEmptyKeyItemsTabIsDisabledAndSkippedByNavigation() {
   assert.equal(includes(texts, "Key Items"), true, "disabled tab remains visible");
 }
 
+function testItemQuantityAnchorsStayOnIntegerPixelsAcrossUseAndArrange() {
+  const harness = createHarness();
+  harness.gameParty.items[1] = 99;
+  harness.window.show();
+
+  press(harness, "confirm");
+  drawText(harness);
+  const rowY = harness.window.contentRowGeometry(harness.window.contentColumns()).firstRowY;
+  const useMetric = drawMetricAtY(harness, "x99", rowY);
+  assert.ok(useMetric, "Use renders the current row quantity");
+  assert.equal(Number.isInteger(useMetric.x), true, "Use quantity uses an integer-pixel anchor");
+
+  press(harness, "cancel");
+  press(harness, "right");
+  drawText(harness);
+  const arrangeMetric = drawMetricAtY(harness, "x99", rowY);
+  assert.ok(arrangeMetric, "Arrange renders the current row quantity");
+  assert.equal(Number.isInteger(arrangeMetric.x), true, "Arrange quantity uses an integer-pixel anchor");
+  assert.equal(arrangeMetric.x, useMetric.x, "Use and Arrange share the quantity anchor");
+  assert.equal(arrangeMetric.font, useMetric.font, "Use and Arrange share identical quantity font metrics");
+}
+
 function testSceneRoutesItemMenuToPartyBackedInventoryWindow() {
   const scene = read("js/scenes/Scene_Menu.js");
 
@@ -618,6 +639,7 @@ function run() {
   testItemPagesShareOneContentRhythmAndActorCardsLeaveDividerGutter();
   testPopulatedItemPagesShareVisibleTextAnchorWithoutWhitespacePadding();
   testEmptyKeyItemsTabIsDisabledAndSkippedByNavigation();
+  testItemQuantityAnchorsStayOnIntegerPixelsAcrossUseAndArrange();
   testSceneRoutesItemMenuToPartyBackedInventoryWindow();
   console.log("Item menu presentation regression tests passed.");
 }

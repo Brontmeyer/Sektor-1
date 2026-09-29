@@ -915,6 +915,7 @@ class Window_Inventory {
       context.fillText(label, labelX, y);
       context.textAlign = "right";
       context.fillStyle = this.valueText();
+      context.font = "14px sans-serif";
       context.fillText(String(value), valueX, y);
     });
 
@@ -990,11 +991,11 @@ class Window_Inventory {
   }
 
   contentRhythm(columns = this.contentColumns()) {
-    const headingY = columns.rightBodyY + 12;
-    const firstRowY = headingY + 42;
+    // Item/Arrange/Key Items are already identified by the active tab and
+    // top-right mode panel. Keep the body free of a repeated section heading.
+    const firstRowY = columns.rightBodyY + 20;
 
     return {
-      headingY,
       firstRowY,
       emptyY: firstRowY,
       scrollTopY: firstRowY - 4,
@@ -1011,7 +1012,7 @@ class Window_Inventory {
       rowHeight: 32,
       cursorX: rowX + 12,
       textX: rowX + 34,
-      quantityX: rowX + rowWidth - 8,
+      quantityX: Math.round(rowX + rowWidth - 8),
     };
   }
 
@@ -1315,15 +1316,6 @@ class Window_Inventory {
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.fillStyle = "#7ff0d5";
-    context.font = "600 18px sans-serif";
-    context.fillText(
-      this.focusArea === Window_Inventory.FOCUS.ITEMS
-        ? "SELECT ITEM"
-        : "ITEMS",
-      columns.rightX + 6,
-      rhythm.headingY,
-    );
 
     if (entries.length === 0) {
       context.fillStyle = "#8897ac";
@@ -1343,7 +1335,7 @@ class Window_Inventory {
     range.start -= range.start % 2;
     range.end = Math.min(entries.length, range.start + visibleRows * 2);
     const gutter = 20;
-    const columnWidth = (columns.rightWidth - gutter) / 2;
+    const columnWidth = Math.floor((columns.rightWidth - gutter) / 2);
 
     for (let i = range.start; i < range.end; i++) {
       const entry = entries[i];
@@ -1401,14 +1393,16 @@ class Window_Inventory {
         y,
       );
 
+      // Quantities deliberately use the same stable UI font as the rest of the row.
+      // The browser's monospace fallback was being rasterized inconsistently during
+      // live inventory redraws, which made x99/x98 appear to twitch even though the
+      // anchor itself never moved. Keep both coordinates integral as a second guard.
       context.textAlign = "right";
       context.fillStyle = disabled ? "#6f7d92" : "#ffffff";
-      context.font = "16px sans-serif";
-      context.fillText(
-        `x${entry?.quantity ?? 0}`,
-        row.quantityX,
-        y,
-      );
+      // Keep Use and Arrange quantities on the exact same font metrics so
+      // switching tabs cannot make x99 visually grow/shrink in place.
+      context.font = "17px sans-serif";
+      context.fillText(`x${entry?.quantity ?? 0}`, Math.round(row.quantityX), Math.round(y));
       context.textAlign = "left";
     }
 
@@ -1508,9 +1502,6 @@ class Window_Inventory {
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.fillStyle = "#7ff0d5";
-    context.font = "600 18px sans-serif";
-    context.fillText("ITEMS", columns.rightX + 6, rhythm.headingY);
 
     if (previewEntries.length === 0) {
       context.fillStyle = "#8897ac";
@@ -1532,7 +1523,7 @@ class Window_Inventory {
     );
     const previewVisible = visibleRows * 2;
     const gutter = 20;
-    const columnWidth = (columns.rightWidth - gutter) / 2;
+    const columnWidth = Math.floor((columns.rightWidth - gutter) / 2);
 
     previewEntries.slice(0, previewVisible).forEach((entry, index) => {
       const column = index % 2;
@@ -1552,7 +1543,12 @@ class Window_Inventory {
         y,
       );
       context.textAlign = "right";
-      context.fillText(`x${entry?.quantity ?? 0}`, cellX + columnWidth - 8, y);
+      context.font = "17px sans-serif";
+      context.fillText(
+        `x${entry?.quantity ?? 0}`,
+        Math.round(cellX + columnWidth - 8),
+        Math.round(y),
+      );
     });
 
     this.drawScrollIndicators(
@@ -1575,9 +1571,6 @@ class Window_Inventory {
     context.save();
     context.textAlign = "left";
     context.textBaseline = "middle";
-    context.fillStyle = "#7ff0d5";
-    context.font = "600 18px sans-serif";
-    context.fillText("KEY ITEMS", columns.rightX + 6, rhythm.headingY);
 
     if (itemIds.length === 0) {
       context.fillStyle = "#8897ac";

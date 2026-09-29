@@ -267,7 +267,7 @@ function testSceneRoutesValorToDedicatedWindowAndLoadsItAfterSharedHelpers() {
 
   assert.match(scene, /this\.valorWindow = new Window_Valor\(\$gameParty\)/);
   assert.match(scene, /Valor: this\.valorWindow/);
-  assert.match(scene, /this\.valorWindow\.update\(\)/);
+  assert.match(scene, /updateActorDestination\(this\.valorWindow, "Valor"\)/);
   assert.match(scene, /this\.valorWindow\.draw\(\)/);
   assert.doesNotMatch(scene, /Valor progression is planned for a focused pass/);
 
