@@ -16,6 +16,14 @@ class BattleManager {
   static ESCAPE_MIN_CHANCE = 0.1;
   static ESCAPE_MAX_CHANCE = 0.95;
 
+  // Battle Pacing v1
+  // Readiness can continue to accumulate during committed actions, but a short
+  // recovery beat keeps the next ready battler from claiming the stage on the
+  // very next frame. This preserves Active ATB while giving animation/popups
+  // enough visual room to register.
+  static PARTY_ACTION_CADENCE = 0.24;
+  static ENEMY_ACTION_CADENCE = 0.45;
+
   constructor(scene) {
     this.scene = scene;
 
@@ -259,6 +267,7 @@ class BattleManager {
     this.endPartyTurn();
 
     if (!battle.outcome) {
+      this.schedulePartyActionCadence();
       this.finishPartyAction();
     }
 
@@ -269,6 +278,18 @@ class BattleManager {
       roll,
       failures: this.escapeFailures,
     };
+  }
+
+  schedulePartyActionCadence() {
+    if (!this.usesActiveTimeAuthority()) {
+      return 0;
+    }
+
+    return (
+      this.scene.scheduleActiveTimeClaimDelay?.(
+        BattleManager.PARTY_ACTION_CADENCE,
+      ) || 0
+    );
   }
 
   finishPartyActionSequence() {
@@ -301,6 +322,7 @@ class BattleManager {
       return;
     }
 
+    this.schedulePartyActionCadence();
     this.finishPartyAction();
   }
 
@@ -2975,7 +2997,7 @@ class BattleManager {
       return false;
     }
 
-    battle.showBattleBanner?.(skill.name, 0.9, "skill");
+    battle.showBattleBanner?.(skill.name, 1.0, "skill");
     let affected = false;
 
     for (const target of validTargets) {
@@ -2999,7 +3021,7 @@ class BattleManager {
       return;
     }
 
-    battle.showBattleBanner?.(magick.name, 0.95, "magick");
+    battle.showBattleBanner?.(magick.name, 1.05, "magick");
 
     // =====================================
     // CAST-LEVEL ESCAPE EFFECT
@@ -3158,7 +3180,7 @@ class BattleManager {
       return false;
     }
 
-    battle.showBattleBanner?.(item.name, 0.9, "item");
+    battle.showBattleBanner?.(item.name, 1.0, "item");
     const hpBefore = target.hp;
     const success = $gameParty.useItem(item.id, target);
 
@@ -3215,6 +3237,7 @@ class BattleManager {
     this.endPartyTurn();
 
     if (!battle.outcome) {
+      this.schedulePartyActionCadence();
       this.finishPartyAction();
     }
 
@@ -3291,7 +3314,9 @@ class BattleManager {
     if (this.usesActiveTimeAuthority()) {
       const commandOwner = this.party().currentBattler();
       this.releaseActiveTimeBattler(enemy);
-      this.scene.scheduleActiveTimeClaimDelay?.(0.45);
+      this.scene.scheduleActiveTimeClaimDelay?.(
+        BattleManager.ENEMY_ACTION_CADENCE,
+      );
 
       if (commandOwner && !this.battlerIsDefeated(commandOwner)) {
         this.setTurnState(BattleManager.TURN_COMMAND);
@@ -3402,7 +3427,7 @@ class BattleManager {
       return false;
     }
 
-    battle.showBattleBanner?.(skill.name, 0.9, "skill");
+    battle.showBattleBanner?.(skill.name, 1.0, "skill");
     battle.setEnemyState("attack", 0.4, enemy);
 
     for (const target of validTargets) {
@@ -3429,7 +3454,7 @@ class BattleManager {
       return false;
     }
 
-    battle.showBattleBanner?.(magick.name, 0.95, "magick");
+    battle.showBattleBanner?.(magick.name, 1.05, "magick");
     const scope = action.scope || "single";
     battle.setEnemyState("attack", 0.4, enemy);
 

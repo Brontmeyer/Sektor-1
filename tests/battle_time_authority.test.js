@@ -226,6 +226,27 @@ function testPlayerActionChosenDuringEnemyRecoveryQueuesThenExecutesFirst() {
   assert.equal(enemyClaims, 0);
 }
 
+function testPartyCompletionAddsCadenceBeforeNextReadyClaim() {
+  const harness = makeHarness(null);
+  harness.partyController.setActiveBattler(harness.actor);
+  harness.timeManager.activeBattler = harness.actor;
+  harness.manager.detectBattleOutcome = () => null;
+  harness.manager.endPartyTurn = () => true;
+  harness.manager.finishPartyAction = () => {
+    harness.manager.releaseActiveTimeBattler(harness.actor);
+  };
+
+  harness.manager.finishPartyActionSequence();
+
+  assert.equal(harness.scene.actionPhase, "none");
+  assert.equal(
+    harness.scene.activeTimeClaimDelay,
+    harness.BattleManager.PARTY_ACTION_CADENCE,
+  );
+  assert.equal(harness.timeManager.activeBattler, null);
+  assert.equal(harness.partyController.currentBattler(), null);
+}
+
 function testEnemyCompletionAddsCadenceBeforeNextReadyClaim() {
   const harness = makeHarness(null);
   harness.timeManager.activeBattler = harness.enemy;
@@ -301,6 +322,7 @@ function run() {
   testActiveInterruptDefeatClearsReservedActorCommand();
   testEnemyCompletionRestoresReservedPlayerCommand();
   testPlayerActionChosenDuringEnemyRecoveryQueuesThenExecutesFirst();
+  testPartyCompletionAddsCadenceBeforeNextReadyClaim();
   testEnemyCompletionAddsCadenceBeforeNextReadyClaim();
   testConfirmWithoutAtbCommandOwnerIsIgnoredSafely();
   testAtbInputAuthorityIsNotUnlockedByLegacyAnimationIdleState();

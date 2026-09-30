@@ -220,7 +220,7 @@ function testStatusSummary() {
 
   const barrierName = statuses.find((status) => status?.key === "barrier").name;
   const poisonName = statuses.find((status) => status?.key === "poison").name;
-  assert.equal(battler.statusSummary(2), `${barrierName} 4, ${poisonName}, +1`);
+  assert.equal(battler.statusSummary(2), `${barrierName}, ${poisonName}`);
 }
 
 function testBattleManagerTicksSkippedTurnsAndStartsNewRoundStatuses() {

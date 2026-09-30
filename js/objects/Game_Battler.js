@@ -993,21 +993,14 @@ class Game_Battler {
     }
 
     const limit = Math.max(1, Math.floor(Number(maxEntries) || 1));
-    const visible = entries.slice(0, limit).map((entry) => {
-      if (entry.turnsRemaining === null) {
-        return entry.name;
-      }
 
-      return `${entry.name} ${entry.turnsRemaining}`;
-    });
-
-    const hiddenCount = entries.length - visible.length;
-
-    if (hiddenCount > 0) {
-      visible.push(`+${hiddenCount}`);
-    }
-
-    return visible.join(", ");
+    // HUD/menu status summaries intentionally show names only. Runtime duration
+    // and additional hidden statuses remain tracked internally, but numeric
+    // counters such as `+4` read like duration/debug data to the player.
+    return entries
+      .slice(0, limit)
+      .map((entry) => entry.name)
+      .join(", ");
   }
 
   // =====================================

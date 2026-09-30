@@ -70,7 +70,7 @@ Active Time Battle uses a battle-local `0..100` Time clock for every current act
 
 Time fills continuously from a battler's Agility. Existing status metadata is reused rather than duplicated: Haste accelerates Time through `turnSpeedMultiplier()`, Slow reduces it, and Stop freezes the visible gauge through `haltsTurnProgression()`. A private halted-status clock advances Stop's existing turn duration at the battler's would-be Time cadence so removing side rounds cannot make Stop permanent. Defeated battlers hold no Time. `Scene_Battle` feeds the manager the same Battle Speed-scaled delta time already used by battle animation/action timing, so Slow / Normal / Fast configuration changes Time pacing consistently.
 
-At `100`, a battler becomes Ready and enters `BattleTimeManager`'s shared readiness queue. Actors and enemies use the same queue, so live battle no longer alternates party-side and enemy-side rounds. A ready actor receives command ownership, while a ready enemy delegates to existing enemy AI. Completing, skipping, or spending an action resets only that battler's Time gauge. Enemy completions apply a short battle-speed-scaled recovery gate before another Ready battler is claimed, preventing several enemies from visually resolving on adjacent frames while preserving readiness order.
+At `100`, a battler becomes Ready and enters `BattleTimeManager`'s shared readiness queue. Actors and enemies use the same queue, so live battle no longer alternates party-side and enemy-side rounds. A ready actor receives command ownership, while a ready enemy delegates to existing enemy AI. Completing, skipping, or spending an action resets only that battler's Time gauge. Enemy completions apply a short battle-speed-scaled recovery gate before another Ready battler is claimed, preventing several enemies from visually resolving on adjacent frames while preserving readiness order. Player actions now receive a smaller post-action claim gate for the same reason: Time continues filling and Ready battlers keep their queue order, but the next claim waits for a brief presentation beat so Active ATB does not visually pile one resolved action directly on top of the next.
 
 Command input and action execution are intentionally separate. Once a ready actor owns the command surface, enemy actions never hide or lock that player's current command / selector / target state. If an enemy resolves while the player is choosing, the player can continue navigating. If the player commits an action during the enemy recovery gate, `BattleManager` stores that committed action in a battle-local queue bridge and starts it as soon as the current recovery finishes, before claiming another Ready battler. While an actor or enemy action sequence is executing, TIME continues to progress for other non-halted battlers, so readiness may accumulate behind the single serialized action executor.
 
@@ -98,7 +98,7 @@ Item
 itemUse → itemEffect → itemRecover → itemWait
 ```
 
-These phases allow gameplay resolution, animation, timing, popups, and messages to remain coordinated.
+These phases allow gameplay resolution, animation, timing, popups, and messages to remain coordinated. Pass 141 also gives ordinary damage/heal popups a slightly longer dwell and gives status/critical/resistance feedback a longer emphasis dwell. Persistent status summaries use shared tone rules: negative statuses are warm warning-colored, positive statuses use mint-teal, and mixed positive/negative states use gold on both the actor HUD and enemy battlefield labels.
 
 ---
 

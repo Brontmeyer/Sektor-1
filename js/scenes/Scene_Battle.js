@@ -872,7 +872,7 @@ class Scene_Battle extends Scene_Base {
   updateBattlePopups(deltaTime) {
     for (const popup of this.battlePopups) {
       popup.age += deltaTime;
-      popup.rise += 40 * deltaTime;
+      popup.rise += 34 * deltaTime;
     }
 
     this.battlePopups = this.battlePopups.filter(
@@ -1032,12 +1032,21 @@ class Scene_Battle extends Scene_Base {
       (popup) => popup.target === target && popup.age < popup.duration,
     ).length;
 
+    const emphasisTypes = new Set([
+      "status",
+      "critical",
+      "weak",
+      "resist",
+      "immune",
+    ]);
+    const duration = emphasisTypes.has(type) ? 1.2 : 1.05;
+
     this.battlePopups.push({
       target,
       text: String(text),
       type,
       age: 0,
-      duration: 0.9,
+      duration,
       rise: 0,
       stackIndex: activeForTarget,
     });

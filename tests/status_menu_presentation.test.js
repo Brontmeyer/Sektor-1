@@ -94,7 +94,7 @@ function createHarness() {
       return slot === 0 ? { name: () => "Flame Essence" } : null;
     },
     statusDisplayEntries: () => [
-      { key: "poison", name: "Poison", turnsRemaining: null },
+      { key: "poison", name: "Poison", turnsRemaining: 4 },
     ],
     statusDefinitions: () => statusDefinitions,
     statusRate(key) {
@@ -198,6 +198,9 @@ function testPageSwitchingUsesDedicatedVerticalAndConfirmInputs() {
   window.draw();
   assert.equal(drawn(drawCalls, "EFFECT  3/3"), true);
   assert.equal(drawn(drawCalls, "STATUS EFFECTS"), true);
+  assert.equal(drawn(drawCalls, "Poison"), true);
+  assert.equal(drawn(drawCalls, "Poison 4"), false);
+  assert.equal(drawn(drawCalls, "Poison (4)"), false);
   assert.equal(drawn(drawCalls, "STATUS RESISTANCE"), true);
   assert.equal(drawn(drawCalls, "Immune"), true);
   assert.equal(drawn(drawCalls, "Resist 50%"), true);

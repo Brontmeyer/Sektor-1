@@ -862,6 +862,38 @@ class BattleRenderer {
     );
   }
 
+  statusTone(battler) {
+    const definitions =
+      typeof battler?.activeStatusDefinitions === "function"
+        ? battler.activeStatusDefinitions().filter(Boolean)
+        : [];
+
+    if (definitions.length === 0) {
+      return "#d6dde6";
+    }
+
+    const hasNegative = definitions.some(
+      (definition) => definition?.classification?.negative === true,
+    );
+    const hasPositive = definitions.some(
+      (definition) => definition?.classification?.negative === false,
+    );
+
+    if (hasNegative && hasPositive) {
+      return "#ffd75a";
+    }
+
+    if (hasNegative) {
+      return "#ff9b7a";
+    }
+
+    if (hasPositive) {
+      return "#78f0d2";
+    }
+
+    return "#d6dde6";
+  }
+
   drawStatusIndicator(context, battler, x, y, maxEntries = 2) {
     if (!battler || typeof battler.statusSummary !== "function") {
       return;
@@ -886,7 +918,7 @@ class BattleRenderer {
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.font = "13px Arial";
-    context.fillStyle = "#ffffff";
+    context.fillStyle = this.statusTone(battler);
     context.strokeStyle = "#000000";
     context.lineWidth = 3;
     context.strokeText(summary, x, y);
@@ -1060,7 +1092,12 @@ class BattleRenderer {
 
     if (status) {
       context.font = "11px Arial";
-      context.fillStyle = isDefeated ? "#ff8a8a" : "#aeb8c5";
+      const statusColor = ordinaryStatus
+        ? this.statusTone(actor)
+        : passiveStatus
+          ? "#c7a7ff"
+          : "#aeb8c5";
+      context.fillStyle = isDefeated ? "#ff8a8a" : statusColor;
       const maxStatusWidth = Math.max(40, nameRow.width - namePadding * 2);
       const displayStatus =
         context.measureText(status).width <= maxStatusWidth

@@ -189,6 +189,64 @@ function testTransientBannerFadesAtPresentationEdges() {
   );
 }
 
+function testFeedbackPopupsLingerLongEnoughToRead() {
+  const source = fs.readFileSync(
+    path.join(projectRoot, "js/scenes/Scene_Battle.js"),
+    "utf8",
+  );
+  const context = vm.createContext({
+    console,
+    Scene_Base: class {},
+    BattleManager: {},
+  });
+
+  vm.runInContext(
+    `${source}\nglobalThis.__SceneBattle = Scene_Battle;`,
+    context,
+  );
+
+  const prototype = context.__SceneBattle.prototype;
+  const target = { name: "Target" };
+  const fake = { battlePopups: [] };
+
+  prototype.addBattlePopup.call(fake, target, "-25", "damage");
+  prototype.addBattlePopup.call(fake, target, "FURY", "status");
+
+  assert.equal(fake.battlePopups[0].duration, 1.05);
+  assert.equal(fake.battlePopups[1].duration, 1.2);
+}
+
+function testStatusToneDistinguishesBuffsDebuffsAndMixedStates() {
+  const Graphics = { width: 1600, height: 900, context: createContext() };
+  const { BattleRenderer } = loadPresentation({ Graphics });
+  const renderer = new BattleRenderer(baseScene());
+  const battler = (definitions) => ({
+    activeStatusDefinitions: () => definitions,
+  });
+
+  assert.equal(
+    renderer.statusTone(
+      battler([{ classification: { negative: true } }]),
+    ),
+    "#ff9b7a",
+  );
+  assert.equal(
+    renderer.statusTone(
+      battler([{ classification: { negative: false } }]),
+    ),
+    "#78f0d2",
+  );
+  assert.equal(
+    renderer.statusTone(
+      battler([
+        { classification: { negative: true } },
+        { classification: { negative: false } },
+      ]),
+    ),
+    "#ffd75a",
+  );
+}
+
 function testCommandWindowPersistsThroughActorDecisionSubmenus() {
   const Graphics = { width: 1600, height: 900, context: createContext() };
   const { BattleHudLayout, BattleRenderer } = loadPresentation({ Graphics });
@@ -304,6 +362,8 @@ function run() {
   testBannerAppearsOnlyWhenTransientPresentationStateExists();
   testTransientBannerQueuePreservesStateAnnouncementsBeforeActions();
   testTransientBannerFadesAtPresentationEdges();
+  testFeedbackPopupsLingerLongEnoughToRead();
+  testStatusToneDistinguishesBuffsDebuffsAndMixedStates();
   testCommandWindowPersistsThroughActorDecisionSubmenus();
   testContextualHintsMatchBattleState();
   testCriticalFlashIsBriefGlobalPresentationEffect();

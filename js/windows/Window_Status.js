@@ -225,13 +225,7 @@ class Window_Status {
       return "Normal";
     }
 
-    return entries
-      .map((entry) =>
-        entry.turnsRemaining === null
-          ? entry.name
-          : `${entry.name} ${entry.turnsRemaining}`,
-      )
-      .join(", ");
+    return entries.map((entry) => entry.name).join(", ");
   }
 
   drawMainPage(context, bounds) {
@@ -491,13 +485,7 @@ class Window_Status {
 
     const activeText = active.length === 0
       ? "None"
-      : active
-          .map((entry) =>
-            entry.turnsRemaining === null
-              ? entry.name
-              : `${entry.name} (${entry.turnsRemaining})`,
-          )
-          .join(", ");
+      : active.map((entry) => entry.name).join(", ");
     const activeMaxWidth = Math.max(80, activeValueX - activeLabelX - 76);
     const activeValue =
       typeof Window_TextLayout !== "undefined" &&

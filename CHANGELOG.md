@@ -1,3 +1,13 @@
+## Pass 141 - Battle Cadence & Status Feedback v1
+- Removed numeric hidden-status counters (for example `+4`) from player-facing status summaries while preserving all hidden statuses and duration state internally.
+
+- Added a short post-action recovery beat for player actions under Active Time Battle so readiness may keep accumulating without the next battler visually claiming the stage on the very next frame. Enemy recovery now uses the same named cadence contract instead of a magic-number delay.
+- Slightly lengthened Skill / Magick / Item action banners and damage/heal popups; status/critical/resistance feedback lingers a little longer than ordinary numbers so combat results remain readable without slowing the ATB clock itself.
+- Added status-tone presentation: negative statuses use a warm warning tone, positive statuses use mint-teal, and mixed states use gold. Actor HUD status summaries and enemy battlefield status labels share the same tone rules, making Fury / Haste / Slow / Barrier / Poison / Regen-style states easier to identify at a glance.
+- Simplified visible status labels to names only (for example, `Poison` / `Barrier`) while keeping remaining status duration fully authoritative and internal; HUD, battlefield summaries, Main Menu, Inventory, and Status no longer expose turn counters beside active states.
+- Preserved Battle Speed, Battle Message Speed, Active/Wait ATB, formation profiles, grounding, Help behavior, and current battle geometry.
+- Added focused regression coverage for player post-action cadence, popup dwell time, and status-tone classification.
+
 ## Pass 125 - Three-Active / Six-Enemy Battle Composition v1
 
 - Reduced the active battle-party cap from four to three while preserving the full recruited roster and ROSTER reserve/replacement workflow. `Game_Party.MAX_BATTLE_MEMBERS` is the runtime authority used by activation, formation order, MAIN MENU cards, and ROSTER capacity.
