@@ -15,7 +15,8 @@
         "row": "front"
       }
     ],
-    "formation": "normal"
+    "formation": "normal",
+    "layoutProfile": "standard"
   },
   {
     "_comment": "ID 2: Test Slime Alpha - Phase Boss",
@@ -25,10 +26,12 @@
     "members": [
       {
         "enemyId": 2,
+        "role": "boss",
         "row": "front"
       }
     ],
-    "formation": "normal"
+    "formation": "normal",
+    "layoutProfile": "soloBoss"
   },
   {
     "_comment": "ID 3: Slime Pair - Back Attack",
@@ -36,6 +39,7 @@
     "name": "Test Slime Back Attack",
     "canEscape": true,
     "formation": "backAttack",
+    "layoutProfile": "standard",
     "members": [
       {
         "enemyId": 1,
@@ -53,6 +57,7 @@
     "name": "Test Slime Pincer",
     "canEscape": true,
     "formation": "pincer",
+    "layoutProfile": "standard",
     "members": [
       {
         "enemyId": 1,
@@ -82,6 +87,7 @@
     "name": "Six Slime Rows",
     "canEscape": true,
     "formation": "normal",
+    "layoutProfile": "horde",
     "members": [
       {
         "enemyId": 1,
@@ -115,6 +121,7 @@
     "name": "Six Slime Pincer Rows",
     "canEscape": true,
     "formation": "pincer",
+    "layoutProfile": "horde",
     "members": [
       {
         "enemyId": 1,
@@ -160,6 +167,7 @@
     "name": "Six Slime Rows Back Attack",
     "canEscape": true,
     "formation": "backAttack",
+    "layoutProfile": "horde",
     "members": [
       {
         "enemyId": 1,

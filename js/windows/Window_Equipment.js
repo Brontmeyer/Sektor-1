@@ -318,8 +318,8 @@ class Window_Equipment {
     context.save();
     context.textBaseline = "middle";
     context.textAlign = "left";
-    context.font = "600 19px sans-serif";
-    context.fillStyle = "#ffffff";
+    context.font = "600 18px sans-serif";
+    context.fillStyle = CharacterMenuLayout.themeColor("accent", "#7ff0d5");
     context.fillText("EQUIPMENT", bounds.x + 20, bounds.y + 28);
 
     const slotStartY = bounds.y + 60;
@@ -392,8 +392,8 @@ class Window_Equipment {
     const bounds = this.listBounds;
     this.drawPanel(context, bounds);
     context.save();
-    context.fillStyle = "#ffffff";
-    context.font = "600 20px sans-serif";
+    context.fillStyle = CharacterMenuLayout.themeColor("accent", "#7ff0d5");
+    context.font = "600 18px sans-serif";
     context.textAlign = "left";
     context.textBaseline = "middle";
     context.fillText((this.currentSlot()?.label || "Equipment").toUpperCase(), bounds.x + 18, bounds.y + 28);

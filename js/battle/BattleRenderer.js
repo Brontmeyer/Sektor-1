@@ -687,15 +687,31 @@ class BattleRenderer {
 
   actorShadowMetrics(actor) {
     return {
-      width: Math.max(96, (Number(actor?.battleSpriteWidth) || 190) * 0.68),
-      height: Math.max(16, (Number(actor?.battleSpriteHeight) || 166) * 0.12),
+      width: Math.max(
+        96,
+        Number(actor?.battleShadowWidth) ||
+          (Number(actor?.battleSpriteWidth) || 190) * 0.68,
+      ),
+      height: Math.max(
+        16,
+        Number(actor?.battleShadowHeight) ||
+          (Number(actor?.battleSpriteHeight) || 166) * 0.12,
+      ),
     };
   }
 
   enemyShadowMetrics(enemy) {
     return {
-      width: Math.max(82, (Number(enemy?.battleSpriteWidth) || 128) * 0.78),
-      height: Math.max(12, (Number(enemy?.battleSpriteHeight) || 96) * 0.12),
+      width: Math.max(
+        82,
+        Number(enemy?.battleShadowWidth) ||
+          (Number(enemy?.battleSpriteWidth) || 128) * 0.78,
+      ),
+      height: Math.max(
+        12,
+        Number(enemy?.battleShadowHeight) ||
+          (Number(enemy?.battleSpriteHeight) || 96) * 0.12,
+      ),
     };
   }
 

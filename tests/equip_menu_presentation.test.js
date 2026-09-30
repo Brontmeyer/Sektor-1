@@ -204,6 +204,23 @@ function testEssenceGrowthIsPresentationOnlyDefault() {
   assert.doesNotMatch(source, /gainEssence|resonanceMultiplier|applyEssenceGrowth/);
 }
 
+
+function testEquipSectionHeadingsUseCharacterMenuAccent() {
+  const source = read("js/windows/Window_Equipment.js");
+  const selectorSource = read("js/windows/Window_EquipSelect.js");
+
+  assert.match(
+    source,
+    /context\.font = "600 18px sans-serif";\s*context\.fillStyle = CharacterMenuLayout\.themeColor\("accent", "#7ff0d5"\);\s*context\.fillText\("EQUIPMENT"/,
+  );
+  assert.match(
+    source,
+    /CharacterMenuLayout\.themeColor\("accent", "#7ff0d5"\)[\s\S]*currentSlot\(\)\?\.label/,
+  );
+  assert.match(selectorSource, /CharacterMenuLayout\.themeColor\("accent", "#7ff0d5"\)/);
+  assert.match(selectorSource, /context\.font = "600 18px sans-serif"/);
+}
+
 function run() {
   testMainMenuPortraitsAreSquareLikeActorSummary();
   testEquipUsesFullLabelsAndSharedActorSummary();
@@ -212,6 +229,7 @@ function run() {
   testEquipmentStatsUseFullPanelWithoutPermanentHintFooter();
   testEquippedGearUsesYellowNameInsteadOfEquippedSuffix();
   testEssenceGrowthIsPresentationOnlyDefault();
+  testEquipSectionHeadingsUseCharacterMenuAccent();
   console.log("Equip menu presentation regression tests passed.");
 }
 

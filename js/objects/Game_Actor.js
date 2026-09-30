@@ -51,6 +51,18 @@ class Game_Actor extends Game_Battler {
       0,
       Number(actorData.battleSpriteGroundOffset) || 0,
     );
+    this.battleFootprintWidth = Math.max(
+      1,
+      Number(actorData.battleFootprintWidth) || this.battleSpriteWidth,
+    );
+    this.battleShadowWidth = Math.max(
+      1,
+      Number(actorData.battleShadowWidth) || this.battleFootprintWidth * 0.68,
+    );
+    this.battleShadowHeight = Math.max(
+      1,
+      Number(actorData.battleShadowHeight) || this.battleSpriteHeight * 0.12,
+    );
 
     this.exp = actorData.exp;
     this.growth = actorData.growth;

@@ -20,7 +20,7 @@ function loadClass(relativePath, className, globals = {}) {
   return { Class: context.__Class, context };
 }
 
-function createFormationFixture(formation, members) {
+function createFormationFixture(formation, members, layoutProfile = "standard") {
   const actors = Array.from({ length: 3 }, (_, index) => ({
     actorId: index + 1,
     name: `Actor ${index + 1}`,
@@ -51,7 +51,7 @@ function createFormationFixture(formation, members) {
   );
   const turnedActors = new Set();
   const scene = {
-    encounter: { formation, members },
+    encounter: { formation, layoutProfile, members },
     enemies,
     pendingAttackTarget: null,
     selectingEnemyTarget: false,
@@ -80,6 +80,9 @@ function testCanonicalEncounterFormationData() {
     encounters[4].members.map((member) => `${member.side}:${member.row}`),
     ["left:front", "left:front", "right:front", "right:front"],
   );
+  assert.equal(encounters[2].layoutProfile, "soloBoss");
+  assert.equal(encounters[5].layoutProfile, "horde");
+  assert.equal(encounters[6].layoutProfile, "horde");
   assert.equal(encounters[5].members.length, 6);
   assert.equal(encounters[6].members.length, 6);
 }
@@ -221,6 +224,43 @@ function testEnemyRowsExposeDistinctFrontAndBackGeometry() {
   assert.equal(positions[2].y < positions[3].y, true);
 }
 
+
+function testLayoutProfilesSeparateEncounterTopologyFromEnemyComposition() {
+  const members = [
+    { enemyId: 2, role: "boss", row: "front" },
+    { enemyId: 1, role: "add", row: "front" },
+    { enemyId: 1, role: "add", row: "front" },
+  ];
+  const { manager } = createFormationFixture("normal", members, "bossAdds");
+
+  assert.equal(manager.formation(), "normal");
+  assert.equal(manager.layoutProfileName(), "bossAdds");
+  assert.equal(manager.roleAnchor(0)?.yFraction, 0.5);
+  assert.equal(manager.enemyPosition(0).x > manager.enemyPosition(1).x, true);
+  assert.deepEqual(Array.from(manager.occupiedEnemySlots("right", "front")).sort(), [0, 2]);
+  assert.deepEqual(Array.from(manager.availableEnemySlots("right", "front")), [1]);
+  assert.equal(manager.nextOpenEnemySlot("right", "front"), 1);
+}
+
+function testEnemyFootprintWidthControlsEdgeSafetyWithoutChangingSpriteArt() {
+  const { manager, enemies, Graphics } = createFormationFixture(
+    "normal",
+    [{ enemyId: 1, row: "back", slot: 1 }],
+    "eliteGroup",
+  );
+  const enemy = enemies[0];
+  enemy.battleSpriteWidth = 128;
+  enemy.battleFootprintWidth = 620;
+  enemy.battleSpriteHeight = 120;
+
+  const scale = manager.enemyScale(enemy, 0);
+  const x = manager.enemyPosition(0).x;
+  const halfWidth = enemy.battleFootprintWidth * scale * 0.5;
+
+  assert.equal(x - halfWidth >= 18 - 0.0001, true);
+  assert.equal(x + halfWidth <= Graphics.width - 18 + 0.0001, true);
+}
+
 function testFormationSchemaValidation() {
   const { Class: DatabaseValidator } = loadClass(
     "js/core/DatabaseValidator.js",
@@ -262,6 +302,22 @@ function testFormationSchemaValidation() {
       formation: "normal",
       members: Array.from({ length: 9 }, () => ({ enemyId: 1, row: "front" })),
     },
+    {
+      id: 5,
+      name: "Bad Layout Profile",
+      canEscape: true,
+      formation: "normal",
+      layoutProfile: "wallOfDragons",
+      members: [{ enemyId: 1, row: "front" }],
+    },
+    {
+      id: 6,
+      name: "Bad Role",
+      canEscape: true,
+      formation: "normal",
+      layoutProfile: "standard",
+      members: [{ enemyId: 1, row: "front", role: "boss" }],
+    },
   ];
 
   DatabaseValidator.validateEncounters(encounters, enemies, errors);
@@ -272,6 +328,8 @@ function testFormationSchemaValidation() {
   assert.equal(errors.some((error) => error.includes("side is only valid for a pincer")), true);
   assert.equal(errors.some((error) => error.includes("at most 6 enemy members")), true);
   assert.equal(errors.some((error) => error.includes("front row may contain at most 3 enemies")), true);
+  assert.equal(errors.some((error) => error.includes("layoutProfile must be standard")), true);
+  assert.equal(errors.some((error) => error.includes("role boss requires a soloBoss or bossAdds")), true);
 }
 
 function testFormationManagerLoadsBeforeFormationConsumers() {
@@ -369,6 +427,8 @@ function run() {
   testPincerPlacesEnemiesOnBothSidesOfCenteredParty();
   testVisualPartyOrderChangesPlacementWithoutChangingPincerFacing();
   testEnemyRowsExposeDistinctFrontAndBackGeometry();
+  testLayoutProfilesSeparateEncounterTopologyFromEnemyComposition();
+  testEnemyFootprintWidthControlsEdgeSafetyWithoutChangingSpriteArt();
   testFormationSchemaValidation();
   testFormationManagerLoadsBeforeFormationConsumers();
   testFormationAwareAnimationDirectionsRemainRuntimeSafe();

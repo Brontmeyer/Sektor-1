@@ -14,12 +14,127 @@ class BattleFormationManager {
   static PARTY_VERTICAL_OFFSET = 0.145;
   static ENEMY_VERTICAL_OFFSET = 0.145;
 
+  // Encounter topology (normal/back attack/pincer) answers which side battlers
+  // occupy. A layout profile answers how an enemy group uses the available
+  // battlefield space. Keeping those concepts separate lets bosses, hordes,
+  // elites, and future summoned adds share the same targeting mechanics.
+  static LAYOUT_STANDARD = "standard";
+  static LAYOUT_HORDE = "horde";
+  static LAYOUT_SOLO_BOSS = "soloBoss";
+  static LAYOUT_BOSS_ADDS = "bossAdds";
+  static LAYOUT_ELITE_GROUP = "eliteGroup";
+  static LAYOUT_PROFILES = Object.freeze({
+    standard: Object.freeze({
+      rowX: Object.freeze({
+        left: Object.freeze({ front: 0.22, back: 0.13 }),
+        right: Object.freeze({ front: 0.78, back: 0.87 }),
+      }),
+      slotFractions: Object.freeze([0.22, 0.5, 0.78]),
+      automaticFractions: Object.freeze({
+        1: Object.freeze([0.5]),
+        2: Object.freeze([0.38, 0.62]),
+        3: Object.freeze([0.22, 0.5, 0.78]),
+      }),
+      laneFill: 0.92,
+      widthRatio: 0.14,
+      minScale: 0.45,
+      maxScale: 1,
+      roleAnchors: Object.freeze({}),
+    }),
+    horde: Object.freeze({
+      rowX: Object.freeze({
+        left: Object.freeze({ front: 0.22, back: 0.13 }),
+        right: Object.freeze({ front: 0.78, back: 0.87 }),
+      }),
+      slotFractions: Object.freeze([0.22, 0.5, 0.78]),
+      automaticFractions: Object.freeze({
+        1: Object.freeze([0.5]),
+        2: Object.freeze([0.38, 0.62]),
+        3: Object.freeze([0.22, 0.5, 0.78]),
+      }),
+      laneFill: 0.92,
+      widthRatio: 0.14,
+      minScale: 0.45,
+      maxScale: 1,
+      roleAnchors: Object.freeze({}),
+    }),
+    soloBoss: Object.freeze({
+      rowX: Object.freeze({
+        left: Object.freeze({ front: 0.24, back: 0.16 }),
+        right: Object.freeze({ front: 0.76, back: 0.84 }),
+      }),
+      slotFractions: Object.freeze([0.22, 0.5, 0.78]),
+      automaticFractions: Object.freeze({
+        1: Object.freeze([0.5]),
+        2: Object.freeze([0.36, 0.64]),
+        3: Object.freeze([0.2, 0.5, 0.8]),
+      }),
+      laneFill: 0.96,
+      widthRatio: 0.28,
+      minScale: 0.45,
+      maxScale: 1.18,
+      roleAnchors: Object.freeze({
+        boss: Object.freeze({ x: 0.76, y: 0.5 }),
+      }),
+    }),
+    bossAdds: Object.freeze({
+      rowX: Object.freeze({
+        left: Object.freeze({ front: 0.24, back: 0.13 }),
+        right: Object.freeze({ front: 0.76, back: 0.87 }),
+      }),
+      slotFractions: Object.freeze([0.18, 0.5, 0.82]),
+      automaticFractions: Object.freeze({
+        1: Object.freeze([0.5]),
+        2: Object.freeze([0.3, 0.7]),
+        3: Object.freeze([0.18, 0.5, 0.82]),
+      }),
+      laneFill: 0.9,
+      widthRatio: 0.22,
+      minScale: 0.45,
+      maxScale: 1.08,
+      roleAnchors: Object.freeze({
+        boss: Object.freeze({ x: 0.82, y: 0.5 }),
+      }),
+    }),
+    eliteGroup: Object.freeze({
+      rowX: Object.freeze({
+        left: Object.freeze({ front: 0.22, back: 0.12 }),
+        right: Object.freeze({ front: 0.78, back: 0.88 }),
+      }),
+      slotFractions: Object.freeze([0.18, 0.5, 0.82]),
+      automaticFractions: Object.freeze({
+        1: Object.freeze([0.5]),
+        2: Object.freeze([0.32, 0.68]),
+        3: Object.freeze([0.18, 0.5, 0.82]),
+      }),
+      laneFill: 0.94,
+      widthRatio: 0.2,
+      minScale: 0.45,
+      maxScale: 1.08,
+      roleAnchors: Object.freeze({}),
+    }),
+  });
+
   constructor(scene) {
     this.scene = scene;
   }
 
   formation() {
     return this.scene.encounter?.formation || BattleFormationManager.NORMAL;
+  }
+
+  layoutProfileName() {
+    const requested = String(
+      this.scene.encounter?.layoutProfile || BattleFormationManager.LAYOUT_STANDARD,
+    );
+
+    return BattleFormationManager.LAYOUT_PROFILES[requested]
+      ? requested
+      : BattleFormationManager.LAYOUT_STANDARD;
+  }
+
+  layoutProfile() {
+    return BattleFormationManager.LAYOUT_PROFILES[this.layoutProfileName()];
   }
 
   is(type) {
@@ -212,33 +327,144 @@ class BattleFormationManager {
   }
 
   rowX(side, row) {
-    const frontX = side === "left" ? 0.22 : 0.78;
-    const backX = side === "left" ? 0.13 : 0.87;
+    const profile = this.layoutProfile();
+    const sideRows = profile.rowX?.[side] || profile.rowX?.right || {};
+    const fraction = row === BattleFormationManager.BACK_ROW
+      ? sideRows.back
+      : sideRows.front;
 
-    return (
-      Graphics.width *
-      (row === BattleFormationManager.BACK_ROW ? backX : frontX)
-    );
+    return Graphics.width * (Number(fraction) || 0.5);
   }
 
   fixedSlotFractions() {
-    return [0.22, 0.5, 0.78];
+    const fractions = this.layoutProfile().slotFractions;
+    return Array.isArray(fractions) && fractions.length > 0
+      ? [...fractions]
+      : [0.22, 0.5, 0.78];
   }
 
   automaticRowFractions(count) {
+    const safeCount = Math.max(
+      1,
+      Math.min(BattleFormationManager.ROW_SLOT_COUNT, Number(count) || 1),
+    );
+    const layouts = this.layoutProfile().automaticFractions || {};
+    const fractions = layouts[safeCount];
+
+    return Array.isArray(fractions) && fractions.length > 0
+      ? [...fractions]
+      : this.fixedSlotFractions().slice(0, safeCount);
+  }
+
+  automaticSlotIndexes(count) {
+    const safeCount = Math.max(
+      1,
+      Math.min(BattleFormationManager.ROW_SLOT_COUNT, Number(count) || 1),
+    );
     const layouts = {
-      1: [0.5],
-      2: [0.38, 0.62],
-      3: this.fixedSlotFractions(),
+      1: [1],
+      2: [0, 2],
+      3: [0, 1, 2],
     };
 
-    return layouts[
-      Math.max(1, Math.min(BattleFormationManager.ROW_SLOT_COUNT, count))
-    ];
+    return [...layouts[safeCount]];
+  }
+
+  memberRole(index) {
+    const role = this.encounterMember(index).role;
+    return typeof role === "string" ? role : null;
+  }
+
+  roleAnchor(index) {
+    const role = this.memberRole(index);
+    const anchor = role ? this.layoutProfile().roleAnchors?.[role] : null;
+
+    if (!anchor) {
+      return null;
+    }
+
+    const side = this.memberSide(index);
+    const rightX = Number(anchor.x);
+    const xFraction = Number.isFinite(rightX)
+      ? (side === "left" ? 1 - rightX : rightX)
+      : 0.5;
+    const yFraction = Number.isFinite(Number(anchor.y)) ? Number(anchor.y) : 0.5;
+
+    return { xFraction, yFraction };
+  }
+
+  memberSlotIndex(index) {
+    const member = this.encounterMember(index);
+
+    if (Number.isInteger(member.slot)) {
+      return Math.max(0, Math.min(member.slot, BattleFormationManager.ROW_SLOT_COUNT - 1));
+    }
+
+    if (this.roleAnchor(index)) {
+      return null;
+    }
+
+    const groupIndexes = this.rowMemberIndexes(index).filter(
+      (candidateIndex) =>
+        !Number.isInteger(this.encounterMember(candidateIndex).slot) &&
+        !this.roleAnchor(candidateIndex),
+    );
+    const position = groupIndexes.indexOf(index);
+    const slots = this.automaticSlotIndexes(groupIndexes.length);
+
+    return position >= 0 ? slots[Math.min(position, slots.length - 1)] : null;
+  }
+
+  occupiedEnemySlots(side = "right", row = BattleFormationManager.FRONT_ROW) {
+    const members = this.scene.encounter?.members || [];
+    const occupied = new Set();
+
+    members.forEach((_member, index) => {
+      if (this.memberSide(index) !== side || this.memberRow(index) !== row) {
+        return;
+      }
+
+      const slot = this.memberSlotIndex(index);
+      if (Number.isInteger(slot)) {
+        occupied.add(slot);
+      }
+    });
+
+    return occupied;
+  }
+
+  availableEnemySlots(side = "right", row = BattleFormationManager.FRONT_ROW) {
+    const occupied = this.occupiedEnemySlots(side, row);
+    return [0, 1, 2].filter((slot) => !occupied.has(slot));
+  }
+
+  nextOpenEnemySlot(side = "right", row = BattleFormationManager.FRONT_ROW) {
+    const available = new Set(this.availableEnemySlots(side, row));
+    return [1, 0, 2].find((slot) => available.has(slot)) ?? null;
+  }
+
+  positionForEnemySlot(side, row, slot) {
+    const fractions = this.fixedSlotFractions();
+    const safeSlot = Math.max(0, Math.min(Number(slot) || 0, fractions.length - 1));
+    const y = this.groundedVerticalPositions(
+      fractions,
+      BattleFormationManager.ENEMY_VERTICAL_OFFSET,
+    )[safeSlot];
+
+    return { x: this.rowX(side, row), y };
   }
 
   enemyY(index) {
     const member = this.encounterMember(index);
+    const anchor = this.roleAnchor(index);
+
+    if (anchor) {
+      return this.groundedVerticalPositions(
+        [anchor.yFraction],
+        BattleFormationManager.ENEMY_VERTICAL_OFFSET,
+      )[0];
+    }
+
     const groupIndexes = this.rowMemberIndexes(index);
 
     if (Number.isInteger(member.slot)) {
@@ -252,7 +478,8 @@ class BattleFormationManager {
 
     const automaticIndexes = groupIndexes.filter(
       (candidateIndex) =>
-        !Number.isInteger(this.encounterMember(candidateIndex).slot),
+        !Number.isInteger(this.encounterMember(candidateIndex).slot) &&
+        !this.roleAnchor(candidateIndex),
     );
     const autoIndex = Math.max(0, automaticIndexes.indexOf(index));
     const fractions = this.automaticRowFractions(automaticIndexes.length);
@@ -264,19 +491,22 @@ class BattleFormationManager {
     return positions[Math.min(autoIndex, positions.length - 1)];
   }
 
-  enemyX(index) {
-    const side = this.memberSide(index);
-    const row = this.memberRow(index);
-    const rawX = this.rowX(side, row);
-    const enemy = this.scene.enemies?.[index] || null;
+  enemyFootprintWidth(enemy) {
+    return Math.max(
+      1,
+      Number(enemy?.battleFootprintWidth) ||
+        Number(enemy?.battleSpriteWidth) ||
+        1,
+    );
+  }
 
+  clampEnemyX(rawX, enemy, index) {
     if (!enemy) {
       return rawX;
     }
 
     const scale = this.enemyScale(enemy, index);
-    const halfWidth =
-      Math.max(1, Number(enemy.battleSpriteWidth) || 1) * scale * 0.5;
+    const halfWidth = this.enemyFootprintWidth(enemy) * scale * 0.5;
     const edgePadding = 18;
     const minimum = edgePadding + halfWidth;
     const maximum = Graphics.width - edgePadding - halfWidth;
@@ -286,6 +516,18 @@ class BattleFormationManager {
     }
 
     return Math.max(minimum, Math.min(maximum, rawX));
+  }
+
+  enemyX(index) {
+    const side = this.memberSide(index);
+    const row = this.memberRow(index);
+    const anchor = this.roleAnchor(index);
+    const rawX = anchor
+      ? Graphics.width * anchor.xFraction
+      : this.rowX(side, row);
+    const enemy = this.scene.enemies?.[index] || null;
+
+    return this.clampEnemyX(rawX, enemy, index);
   }
 
   enemyPosition(index) {
@@ -319,17 +561,25 @@ class BattleFormationManager {
       return 1;
     }
 
-    const rowCount = this.rowMemberIndexes(index).length;
+    const profile = this.layoutProfile();
+    const anchored = Boolean(this.roleAnchor(index));
+    const rowCount = anchored ? 1 : this.rowMemberIndexes(index).filter(
+      (candidateIndex) => !this.roleAnchor(candidateIndex),
+    ).length;
     const availableHeight = this.battlefieldBottom() - this.battlefieldTop();
     const laneHeight =
       availableHeight /
       Math.max(1, Math.min(BattleFormationManager.ROW_SLOT_COUNT, rowCount));
     const height = Math.max(1, Number(enemy.battleSpriteHeight) || 1);
-    const width = Math.max(1, Number(enemy.battleSpriteWidth) || 1);
-    const heightScale = (laneHeight * 0.92) / height;
-    const widthScale = (Graphics.width * 0.14) / width;
+    const width = this.enemyFootprintWidth(enemy);
+    const laneFill = Number(profile.laneFill) || 0.92;
+    const widthRatio = Number(profile.widthRatio) || 0.14;
+    const minScale = Number(profile.minScale) || 0.45;
+    const maxScale = Number(profile.maxScale) || 1;
+    const heightScale = (laneHeight * laneFill) / height;
+    const widthScale = (Graphics.width * widthRatio) / width;
 
-    return Math.max(0.45, Math.min(1, heightScale, widthScale));
+    return Math.max(minScale, Math.min(maxScale, heightScale, widthScale));
   }
 
   actorFacing(actor) {

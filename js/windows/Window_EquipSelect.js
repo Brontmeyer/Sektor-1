@@ -287,8 +287,10 @@ class Window_EquipSelect {
     this.drawPanel(context, bounds);
     context.save();
     context.textBaseline = "middle";
-    context.fillStyle = "#ffffff";
-    context.font = "600 20px sans-serif";
+    context.fillStyle = typeof CharacterMenuLayout !== "undefined"
+      ? CharacterMenuLayout.themeColor("accent", "#7ff0d5")
+      : "#7ff0d5";
+    context.font = "600 18px sans-serif";
     context.textAlign = "left";
     context.fillText(config?.title || "EQUIPMENT", this.x + 18, this.y + 28);
 

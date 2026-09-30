@@ -444,8 +444,8 @@ class Window_Essence {
 
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
-    context.fillStyle = "#ffffff";
-    context.font = "600 20px sans-serif";
+    context.fillStyle = CharacterMenuLayout.themeColor("accent", "#7ff0d5");
+    context.font = "600 18px sans-serif";
     context.fillText("EQUIPPED ESSENCES", bounds.x + 20, bounds.y + 34);
 
     if (!actor) {
@@ -547,8 +547,8 @@ class Window_Essence {
 
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
-    context.fillStyle = "#ffffff";
-    context.font = "600 19px sans-serif";
+    context.fillStyle = CharacterMenuLayout.themeColor("accent", "#7ff0d5");
+    context.font = "600 18px sans-serif";
     context.fillText(
       `CHOOSE FOR SLOT ${this.slotIndex + 1}`,
       bounds.x + 20,
@@ -703,8 +703,8 @@ class Window_Essence {
 
     context.textAlign = "left";
     context.textBaseline = "alphabetic";
-    context.fillStyle = "#ffffff";
-    context.font = "600 20px sans-serif";
+    context.fillStyle = CharacterMenuLayout.themeColor("accent", "#7ff0d5");
+    context.font = "600 18px sans-serif";
     context.fillText("PROGRESSION", bounds.x + 20, bounds.y + 34);
 
     if (!essence) {
@@ -744,7 +744,7 @@ class Window_Essence {
       bounds.y + 111,
     );
 
-    context.fillStyle = "#ffffff";
+    context.fillStyle = CharacterMenuLayout.themeColor("accent", "#7ff0d5");
     context.font = "600 18px sans-serif";
     context.fillText("MAGICK AWAKENING", contentX, bounds.y + 151);
 
@@ -777,7 +777,7 @@ class Window_Essence {
     const passiveActive = Boolean(passive && essence.level() >= passiveUnlockLevel);
     const passiveHeadingY = abilityY + 10;
 
-    context.fillStyle = "#ffffff";
+    context.fillStyle = CharacterMenuLayout.themeColor("accent", "#7ff0d5");
     context.font = "600 18px sans-serif";
     context.textAlign = "left";
     context.fillText("PASSIVE", contentX, passiveHeadingY);

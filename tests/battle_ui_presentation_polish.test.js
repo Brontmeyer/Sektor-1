@@ -274,10 +274,12 @@ function testEnemyContactShadowIsWideAndFlat() {
   const metrics = renderer.enemyShadowMetrics({
     battleSpriteWidth: 128,
     battleSpriteHeight: 96,
+    battleShadowWidth: 104,
+    battleShadowHeight: 12,
   });
 
-  assert.equal(metrics.width > 90, true);
-  assert.equal(metrics.height <= 13, true);
+  assert.equal(metrics.width, 104);
+  assert.equal(metrics.height, 12);
 }
 
 function run() {

@@ -7,6 +7,15 @@
 - Strengthened side-view battler shadows by sizing them from battler sprite width, moving them directly under the feet anchor, and increasing usable opacity so they ground sprites against bright battlebacks.
 - Updated MAIN MENU, ROSTER, encounter validation, development fixtures, documentation, and regression coverage for the new 3-active / 6-enemy contract.
 
+## Pass 140 - Formation Profiles & Essence Heading Consistency
+
+- Added reusable enemy layout profiles (`standard`, `horde`, `soloBoss`, `bossAdds`, `eliteGroup`) without changing the existing normal/back-attack/pincer combat-topology contract.
+- Added boss/add/elite encounter roles, boss-specific composition anchors, and non-mutating occupied/available enemy-slot helpers as groundwork for future summons.
+- Added data-driven battler footprint/shadow metadata so future actors, enemies, and large bosses can be grounded and edge-clamped without sprite-specific renderer branches.
+- Marked current six-Slime tests as `horde` and Test Slime Alpha as `soloBoss`.
+- Standardized Essence section headings to the shared mint-teal accent used by Valor and Status.
+- Extended regression coverage for layout profiles, boss/add anchors, summon-slot availability, footprint edge safety, shadow metadata, profile validation, and Essence heading color.
+
 ## Pass 124 - Main Menu Focus Stability + Audio Foundation v1
 
 - Stabilized MAIN MENU actor-card focus rendering: selected cards keep the exact same base frame as unselected cards. Follow-up 90% browser-zoom QA moved all focus pixels into a dedicated selector rail outside the card, so the card itself is now byte-for-byte presentation-identical while focus changes. Single-member parties no longer report fake Up/Down movement, and returning from MAGICK/SKILL skips the actor-picker handoff entirely when only one active actor exists.

@@ -133,7 +133,12 @@ function press(harness, action) {
 function textCalls(harness) {
   return harness.calls
     .filter((call) => call[0] === "fillText")
-    .map((call) => ({ text: String(call[2]), x: call[3], y: call[4] }));
+    .map((call) => ({
+      text: String(call[2]),
+      color: String(call[1]),
+      x: call[3],
+      y: call[4],
+    }));
 }
 
 function testEssenceUsesSharedActorSummaryAndRealProgressionData() {
@@ -158,8 +163,20 @@ function testEssenceUsesSharedActorSummaryAndRealProgressionData() {
   assert.equal(values.includes("Level"), true);
   assert.equal(values.includes("Resonance"), true);
   assert.equal(values.includes("PROGRESSION"), true);
+  assert.equal(
+    text.find((call) => call.text === "PROGRESSION")?.color,
+    "#7ff0d5",
+  );
   assert.equal(values.includes("MAGICK AWAKENING"), true);
+  assert.equal(
+    text.find((call) => call.text === "MAGICK AWAKENING")?.color,
+    "#7ff0d5",
+  );
   assert.equal(values.includes("PASSIVE"), true);
+  assert.equal(
+    text.find((call) => call.text === "PASSIVE")?.color,
+    "#7ff0d5",
+  );
   assert.equal(values.includes("Unlocks at Level 4"), true);
   assert.equal(values.includes("Fire Magick damage +10%."), true);
   assert.equal(values.includes(harness.essences[4].name), true);
@@ -249,6 +266,7 @@ function testEquippedEssencesHeadingSpacingAndSlotScrollAffordance() {
   const values = text.map((call) => call.text);
 
   assert.ok(heading);
+  assert.equal(heading.color, "#7ff0d5");
   assert.ok(firstVisibleSlot);
   assert.equal(firstVisibleSlot.y - heading.y >= 38, true);
   assert.equal(values.includes("▲"), true);
@@ -295,6 +313,15 @@ function testEssenceUsesSharedHeldDirectionAndSummaryContracts() {
   assert.equal(summaryIndex < html.indexOf("Window_Skills.js"), true);
 }
 
+
+function testEssenceCatalogHeadingUsesMajorAccentStyle() {
+  const source = read("js/windows/Window_Essence.js");
+  assert.match(
+    source,
+    /CharacterMenuLayout\.themeColor\("accent", "#7ff0d5"\);\s*context\.font = "600 18px sans-serif";\s*context\.fillText\(\s*`CHOOSE FOR SLOT/,
+  );
+}
+
 function run() {
   testEssenceUsesSharedActorSummaryAndRealProgressionData();
   testEssencePassivePresentationShowsActiveStateAtUnlock();
@@ -302,6 +329,7 @@ function run() {
   testCatalogScrollsByRowsAndUsesContextualArrows();
   testEquippedEssencesHeadingSpacingAndSlotScrollAffordance();
   testCatalogPreviewPreservesDuplicateSlotRules();
+  testEssenceCatalogHeadingUsesMajorAccentStyle();
   testEssenceUsesSharedHeldDirectionAndSummaryContracts();
 
   console.log("Essence menu presentation regression tests passed.");

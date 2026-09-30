@@ -35,6 +35,18 @@ class Game_Enemy extends Game_Battler {
       0,
       Number(enemyData.battleSpriteGroundOffset) || 0,
     );
+    this.battleFootprintWidth = Math.max(
+      1,
+      Number(enemyData.battleFootprintWidth) || this.battleSpriteWidth,
+    );
+    this.battleShadowWidth = Math.max(
+      1,
+      Number(enemyData.battleShadowWidth) || this.battleFootprintWidth * 0.78,
+    );
+    this.battleShadowHeight = Math.max(
+      1,
+      Number(enemyData.battleShadowHeight) || this.battleSpriteHeight * 0.12,
+    );
   }
 
   cloneActions(actions) {

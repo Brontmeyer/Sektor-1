@@ -1343,6 +1343,18 @@ class DatabaseValidator {
       );
     }
 
+    for (const key of [
+      "battleFootprintWidth",
+      "battleShadowWidth",
+      "battleShadowHeight",
+    ]) {
+      if (record[key] !== undefined) {
+        this.validateFiniteNumber(`${label} ${key}`, record[key], errors, {
+          min: 1,
+        });
+      }
+    }
+
     for (const key of ["battleSpriteFrames", "battleSpriteRows"]) {
       if (record[key] !== undefined) {
         this.validateFiniteNumber(`${label} ${key}`, record[key], errors, {
@@ -3236,6 +3248,14 @@ class DatabaseValidator {
     const maxEnemies = 6;
     const rowSlotCount = 3;
     const validRows = new Set(["front", "back"]);
+    const validLayoutProfiles = new Set([
+      "standard",
+      "horde",
+      "soloBoss",
+      "bossAdds",
+      "eliteGroup",
+    ]);
+    const validRoles = new Set(["boss", "add", "elite"]);
 
     for (let index = 1; index < encounters.length; index++) {
       const encounter = encounters[index];
@@ -3289,6 +3309,13 @@ class DatabaseValidator {
 
       const formation = encounter.formation || "normal";
       const validFormations = new Set(["normal", "backAttack", "pincer"]);
+      const layoutProfile = encounter.layoutProfile || "standard";
+
+      if (!validLayoutProfiles.has(layoutProfile)) {
+        errors.push(
+          `Encounter ${index} layoutProfile must be standard, horde, soloBoss, bossAdds, or eliteGroup.`,
+        );
+      }
 
       if (!validFormations.has(formation)) {
         errors.push(
@@ -3325,12 +3352,22 @@ class DatabaseValidator {
         this.validateKnownKeys(
           label,
           member,
-          ["enemyId", "side", "row", "slot"],
+          ["enemyId", "side", "row", "slot", "role"],
           errors,
         );
 
         if (!Number.isInteger(member.enemyId) || !enemies[member.enemyId]) {
           errors.push(`${label} references unknown enemy ID ${member.enemyId}.`);
+        }
+
+        if (member.role !== undefined && !validRoles.has(member.role)) {
+          errors.push(`${label} role must be boss, add, or elite when provided.`);
+        }
+
+        if (member.role === "boss" && !["soloBoss", "bossAdds"].includes(layoutProfile)) {
+          errors.push(
+            `${label} role boss requires a soloBoss or bossAdds layoutProfile.`,
+          );
         }
 
         const row = member.row === undefined ? "front" : member.row;
@@ -3365,6 +3402,12 @@ class DatabaseValidator {
         }
 
         if (!validRows.has(row)) {
+          continue;
+        }
+
+        // Boss anchors in soloBoss/bossAdds layouts reserve their own
+        // composition point and do not consume one of the three row slots.
+        if (member.role === "boss" && ["soloBoss", "bossAdds"].includes(layoutProfile)) {
           continue;
         }
 
