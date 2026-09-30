@@ -250,8 +250,8 @@ class BattleRenderer {
     }
 
     return (
-      this.contextPanelForced() ||
-      this.scene.scanManager?.isHelpVisible?.() === true
+      this.scene.scanManager?.isHelpVisible?.() === true &&
+      this.contextPanelForced()
     );
   }
 
@@ -364,8 +364,8 @@ class BattleRenderer {
     const paddingX = 16;
     const left = bounds.x + paddingX;
     const maxWidth = bounds.width - paddingX * 2;
-    const lineOneY = bounds.y + 21;
-    const lineTwoY = bounds.y + 45;
+    const lineOneY = bounds.y + bounds.height * 0.34;
+    const lineTwoY = bounds.y + bounds.height * 0.72;
 
     context.save();
     if (
@@ -380,16 +380,17 @@ class BattleRenderer {
         bounds.width,
         bounds.height,
         {
-          fallbackFill: "rgba(7, 10, 15, 0.52)",
+          fallbackFill: "rgba(7, 10, 15, 0.40)",
           fallbackStroke: "rgba(151, 196, 229, 0.5)",
           lineWidth: 1.25,
-          assetAlpha: 0.2,
+          assetAlpha: 0.16,
+          windowTintAlpha: 0.36,
           sourceMargin: 12,
           destMargin: 8,
         },
       );
     } else {
-      context.fillStyle = "rgba(7, 10, 15, 0.52)";
+      context.fillStyle = "rgba(7, 10, 15, 0.40)";
       context.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
       context.strokeStyle = "rgba(151, 196, 229, 0.5)";
       context.lineWidth = 1.25;
@@ -622,20 +623,66 @@ class BattleRenderer {
     alpha = 0.82,
     width = 82,
     height = 20,
+    contactStrength = 0.24,
   ) {
+    const safeScale = Math.max(0.45, Number(scale) || 1);
+    const safeAlpha = Math.max(0, Math.min(1, Number(alpha) || 0));
+    const safeWidth = Math.max(48, Number(width) || 82);
+    const safeHeight = Math.max(12, Number(height) || 20);
+    const drawWidth = safeWidth * safeScale;
+    const drawHeight = safeHeight * safeScale;
+    let fallbackDrawn = false;
+
+    // The imported Shadow2 asset is intentionally subtle and may also be
+    // unavailable while assets are still loading. Keep a lightweight canvas
+    // contact shadow underneath it so battlers always feel grounded.
+    if (
+      context &&
+      typeof context.save === "function" &&
+      typeof context.restore === "function" &&
+      typeof context.beginPath === "function" &&
+      typeof context.ellipse === "function" &&
+      typeof context.fill === "function"
+    ) {
+      context.save();
+      const previousAlpha = Number.isFinite(context.globalAlpha)
+        ? context.globalAlpha
+        : 1;
+      context.globalAlpha =
+        previousAlpha *
+        safeAlpha *
+        Math.max(0, Math.min(1, Number(contactStrength) || 0));
+      context.fillStyle = "#000000";
+      context.beginPath();
+      context.ellipse(
+        x,
+        y,
+        drawWidth / 2,
+        drawHeight / 2,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      context.fill();
+      context.restore();
+      fallbackDrawn = true;
+    }
+
     if (
       typeof UIAssetManager === "undefined" ||
       typeof UIAssetManager.drawBattleShadow !== "function"
     ) {
-      return false;
+      return fallbackDrawn;
     }
 
-    return UIAssetManager.drawBattleShadow(context, x, y, {
-      scale: Math.max(0.45, Number(scale) || 1),
-      alpha,
-      width: Math.max(48, Number(width) || 82),
-      height: Math.max(12, Number(height) || 20),
+    const assetDrawn = UIAssetManager.drawBattleShadow(context, x, y, {
+      scale: safeScale,
+      alpha: safeAlpha,
+      width: safeWidth,
+      height: safeHeight,
     });
+
+    return assetDrawn || fallbackDrawn;
   }
 
   actorShadowMetrics(actor) {
@@ -647,8 +694,8 @@ class BattleRenderer {
 
   enemyShadowMetrics(enemy) {
     return {
-      width: Math.max(78, (Number(enemy?.battleSpriteWidth) || 128) * 0.72),
-      height: Math.max(14, (Number(enemy?.battleSpriteHeight) || 96) * 0.16),
+      width: Math.max(82, (Number(enemy?.battleSpriteWidth) || 128) * 0.78),
+      height: Math.max(12, (Number(enemy?.battleSpriteHeight) || 96) * 0.12),
     };
   }
 
@@ -673,6 +720,7 @@ class BattleRenderer {
 
     context.translate(x, y);
     context.scale(facing * scale, scale);
+    context.translate(0, Number(actor?.battleSpriteGroundOffset) || 0);
 
     if (image && image.complete && image.naturalWidth > 0) {
       const state = battleData?.state || "idle";
@@ -739,6 +787,7 @@ class BattleRenderer {
     context.globalAlpha = alpha;
     context.translate(x, y);
     context.scale(facing * scale, scale);
+    context.translate(0, Number(enemy?.battleSpriteGroundOffset) || 0);
 
     if (image && image.complete && image.naturalWidth > 0) {
       const frameCount = enemy.battleSpriteFrames || 1;
@@ -1179,6 +1228,7 @@ class BattleRenderer {
         this.scene.getEnemyVisualAlpha(enemy) * 0.9,
         shadow.width,
         shadow.height,
+        0.4,
       );
       this.drawEnemySprite(context, drawX, position.y, enemy, battleData);
     }
@@ -1319,6 +1369,7 @@ class BattleRenderer {
         this.scene.getActorVisualAlpha(actor) * 0.9,
         shadow.width,
         shadow.height,
+        0.3,
       );
       this.drawActorSprite(
         context,

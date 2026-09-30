@@ -26,6 +26,7 @@ class ConfigManager {
       battleMessageSpeed: "normal",
       fieldMessageSpeed: "normal",
       battleCursorMemory: "initial",
+      battleHelp: "off",
       masterVolume: 100,
       bgmVolume: 80,
       seVolume: 90,
@@ -106,6 +107,13 @@ class ConfigManager {
         description: "Initial resets battle lists; Memory keeps the last cursor this battle.",
       },
       {
+        key: "battleHelp",
+        label: "Help",
+        values: ["off", "on"],
+        labels: { off: "Off", on: "On" },
+        description: "Shows optional contextual battle information while choosing actions and targets.",
+      },
+      {
         key: "masterVolume",
         label: "Master Volume",
         values: Array.from({ length: 21 }, (_, index) => index * 5),
@@ -143,7 +151,7 @@ class ConfigManager {
       { action: "menu", label: "Menu", defaults: ["Escape", null], required: true },
       { action: "map", label: "Quick Map", defaults: ["KeyM", null], required: false },
       { action: "interact", label: "Interact", defaults: ["KeyE", null], required: true },
-      { action: "help", label: "Tactical Help", defaults: ["KeyH", null], required: false },
+      { action: "help", label: "Help", defaults: ["KeyH", null], required: false },
       { action: "scope", label: "Target Scope", defaults: ["KeyR", null], required: false },
     ];
   }
@@ -721,6 +729,10 @@ class ConfigManager {
 
   static battleCursorMemoryEnabled() {
     return this.get("battleCursorMemory") === "memory";
+  }
+
+  static battleHelpEnabled() {
+    return this.get("battleHelp") === "on";
   }
 
   static magickCategoryOrder() {

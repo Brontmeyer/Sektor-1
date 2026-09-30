@@ -112,12 +112,12 @@ class BattleHudLayout {
   tacticalHelpBounds() {
     const hud = this.hudBounds();
     const width = Math.min(1040, Math.max(600, hud.width * 0.72));
-    const height = 48;
+    const height = 44;
 
     return {
-      x: hud.x + (hud.width - width) / 2,
-      y: hud.y - height - 12,
-      width,
+      x: Math.round(hud.x + (hud.width - width) / 2),
+      y: Math.round(hud.y - height - 10),
+      width: Math.round(width),
       height,
     };
   }
@@ -160,17 +160,21 @@ class BattleHudLayout {
       return false;
     }
 
+    const helpEnabled = this.scene?.scanManager?.isHelpVisible?.() === true;
+
+    if (!helpEnabled) {
+      return false;
+    }
+
     if (this.scene?.selectingEnemyTarget === true) {
       return true;
     }
 
-    const selectorOpen = [
+    return [
       this.scene?.skillsWindow,
       this.scene?.magickWindow,
       this.scene?.itemWindow,
     ].some((window) => window?.isOpen?.() === true);
-
-    return selectorOpen || this.scene?.scanManager?.isHelpVisible?.() === true;
   }
 
   bannerBounds(textWidth = 0) {

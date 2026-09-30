@@ -330,7 +330,7 @@ It should orchestrate battle systems rather than permanently absorbing every spe
 
 ## BattleScanManager
 
-`BattleScanManager` owns battle-local enemy-analysis state. It records which concrete enemy instances have been scanned, exposes the currently targeted enemy only while enemy target selection owns input, and derives read-only elemental Weak / Resist / Immune groups from each enemy's existing `elementRates`. The manager does not persist knowledge, modify combat rates, or own rendering. `BattleManager` invokes it through the generic Skill `scan` effect; `BattleRenderer` reads it for Tactical Help presentation.
+`BattleScanManager` owns battle-local enemy-analysis state. It records which concrete enemy instances have been scanned, exposes the currently targeted enemy only while enemy target selection owns input, and derives read-only elemental Weak / Resist / Immune groups from each enemy's existing `elementRates`. The manager does not persist Scan knowledge, modify combat rates, or own rendering. The optional Help visibility preference comes from Config game state (Off by default) and H updates that same saved preference for future battles. `BattleManager` invokes Scan through the generic Skill `scan` effect; `BattleRenderer` reads manager state for contextual Help presentation.
 
 ## BattleTargetManager
 

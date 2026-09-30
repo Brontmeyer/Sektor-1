@@ -217,10 +217,13 @@ class Window_Options {
     const bounds = this.contentBounds;
     const bodyTop = bounds.y + 18;
     const bodyBottom = bounds.y + bounds.height - 18;
+    const availableHeight = Math.max(0, bodyBottom - bodyTop);
     const rowHeight = Math.max(
-      52,
-      Math.min(68, Math.floor((bodyBottom - bodyTop) / this.options.length)),
+      40,
+      Math.min(68, Math.floor(availableHeight / this.options.length)),
     );
+    const usedHeight = rowHeight * this.options.length;
+    const rowsTop = bodyTop + Math.max(0, (availableHeight - usedHeight) / 2);
     const labelX = bounds.x + 30;
     const valueX = bounds.x + bounds.width - 34;
 
@@ -231,7 +234,7 @@ class Window_Options {
     for (let i = 0; i < this.options.length; i++) {
       const option = this.options[i];
       const selected = i === this.index;
-      const rowY = bodyTop + rowHeight / 2 + i * rowHeight;
+      const rowY = rowsTop + rowHeight / 2 + i * rowHeight;
 
       if (selected) {
         this.drawSelection(

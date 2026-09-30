@@ -1334,6 +1334,15 @@ class DatabaseValidator {
       }
     }
 
+    if (record.battleSpriteGroundOffset !== undefined) {
+      this.validateFiniteNumber(
+        `${label} battleSpriteGroundOffset`,
+        record.battleSpriteGroundOffset,
+        errors,
+        { min: 0 },
+      );
+    }
+
     for (const key of ["battleSpriteFrames", "battleSpriteRows"]) {
       if (record[key] !== undefined) {
         this.validateFiniteNumber(`${label} ${key}`, record[key], errors, {

@@ -93,6 +93,23 @@ function testConfigNavigationPreservesRuntimeOwnership() {
   assert.equal(harness.window.currentOption().key, "atbMode");
 }
 
+
+function testAllConfigRowsStayInsideContentPanel() {
+  const harness = createHarness();
+  harness.drawCalls.length = 0;
+  harness.window.draw();
+
+  const controlsCall = harness.drawCalls.find(
+    (call) => String(call[0]).includes("Controls"),
+  );
+  assert.notEqual(controlsCall, undefined);
+
+  const controlsY = Number(controlsCall[2]);
+  const bottom =
+    harness.window.contentBounds.y + harness.window.contentBounds.height - 8;
+  assert.equal(controlsY < bottom, true);
+}
+
 function testConfigSceneDropsLegacyGrayGradientChrome() {
   const scene = read("js/scenes/Scene_Options.js");
   assert.match(scene, /MenuScreenLayout\.drawBackdrop\(context\)/);
@@ -103,6 +120,7 @@ function testConfigSceneDropsLegacyGrayGradientChrome() {
 function run() {
   testConfigUsesUnifiedHeaderContentAndGoldFocusLanguage();
   testConfigNavigationPreservesRuntimeOwnership();
+  testAllConfigRowsStayInsideContentPanel();
   testConfigSceneDropsLegacyGrayGradientChrome();
   console.log("Config menu presentation regression tests passed.");
 }

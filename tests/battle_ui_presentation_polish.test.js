@@ -41,7 +41,19 @@ function createContext() {
     beginPath() {},
     moveTo() {},
     lineTo() {},
+    ellipse(...args) {
+      calls.push(["ellipse", ...args]);
+    },
+    fill() {
+      calls.push(["fill", this.fillStyle, this.globalAlpha]);
+    },
     stroke() {},
+    translate(...args) {
+      calls.push(["translate", ...args]);
+    },
+    scale(...args) {
+      calls.push(["scale", ...args]);
+    },
   };
 }
 
@@ -61,7 +73,7 @@ function testCompactBattleHudGeometry() {
   const banner = layout.bannerBounds(200);
 
   assert.equal(hud.height, 156);
-  assert.equal(help.height, 48);
+  assert.equal(help.height, 44);
   assert.equal(help.width > hud.width * 0.6, true);
   assert.equal(help.width < hud.width, true);
   assert.equal(help.x > hud.x, true);
@@ -159,10 +171,122 @@ function testTargetCursorUsesBattleAccentAndOutline() {
   );
 }
 
+function testBattleShadowHasCanvasFallbackWithoutAssetManager() {
+  const drawContext = createContext();
+  const Graphics = { width: 1280, height: 720, context: drawContext };
+  const Input = { actionLabel: (action) => action };
+  const $gameParty = { battleMembers: () => [] };
+  const context = vm.createContext({ console, Graphics, Input, $gameParty });
+  const source = [
+    "js/windows/Window_TextLayout.js",
+    "js/battle/BattleRenderer.js",
+  ]
+    .map(read)
+    .join("\n");
+
+  vm.runInContext(
+    `${source}\nglobalThis.__Renderer = BattleRenderer;`,
+    context,
+  );
+
+  const renderer = new context.__Renderer({});
+  const drawn = renderer.drawAssetBattleShadow(
+    drawContext,
+    420,
+    300,
+    1,
+    0.9,
+    100,
+    24,
+  );
+
+  assert.equal(drawn, true);
+  assert.equal(
+    drawContext.calls.some(
+      (call) =>
+        call[0] === "ellipse" &&
+        call[1] === 420 &&
+        call[2] === 300 &&
+        call[3] === 50 &&
+        call[4] === 12,
+    ),
+    true,
+  );
+  assert.equal(
+    drawContext.calls.some(
+      (call) => call[0] === "fill" && call[1] === "#000000",
+    ),
+    true,
+  );
+}
+
+
+function testActorGroundOffsetAnchorsVisibleFeetToContactPlane() {
+  const drawContext = createContext();
+  const Graphics = { width: 1280, height: 720, context: drawContext };
+  const Input = { actionLabel: (action) => action };
+  const $gameParty = { battleMembers: () => [] };
+  const context = vm.createContext({ console, Graphics, Input, $gameParty });
+  const source = [
+    "js/windows/Window_TextLayout.js",
+    "js/battle/BattleRenderer.js",
+  ].map(read).join("\n");
+
+  vm.runInContext(`${source}\nglobalThis.__Renderer = BattleRenderer;`, context);
+
+  const actor = {
+    name: "Grounded Actor",
+    battleSpriteWidth: 190,
+    battleSpriteHeight: 166,
+    battleSpriteGroundOffset: 19,
+  };
+  const scene = {
+    getActorRenderScale: () => 1,
+    getActorFacing: () => 1,
+    getActorVisualAlpha: () => 1,
+    getPartyBattleData: () => ({ state: "idle", animationFrame: 0 }),
+    getPartyBattleImage: () => null,
+  };
+  const renderer = new context.__Renderer(scene);
+
+  renderer.drawActorSprite(drawContext, 200, 300, actor);
+
+  assert.equal(
+    drawContext.calls.some(
+      (call) => call[0] === "translate" && call[1] === 0 && call[2] === 19,
+    ),
+    true,
+  );
+}
+
+function testEnemyContactShadowIsWideAndFlat() {
+  const Graphics = { width: 1280, height: 720 };
+  const Input = { actionLabel: (action) => action };
+  const $gameParty = { battleMembers: () => [] };
+  const context = vm.createContext({ console, Graphics, Input, $gameParty });
+  const source = [
+    "js/windows/Window_TextLayout.js",
+    "js/battle/BattleRenderer.js",
+  ].map(read).join("\n");
+  vm.runInContext(`${source}\nglobalThis.__Renderer = BattleRenderer;`, context);
+
+  const renderer = new context.__Renderer({});
+  const metrics = renderer.enemyShadowMetrics({
+    battleSpriteWidth: 128,
+    battleSpriteHeight: 96,
+  });
+
+  assert.equal(metrics.width > 90, true);
+  assert.equal(metrics.height <= 13, true);
+}
+
 function run() {
   testCompactBattleHudGeometry();
   testCommandWindowMatchesHudReserveAndFlushSideTabHeight();
   testTargetCursorUsesBattleAccentAndOutline();
+  testBattleShadowHasCanvasFallbackWithoutAssetManager();
+  testActorGroundOffsetAnchorsVisibleFeetToContactPlane();
+  testEnemyContactShadowIsWideAndFlat();
 
   console.log("Battle UI presentation polish regression tests passed.");
 }

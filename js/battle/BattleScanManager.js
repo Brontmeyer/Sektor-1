@@ -3,17 +3,31 @@
 class BattleScanManager {
   constructor(scene) {
     this.scene = scene;
-    this.helpVisible = false;
+    // Help is optional contextual information. Normal battle presentation
+    // defaults to the cleaner immersive view; Config/H can opt into the
+    // contextual panel without changing battle rules.
+    this.helpVisible =
+      typeof ConfigManager !== "undefined"
+        ? ConfigManager.battleHelpEnabled?.() === true
+        : false;
     this.scannedEnemies = new Set();
   }
 
   toggleHelp() {
-    this.helpVisible = !this.helpVisible;
-    return this.helpVisible;
+    return this.setHelpVisible(!this.helpVisible);
   }
 
-  setHelpVisible(visible) {
+  setHelpVisible(visible, { syncConfig = true } = {}) {
     this.helpVisible = visible === true;
+
+    if (
+      syncConfig &&
+      typeof ConfigManager !== "undefined" &&
+      typeof ConfigManager.set === "function"
+    ) {
+      ConfigManager.set("battleHelp", this.helpVisible ? "on" : "off");
+    }
+
     return this.helpVisible;
   }
 

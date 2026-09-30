@@ -11,8 +11,8 @@ class BattleFormationManager {
   static ROW_SLOT_COUNT = 3;
   static PARTY_BACK_ROW_OFFSET = 0.04;
   static PINCER_FRONT_ROW_OFFSET = 0.035;
-  static PARTY_VERTICAL_OFFSET = 0.05;
-  static ENEMY_VERTICAL_OFFSET = 0.05;
+  static PARTY_VERTICAL_OFFSET = 0.145;
+  static ENEMY_VERTICAL_OFFSET = 0.145;
 
   constructor(scene) {
     this.scene = scene;
@@ -44,28 +44,58 @@ class BattleFormationManager {
     return $gameParty.battleMembers();
   }
 
+  groundedVerticalPositions(fractions, offsetRatio) {
+    const safeFractions = Array.isArray(fractions) && fractions.length > 0
+      ? fractions
+      : [0.5];
+    const top = this.battlefieldTop();
+    const bottom = this.battlefieldBottom();
+    const span = bottom - top;
+    const bottomLimit = bottom - 8;
+    const offset = Graphics.height * (Number(offsetRatio) || 0);
+    const raw = safeFractions.map(
+      (fraction) => top + span * fraction + offset,
+    );
+
+    if (raw.length === 1) {
+      return [Math.min(bottomLimit, raw[0])];
+    }
+
+    const first = raw[0];
+    const last = raw[raw.length - 1];
+
+    if (last <= bottomLimit || last <= first) {
+      return raw.map((value) => Math.min(bottomLimit, value));
+    }
+
+    // Keep the upper lane where the composition already reads well, then
+    // compress the full formation uniformly into the available ground band.
+    // Clamping only the final battler made the lower pair visibly closer.
+    const compressedSpan = Math.max(0, bottomLimit - first);
+    const rawSpan = last - first;
+
+    return raw.map(
+      (value) => first + ((value - first) / rawSpan) * compressedSpan,
+    );
+  }
+
   verticalPartyPositions(count = this.partyMembers().length) {
     const safeCount = Math.max(
       1,
       Math.min($gameParty?.constructor?.MAX_BATTLE_MEMBERS || 3, Number(count) || 1),
     );
-    const top = this.battlefieldTop();
-    const bottom = this.battlefieldBottom();
-    const span = bottom - top;
     const layouts = {
       1: [0.5],
       2: [0.34, 0.66],
       3: [0.2, 0.5, 0.8],
     };
     const fractions = layouts[safeCount] || layouts[3];
+    const verticalPositions = this.groundedVerticalPositions(
+      fractions,
+      BattleFormationManager.PARTY_VERTICAL_OFFSET,
+    );
 
-    return fractions.map((fraction) => ({
-      x: 0,
-      y: Math.min(
-        bottom - 8,
-        top + span * fraction + Graphics.height * BattleFormationManager.PARTY_VERTICAL_OFFSET,
-      ),
-    }));
+    return verticalPositions.map((y) => ({ x: 0, y }));
   }
 
   partyX() {
@@ -210,17 +240,14 @@ class BattleFormationManager {
   enemyY(index) {
     const member = this.encounterMember(index);
     const groupIndexes = this.rowMemberIndexes(index);
-    const top = this.battlefieldTop();
-    const bottom = this.battlefieldBottom();
-    const span = bottom - top;
 
     if (Number.isInteger(member.slot)) {
       const fractions = this.fixedSlotFractions();
       const slot = Math.max(0, Math.min(member.slot, fractions.length - 1));
-      return Math.min(
-        bottom - 8,
-        top + span * fractions[slot] + Graphics.height * BattleFormationManager.ENEMY_VERTICAL_OFFSET,
-      );
+      return this.groundedVerticalPositions(
+        fractions,
+        BattleFormationManager.ENEMY_VERTICAL_OFFSET,
+      )[slot];
     }
 
     const automaticIndexes = groupIndexes.filter(
@@ -229,21 +256,41 @@ class BattleFormationManager {
     );
     const autoIndex = Math.max(0, automaticIndexes.indexOf(index));
     const fractions = this.automaticRowFractions(automaticIndexes.length);
-
-    return Math.min(
-      bottom - 8,
-      top +
-        span * fractions[Math.min(autoIndex, fractions.length - 1)] +
-        Graphics.height * BattleFormationManager.ENEMY_VERTICAL_OFFSET,
+    const positions = this.groundedVerticalPositions(
+      fractions,
+      BattleFormationManager.ENEMY_VERTICAL_OFFSET,
     );
+
+    return positions[Math.min(autoIndex, positions.length - 1)];
+  }
+
+  enemyX(index) {
+    const side = this.memberSide(index);
+    const row = this.memberRow(index);
+    const rawX = this.rowX(side, row);
+    const enemy = this.scene.enemies?.[index] || null;
+
+    if (!enemy) {
+      return rawX;
+    }
+
+    const scale = this.enemyScale(enemy, index);
+    const halfWidth =
+      Math.max(1, Number(enemy.battleSpriteWidth) || 1) * scale * 0.5;
+    const edgePadding = 18;
+    const minimum = edgePadding + halfWidth;
+    const maximum = Graphics.width - edgePadding - halfWidth;
+
+    if (maximum <= minimum) {
+      return Graphics.width * 0.5;
+    }
+
+    return Math.max(minimum, Math.min(maximum, rawX));
   }
 
   enemyPosition(index) {
-    const side = this.memberSide(index);
-    const row = this.memberRow(index);
-
     return {
-      x: this.rowX(side, row),
+      x: this.enemyX(index),
       y: this.enemyY(index),
     };
   }

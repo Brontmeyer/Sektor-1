@@ -89,7 +89,7 @@ function testContextPanelShowsDescriptionWithoutRepeatingSelectedActionName() {
     },
     skillsWindow: { isOpen: () => false },
     itemWindow: { isOpen: () => false },
-    scanManager: { isHelpVisible: () => false },
+    scanManager: { isHelpVisible: () => true },
   };
   const renderer = loadRenderer(scene, drawContext);
 
@@ -135,7 +135,7 @@ function testSurgeContextPanelShowsArtDescriptionWithoutRepeatingArtName() {
     },
     magickWindow: { isOpen: () => false },
     itemWindow: { isOpen: () => false },
-    scanManager: { isHelpVisible: () => false },
+    scanManager: { isHelpVisible: () => true },
   };
   const renderer = loadRenderer(scene, drawContext);
 
@@ -165,7 +165,7 @@ function testContextPanelBecomesScannedTargetReadoutDuringTargeting() {
     itemWindow: { isOpen: () => false },
     targetManager: { getSelectedTarget: () => target },
     scanManager: {
-      isHelpVisible: () => false,
+      isHelpVisible: () => true,
       tacticalProfile: () => ({
         scanned: true,
         name: "Test Slime",
@@ -188,6 +188,26 @@ function testContextPanelBecomesScannedTargetReadoutDuringTargeting() {
   assert.equal(text.some((entry) => entry.includes("HP 125/250")), true);
   assert.equal(text.some((entry) => entry.includes("Weak Fire")), true);
   assert.equal(text.some((entry) => entry.includes("Immune Lightning")), true);
+}
+
+function testContextPanelCanBeDisabledWithoutClosingSelectors() {
+  const drawContext = createDrawContext();
+  const scene = {
+    outcome: null,
+    selectingEnemyTarget: false,
+    magickWindow: {
+      isOpen: () => true,
+      currentMagick: () => ({ name: "Mend", description: "Heal HP." }),
+    },
+    skillsWindow: { isOpen: () => false },
+    itemWindow: { isOpen: () => false },
+    scanManager: { isHelpVisible: () => false },
+  };
+  const renderer = loadRenderer(scene, drawContext);
+
+  assert.equal(renderer.shouldDrawContextPanel(), false);
+  renderer.drawTacticalHelp(drawContext);
+  assert.deepEqual(renderedText(drawContext), []);
 }
 
 function loadSelector(relativePath, className, globals) {
@@ -296,6 +316,7 @@ function run() {
   testContextPanelShowsDescriptionWithoutRepeatingSelectedActionName();
   testSurgeContextPanelShowsArtDescriptionWithoutRepeatingArtName();
   testContextPanelBecomesScannedTargetReadoutDuringTargeting();
+  testContextPanelCanBeDisabledWithoutClosingSelectors();
   testNormalBattleSelectorsDropRedundantCategoryHeadings();
 
   console.log("Battle context panel regression tests passed.");

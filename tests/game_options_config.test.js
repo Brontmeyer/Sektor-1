@@ -57,8 +57,12 @@ function testConfigSnapshotsAsGameState() {
 
   ConfigManager.initialize();
   assert.equal(ConfigManager.get("battleSpeed"), "normal");
+  assert.equal(ConfigManager.get("battleHelp"), "off");
+  assert.equal(ConfigManager.battleHelpEnabled(), false);
   assert.equal(ConfigManager.set("battleSpeed", "fast"), true);
   assert.equal(ConfigManager.set("battleCursorMemory", "memory"), true);
+  assert.equal(ConfigManager.set("battleHelp", "on"), true);
+  assert.equal(ConfigManager.battleHelpEnabled(), true);
   const snapshot = ConfigManager.snapshot();
   assert.equal(localStorage.store.has(ConfigManager.storageKey()), false);
 
@@ -67,6 +71,8 @@ function testConfigSnapshotsAsGameState() {
   ConfigManager.restoreSnapshot(snapshot);
   assert.equal(ConfigManager.get("battleSpeed"), "fast");
   assert.equal(ConfigManager.get("battleCursorMemory"), "memory");
+  assert.equal(ConfigManager.get("battleHelp"), "on");
+  assert.equal(ConfigManager.battleHelpEnabled(), true);
   assert.equal(ConfigManager.set("battleSpeed", "warp"), false);
 }
 

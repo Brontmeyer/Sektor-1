@@ -121,6 +121,7 @@ function testIdleBattleHudSuppressesTopRightCommandLegend() {
     magickWindow: { isOpen: () => false },
     itemWindow: { isOpen: () => false },
     commandWindow: { hasSideCommandOpen: () => false },
+    scanManager: { isHelpVisible: () => true },
   };
   scene.hudLayout = new BattleHudLayout(scene);
   const renderer = new BattleRenderer(scene);
@@ -153,13 +154,16 @@ function testBannerIsCompactAndDoesNotSpanTheScreen() {
 
 function testContextHelpIsExpandedAndCenteredAboveHud() {
   const Graphics = { width: 1600, height: 900 };
-  const scene = { scanManager: { isHelpVisible: () => true } };
+  const scene = {
+    selectingEnemyTarget: true,
+    scanManager: { isHelpVisible: () => true },
+  };
   const { BattleHudLayout } = loadPresentation({ Graphics });
   const layout = new BattleHudLayout(scene);
   const hud = layout.hudBounds();
   const help = layout.tacticalHelpBounds();
 
-  assert.equal(help.height, 48);
+  assert.equal(help.height, 44);
   assert.equal(help.width > hud.width * 0.6, true);
   assert.equal(help.width < hud.width, true);
   assert.equal(help.x > hud.x, true);

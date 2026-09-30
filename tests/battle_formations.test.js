@@ -100,6 +100,25 @@ function testNormalFormationUsesThreeVerticalPartyLanesAndSafeScale() {
   assert.equal(manager.enemyFacing(manager.scene.enemies[0]), 1);
 }
 
+
+function testCompactViewportKeepsThreePartyLanesEvenlySpaced() {
+  const { manager, Graphics } = createFormationFixture("normal", [
+    { enemyId: 1, slot: 0 },
+    { enemyId: 1, slot: 1 },
+    { enemyId: 1, slot: 2 },
+  ]);
+
+  Graphics.width = 1152;
+  Graphics.height = 648;
+
+  const positions = [0, 1, 2].map((index) => manager.partyPosition(index));
+  const firstGap = positions[1].y - positions[0].y;
+  const secondGap = positions[2].y - positions[1].y;
+
+  assert.ok(Math.abs(firstGap - secondGap) < 0.001);
+  assert.ok(positions[2].y <= manager.battlefieldBottom() - 8 + 0.001);
+}
+
 function testBackAttackKeepsPartyLeftAndUsesFacingExposure() {
   const { manager, scene, actors, enemies } = createFormationFixture("backAttack", [
     { enemyId: 1, slot: 0 },
@@ -345,6 +364,7 @@ function testRendererAndEffectsUseFormationAwareSpriteGeometry() {
 function run() {
   testCanonicalEncounterFormationData();
   testNormalFormationUsesThreeVerticalPartyLanesAndSafeScale();
+  testCompactViewportKeepsThreePartyLanesEvenlySpaced();
   testBackAttackKeepsPartyLeftAndUsesFacingExposure();
   testPincerPlacesEnemiesOnBothSidesOfCenteredParty();
   testVisualPartyOrderChangesPlacementWithoutChangingPincerFacing();

@@ -83,14 +83,14 @@ function testAutomaticRowsCenterOneTwoAndThreeMembers() {
     const positions = members.map((_member, index) => manager.enemyPosition(index));
     const center =
       (manager.battlefieldTop() + manager.battlefieldBottom()) / 2 +
-      Graphics.height * 0.05;
+      Graphics.height * 0.145;
 
     if (count === 1) {
       assert.equal(positions[0].y, center);
     } else {
       const average =
         positions.reduce((sum, position) => sum + position.y, 0) / positions.length;
-      assert.ok(Math.abs(average - center) < 0.0001);
+      assert.ok(Math.abs(average - center) < 1);
     }
   }
 }
@@ -108,6 +108,30 @@ function testExplicitSlotsAllowHandcraftedEncounterPlacement() {
   assert.equal(positions[0].y > positions[1].y, true);
   assert.equal(positions[2].y > positions[3].y, true);
   assert.equal(positions[0].x < positions[2].x, true);
+}
+
+function testWideEnemiesStayInsideBattlefieldEdges() {
+  const members = [
+    { enemyId: 1, row: "back", slot: 0 },
+    { enemyId: 1, row: "back", slot: 1 },
+    { enemyId: 1, row: "back", slot: 2 },
+  ];
+  const { manager, enemies, Graphics } = loadFormationManager(members);
+
+  enemies.forEach((enemy) => {
+    enemy.battleSpriteWidth = 420;
+    enemy.battleSpriteHeight = 180;
+  });
+
+  for (let index = 0; index < enemies.length; index++) {
+    const enemy = enemies[index];
+    const scale = manager.enemyScale(enemy, index);
+    const halfWidth = enemy.battleSpriteWidth * scale * 0.5;
+    const x = manager.enemyPosition(index).x;
+
+    assert.equal(x - halfWidth >= 18 - 0.0001, true);
+    assert.equal(x + halfWidth <= Graphics.width - 18 + 0.0001, true);
+  }
 }
 
 function testEnemyPositionsRemainStableAfterDeaths() {
@@ -225,6 +249,7 @@ function run() {
   testCanonicalSixEnemyRowsAreAutoCentered();
   testAutomaticRowsCenterOneTwoAndThreeMembers();
   testExplicitSlotsAllowHandcraftedEncounterPlacement();
+  testWideEnemiesStayInsideBattlefieldEdges();
   testEnemyPositionsRemainStableAfterDeaths();
   testPincerRowsAreRelativeToPartyOnEachFlank();
   testRowSchemaValidationCatchesAmbiguousAndInvalidLayouts();

@@ -73,6 +73,7 @@ function testLegacyConfigMigratesWithoutLosingOptions() {
   );
   assert.deepEqual(Array.from(ConfigManager.bindingSlots("confirm")), ["KeyE", "Enter"]);
   assert.deepEqual(Array.from(ConfigManager.bindingSlots("help")), ["KeyH", null]);
+  assert.equal(ConfigManager.controlDefinition("help").label, "Help");
   assert.deepEqual(Array.from(ConfigManager.bindingSlots("map")), ["KeyM", null]);
   assert.deepEqual(
     JSON.parse(JSON.stringify(ConfigManager.getWindowColors())),

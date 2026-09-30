@@ -133,6 +133,7 @@ function testScanKnowledgeIsBattleLocalAndInstanceSpecific() {
   const b = enemy("Slime B");
   const { manager } = createScanFixture([a, b]);
 
+  assert.equal(manager.isHelpVisible(), false);
   assert.equal(manager.isScanned(a), false);
   assert.equal(manager.scan(a), true);
   assert.equal(manager.isScanned(a), true);
@@ -323,18 +324,22 @@ function testHKeyTogglesHelpWithoutSpendingBattleInput() {
 function testHelpGeometrySitsAboveHudAndHintsAdvertiseToggle() {
   const target = enemy("Target");
   const { scene, manager } = createScanFixture([target]);
+  manager.setHelpVisible(true);
   const { renderer } = loadPresentation(scene);
   const hud = scene.hudLayout.hudBounds();
   const help = scene.hudLayout.tacticalHelpBounds();
 
+  assert.equal(help.height, 44);
+  assert.equal(help.width > hud.width * 0.65, true);
   assert.equal(help.y + help.height < hud.y, true);
   assert.equal(renderer.shouldDrawContextPanel(), true);
   assert.equal(scene.hudLayout.hintY() < help.y, true);
-  assert.doesNotMatch(renderer.battleHint(), /H: Help/);
+  assert.match(renderer.tacticalHelpControlHint(), /H: Hide Help/);
 
-  manager.setHelpVisible(true);
-  assert.equal(renderer.shouldDrawContextPanel(), true);
-  assert.equal(scene.hudLayout.hintY() < help.y, true);
+  manager.setHelpVisible(false);
+  assert.equal(renderer.shouldDrawContextPanel(), false);
+  assert.equal(scene.hudLayout.contextHelpVisible(), false);
+  assert.match(renderer.tacticalHelpControlHint(), /H: Help/);
 }
 
 function testScanSchemaIsNarrowAndValidated() {

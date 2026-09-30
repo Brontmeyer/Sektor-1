@@ -47,6 +47,10 @@ class Game_Actor extends Game_Battler {
     this.battleSpriteHeight = actorData.battleSpriteHeight || 128;
     this.battleSpriteFrames = actorData.battleSpriteFrames || 1;
     this.battleSpriteRows = actorData.battleSpriteRows || 1;
+    this.battleSpriteGroundOffset = Math.max(
+      0,
+      Number(actorData.battleSpriteGroundOffset) || 0,
+    );
 
     this.exp = actorData.exp;
     this.growth = actorData.growth;
