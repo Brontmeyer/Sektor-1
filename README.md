@@ -443,6 +443,7 @@ docs/
 ├── architecture.md
 ├── audit_closure.md
 ├── battle_system.md
+├── character_assets.md
 ├── coding_style.md
 ├── design_bible.md
 ├── ideas.md
@@ -455,6 +456,7 @@ Each document has a specific purpose:
 -   **architecture.md** - Engine structure and system relationships
 -   **audit_closure.md** - Completed reconciliation of historical audit findings
 -   **battle_system.md** - Canonical battle rules and mechanics
+-   **character_assets.md** - Shared portrait, 8-direction field, battle-motion, expression, and extra-sprite production standard
 -   **coding_style.md** - Project coding and data conventions
 -   **dev_console.md** - Development-only `$dev` console helper and Pass 117 test recipes
 -   **design_bible.md** - Core game-design principles and terminology

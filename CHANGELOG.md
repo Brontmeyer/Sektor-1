@@ -1,3 +1,11 @@
+## Pass 143 - Eight-Direction Field Character Pipeline v1
+- Added optional actor `fieldVisual` metadata for production field sprites: asset name, frame dimensions, scale, anchor/offset, sheet dimensions, eight direction rows, idle/walk frames, and fast/slow cadence.
+- Upgraded `Game_Player` presentation state to resolve all eight movement directions from actual post-collision velocity. Diagonal movement therefore uses diagonal art, wall collisions can naturally collapse to a cardinal direction, and deceleration preserves meaningful facing until the actor stops.
+- Added velocity-aware field animation timing: the walk cycle speeds up with movement speed, slows during deceleration, and settles to the configured idle frame without requiring separate acceleration/deceleration sprite sets.
+- Kept visual dimensions independent from the existing 32×32 map collision box by grounding field art on its bottom-center anchor. Missing/unloaded actor field art keeps the current white-square fallback, so the architecture can land before Tyler/Sarah production sprites are cut.
+- Added `docs/character_assets.md` as Character Asset Standard v2: canonical portrait/expressions, 8-direction field locomotion, distinct Skill/Item battle motions, extras, and neutral-gold Attack vs character-specific Magick color language (Tyler blue, Sarah crimson/red).
+- Extended database validation and regressions for field visual metadata, direction-row uniqueness, frame bounds, velocity-facing quantization, speed-sensitive cadence, grounding math, and fallback rendering.
+
 ## Pass 142 - Battler Visual & Animation Pipeline v1
 - Added a structured `battleVisual` profile for actor/enemy presentation metadata while keeping legacy flat battle-sprite fields as a compatibility fallback. Profiles can define sprite asset, display size, base scale, facing policy, ground offset, logical footprint, shadow dimensions, sheet columns/rows, and state animation definitions.
 - Added per-battler animation definitions with row, frame count, frame duration, loop behavior, local X/Y offsets, and explicit fallback states. Built-in aliases cover future-ready states such as ready, skill, cast, item, defend, KO, and victory without requiring every prototype sheet to author every row immediately.

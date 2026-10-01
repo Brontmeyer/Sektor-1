@@ -115,6 +115,72 @@ function testActorGrowthExpAndSpriteContracts() {
   );
 }
 
+
+function testFieldVisualProfileContracts() {
+  const DatabaseValidator = loadValidator();
+  const actors = clone(readData("Actors.json"));
+  const errors = [];
+
+  actors[1].fieldVisual = {
+    sprite: "Tyler_Field.png",
+    frameWidth: 64,
+    frameHeight: 64,
+    scale: 1,
+    anchor: { x: 0.5, y: 1 },
+    offset: { x: 0, y: 0 },
+    sheet: {
+      columns: 4,
+      rows: 8,
+      directions: {
+        down: 0,
+        downLeft: 1,
+        left: 2,
+        upLeft: 3,
+        up: 4,
+        upRight: 5,
+        right: 6,
+        downRight: 7,
+      },
+    },
+    animation: {
+      idleFrame: 0,
+      walkFrames: [0, 1, 2, 3],
+      fastFrameDuration: 0.1,
+      slowFrameDuration: 0.22,
+      minimumSpeed: 1,
+    },
+  };
+
+  DatabaseValidator.validateActors(actors, errors);
+  assert.deepEqual(errors, []);
+
+  const malformed = clone(actors);
+  malformed[1].fieldVisual.sheet.directions.downRight = 6;
+  malformed[1].fieldVisual.animation.walkFrames[3] = 9;
+  malformed[1].fieldVisual.animation.fastFrameDuration = 0.5;
+  malformed[1].fieldVisual.anchor.y = 1.5;
+  const malformedErrors = [];
+
+  DatabaseValidator.validateActors(malformed, malformedErrors);
+
+  assert.equal(
+    malformedErrors.some((error) => error.includes("unique row")),
+    true,
+  );
+  assert.equal(
+    malformedErrors.some((error) => error.includes("walkFrames[3]")),
+    true,
+  );
+  assert.equal(
+    malformedErrors.some((error) => error.includes("fastFrameDuration")),
+    true,
+  );
+  assert.equal(
+    malformedErrors.some((error) => error.includes("fieldVisual.anchor.y")),
+    true,
+  );
+}
+
 function testEnemyElementRateAndSpriteContracts() {
   const DatabaseValidator = loadValidator();
   const enemies = clone(readData("Enemies.json"));
@@ -356,6 +422,7 @@ function run() {
   testCurrentProjectPassesExpandedValidation();
   testStoryIdentitySystemContract();
   testActorGrowthExpAndSpriteContracts();
+  testFieldVisualProfileContracts();
   testEnemyElementRateAndSpriteContracts();
   testItemAndEquipmentContracts();
   testMagickRuntimeMetadataContracts();

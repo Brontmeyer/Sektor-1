@@ -63,6 +63,11 @@ class Game_Actor extends Game_Battler {
     this.battleShadowWidth = battleVisual.shadow.width;
     this.battleShadowHeight = battleVisual.shadow.height;
 
+    // Field visuals are independent from battle visuals and collision size.
+    // A null profile intentionally preserves Game_Player's white-square fallback
+    // until a production field sprite is assigned to this actor.
+    this.fieldVisual = this.configureFieldVisual(actorData);
+
     this.exp = actorData.exp;
     this.growth = actorData.growth;
 
@@ -96,6 +101,104 @@ class Game_Actor extends Game_Battler {
     this._essenceBattleStateActive = false;
     this._essenceBattleTriggers = new Set();
     this._essencePassiveEvents = [];
+  }
+
+
+  // =====================================
+  // Field Visual Profile
+  // =====================================
+
+  static fieldDirectionRows() {
+    return {
+      down: 0,
+      downLeft: 1,
+      left: 2,
+      upLeft: 3,
+      up: 4,
+      upRight: 5,
+      right: 6,
+      downRight: 7,
+    };
+  }
+
+  configureFieldVisual(data = {}) {
+    const source = data?.fieldVisual;
+
+    if (!source || typeof source !== "object" || Array.isArray(source)) {
+      return null;
+    }
+
+    const sheet =
+      source.sheet && typeof source.sheet === "object" ? source.sheet : {};
+    const directions =
+      sheet.directions && typeof sheet.directions === "object"
+        ? sheet.directions
+        : {};
+    const anchor =
+      source.anchor && typeof source.anchor === "object" ? source.anchor : {};
+    const offset =
+      source.offset && typeof source.offset === "object" ? source.offset : {};
+    const animation =
+      source.animation && typeof source.animation === "object"
+        ? source.animation
+        : {};
+    const defaultDirections = Game_Actor.fieldDirectionRows();
+    const positive = (value, fallback) => {
+      const number = Number(value);
+      return Number.isFinite(number) && number > 0 ? number : fallback;
+    };
+    const finite = (value, fallback) => {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : fallback;
+    };
+    const integer = (value, fallback, minimum = 0) => {
+      const number = Number(value);
+      return Number.isInteger(number) && number >= minimum ? number : fallback;
+    };
+    const columns = integer(sheet.columns, 4, 1);
+    const rows = integer(sheet.rows, 8, 1);
+    const normalizedDirections = {};
+
+    for (const [direction, defaultRow] of Object.entries(defaultDirections)) {
+      normalizedDirections[direction] = integer(
+        directions[direction],
+        defaultRow,
+        0,
+      );
+    }
+
+    const walkFrames = Array.isArray(animation.walkFrames)
+      ? animation.walkFrames
+          .map((frame) => Number(frame))
+          .filter((frame) => Number.isInteger(frame) && frame >= 0 && frame < columns)
+      : [0, 1, 2, 3].filter((frame) => frame < columns);
+
+    return {
+      sprite: String(source.sprite || "").trim() || null,
+      frameWidth: positive(source.frameWidth, 32),
+      frameHeight: positive(source.frameHeight, 32),
+      scale: positive(source.scale, 1),
+      anchor: {
+        x: finite(anchor.x, 0.5),
+        y: finite(anchor.y, 1),
+      },
+      offset: {
+        x: finite(offset.x, 0),
+        y: finite(offset.y, 0),
+      },
+      sheet: {
+        columns,
+        rows,
+        directions: normalizedDirections,
+      },
+      animation: {
+        idleFrame: integer(animation.idleFrame, 0, 0),
+        walkFrames: walkFrames.length > 0 ? walkFrames : [0],
+        fastFrameDuration: positive(animation.fastFrameDuration, 0.1),
+        slowFrameDuration: positive(animation.slowFrameDuration, 0.22),
+        minimumSpeed: Math.max(0, finite(animation.minimumSpeed, 1)),
+      },
+    };
   }
 
   // =====================================

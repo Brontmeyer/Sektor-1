@@ -1317,6 +1317,215 @@ class DatabaseValidator {
     return true;
   }
 
+
+  static validateFieldVisualProfile(record, label, errors) {
+    const profile = record?.fieldVisual;
+
+    if (profile === undefined) {
+      return;
+    }
+
+    if (!profile || typeof profile !== "object" || Array.isArray(profile)) {
+      errors.push(`${label} fieldVisual must be an object when provided.`);
+      return;
+    }
+
+    if (typeof profile.sprite !== "string" || profile.sprite.trim() === "") {
+      errors.push(`${label} fieldVisual.sprite must be a non-empty string.`);
+    }
+
+    for (const key of ["frameWidth", "frameHeight", "scale"]) {
+      if (profile[key] !== undefined) {
+        this.validateFiniteNumber(`${label} fieldVisual.${key}`, profile[key], errors, {
+          min: 0.01,
+        });
+      }
+    }
+
+    const anchor = profile.anchor;
+    if (anchor !== undefined) {
+      if (!anchor || typeof anchor !== "object" || Array.isArray(anchor)) {
+        errors.push(`${label} fieldVisual.anchor must be an object.`);
+      } else {
+        for (const key of ["x", "y"]) {
+          if (anchor[key] !== undefined) {
+            this.validateFiniteNumber(
+              `${label} fieldVisual.anchor.${key}`,
+              anchor[key],
+              errors,
+              { min: 0, max: 1 },
+            );
+          }
+        }
+      }
+    }
+
+    const offset = profile.offset;
+    if (offset !== undefined) {
+      if (!offset || typeof offset !== "object" || Array.isArray(offset)) {
+        errors.push(`${label} fieldVisual.offset must be an object.`);
+      } else {
+        for (const key of ["x", "y"]) {
+          if (offset[key] !== undefined) {
+            this.validateFiniteNumber(
+              `${label} fieldVisual.offset.${key}`,
+              offset[key],
+              errors,
+            );
+          }
+        }
+      }
+    }
+
+    const sheet = profile.sheet;
+    const columns = Number(sheet?.columns ?? 4);
+    const rows = Number(sheet?.rows ?? 8);
+
+    if (sheet !== undefined) {
+      if (!sheet || typeof sheet !== "object" || Array.isArray(sheet)) {
+        errors.push(`${label} fieldVisual.sheet must be an object.`);
+      } else {
+        for (const key of ["columns", "rows"]) {
+          if (sheet[key] !== undefined) {
+            this.validateFiniteNumber(
+              `${label} fieldVisual.sheet.${key}`,
+              sheet[key],
+              errors,
+              { min: 1, integer: true },
+            );
+          }
+        }
+
+        if (sheet.directions !== undefined) {
+          if (
+            !sheet.directions ||
+            typeof sheet.directions !== "object" ||
+            Array.isArray(sheet.directions)
+          ) {
+            errors.push(`${label} fieldVisual.sheet.directions must be an object.`);
+          } else {
+            const requiredDirections = [
+              "down",
+              "downLeft",
+              "left",
+              "upLeft",
+              "up",
+              "upRight",
+              "right",
+              "downRight",
+            ];
+            const rowsUsed = new Set();
+
+            for (const direction of requiredDirections) {
+              if (sheet.directions[direction] === undefined) {
+                errors.push(
+                  `${label} fieldVisual.sheet.directions.${direction} is required when directions are provided.`,
+                );
+                continue;
+              }
+
+              const row = Number(sheet.directions[direction]);
+              this.validateFiniteNumber(
+                `${label} fieldVisual.sheet.directions.${direction}`,
+                sheet.directions[direction],
+                errors,
+                { min: 0, integer: true },
+              );
+
+              if (Number.isInteger(rows) && Number.isInteger(row) && row >= rows) {
+                errors.push(
+                  `${label} fieldVisual.sheet.directions.${direction} must be less than sheet.rows (${rows}).`,
+                );
+              }
+
+              if (Number.isInteger(row)) {
+                if (rowsUsed.has(row)) {
+                  errors.push(
+                    `${label} fieldVisual.sheet.directions must use a unique row for each direction.`,
+                  );
+                }
+                rowsUsed.add(row);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    const animation = profile.animation;
+    if (animation !== undefined) {
+      if (!animation || typeof animation !== "object" || Array.isArray(animation)) {
+        errors.push(`${label} fieldVisual.animation must be an object.`);
+      } else {
+        if (animation.idleFrame !== undefined) {
+          this.validateFiniteNumber(
+            `${label} fieldVisual.animation.idleFrame`,
+            animation.idleFrame,
+            errors,
+            { min: 0, integer: true },
+          );
+
+          if (Number.isInteger(columns) && Number(animation.idleFrame) >= columns) {
+            errors.push(
+              `${label} fieldVisual.animation.idleFrame must be less than sheet.columns (${columns}).`,
+            );
+          }
+        }
+
+        if (animation.walkFrames !== undefined) {
+          if (!Array.isArray(animation.walkFrames) || animation.walkFrames.length === 0) {
+            errors.push(`${label} fieldVisual.animation.walkFrames must be a non-empty array.`);
+          } else {
+            for (const [index, frame] of animation.walkFrames.entries()) {
+              this.validateFiniteNumber(
+                `${label} fieldVisual.animation.walkFrames[${index}]`,
+                frame,
+                errors,
+                { min: 0, integer: true },
+              );
+
+              if (Number.isInteger(columns) && Number(frame) >= columns) {
+                errors.push(
+                  `${label} fieldVisual.animation.walkFrames[${index}] must be less than sheet.columns (${columns}).`,
+                );
+              }
+            }
+          }
+        }
+
+        for (const key of ["fastFrameDuration", "slowFrameDuration"]) {
+          if (animation[key] !== undefined) {
+            this.validateFiniteNumber(
+              `${label} fieldVisual.animation.${key}`,
+              animation[key],
+              errors,
+              { min: 0.001 },
+            );
+          }
+        }
+
+        if (animation.minimumSpeed !== undefined) {
+          this.validateFiniteNumber(
+            `${label} fieldVisual.animation.minimumSpeed`,
+            animation.minimumSpeed,
+            errors,
+            { min: 0 },
+          );
+        }
+
+        if (
+          Number.isFinite(Number(animation.fastFrameDuration)) &&
+          Number.isFinite(Number(animation.slowFrameDuration)) &&
+          Number(animation.fastFrameDuration) > Number(animation.slowFrameDuration)
+        ) {
+          errors.push(
+            `${label} fieldVisual.animation.fastFrameDuration must be less than or equal to slowFrameDuration.`,
+          );
+        }
+      }
+    }
+  }
+
   static validateBattleVisualProfile(record, label, errors) {
     const profile = record?.battleVisual;
 
@@ -1611,6 +1820,7 @@ class DatabaseValidator {
       const label = `Actor ${index}`;
       this.validateBattlerStats(actor, label, errors);
       this.validateBattleSprite(actor, label, "sideBattleSprite", errors);
+      this.validateFieldVisualProfile(actor, label, errors);
       this.validateFiniteNumber(`${label} exp`, actor.exp, errors, { min: 0 });
       this.validateFiniteNumber(`${label} maxValor`, actor.maxValor, errors, {
         min: 1,
