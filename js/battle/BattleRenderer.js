@@ -740,7 +740,7 @@ class BattleRenderer {
 
     if (image && image.complete && image.naturalWidth > 0) {
       const state = battleData?.state || "idle";
-      const animation = this.scene.getBattlerAnimationData(state);
+      const animation = this.scene.getBattlerAnimationData(actor, state);
 
       const frameCount = actor.battleSpriteFrames || 1;
       const rowCount = actor.battleSpriteRows || 1;
@@ -752,11 +752,12 @@ class BattleRenderer {
 
       const sourceX = frame * sourceFrameWidth;
 
-      const requestedRow = this.scene.getBattlerAnimationRow(state);
+      const requestedRow = this.scene.getBattlerAnimationRow(actor, state);
 
       const row = Math.min(requestedRow, rowCount - 1);
 
       const sourceY = row * sourceFrameHeight;
+      const offset = this.scene.getBattlerAnimationOffset(actor, state);
 
       context.drawImage(
         image,
@@ -766,8 +767,8 @@ class BattleRenderer {
         sourceFrameWidth,
         sourceFrameHeight,
 
-        -width / 2,
-        -height,
+        -width / 2 + offset.x,
+        -height + offset.y,
         width,
         height,
       );
@@ -792,7 +793,7 @@ class BattleRenderer {
 
     const width = enemy.battleSpriteWidth;
     const height = enemy.battleSpriteHeight;
-    const scale = this.scene.getEnemyFormationScale(enemy);
+    const scale = this.scene.getEnemyRenderScale(enemy);
     const facing = this.scene.getEnemyFacing(enemy);
     const alpha = this.scene.getEnemyVisualAlpha(enemy);
     const image = enemy.battleSprite
@@ -815,7 +816,11 @@ class BattleRenderer {
       const frame = Math.min(battleData.animationFrame, frameCount - 1);
       const sourceX = frame * sourceFrameWidth;
 
-      const requestedRow = this.scene.getBattlerAnimationRow(battleData.state);
+      const animation = this.scene.getBattlerAnimationData(
+        enemy,
+        battleData.state,
+      );
+      const requestedRow = animation.row;
       const row = Math.min(requestedRow, rowCount - 1);
       const sourceY = row * sourceFrameHeight;
 
@@ -825,8 +830,8 @@ class BattleRenderer {
         sourceY,
         sourceFrameWidth,
         sourceFrameHeight,
-        -width / 2,
-        -height,
+        -width / 2 + animation.offsetX,
+        -height + animation.offsetY,
         width,
         height,
       );
@@ -1270,7 +1275,7 @@ class BattleRenderer {
 
       const position = this.scene.getEnemyBattlePosition(i);
       const drawX = position.x + battleData.visualX;
-      const scale = this.scene.getEnemyFormationScale(enemy);
+      const scale = this.scene.getEnemyRenderScale(enemy);
 
       const shadow = this.enemyShadowMetrics(enemy);
       this.drawAssetBattleShadow(

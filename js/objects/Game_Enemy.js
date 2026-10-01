@@ -26,27 +26,23 @@ class Game_Enemy extends Game_Battler {
       : [];
     this.phaseIndex = 0;
     this.banished = false;
-    this.battleSprite = enemyData.battleSprite || null;
-    this.battleSpriteWidth = enemyData.battleSpriteWidth || 128;
-    this.battleSpriteHeight = enemyData.battleSpriteHeight || 128;
-    this.battleSpriteFrames = enemyData.battleSpriteFrames || 1;
-    this.battleSpriteRows = enemyData.battleSpriteRows || 1;
-    this.battleSpriteGroundOffset = Math.max(
-      0,
-      Number(enemyData.battleSpriteGroundOffset) || 0,
-    );
-    this.battleFootprintWidth = Math.max(
-      1,
-      Number(enemyData.battleFootprintWidth) || this.battleSpriteWidth,
-    );
-    this.battleShadowWidth = Math.max(
-      1,
-      Number(enemyData.battleShadowWidth) || this.battleFootprintWidth * 0.78,
-    );
-    this.battleShadowHeight = Math.max(
-      1,
-      Number(enemyData.battleShadowHeight) || this.battleSpriteHeight * 0.12,
-    );
+    const battleVisual = this.configureBattleVisual(enemyData, {
+      spriteKey: "battleSprite",
+      defaultWidth: 128,
+      defaultHeight: 128,
+      defaultShadowRatio: 0.78,
+      defaultShadowHeightRatio: 0.12,
+    });
+
+    this.battleSprite = battleVisual.sprite;
+    this.battleSpriteWidth = battleVisual.width;
+    this.battleSpriteHeight = battleVisual.height;
+    this.battleSpriteFrames = battleVisual.sheet.columns;
+    this.battleSpriteRows = battleVisual.sheet.rows;
+    this.battleSpriteGroundOffset = battleVisual.groundOffset;
+    this.battleFootprintWidth = battleVisual.footprintWidth;
+    this.battleShadowWidth = battleVisual.shadow.width;
+    this.battleShadowHeight = battleVisual.shadow.height;
   }
 
   cloneActions(actions) {

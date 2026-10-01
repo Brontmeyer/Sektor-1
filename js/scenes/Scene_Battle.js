@@ -93,6 +93,7 @@ class Scene_Battle extends Scene_Base {
     // BATTLE ACTION PHASE SYSTEM
     this.actionPhase = "none";
     this.actionPhaseTimer = 0;
+    this.partyActionAnchorX = null;
     this.pendingAttackDamage = false;
     this.pendingAttackTarget = null;
 
@@ -1067,6 +1068,10 @@ class Scene_Battle extends Scene_Base {
   setActionPhase(phase, duration = 0) {
     this.actionPhase = phase;
     this.actionPhaseTimer = duration;
+
+    if (phase === "none") {
+      this.partyActionAnchorX = null;
+    }
   }
 
   getActorTargetOffset() {
@@ -1128,8 +1133,21 @@ class Scene_Battle extends Scene_Base {
     return this.formationManager.partyScale(actor);
   }
 
+  getBattlerBaseVisualScale(battler) {
+    if (typeof battler?.battleVisualScale === "function") {
+      return battler.battleVisualScale();
+    }
+
+    const scale = Number(battler?.battleVisual?.scale);
+    return Number.isFinite(scale) && scale > 0 ? scale : 1;
+  }
+
   getActorRenderScale(actor) {
-    return this.getActorFormationScale(actor) * this.getActorVisualScale(actor);
+    return (
+      this.getActorFormationScale(actor) *
+      this.getBattlerBaseVisualScale(actor) *
+      this.getActorVisualScale(actor)
+    );
   }
 
   getEnemyFormationScale(enemy) {
@@ -1140,30 +1158,43 @@ class Scene_Battle extends Scene_Base {
     return this.formationManager.enemyScale(enemy);
   }
 
+  getEnemyRenderScale(enemy) {
+    return (
+      this.getEnemyFormationScale(enemy) * this.getBattlerBaseVisualScale(enemy)
+    );
+  }
+
   getActorSpriteHeight(actor) {
     return (
       (Number(actor?.battleSpriteHeight) || 0) *
-      this.getActorFormationScale(actor)
+      this.getActorFormationScale(actor) *
+      this.getBattlerBaseVisualScale(actor)
     );
   }
 
   getEnemySpriteHeight(enemy) {
     return (
       (Number(enemy?.battleSpriteHeight) || 0) *
-      this.getEnemyFormationScale(enemy)
+      this.getEnemyRenderScale(enemy)
     );
   }
 
   getActorFacing(actor) {
-    return this.formationManager.actorFacing(actor);
+    const formationFacing = this.formationManager.actorFacing(actor);
+    return typeof actor?.battleFacing === "function"
+      ? actor.battleFacing(formationFacing)
+      : formationFacing;
   }
 
   getEnemyFacing(enemy) {
-    if (this.battleView === "front") {
-      return 1;
-    }
+    const formationFacing =
+      this.battleView === "front"
+        ? 1
+        : this.formationManager.enemyFacing(enemy);
 
-    return this.formationManager.enemyFacing(enemy);
+    return typeof enemy?.battleFacing === "function"
+      ? enemy.battleFacing(formationFacing)
+      : formationFacing;
   }
 
   getEnemyPosition(enemy) {
@@ -1186,12 +1217,25 @@ class Scene_Battle extends Scene_Base {
     return this.enemyBattleData[index];
   }
 
-  getBattlerAnimationData(state) {
-    return this.animationController.getBattlerAnimationData(state);
+  getBattlerAnimationData(battlerOrState, maybeState = null) {
+    return this.animationController.getBattlerAnimationData(
+      battlerOrState,
+      maybeState,
+    );
   }
 
-  getBattlerAnimationRow(state) {
-    return this.animationController.getBattlerAnimationRow(state);
+  getBattlerAnimationRow(battlerOrState, maybeState = null) {
+    return this.animationController.getBattlerAnimationRow(
+      battlerOrState,
+      maybeState,
+    );
+  }
+
+  getBattlerAnimationOffset(battlerOrState, maybeState = null) {
+    return this.animationController.getBattlerAnimationOffset(
+      battlerOrState,
+      maybeState,
+    );
   }
 
   getPartyBattleData(actor) {

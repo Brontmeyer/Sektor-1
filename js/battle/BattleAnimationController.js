@@ -168,7 +168,7 @@ class BattleAnimationController {
         continue;
       }
 
-      const animation = scene.getBattlerAnimationData(battleData.state);
+      const animation = scene.getBattlerAnimationData(actor, battleData.state);
 
       battleData.animationTimer += deltaTime;
 
@@ -197,7 +197,10 @@ class BattleAnimationController {
         continue;
       }
 
-      const animation = scene.getBattlerAnimationData(battleData.state);
+      const animation = scene.getBattlerAnimationData(
+        scene.enemies[i],
+        battleData.state,
+      );
 
       battleData.animationTimer += deltaTime;
 
@@ -298,6 +301,9 @@ class BattleAnimationController {
     const direction = activeActor
       ? scene.formationManager.actorAdvanceDirection(activeActor)
       : 1;
+    const activeActorData = activeActor
+      ? scene.getPartyBattleData(activeActor)
+      : null;
 
     if (scene.actionPhase === "lunge") {
       return 45 * direction;
@@ -311,9 +317,31 @@ class BattleAnimationController {
       return 0;
     }
 
-    const activeActorData = activeActor
-      ? scene.getPartyBattleData(activeActor)
-      : null;
+    // Magick, Skill, and Item actions do not perform a physical lunge. Hold
+    // the actor exactly where they were when the action was committed so the
+    // command-selection stance does not snap backward at the start of the
+    // animation. Forced actions that started at home remain at home too.
+    const plantedActionPhases = new Set([
+      "skillUse",
+      "skillEffect",
+      "skillRecover",
+      "skillWait",
+      "magickCast",
+      "magickEffect",
+      "magickRecover",
+      "magickWait",
+      "itemUse",
+      "itemEffect",
+      "itemRecover",
+      "itemWait",
+    ]);
+
+    if (plantedActionPhases.has(scene.actionPhase)) {
+      const anchor = Number(scene.partyActionAnchorX);
+      return Number.isFinite(anchor)
+        ? anchor
+        : Number(activeActorData?.visualX) || 0;
+    }
 
     // Hurt recoil takes priority over command positioning.
     if (activeActorData?.state === "hurt") {
@@ -334,18 +362,9 @@ class BattleAnimationController {
   }
 
   getActorTargetYOffset() {
-    const scene = this.scene;
-    if (scene.actionPhase === "magickCast") {
-      return -12;
-    }
-
-    if (scene.actionPhase === "itemUse") {
-      return -6;
-    }
-
-    if (scene.actionPhase === "itemEffect") {
-      return -6;
-    }
+    // Action personality belongs in the sprite animation itself. Magick,
+    // Skills, and Items all stay grounded instead of moving the whole battler
+    // vertically as a presentation shortcut.
     return 0;
   }
 
@@ -364,92 +383,64 @@ class BattleAnimationController {
   }
 
   getActorVisualScale(actor) {
-    const scene = this.scene;
-    const activeActor = scene.partyController.currentBattler();
-
-    if (actor !== activeActor) {
-      return 1;
-    }
-
-    if (scene.actionPhase === "magickCast") {
-      const duration = 0.4;
-      const progress = 1 - scene.actionPhaseTimer / duration;
-
-      return 1 + 0.06 * progress;
-    }
-
-    if (scene.actionPhase === "magickEffect") {
-      const duration = 0.25;
-      const progress = 1 - scene.actionPhaseTimer / duration;
-
-      return 1.06 - 0.06 * progress;
-    }
-
-    if (scene.actionPhase === "itemUse") {
-      const duration = 0.35;
-      const progress = 1 - scene.actionPhaseTimer / duration;
-
-      return 1 + 0.03 * progress;
-    }
-
-    if (scene.actionPhase === "itemEffect") {
-      const duration = 0.25;
-      const progress = 1 - scene.actionPhaseTimer / duration;
-
-      return 1.03 - 0.03 * progress;
-    }
-
+    // Whole-battler scaling made casting and item use read as hopping/pulsing.
+    // Dedicated sprite-sheet motions now own those action poses instead.
     return 1;
   }
 
-  getBattlerAnimationData(state) {
-    const scene = this.scene;
-    const animations = {
-      idle: {
-        frames: 4,
-        frameDuration: 0.18,
-        loop: true,
-      },
+  getBattlerAnimationData(battlerOrState, maybeState = null) {
+    const hasBattler =
+      battlerOrState && typeof battlerOrState === "object" && maybeState !== null;
+    const battler = hasBattler ? battlerOrState : null;
+    const state = hasBattler ? maybeState : battlerOrState;
 
-      attack: {
-        frames: 4,
-        frameDuration: 0.1,
-        loop: false,
-      },
+    if (battler && typeof battler.battleAnimation === "function") {
+      return battler.battleAnimation(state || "idle");
+    }
 
-      magick: {
-        frames: 4,
-        frameDuration: 0.14,
-        loop: false,
-      },
+    const fallback =
+      typeof Game_Battler !== "undefined" &&
+      typeof Game_Battler.defaultBattleAnimations === "function"
+        ? Game_Battler.defaultBattleAnimations()
+        : {
+            idle: { row: 0, frames: 4, frameDuration: 0.18, loop: true },
+            attack: { row: 1, frames: 4, frameDuration: 0.1, loop: false },
+            magick: { row: 2, frames: 4, frameDuration: 0.14, loop: false },
+            hurt: { row: 3, frames: 2, frameDuration: 0.1, loop: false },
+            defeat: { row: 4, frames: 4, frameDuration: 0.15, loop: false },
+          };
+    const definition = fallback[state] || fallback.idle;
 
-      hurt: {
-        frames: 2,
-        frameDuration: 0.1,
-        loop: false,
-      },
+    if (definition?.fallback && fallback[definition.fallback]) {
+      return {
+        ...fallback[definition.fallback],
+        row: Number(fallback[definition.fallback].row) || 0,
+        offsetX: 0,
+        offsetY: 0,
+      };
+    }
 
-      defeat: {
-        frames: 4,
-        frameDuration: 0.15,
-        loop: false,
-      },
+    return {
+      row: Number(definition?.row) || 0,
+      frames: Math.max(1, Number(definition?.frames) || 1),
+      frameDuration: Math.max(0.01, Number(definition?.frameDuration) || 0.18),
+      loop: definition?.loop !== false,
+      offsetX: Number(definition?.offsetX) || 0,
+      offsetY: Number(definition?.offsetY) || 0,
     };
-
-    return animations[state] || animations.idle;
   }
 
-  getBattlerAnimationRow(state) {
-    const scene = this.scene;
-    const rows = {
-      idle: 0,
-      attack: 1,
-      magick: 2,
-      hurt: 3,
-      defeat: 4,
-    };
+  getBattlerAnimationRow(battlerOrState, maybeState = null) {
+    return this.getBattlerAnimationData(battlerOrState, maybeState).row || 0;
+  }
 
-    return rows[state] ?? 0;
+  getBattlerAnimationOffset(battlerOrState, maybeState = null) {
+    const animation = this.getBattlerAnimationData(battlerOrState, maybeState);
+
+    return {
+      x: Number(animation.offsetX) || 0,
+      y: Number(animation.offsetY) || 0,
+    };
   }
 
   getEnemyVisualAlpha(enemy = this.scene.enemy) {

@@ -57,7 +57,77 @@
     "maxValor": 100,
     "initialValorArtIds": [
       1
-    ]
+    ],
+    "battleVisual": {
+      "sprite": "Player_Battle.png",
+      "width": 190,
+      "height": 166,
+      "scale": 1,
+      "facing": "formation",
+      "groundOffset": 19,
+      "footprintWidth": 190,
+      "shadow": {
+        "width": 129,
+        "height": 20
+      },
+      "sheet": {
+        "columns": 4,
+        "rows": 5
+      },
+      "animations": {
+        "idle": {
+          "row": 0,
+          "frames": 4,
+          "frameDuration": 0.18,
+          "loop": true
+        },
+        "ready": {
+          "fallback": "idle"
+        },
+        "attack": {
+          "row": 1,
+          "frames": 4,
+          "frameDuration": 0.1,
+          "loop": false
+        },
+        "skill": {
+          "fallback": "attack"
+        },
+        "magick": {
+          "row": 2,
+          "frames": 4,
+          "frameDuration": 0.14,
+          "loop": false
+        },
+        "cast": {
+          "fallback": "magick"
+        },
+        "item": {
+          "fallback": "idle"
+        },
+        "defend": {
+          "fallback": "idle"
+        },
+        "hurt": {
+          "row": 3,
+          "frames": 2,
+          "frameDuration": 0.1,
+          "loop": false
+        },
+        "defeat": {
+          "row": 4,
+          "frames": 4,
+          "frameDuration": 0.15,
+          "loop": false
+        },
+        "ko": {
+          "fallback": "defeat"
+        },
+        "victory": {
+          "fallback": "idle"
+        }
+      }
+    }
   },
   {
     "_comment": "Sarah",

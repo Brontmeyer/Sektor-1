@@ -59,6 +59,243 @@ class Game_Battler {
   }
 
   // =====================================
+  // Battle Visual Profile
+  // =====================================
+
+  static defaultBattleAnimations() {
+    return {
+      idle: { row: 0, frames: 4, frameDuration: 0.18, loop: true },
+      ready: { fallback: "idle" },
+      attack: { row: 1, frames: 4, frameDuration: 0.1, loop: false },
+      skill: { fallback: "attack" },
+      magick: { row: 2, frames: 4, frameDuration: 0.14, loop: false },
+      cast: { fallback: "magick" },
+      item: { fallback: "idle" },
+      defend: { fallback: "idle" },
+      hurt: { row: 3, frames: 2, frameDuration: 0.1, loop: false },
+      defeat: { row: 4, frames: 4, frameDuration: 0.15, loop: false },
+      ko: { fallback: "defeat" },
+      victory: { fallback: "idle" },
+    };
+  }
+
+  configureBattleVisual(data = {}, options = {}) {
+    const source =
+      data?.battleVisual && typeof data.battleVisual === "object"
+        ? data.battleVisual
+        : {};
+    const sheet =
+      source.sheet && typeof source.sheet === "object" ? source.sheet : {};
+    const shadow =
+      source.shadow && typeof source.shadow === "object" ? source.shadow : {};
+    const legacySpriteKey = options.spriteKey || "battleSprite";
+
+    const positive = (value, fallback) => {
+      const number = Number(value);
+      return Number.isFinite(number) && number > 0 ? number : fallback;
+    };
+    const nonNegative = (value, fallback = 0) => {
+      const number = Number(value);
+      return Number.isFinite(number) && number >= 0 ? number : fallback;
+    };
+    const positiveInteger = (value, fallback) => {
+      const number = Number(value);
+      return Number.isInteger(number) && number > 0 ? number : fallback;
+    };
+
+    const defaultWidth = positive(options.defaultWidth, 96);
+    const defaultHeight = positive(options.defaultHeight, 128);
+    const width = positive(source.width, positive(data.battleSpriteWidth, defaultWidth));
+    const height = positive(
+      source.height,
+      positive(data.battleSpriteHeight, defaultHeight),
+    );
+    const footprintWidth = positive(
+      source.footprintWidth,
+      positive(data.battleFootprintWidth, width),
+    );
+    const defaultShadowRatio = positive(options.defaultShadowRatio, 0.72);
+    const defaultShadowHeightRatio = positive(
+      options.defaultShadowHeightRatio,
+      0.12,
+    );
+    const sprite = String(source.sprite || data[legacySpriteKey] || "").trim() || null;
+    const facing = ["formation", "left", "right"].includes(source.facing)
+      ? source.facing
+      : "formation";
+
+    this.battleVisual = {
+      sprite,
+      width,
+      height,
+      scale: positive(source.scale, 1),
+      facing,
+      groundOffset: nonNegative(
+        source.groundOffset,
+        nonNegative(data.battleSpriteGroundOffset, 0),
+      ),
+      footprintWidth,
+      shadow: {
+        width: positive(
+          shadow.width,
+          positive(
+            data.battleShadowWidth,
+            footprintWidth * defaultShadowRatio,
+          ),
+        ),
+        height: positive(
+          shadow.height,
+          positive(
+            data.battleShadowHeight,
+            height * defaultShadowHeightRatio,
+          ),
+        ),
+      },
+      sheet: {
+        columns: positiveInteger(
+          sheet.columns,
+          positiveInteger(data.battleSpriteFrames, 1),
+        ),
+        rows: positiveInteger(
+          sheet.rows,
+          positiveInteger(data.battleSpriteRows, 1),
+        ),
+      },
+      animations: this.normalizeBattleAnimations(source.animations),
+    };
+
+    return this.battleVisual;
+  }
+
+  normalizeBattleAnimations(animations) {
+    if (!animations || typeof animations !== "object" || Array.isArray(animations)) {
+      return {};
+    }
+
+    const normalized = {};
+
+    for (const [state, definition] of Object.entries(animations)) {
+      if (!definition || typeof definition !== "object" || Array.isArray(definition)) {
+        continue;
+      }
+
+      const entry = {};
+      const row = Number(definition.row);
+      const frames = Number(definition.frames);
+      const frameDuration = Number(definition.frameDuration);
+      const offsetX = Number(definition.offsetX);
+      const offsetY = Number(definition.offsetY);
+      const fallback = String(definition.fallback || "").trim();
+
+      if (Number.isInteger(row) && row >= 0) {
+        entry.row = row;
+      }
+      if (Number.isInteger(frames) && frames > 0) {
+        entry.frames = frames;
+      }
+      if (Number.isFinite(frameDuration) && frameDuration > 0) {
+        entry.frameDuration = frameDuration;
+      }
+      if (typeof definition.loop === "boolean") {
+        entry.loop = definition.loop;
+      }
+      if (Number.isFinite(offsetX)) {
+        entry.offsetX = offsetX;
+      }
+      if (Number.isFinite(offsetY)) {
+        entry.offsetY = offsetY;
+      }
+      if (fallback) {
+        entry.fallback = fallback;
+      }
+
+      normalized[String(state)] = entry;
+    }
+
+    return normalized;
+  }
+
+  battleVisualScale() {
+    const scale = Number(this.battleVisual?.scale);
+    return Number.isFinite(scale) && scale > 0 ? scale : 1;
+  }
+
+  battleFacing(formationFacing = 1) {
+    const mode = this.battleVisual?.facing || "formation";
+
+    if (mode === "left") {
+      return -1;
+    }
+
+    if (mode === "right") {
+      return 1;
+    }
+
+    return Number(formationFacing) < 0 ? -1 : 1;
+  }
+
+  battleAnimation(state = "idle", visited = new Set()) {
+    const key = String(state || "idle");
+
+    if (visited.has(key)) {
+      return {
+        row: 0,
+        frames: 1,
+        frameDuration: 0.18,
+        loop: true,
+        offsetX: 0,
+        offsetY: 0,
+      };
+    }
+
+    const nextVisited = new Set(visited);
+    nextVisited.add(key);
+
+    const defaults = Game_Battler.defaultBattleAnimations();
+    const custom = this.battleVisual?.animations?.[key] || null;
+    const defaultDefinition = defaults[key] || null;
+    const customFallback = String(custom?.fallback || "").trim();
+    const fallback =
+      customFallback ||
+      String(defaultDefinition?.fallback || "").trim() ||
+      (key === "idle" ? null : "idle");
+    const base = fallback
+      ? this.battleAnimation(fallback, nextVisited)
+      : {
+          row: 0,
+          frames: 1,
+          frameDuration: 0.18,
+          loop: true,
+          offsetX: 0,
+          offsetY: 0,
+        };
+    const merged = {
+      ...base,
+      ...(customFallback ? {} : defaultDefinition || {}),
+      ...(custom || {}),
+    };
+
+    delete merged.fallback;
+
+    return {
+      row: Math.max(0, Number.isInteger(Number(merged.row)) ? Number(merged.row) : 0),
+      frames: Math.max(1, Number.isInteger(Number(merged.frames)) ? Number(merged.frames) : 1),
+      frameDuration:
+        Number.isFinite(Number(merged.frameDuration)) &&
+        Number(merged.frameDuration) > 0
+          ? Number(merged.frameDuration)
+          : 0.18,
+      loop: merged.loop !== false,
+      offsetX: Number.isFinite(Number(merged.offsetX))
+        ? Number(merged.offsetX)
+        : 0,
+      offsetY: Number.isFinite(Number(merged.offsetY))
+        ? Number(merged.offsetY)
+        : 0,
+    };
+  }
+
+  // =====================================
   // Status Management
   // =====================================
 

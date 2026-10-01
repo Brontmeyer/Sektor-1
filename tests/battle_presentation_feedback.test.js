@@ -357,7 +357,25 @@ function testCriticalFlashIsBriefGlobalPresentationEffect() {
   );
 }
 
+function testPartyActionStatesUseDedicatedAnimationKeys() {
+  const managerSource = fs.readFileSync(
+    path.join(projectRoot, "js/battle/BattleManager.js"),
+    "utf8",
+  );
+  const sceneSource = fs.readFileSync(
+    path.join(projectRoot, "js/scenes/Scene_Battle.js"),
+    "utf8",
+  );
+
+  assert.match(managerSource, /setActorState\("skill", 0\.7\)/);
+  assert.match(managerSource, /setActorState\("magick", 0\.9\)/);
+  assert.match(managerSource, /setActorState\("item", 0\.6\)/);
+  assert.match(managerSource, /partyActionAnchorX/);
+  assert.match(sceneSource, /partyActionAnchorX = null/);
+}
+
 function run() {
+  testPartyActionStatesUseDedicatedAnimationKeys();
   testNoPersistentTopHeaderOrMessagePanel();
   testBannerAppearsOnlyWhenTransientPresentationStateExists();
   testTransientBannerQueuePreservesStateAnnouncementsBeforeActions();

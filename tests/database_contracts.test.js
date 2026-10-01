@@ -122,6 +122,8 @@ function testEnemyElementRateAndSpriteContracts() {
 
   enemies[1].elementRates.fire = "weak";
   enemies[1].battleSpriteWidth = -1;
+  enemies[1].battleVisual.animations.idle.row = 99;
+  enemies[1].battleVisual.facing = "upsideDown";
   enemies[2].undead = "yes";
 
   DatabaseValidator.validateEnemies(enemies, errors);
@@ -132,6 +134,14 @@ function testEnemyElementRateAndSpriteContracts() {
   );
   assert.equal(
     errors.some((error) => error.includes("battleSpriteWidth")),
+    true,
+  );
+  assert.equal(
+    errors.some((error) => error.includes("battleVisual.animations.idle.row")),
+    true,
+  );
+  assert.equal(
+    errors.some((error) => error.includes("battleVisual.facing")),
     true,
   );
   assert.equal(

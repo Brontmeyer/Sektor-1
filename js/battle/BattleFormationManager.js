@@ -491,6 +491,15 @@ class BattleFormationManager {
     return positions[Math.min(autoIndex, positions.length - 1)];
   }
 
+  battlerVisualScale(battler) {
+    if (typeof battler?.battleVisualScale === "function") {
+      return battler.battleVisualScale();
+    }
+
+    const scale = Number(battler?.battleVisual?.scale);
+    return Number.isFinite(scale) && scale > 0 ? scale : 1;
+  }
+
   enemyFootprintWidth(enemy) {
     return Math.max(
       1,
@@ -505,7 +514,8 @@ class BattleFormationManager {
       return rawX;
     }
 
-    const scale = this.enemyScale(enemy, index);
+    const scale =
+      this.enemyScale(enemy, index) * this.battlerVisualScale(enemy);
     const halfWidth = this.enemyFootprintWidth(enemy) * scale * 0.5;
     const edgePadding = 18;
     const minimum = edgePadding + halfWidth;
@@ -546,7 +556,11 @@ class BattleFormationManager {
 
     const tallest = Math.max(
       ...members.map((actor) =>
-        Math.max(1, Number(actor?.battleSpriteHeight) || 1),
+        Math.max(
+          1,
+          (Number(actor?.battleSpriteHeight) || 1) *
+            this.battlerVisualScale(actor),
+        ),
       ),
     );
     const availableHeight = this.battlefieldBottom() - this.battlefieldTop();
@@ -570,8 +584,10 @@ class BattleFormationManager {
     const laneHeight =
       availableHeight /
       Math.max(1, Math.min(BattleFormationManager.ROW_SLOT_COUNT, rowCount));
-    const height = Math.max(1, Number(enemy.battleSpriteHeight) || 1);
-    const width = this.enemyFootprintWidth(enemy);
+    const visualScale = this.battlerVisualScale(enemy);
+    const height =
+      Math.max(1, Number(enemy.battleSpriteHeight) || 1) * visualScale;
+    const width = this.enemyFootprintWidth(enemy) * visualScale;
     const laneFill = Number(profile.laneFill) || 0.92;
     const widthRatio = Number(profile.widthRatio) || 0.14;
     const minScale = Number(profile.minScale) || 0.45;

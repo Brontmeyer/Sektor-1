@@ -42,27 +42,26 @@ class Game_Actor extends Game_Battler {
     this.actorId = actorId;
     this._defaultName = Game_Actor.normalizeName(actorData.name) || `Actor ${actorId}`;
     this.name = this._defaultName;
-    this.sideBattleSprite = actorData.sideBattleSprite || null;
-    this.battleSpriteWidth = actorData.battleSpriteWidth || 96;
-    this.battleSpriteHeight = actorData.battleSpriteHeight || 128;
-    this.battleSpriteFrames = actorData.battleSpriteFrames || 1;
-    this.battleSpriteRows = actorData.battleSpriteRows || 1;
-    this.battleSpriteGroundOffset = Math.max(
-      0,
-      Number(actorData.battleSpriteGroundOffset) || 0,
-    );
-    this.battleFootprintWidth = Math.max(
-      1,
-      Number(actorData.battleFootprintWidth) || this.battleSpriteWidth,
-    );
-    this.battleShadowWidth = Math.max(
-      1,
-      Number(actorData.battleShadowWidth) || this.battleFootprintWidth * 0.68,
-    );
-    this.battleShadowHeight = Math.max(
-      1,
-      Number(actorData.battleShadowHeight) || this.battleSpriteHeight * 0.12,
-    );
+    const battleVisual = this.configureBattleVisual(actorData, {
+      spriteKey: "sideBattleSprite",
+      defaultWidth: 96,
+      defaultHeight: 128,
+      defaultShadowRatio: 0.68,
+      defaultShadowHeightRatio: 0.12,
+    });
+
+    // Legacy aliases stay available while battle presentation migrates to the
+    // structured battleVisual profile. Existing menus and save-neutral runtime
+    // code can keep reading these fields without owning a second visual schema.
+    this.sideBattleSprite = battleVisual.sprite;
+    this.battleSpriteWidth = battleVisual.width;
+    this.battleSpriteHeight = battleVisual.height;
+    this.battleSpriteFrames = battleVisual.sheet.columns;
+    this.battleSpriteRows = battleVisual.sheet.rows;
+    this.battleSpriteGroundOffset = battleVisual.groundOffset;
+    this.battleFootprintWidth = battleVisual.footprintWidth;
+    this.battleShadowWidth = battleVisual.shadow.width;
+    this.battleShadowHeight = battleVisual.shadow.height;
 
     this.exp = actorData.exp;
     this.growth = actorData.growth;

@@ -880,6 +880,13 @@ class BattleManager {
     this.setTurnState(BattleManager.TURN_ACTION);
     battle.battleInputLocked = true;
 
+    // Preserve the actor's exact horizontal presentation position at commit
+    // time. Non-physical actions use this as their planted anchor instead of
+    // snapping from the command-selection stance back to formation home.
+    const battleData = battle.getPartyBattleData?.(battler);
+    const anchorX = Number(battleData?.visualX);
+    battle.partyActionAnchorX = Number.isFinite(anchorX) ? anchorX : 0;
+
     switch (entry.type) {
       case "attack":
         battle.pendingAttackDamage = true;
@@ -888,7 +895,7 @@ class BattleManager {
         return true;
 
       case "skill":
-        battle.setActorState("attack", 0.7);
+        battle.setActorState("skill", 0.7);
         battle.setActionPhase("skillUse", 0.25);
         return true;
 
@@ -898,6 +905,7 @@ class BattleManager {
         return true;
 
       case "item":
+        battle.setActorState("item", 0.6);
         battle.setActionPhase("itemUse", 0.35);
         return true;
 

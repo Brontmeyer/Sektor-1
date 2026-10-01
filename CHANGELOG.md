@@ -1,3 +1,10 @@
+## Pass 142 - Battler Visual & Animation Pipeline v1
+- Added a structured `battleVisual` profile for actor/enemy presentation metadata while keeping legacy flat battle-sprite fields as a compatibility fallback. Profiles can define sprite asset, display size, base scale, facing policy, ground offset, logical footprint, shadow dimensions, sheet columns/rows, and state animation definitions.
+- Added per-battler animation definitions with row, frame count, frame duration, loop behavior, local X/Y offsets, and explicit fallback states. Built-in aliases cover future-ready states such as ready, skill, cast, item, defend, KO, and victory without requiring every prototype sheet to author every row immediately.
+- Routed actor/enemy animation timing and rendering through the battler profile, including profile scale/facing and animation offsets, while preserving formation-owned battlefield anchors and transient action movement.
+- Added structured visual prototypes for Tyler and Test Slime using the existing assets, proving the new contract without replacing current test art or changing encounter balance.
+- Extended database validation and regression coverage for structured visual profiles, sheet bounds, animation metadata/fallbacks, scale/facing, and legacy compatibility.
+
 ## Pass 141 - Battle Cadence & Status Feedback v1
 - Removed numeric hidden-status counters (for example `+4`) from player-facing status summaries while preserving all hidden statuses and duration state internally.
 

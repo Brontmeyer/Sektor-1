@@ -1317,6 +1317,181 @@ class DatabaseValidator {
     return true;
   }
 
+  static validateBattleVisualProfile(record, label, errors) {
+    const profile = record?.battleVisual;
+
+    if (profile === undefined) {
+      return;
+    }
+
+    if (!profile || typeof profile !== "object" || Array.isArray(profile)) {
+      errors.push(`${label} battleVisual must be an object when provided.`);
+      return;
+    }
+
+    if (
+      profile.sprite !== undefined &&
+      (typeof profile.sprite !== "string" || profile.sprite.trim() === "")
+    ) {
+      errors.push(`${label} battleVisual.sprite must be a non-empty string.`);
+    }
+
+    for (const key of ["width", "height", "scale", "footprintWidth"]) {
+      if (profile[key] !== undefined) {
+        this.validateFiniteNumber(`${label} battleVisual.${key}`, profile[key], errors, {
+          min: 0.01,
+        });
+      }
+    }
+
+    if (profile.groundOffset !== undefined) {
+      this.validateFiniteNumber(
+        `${label} battleVisual.groundOffset`,
+        profile.groundOffset,
+        errors,
+        { min: 0 },
+      );
+    }
+
+    if (
+      profile.facing !== undefined &&
+      !["formation", "left", "right"].includes(profile.facing)
+    ) {
+      errors.push(
+        `${label} battleVisual.facing must be formation, left, or right.`,
+      );
+    }
+
+    const sheet = profile.sheet;
+    if (sheet !== undefined) {
+      if (!sheet || typeof sheet !== "object" || Array.isArray(sheet)) {
+        errors.push(`${label} battleVisual.sheet must be an object.`);
+      } else {
+        for (const key of ["columns", "rows"]) {
+          if (sheet[key] !== undefined) {
+            this.validateFiniteNumber(
+              `${label} battleVisual.sheet.${key}`,
+              sheet[key],
+              errors,
+              { min: 1, integer: true },
+            );
+          }
+        }
+      }
+    }
+
+    const shadow = profile.shadow;
+    if (shadow !== undefined) {
+      if (!shadow || typeof shadow !== "object" || Array.isArray(shadow)) {
+        errors.push(`${label} battleVisual.shadow must be an object.`);
+      } else {
+        for (const key of ["width", "height"]) {
+          if (shadow[key] !== undefined) {
+            this.validateFiniteNumber(
+              `${label} battleVisual.shadow.${key}`,
+              shadow[key],
+              errors,
+              { min: 1 },
+            );
+          }
+        }
+      }
+    }
+
+    const animations = profile.animations;
+    if (animations === undefined) {
+      return;
+    }
+
+    if (!animations || typeof animations !== "object" || Array.isArray(animations)) {
+      errors.push(`${label} battleVisual.animations must be an object.`);
+      return;
+    }
+
+    const builtInStates = new Set([
+      "idle",
+      "ready",
+      "attack",
+      "skill",
+      "magick",
+      "cast",
+      "item",
+      "defend",
+      "hurt",
+      "defeat",
+      "ko",
+      "victory",
+    ]);
+    const customStates = new Set(Object.keys(animations));
+    const columns = Number(
+      profile.sheet?.columns ?? record.battleSpriteFrames,
+    );
+    const rows = Number(profile.sheet?.rows ?? record.battleSpriteRows);
+
+    for (const [state, animation] of Object.entries(animations)) {
+      const animationLabel = `${label} battleVisual.animations.${state}`;
+
+      if (!animation || typeof animation !== "object" || Array.isArray(animation)) {
+        errors.push(`${animationLabel} must be an object.`);
+        continue;
+      }
+
+      if (animation.row !== undefined) {
+        this.validateFiniteNumber(`${animationLabel}.row`, animation.row, errors, {
+          min: 0,
+          integer: true,
+        });
+
+        if (Number.isInteger(rows) && Number(animation.row) >= rows) {
+          errors.push(`${animationLabel}.row must be less than sheet.rows (${rows}).`);
+        }
+      }
+
+      if (animation.frames !== undefined) {
+        this.validateFiniteNumber(
+          `${animationLabel}.frames`,
+          animation.frames,
+          errors,
+          { min: 1, integer: true },
+        );
+
+        if (Number.isInteger(columns) && Number(animation.frames) > columns) {
+          errors.push(
+            `${animationLabel}.frames must not exceed sheet.columns (${columns}).`,
+          );
+        }
+      }
+
+      if (animation.frameDuration !== undefined) {
+        this.validateFiniteNumber(
+          `${animationLabel}.frameDuration`,
+          animation.frameDuration,
+          errors,
+          { min: 0.001 },
+        );
+      }
+
+      for (const key of ["offsetX", "offsetY"]) {
+        if (animation[key] !== undefined) {
+          this.validateFiniteNumber(`${animationLabel}.${key}`, animation[key], errors);
+        }
+      }
+
+      if (animation.loop !== undefined && typeof animation.loop !== "boolean") {
+        errors.push(`${animationLabel}.loop must be true or false.`);
+      }
+
+      if (animation.fallback !== undefined) {
+        const fallback = String(animation.fallback || "").trim();
+        if (!fallback) {
+          errors.push(`${animationLabel}.fallback must be a non-empty state name.`);
+        } else if (!builtInStates.has(fallback) && !customStates.has(fallback)) {
+          errors.push(`${animationLabel}.fallback references unknown state ${fallback}.`);
+        }
+      }
+    }
+  }
+
   static validateBattleSprite(record, label, spriteKey, errors) {
     if (
       record[spriteKey] !== undefined &&
@@ -1363,6 +1538,8 @@ class DatabaseValidator {
         });
       }
     }
+
+    this.validateBattleVisualProfile(record, label, errors);
   }
 
   static validateBattlerStats(record, label, errors) {

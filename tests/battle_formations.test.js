@@ -402,13 +402,59 @@ function testFormationAwareAnimationDirectionsRemainRuntimeSafe() {
   assert.doesNotThrow(() => controller.updateBattlerStates(1 / 60));
 }
 
+
+function testNonPhysicalActionsStayPlantedAtCommittedActorAnchor() {
+  const actor = { name: "Caster" };
+  const actorData = { state: "magick", visualX: 18 };
+  const { Class: BattleAnimationController } = loadClass(
+    "js/battle/BattleAnimationController.js",
+    "BattleAnimationController",
+    {
+      $gameParty: { battleMembers: () => [actor] },
+      BattleManager: { TURN_COMMAND: "command" },
+    },
+  );
+  const scene = {
+    actionPhase: "magickCast",
+    actionPhaseTimer: 0.2,
+    partyActionAnchorX: 18,
+    partyController: { currentBattler: () => actor },
+    formationManager: { actorAdvanceDirection: () => 1 },
+    getPartyBattleData: () => actorData,
+    battleManager: { isTurnState: () => false },
+    battleInputLocked: true,
+  };
+  const controller = new BattleAnimationController(scene);
+
+  for (const phase of [
+    "magickCast",
+    "magickEffect",
+    "magickRecover",
+    "skillUse",
+    "skillEffect",
+    "itemUse",
+    "itemEffect",
+    "itemRecover",
+  ]) {
+    scene.actionPhase = phase;
+    assert.equal(controller.getActorTargetOffset(), 18);
+    assert.equal(controller.getActorTargetYOffset(), 0);
+    assert.equal(controller.getActorVisualScale(actor), 1);
+  }
+
+  // Forced/non-command actions that begin at formation home stay at home.
+  scene.partyActionAnchorX = 0;
+  scene.actionPhase = "magickCast";
+  assert.equal(controller.getActorTargetOffset(), 0);
+}
+
 function testRendererAndEffectsUseFormationAwareSpriteGeometry() {
   const rendererSource = read("js/battle/BattleRenderer.js");
   const effectsSource = read("js/battle/BattleEffects.js");
   const animationSource = read("js/battle/BattleAnimationController.js");
 
   assert.match(rendererSource, /getActorRenderScale/);
-  assert.match(rendererSource, /getEnemyFormationScale/);
+  assert.match(rendererSource, /getEnemyRenderScale/);
   assert.match(rendererSource, /getActorFacing/);
   assert.match(rendererSource, /getEnemyFacing/);
   assert.match(rendererSource, /getActorSpriteHeight/);
@@ -417,6 +463,59 @@ function testRendererAndEffectsUseFormationAwareSpriteGeometry() {
   assert.match(effectsSource, /getEnemySpriteHeight/);
   assert.match(animationSource, /actorAdvanceDirection/);
   assert.match(animationSource, /enemyAdvanceDirection/);
+}
+
+function testBattlerVisualProfileSupportsPerAssetAnimationsAndFallbacks() {
+  const { Class: Game_Battler } = loadClass(
+    "js/objects/Game_Battler.js",
+    "Game_Battler",
+  );
+  const battler = new Game_Battler({ name: "Visual Prototype" });
+
+  battler.configureBattleVisual(
+    {
+      battleSprite: "prototype.png",
+      battleSpriteWidth: 96,
+      battleSpriteHeight: 128,
+      battleVisual: {
+        sprite: "custom/prototype.png",
+        width: 120,
+        height: 160,
+        scale: 1.25,
+        facing: "left",
+        groundOffset: 7,
+        footprintWidth: 110,
+        shadow: { width: 88, height: 14 },
+        sheet: { columns: 6, rows: 4 },
+        animations: {
+          idle: { row: 0, frames: 6, frameDuration: 0.12, loop: true },
+          attack: { row: 1, frames: 5, frameDuration: 0.08, loop: false, offsetX: 3 },
+          item: { fallback: "idle", offsetY: -4 },
+        },
+      },
+    },
+    { spriteKey: "battleSprite", defaultWidth: 96, defaultHeight: 128 },
+  );
+
+  assert.equal(battler.battleVisual.sprite, "custom/prototype.png");
+  assert.equal(battler.battleVisualScale(), 1.25);
+  assert.equal(battler.battleFacing(1), -1);
+  assert.equal(battler.battleVisual.sheet.columns, 6);
+  assert.equal(battler.battleAnimation("attack").frames, 5);
+  assert.equal(battler.battleAnimation("attack").offsetX, 3);
+  assert.equal(battler.battleAnimation("item").row, 0);
+  assert.equal(battler.battleAnimation("item").offsetY, -4);
+  assert.equal(battler.battleAnimation("victory").row, 0);
+}
+
+function testCanonicalDataIncludesStructuredVisualPrototypes() {
+  const actors = readData("Actors.json");
+  const enemies = readData("Enemies.json");
+
+  assert.equal(actors[1].battleVisual.sprite, "Player_Battle.png");
+  assert.equal(actors[1].battleVisual.animations.attack.row, 1);
+  assert.equal(enemies[1].battleVisual.sprite, "TestSlime.png");
+  assert.equal(enemies[1].battleVisual.animations.attack.fallback, "idle");
 }
 
 function run() {
@@ -432,7 +531,10 @@ function run() {
   testFormationSchemaValidation();
   testFormationManagerLoadsBeforeFormationConsumers();
   testFormationAwareAnimationDirectionsRemainRuntimeSafe();
+  testNonPhysicalActionsStayPlantedAtCommittedActorAnchor();
   testRendererAndEffectsUseFormationAwareSpriteGeometry();
+  testBattlerVisualProfileSupportsPerAssetAnimationsAndFallbacks();
+  testCanonicalDataIncludesStructuredVisualPrototypes();
 
   console.log("Battle formation and party layout regression tests passed.");
 }
