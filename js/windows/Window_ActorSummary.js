@@ -64,14 +64,26 @@ class Window_ActorSummary {
 
     context.fillStyle = "rgba(12, 23, 45, 0.94)";
     context.fillRect(x, y, size, size);
+
+    const portraitDrawn =
+      typeof CharacterAssetManager !== "undefined" &&
+      typeof CharacterAssetManager.drawPortrait === "function" &&
+      CharacterAssetManager.drawPortrait(context, actor, x, y, size, size);
+
     context.strokeStyle = "rgba(137, 182, 235, 0.85)";
     context.lineWidth = 1.5;
     context.strokeRect(x, y, size, size);
+
+    if (portraitDrawn) {
+      return true;
+    }
+
     context.fillStyle = "#f3f7fc";
     context.font = `600 ${Math.max(28, Math.floor(size * 0.4))}px sans-serif`;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText(initial, x + size / 2, y + size / 2);
+    return false;
   }
 
   static drawGauge(context, value, maximum, x, y, width, resource) {

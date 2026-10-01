@@ -1318,6 +1318,68 @@ class DatabaseValidator {
   }
 
 
+  static validateCharacterVisualProfile(record, label, errors) {
+    const profile = record?.characterVisual;
+
+    if (profile === undefined) {
+      return;
+    }
+
+    if (!profile || typeof profile !== "object" || Array.isArray(profile)) {
+      errors.push(`${label} characterVisual must be an object when provided.`);
+      return;
+    }
+
+    const validPath = (value) =>
+      typeof value === "string" &&
+      value.trim() !== "" &&
+      !value.startsWith("/") &&
+      !value.includes("..");
+
+    if (profile.portrait !== undefined && !validPath(profile.portrait)) {
+      errors.push(`${label} characterVisual.portrait must be a safe relative path.`);
+    }
+
+    if (profile.expressions !== undefined) {
+      if (
+        !profile.expressions ||
+        typeof profile.expressions !== "object" ||
+        Array.isArray(profile.expressions)
+      ) {
+        errors.push(`${label} characterVisual.expressions must be an object.`);
+      } else {
+        for (const [key, value] of Object.entries(profile.expressions)) {
+          if (!String(key).trim() || !validPath(value)) {
+            errors.push(
+              `${label} characterVisual.expressions.${key} must be a safe relative path.`,
+            );
+          }
+        }
+      }
+    }
+
+    if (profile.effects !== undefined) {
+      if (
+        !profile.effects ||
+        typeof profile.effects !== "object" ||
+        Array.isArray(profile.effects)
+      ) {
+        errors.push(`${label} characterVisual.effects must be an object.`);
+      } else {
+        for (const key of ["attack", "magick", "skill", "item"]) {
+          if (
+            profile.effects[key] !== undefined &&
+            !/^#[0-9a-f]{6}$/i.test(String(profile.effects[key]))
+          ) {
+            errors.push(
+              `${label} characterVisual.effects.${key} must be a six-digit hex color.`,
+            );
+          }
+        }
+      }
+    }
+  }
+
   static validateFieldVisualProfile(record, label, errors) {
     const profile = record?.fieldVisual;
 
@@ -1820,6 +1882,7 @@ class DatabaseValidator {
       const label = `Actor ${index}`;
       this.validateBattlerStats(actor, label, errors);
       this.validateBattleSprite(actor, label, "sideBattleSprite", errors);
+      this.validateCharacterVisualProfile(actor, label, errors);
       this.validateFieldVisualProfile(actor, label, errors);
       this.validateFiniteNumber(`${label} exp`, actor.exp, errors, { min: 0 });
       this.validateFiniteNumber(`${label} maxValor`, actor.maxValor, errors, {

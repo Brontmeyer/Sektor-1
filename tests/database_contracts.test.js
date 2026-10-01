@@ -116,6 +116,36 @@ function testActorGrowthExpAndSpriteContracts() {
 }
 
 
+function testCharacterVisualProfileContracts() {
+  const DatabaseValidator = loadValidator();
+  const actors = clone(readData("Actors.json"));
+  const errors = [];
+
+  DatabaseValidator.validateActors(actors, errors);
+  assert.deepEqual(errors, []);
+
+  const malformed = clone(actors);
+  malformed[1].characterVisual.portrait = "../Tyler.png";
+  malformed[1].characterVisual.effects.magick = "blue";
+  malformed[2].characterVisual.expressions = [];
+  const malformedErrors = [];
+
+  DatabaseValidator.validateActors(malformed, malformedErrors);
+
+  assert.equal(
+    malformedErrors.some((error) => error.includes("characterVisual.portrait")),
+    true,
+  );
+  assert.equal(
+    malformedErrors.some((error) => error.includes("characterVisual.effects.magick")),
+    true,
+  );
+  assert.equal(
+    malformedErrors.some((error) => error.includes("characterVisual.expressions")),
+    true,
+  );
+}
+
 function testFieldVisualProfileContracts() {
   const DatabaseValidator = loadValidator();
   const actors = clone(readData("Actors.json"));
@@ -422,6 +452,7 @@ function run() {
   testCurrentProjectPassesExpandedValidation();
   testStoryIdentitySystemContract();
   testActorGrowthExpAndSpriteContracts();
+  testCharacterVisualProfileContracts();
   testFieldVisualProfileContracts();
   testEnemyElementRateAndSpriteContracts();
   testItemAndEquipmentContracts();

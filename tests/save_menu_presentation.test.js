@@ -166,6 +166,14 @@ function testLoadUsesSameFileCardLanguageWithPersistentPlayTime() {
   assert.match(source, /playTimeSeconds/);
 }
 
+function testSaveSlotsUseSharedPortraitResolverForSerializedActors() {
+  const source = read("js/windows/Window_SaveSlots.js");
+  const assetManager = read("js/core/CharacterAssetManager.js");
+
+  assert.match(source, /Window_ActorSummary\.drawPortraitPlaceholder/);
+  assert.match(assetManager, /DatabaseManager\.actor\(actorId\)/);
+}
+
 function testSaveSlotPartyPreviewUsesActiveBattleActorIds() {
   const harness = createHarness();
   const summary = harness.window.slotSummary(1);
@@ -180,6 +188,7 @@ function run() {
   testHeaderTracksCurrentlySelectedFile();
   testSaveSlotNavigationAndResultRemainRuntimeCompatible();
   testLoadUsesSameFileCardLanguageWithPersistentPlayTime();
+  testSaveSlotsUseSharedPortraitResolverForSerializedActors();
   testSaveSlotPartyPreviewUsesActiveBattleActorIds();
   console.log("Save menu presentation regression tests passed.");
 }

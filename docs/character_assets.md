@@ -112,6 +112,42 @@ Effect color is presentation metadata, not elemental combat identity. A blue cas
 
 ---
 
+
+# Runtime Character Presentation
+
+Playable actors may also define a `characterVisual` object in `Actors.json`. This is the shared presentation contract for menu/story portraits and signature effect colors.
+
+```json
+{
+  "characterVisual": {
+    "portrait": "portraits/Tyler.png",
+    "expressions": {},
+    "effects": {
+      "attack": "#e7b84d",
+      "magick": "#4aa3ff",
+      "skill": "#e7b84d",
+      "item": "#e7b84d"
+    }
+  }
+}
+```
+
+Character assets resolve beneath `js/sprites/actors/`. Portraits therefore currently live in:
+
+```text
+js/sprites/actors/portraits/
+```
+
+`CharacterAssetManager` owns lazy portrait loading and drawing. UI consumers request the actor portrait through that manager and retain the existing initial-letter card as a non-fatal fallback when an asset is absent or still loading.
+
+The approved Tyler and Sarah presentation boards live under `docs/character_refs/`. They are canonical visual references, not runtime-packed sprite sheets. The current 512×512 portraits were exported from those approved boards.
+
+## Living Battle Idle Standard
+
+Playable battlers should look alive while waiting for commands. The canonical Idle motion must therefore be a looping multi-frame motion (at least two frames) with subtle movement such as breathing, cloth/hair settling, stance shift, or equivalent character-appropriate life.
+
+Idle breathing is presentation only. It must not move the formation anchor, collision footprint, battle row, target position, or shadow contact point. Character-specific intensity/timing can be tuned through the battler animation metadata when production sheets replace the placeholder battlers.
+
 # `fieldVisual` Data Contract
 
 Actors may define an optional `fieldVisual` object in `Actors.json`.

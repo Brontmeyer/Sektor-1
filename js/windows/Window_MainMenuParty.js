@@ -239,15 +239,26 @@ class Window_MainMenuParty {
     context.save();
     context.fillStyle = "rgba(19, 30, 49, 0.96)";
     context.fillRect(x, y, size, size);
+
+    const portraitDrawn =
+      typeof CharacterAssetManager !== "undefined" &&
+      typeof CharacterAssetManager.drawPortrait === "function" &&
+      CharacterAssetManager.drawPortrait(context, actor, x, y, size, size);
+
     context.strokeStyle = "rgba(142, 180, 236, 0.72)";
     context.lineWidth = 1.25;
     context.strokeRect(x, y, size, size);
-    context.fillStyle = "#eef4fb";
-    context.font = `600 ${Math.max(24, Math.floor(size * 0.4))}px sans-serif`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.fillText(initial, x + size / 2, y + size / 2);
+
+    if (!portraitDrawn) {
+      context.fillStyle = "#eef4fb";
+      context.font = `600 ${Math.max(24, Math.floor(size * 0.4))}px sans-serif`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(initial, x + size / 2, y + size / 2);
+    }
+
     context.restore();
+    return portraitDrawn;
   }
 
   drawGauge(context, value, maximum, x, y, width, color) {

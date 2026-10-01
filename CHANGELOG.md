@@ -1,3 +1,13 @@
+## Pass 144 - Lead Character Runtime Portrait Pipeline v1
+- Save/Load party previews now resolve character portraits from actor database metadata even when rendering serialized save snapshots, so existing saves pick up current portrait art without storing asset paths in save data.
+- Added shared `characterVisual` actor metadata for runtime portraits, expression paths, and presentation-only effect colors without hard-coding actor names in UI windows.
+- Added `CharacterAssetManager` with safe relative-path resolution, lazy non-fatal image loading, cover-fit portrait drawing, and automatic fallback to the existing initial-letter portrait when art is missing or not yet loaded.
+- Integrated runtime portraits through the shared actor-summary path and MAIN MENU party cards, which also upgrades ROSTER, Save/Load, battle results, shops, name entry, and other windows that already reuse the actor portrait helper.
+- Added approved 512×512 runtime portraits for Tyler and Sarah, cropped from their accepted master character boards, while preserving the full approved boards under `docs/character_refs/` as canonical art references rather than runtime sprite sheets.
+- Formalized Tyler/Sarah presentation colors as neutral-gold physical/Skill/Item feedback with Tyler blue Magick and Sarah crimson/red Magick. These colors are presentation metadata and do not redefine spell elements.
+- Moved Sarah onto the same structured placeholder `battleVisual` profile as Tyler so both lead actors are ready for future production battlers without changing current battle appearance.
+- Regression-locked the living battler idle contract: lead-character Idle animations remain multi-frame looping motions, preserving the subtle breathing/alive presentation when final battlers replace the current test art.
+
 ## Pass 143 - Eight-Direction Field Character Pipeline v1
 - Added optional actor `fieldVisual` metadata for production field sprites: asset name, frame dimensions, scale, anchor/offset, sheet dimensions, eight direction rows, idle/walk frames, and fast/slow cadence.
 - Upgraded `Game_Player` presentation state to resolve all eight movement directions from actual post-collision velocity. Diagonal movement therefore uses diagonal art, wall collisions can naturally collapse to a cardinal direction, and deceleration preserves meaningful facing until the actor stops.

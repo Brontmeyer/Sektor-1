@@ -129,6 +129,11 @@ SaveManager.js
 SceneManager.js
 ```
 
+
+## CharacterAssetManager
+
+`CharacterAssetManager` resolves actor presentation assets from `characterVisual` metadata instead of embedding actor names or filenames inside windows. Portrait loading is lazy and non-fatal: menu surfaces use the shared actor portrait when it is ready and preserve their existing initial-letter placeholder when an asset is missing. Master character boards remain documentation references; only clean runtime exports are placed under `js/sprites/actors/`.
+
 ## DevTools
 
 `DevTools` is a development-only console facade installed as `$dev` after database and game-object initialization when `System.debugMode` is explicitly true. It provides short, stable-ID helpers for live actor/party resources, statuses, encounters, inventory, recruitment, and Essence progression/passive setup. `statusChance()` is a deterministic diagnostic over the actor's real status-rate contract, useful for verifying resistance passives without statistical trial-and-error; it does not apply the status or roll RNG. DevTools must not become a gameplay authority or write canonical data; helpers delegate to the same runtime objects/managers used by ordinary play. Production/debug-disabled startup does not expose `$dev`.

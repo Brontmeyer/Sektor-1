@@ -68,6 +68,11 @@ class Game_Actor extends Game_Battler {
     // until a production field sprite is assigned to this actor.
     this.fieldVisual = this.configureFieldVisual(actorData);
 
+    // Shared character presentation metadata owns portrait/expression paths and
+    // signature effect colors. Runtime screens can consume the same contract
+    // without hard-coding actor names or asset filenames.
+    this.characterVisual = this.configureCharacterVisual(actorData);
+
     this.exp = actorData.exp;
     this.growth = actorData.growth;
 
@@ -197,6 +202,56 @@ class Game_Actor extends Game_Battler {
         fastFrameDuration: positive(animation.fastFrameDuration, 0.1),
         slowFrameDuration: positive(animation.slowFrameDuration, 0.22),
         minimumSpeed: Math.max(0, finite(animation.minimumSpeed, 1)),
+      },
+    };
+  }
+
+  // =====================================
+  // Character Presentation Profile
+  // =====================================
+
+  configureCharacterVisual(data = {}) {
+    const source = data?.characterVisual;
+
+    if (!source || typeof source !== "object" || Array.isArray(source)) {
+      return null;
+    }
+
+    const cleanPath = (value) => {
+      const path = String(value || "").trim().replace(/\\/g, "/");
+      return path && !path.startsWith("/") && !path.includes("..")
+        ? path
+        : null;
+    };
+    const expressions = {};
+
+    if (source.expressions && typeof source.expressions === "object") {
+      for (const [key, value] of Object.entries(source.expressions)) {
+        const path = cleanPath(value);
+
+        if (path) {
+          expressions[String(key)] = path;
+        }
+      }
+    }
+
+    const effects =
+      source.effects && typeof source.effects === "object"
+        ? source.effects
+        : {};
+    const effectColor = (key, fallback) => {
+      const value = String(effects[key] || "").trim();
+      return /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
+    };
+
+    return {
+      portrait: cleanPath(source.portrait),
+      expressions,
+      effects: {
+        attack: effectColor("attack", "#e7b84d"),
+        magick: effectColor("magick", "#8bb8ff"),
+        skill: effectColor("skill", "#e7b84d"),
+        item: effectColor("item", "#e7b84d"),
       },
     };
   }
