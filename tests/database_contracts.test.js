@@ -127,6 +127,7 @@ function testCharacterVisualProfileContracts() {
   const malformed = clone(actors);
   malformed[1].characterVisual.portrait = "../Tyler.png";
   malformed[1].characterVisual.effects.magick = "blue";
+  malformed[1].characterVisual.portraitScale = 1.6;
   malformed[2].characterVisual.expressions = [];
   const malformedErrors = [];
 
@@ -138,6 +139,10 @@ function testCharacterVisualProfileContracts() {
   );
   assert.equal(
     malformedErrors.some((error) => error.includes("characterVisual.effects.magick")),
+    true,
+  );
+  assert.equal(
+    malformedErrors.some((error) => error.includes("characterVisual.portraitScale")),
     true,
   );
   assert.equal(

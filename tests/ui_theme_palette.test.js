@@ -31,6 +31,9 @@ function testSemanticUiPalette() {
   assert.equal(Palette.hint(), "#c7a7ff");
   assert.equal(Palette.keyItem(), "#ff9ed8");
   assert.equal(Palette.backdrop(), "#0b0e13");
+  assert.equal(Palette.portraitFill(), "#2a5c78");
+  assert.equal(Palette.portraitFillDeep(), "#10283f");
+  assert.equal(Palette.portraitBorder(), "#8ac7e8");
 }
 
 function testPaletteLoadsBeforeFieldAndShopConsumers() {

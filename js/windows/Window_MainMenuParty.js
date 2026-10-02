@@ -233,32 +233,40 @@ class Window_MainMenuParty {
   drawPortraitPlaceholder(context, actor, x, y, size) {
     // Keep portrait frames square across MAIN MENU, MAGICK, SKILL, ESSENCE,
     // and EQUIP. Only horizontal portrait position communicates battle row.
-    const initial =
-      String(actor?.name || "?").trim().charAt(0).toUpperCase() || "?";
-
-    context.save();
-    context.fillStyle = "rgba(19, 30, 49, 0.96)";
-    context.fillRect(x, y, size, size);
-
-    const portraitDrawn =
-      typeof CharacterAssetManager !== "undefined" &&
-      typeof CharacterAssetManager.drawPortrait === "function" &&
-      CharacterAssetManager.drawPortrait(context, actor, x, y, size, size);
-
-    context.strokeStyle = "rgba(142, 180, 236, 0.72)";
-    context.lineWidth = 1.25;
-    context.strokeRect(x, y, size, size);
-
-    if (!portraitDrawn) {
-      context.fillStyle = "#eef4fb";
-      context.font = `600 ${Math.max(24, Math.floor(size * 0.4))}px sans-serif`;
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.fillText(initial, x + size / 2, y + size / 2);
+    if (
+      typeof Window_ActorSummary !== "undefined" &&
+      typeof Window_ActorSummary.drawPortraitPlaceholder === "function"
+    ) {
+      return Window_ActorSummary.drawPortraitPlaceholder(
+        context,
+        actor,
+        x,
+        y,
+        size,
+      );
     }
 
-    context.restore();
-    return portraitDrawn;
+    const initial =
+      String(actor?.name || "?").trim().charAt(0).toUpperCase() || "?";
+    context.fillStyle =
+      typeof UIThemePalette !== "undefined" &&
+      typeof UIThemePalette.portraitFill === "function"
+        ? UIThemePalette.portraitFill()
+        : "#2a5c78";
+    context.fillRect(x, y, size, size);
+    context.strokeStyle =
+      typeof UIThemePalette !== "undefined" &&
+      typeof UIThemePalette.portraitBorder === "function"
+        ? UIThemePalette.portraitBorder()
+        : "#8ac7e8";
+    context.lineWidth = 1.25;
+    context.strokeRect(x, y, size, size);
+    context.fillStyle = "#eef4fb";
+    context.font = `600 ${Math.max(24, Math.floor(size * 0.4))}px sans-serif`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(initial, x + size / 2, y + size / 2);
+    return false;
   }
 
   drawGauge(context, value, maximum, x, y, width, color) {

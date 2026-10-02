@@ -12,8 +12,9 @@ class UIThemePalette {
     hint: "#c7a7ff",
     keyItem: "#ff9ed8",
     backdrop: "#0b0e13",
-    portraitFill: "#0c172d",
-    portraitBorder: "#89b6eb",
+    portraitFill: "#2a5c78",
+    portraitFillDeep: "#10283f",
+    portraitBorder: "#8ac7e8",
   });
 
   static color(role, fallback = "#ffffff") {
@@ -58,5 +59,17 @@ class UIThemePalette {
 
   static backdrop() {
     return this.color("backdrop", "#0b0e13");
+  }
+
+  static portraitFill() {
+    return this.color("portraitFill", "#2a5c78");
+  }
+
+  static portraitFillDeep() {
+    return this.color("portraitFillDeep", "#10283f");
+  }
+
+  static portraitBorder() {
+    return this.color("portraitBorder", "#8ac7e8");
   }
 }

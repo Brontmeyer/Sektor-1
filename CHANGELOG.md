@@ -1,3 +1,20 @@
+## Pass 145 v3 - portrait full-bleed correction
+
+- Added per-axis portrait scaling so transparent side gutters can be filled without vertically cropping actor faces.
+- Tyler uses `portraitScaleX: 1.20`; Sarah uses `portraitScaleX: 1.12`, matching the transparent side margins in their current runtime portrait art.
+- Refreshed the shared portrait backdrop to a brighter storm-blue gradient with a soft center glow.
+- The organized `js/sprites/ui/` layout remains the only UI asset layout in this snapshot; legacy `adventure/` and `rmmz/` folders are intentionally absent.
+
+## Pass 145 - Portrait Framing + Icon Atlas / UI Asset Cleanup v2
+- Kept `characterVisual.portraitScale` as a reusable per-actor presentation control, but returned Tyler and Sarah to full-frame `1.0` rendering so their portrait canvases meet the square card edges instead of leaving inset gutters.
+- Added a shared slate-blue portrait backdrop (`#173653` -> `#0e2238`) and brighter blue border through `UIThemePalette`; MAIN MENU now reuses the same `Window_ActorSummary` portrait presenter as Save/Load, ROSTER, battle results, and other shared actor surfaces so portrait treatment cannot drift between screens.
+- Reorganized the active UI art into purpose-named folders under `js/sprites/ui/`: `panels/`, `buttons/`, `gauges/`, `icons/`, `battle/`, and `licenses/`. The old source-pack folders `adventure/` and `rmmz/` are removed, while `UIAssetManager` remains the only runtime owner of concrete asset paths.
+- Installed the user-supplied ArtIcons catalog as the active runtime `IconSet.png`. The original 190×2048 artwork is preserved and padded transparently to 192×2052, producing a stable 16-column × 171-row grid of 12×12 source cells.
+- Upgraded `UIAssetManager` icon geometry helpers and bounds checks for the large atlas, added coordinate-to-index support, and disabled image smoothing during icon scaling so the pixel-art source remains crisp in larger UI slots.
+- Removed dead UI assets and hooks with no production consumer: `Window.png`, `ButtonSet.png`, and `panel_grey_dark.png`. The active panels, gauge frame, selection art, battle shadow, and Kenney license remain intact in their semantic folders.
+- Documented the catalog-style icon sheet and its category-label/blank cells. Icon mappings are intentionally data-authored later rather than guessing visual IDs during infrastructure work.
+- Extended database and regression coverage for portrait scaling, shared portrait styling, semantic UI asset paths, icon-atlas geometry/capacity, removed dead assets, and crisp indexed icon drawing.
+
 ## Pass 144 - Lead Character Runtime Portrait Pipeline v1
 - Save/Load party previews now resolve character portraits from actor database metadata even when rendering serialized save snapshots, so existing saves pick up current portrait art without storing asset paths in save data.
 - Added shared `characterVisual` actor metadata for runtime portraits, expression paths, and presentation-only effect colors without hard-coding actor names in UI windows.

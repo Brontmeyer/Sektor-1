@@ -1340,6 +1340,26 @@ class DatabaseValidator {
       errors.push(`${label} characterVisual.portrait must be a safe relative path.`);
     }
 
+    if (profile.portraitScale !== undefined) {
+      this.validateFiniteNumber(
+        `${label} characterVisual.portraitScale`,
+        profile.portraitScale,
+        errors,
+        { min: 0.5, max: 1.5 },
+      );
+    }
+
+    for (const axis of ["portraitScaleX", "portraitScaleY"]) {
+      if (profile[axis] !== undefined) {
+        this.validateFiniteNumber(
+          `${label} characterVisual.${axis}`,
+          profile[axis],
+          errors,
+          { min: 0.5, max: 1.5 },
+        );
+      }
+    }
+
     if (profile.expressions !== undefined) {
       if (
         !profile.expressions ||

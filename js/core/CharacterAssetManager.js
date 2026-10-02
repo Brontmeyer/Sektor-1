@@ -133,7 +133,24 @@ class CharacterAssetManager {
     const sourceHeight = Number(image.naturalHeight || image.height);
     const destWidth = Math.max(1, Number(width) || 1);
     const destHeight = Math.max(1, Number(height) || destWidth);
-    const destRatio = destWidth / destHeight;
+    const profile = this.visualProfile(actor);
+    const configuredScale = Number(profile?.portraitScale);
+    const portraitScale = Number.isFinite(configuredScale)
+      ? Math.max(0.5, Math.min(1.5, configuredScale))
+      : 1;
+    const configuredScaleX = Number(profile?.portraitScaleX);
+    const configuredScaleY = Number(profile?.portraitScaleY);
+    const portraitScaleX = Number.isFinite(configuredScaleX)
+      ? Math.max(0.5, Math.min(1.5, configuredScaleX))
+      : 1;
+    const portraitScaleY = Number.isFinite(configuredScaleY)
+      ? Math.max(0.5, Math.min(1.5, configuredScaleY))
+      : 1;
+    const drawWidth = destWidth * portraitScale * portraitScaleX;
+    const drawHeight = destHeight * portraitScale * portraitScaleY;
+    const drawX = x + (destWidth - drawWidth) / 2;
+    const drawY = y + (destHeight - drawHeight) / 2;
+    const destRatio = drawWidth / drawHeight;
     const sourceRatio = sourceWidth / sourceHeight;
 
     let sx = 0;
@@ -161,10 +178,10 @@ class CharacterAssetManager {
       sy,
       sw,
       sh,
-      x,
-      y,
-      destWidth,
-      destHeight,
+      drawX,
+      drawY,
+      drawWidth,
+      drawHeight,
     );
     context.restore?.();
     return true;

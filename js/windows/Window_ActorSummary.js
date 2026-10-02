@@ -58,19 +58,62 @@ class Window_ActorSummary {
     return false;
   }
 
+  static drawPortraitBackdrop(context, x, y, size) {
+    const fill =
+      typeof UIThemePalette !== "undefined" &&
+      typeof UIThemePalette.portraitFill === "function"
+        ? UIThemePalette.portraitFill()
+        : "#2a5c78";
+    const deep =
+      typeof UIThemePalette !== "undefined" &&
+      typeof UIThemePalette.portraitFillDeep === "function"
+        ? UIThemePalette.portraitFillDeep()
+        : "#10283f";
+
+    if (typeof context.createLinearGradient === "function") {
+      const gradient = context.createLinearGradient(x, y, x, y + size);
+      gradient.addColorStop(0, fill);
+      gradient.addColorStop(1, deep);
+      context.fillStyle = gradient;
+    } else {
+      context.fillStyle = fill;
+    }
+
+    context.fillRect(x, y, size, size);
+
+    if (typeof context.createRadialGradient === "function") {
+      const glow = context.createRadialGradient(
+        x + size * 0.5,
+        y + size * 0.38,
+        0,
+        x + size * 0.5,
+        y + size * 0.38,
+        size * 0.72,
+      );
+      glow.addColorStop(0, "rgba(92, 170, 190, 0.24)");
+      glow.addColorStop(0.6, "rgba(45, 98, 127, 0.10)");
+      glow.addColorStop(1, "rgba(8, 22, 38, 0)");
+      context.fillStyle = glow;
+      context.fillRect(x, y, size, size);
+    }
+  }
+
   static drawPortraitPlaceholder(context, actor, x, y, size) {
     const initial =
       String(actor?.name || "?").trim().charAt(0).toUpperCase() || "?";
 
-    context.fillStyle = "rgba(12, 23, 45, 0.94)";
-    context.fillRect(x, y, size, size);
+    this.drawPortraitBackdrop(context, x, y, size);
 
     const portraitDrawn =
       typeof CharacterAssetManager !== "undefined" &&
       typeof CharacterAssetManager.drawPortrait === "function" &&
       CharacterAssetManager.drawPortrait(context, actor, x, y, size, size);
 
-    context.strokeStyle = "rgba(137, 182, 235, 0.85)";
+    context.strokeStyle =
+      typeof UIThemePalette !== "undefined" &&
+      typeof UIThemePalette.portraitBorder === "function"
+        ? UIThemePalette.portraitBorder()
+        : "#8ac7e8";
     context.lineWidth = 1.5;
     context.strokeRect(x, y, size, size);
 

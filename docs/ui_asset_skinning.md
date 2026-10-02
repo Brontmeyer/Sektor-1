@@ -2,21 +2,37 @@
 
 Pass 54 establishes one presentation-asset boundary for Sektor 1 instead of letting renderers and windows hard-code image paths.
 
-## Curated RPG Maker MZ system assets
+## Curated runtime UI assets
 
-The user-provided `rmmz` archive contains a mixture of engine code, plugins, system graphics, and effect resources. Pass 54 deliberately imports only four system images into `js/sprites/ui/rmmz/`:
+Pass 145 trims the presentation library to assets that have a current runtime role, installs the user-supplied ArtIcons catalog as the active icon atlas, and organizes runtime art by purpose rather than by its source pack.
 
-- `Window.png` -> `windowSkin`
-  - Useful as a reusable windowskin source: background, frame slices, cursor region, and palette.
-  - Not treated as the final Sektor 1 look. The vector presentation remains the safe fallback while later skinning decides where an image-backed frame genuinely improves the game.
-- `IconSet.png` -> `iconSet`
-  - Strong candidate for future item, equipment, Magick, Skill, status, and elemental icon presentation.
-  - `UIAssetManager.drawIcon()` exposes 32x32 indexed extraction without teaching consumers the sheet geometry.
-- `ButtonSet.png` -> `buttonSet`
-  - Reserved for future controller/touch/input presentation. Keyboard hints remain generated from Config Runtime v2 and are not replaced by static button art.
-- `Shadow2.png` -> `battleShadow`
-  - Selected immediately because it visually grounds side-view battlers without changing combat rules.
-  - `BattleRenderer` uses it through `UIAssetManager`; if unavailable, battle rendering simply continues without the decorative shadow.
+Current semantic folders under `js/sprites/ui/`:
+
+- `icons/IconSet.png` -> `iconSet`
+  - User-supplied ArtIcons catalog.
+  - Normalized to a transparent 192×2052 atlas: 16 columns × 171 rows of 12×12 cells.
+  - The original catalog artwork is preserved at the top-left; only transparent padding was added to complete the final column/row.
+  - Some cells contain category labels or blanks. Gameplay/database records therefore choose explicit icon indexes instead of assuming every atlas cell is a usable icon.
+  - `UIAssetManager.drawIcon()` scales these pixel icons with image smoothing disabled so 12×12 source art stays crisp at menu sizes.
+- `battle/Shadow2.png` -> `battleShadow`
+  - Used by the battle renderer to ground side-view battlers without changing combat rules.
+  - If unavailable, battle rendering continues without the decorative shadow.
+- `panels/panel_grey_blue.png` -> `battlePanel` / `menuPanel`
+- `panels/panel_grey_bolts_blue.png` -> `accentPanel`
+- `buttons/button_grey.png` -> `selectionPanel`
+- `gauges/progress_transparent.png` -> `gaugeFrame`
+- `licenses/Kenney_UI_Pack_Adventure_LICENSE.txt`
+  - Preserves the Kenney CC0 notice without keeping a vendor-named runtime folder.
+
+The old `adventure/` and `rmmz/` directories are intentionally gone. Runtime code consumes semantic roles through `UIAssetManager`; folder names now describe what the asset does in Sektor 1 rather than where it originally came from.
+
+Removed as dead runtime assets in Pass 145:
+
+- `Window.png`
+- `ButtonSet.png`
+- `panel_grey_dark.png`
+
+Those files had no production consumer. Their unused manager/test hooks were removed at the same time rather than leaving decorative files that looked authoritative but were not used by the game.
 
 ## Good later candidates from the supplied pack
 
@@ -43,7 +59,6 @@ Sektor 1 remains its own engine. Third-party engine/plugin code does not become 
 - asynchronous image loading
 - load-failure reporting
 - image availability checks
-- windowskin nine-slice drawing
 - icon-sheet extraction
 - battle-shadow drawing
 
@@ -53,10 +68,16 @@ Every asset-backed presentation path must remain optional. Missing art must pres
 
 ## Licensing note
 
-The imported images came from the user-supplied RPG Maker MZ material archive. Project distribution must comply with the applicable RPG Maker material terms and any separate terms attached to material that was distributed separately from the base product. Do not assume plugin code or separately bundled materials share the same license as the base system graphics.
+The active UI library has more than one source family:
+
+- `Shadow2.png` came from the user-supplied RPG Maker MZ material archive and remains subject to the applicable RPG Maker material terms.
+- Kenney Adventure UI assets retain their CC0 notice at `ui/licenses/Kenney_UI_Pack_Adventure_LICENSE.txt`.
+- The ArtIcons catalog was supplied separately by the user. No separate ArtIcons license file was provided in this pass, so distribution rights for that atlas should be confirmed before shipping a public build.
+
+Do not assume unrelated source families share licensing terms.
 ## Pass 55: Adventure UI style prototype
 
-UI Style Integration Prototype v1 adds a second curated source family under `js/sprites/ui/adventure/`. The included `License.txt` identifies **UI Pack - Adventure 1.1** by Kenney as CC0. The repository keeps that license beside the imported subset.
+UI Style Integration Prototype v1 introduced the Kenney **UI Pack - Adventure 1.1** artwork as a CC0 source family. Pass 145 later reorganizes the actively used subset into semantic `ui/panels`, `ui/buttons`, and `ui/gauges` folders while preserving the Kenney notice in `ui/licenses/`.
 
 Semantic mappings currently are:
 

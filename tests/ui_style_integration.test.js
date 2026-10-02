@@ -64,23 +64,23 @@ function testSemanticManifestKeepsSourceFilenamesCentralized() {
 
   assert.equal(
     manifest.battlePanel,
-    "js/sprites/ui/adventure/panel_grey_blue.png",
+    "js/sprites/ui/panels/panel_grey_blue.png",
   );
   assert.equal(
     manifest.menuPanel,
-    "js/sprites/ui/adventure/panel_grey_blue.png",
+    "js/sprites/ui/panels/panel_grey_blue.png",
   );
   assert.equal(
     manifest.accentPanel,
-    "js/sprites/ui/adventure/panel_grey_bolts_blue.png",
+    "js/sprites/ui/panels/panel_grey_bolts_blue.png",
   );
   assert.equal(
     manifest.selectionPanel,
-    "js/sprites/ui/adventure/button_grey.png",
+    "js/sprites/ui/buttons/button_grey.png",
   );
   assert.equal(
     manifest.gaugeFrame,
-    "js/sprites/ui/adventure/progress_transparent.png",
+    "js/sprites/ui/gauges/progress_transparent.png",
   );
 }
 
@@ -196,7 +196,7 @@ function testPrimaryConsumersRequestSemanticRoles() {
 }
 
 
-function testRuntimeConsumersDoNotHardcodeAdventureFilenames() {
+function testRuntimeConsumersDoNotHardcodeUiSourcePaths() {
   const jsRoot = path.join(projectRoot, "js");
   const stack = [jsRoot];
   const offenders = [];
@@ -224,7 +224,7 @@ function testRuntimeConsumersDoNotHardcodeAdventureFilenames() {
 
       const source = fs.readFileSync(absolute, "utf8");
 
-      if (source.includes("js/sprites/ui/adventure/")) {
+      if (/js\/sprites\/ui\/(?:panels|buttons|gauges)\//.test(source)) {
         offenders.push(relative);
       }
     }
@@ -233,21 +233,20 @@ function testRuntimeConsumersDoNotHardcodeAdventureFilenames() {
   assert.deepEqual(offenders, []);
 }
 
-function testCuratedAdventureAssetsAndLicenseArePresent() {
+function testCuratedUiAssetsAndLicenseArePresent() {
   const paths = [
-    "js/sprites/ui/adventure/panel_grey_blue.png",
-    "js/sprites/ui/adventure/panel_grey_bolts_blue.png",
-    "js/sprites/ui/adventure/panel_grey_dark.png",
-    "js/sprites/ui/adventure/button_grey.png",
-    "js/sprites/ui/adventure/progress_transparent.png",
-    "js/sprites/ui/adventure/License.txt",
+    "js/sprites/ui/panels/panel_grey_blue.png",
+    "js/sprites/ui/panels/panel_grey_bolts_blue.png",
+    "js/sprites/ui/buttons/button_grey.png",
+    "js/sprites/ui/gauges/progress_transparent.png",
+    "js/sprites/ui/licenses/Kenney_UI_Pack_Adventure_LICENSE.txt",
   ];
 
   for (const relativePath of paths) {
     assert.equal(fs.existsSync(path.join(projectRoot, relativePath)), true);
   }
 
-  const license = read("js/sprites/ui/adventure/License.txt");
+  const license = read("js/sprites/ui/licenses/Kenney_UI_Pack_Adventure_LICENSE.txt");
   assert.match(license, /Creative Commons Zero, CC0/);
   assert.match(license, /Kenney/);
 }
@@ -257,8 +256,8 @@ function run() {
   testPanelDrawsFallbackThenOptionalNineSlice();
   testSelectionAndGaugeArtRemainOptional();
   testPrimaryConsumersRequestSemanticRoles();
-  testRuntimeConsumersDoNotHardcodeAdventureFilenames();
-  testCuratedAdventureAssetsAndLicenseArePresent();
+  testRuntimeConsumersDoNotHardcodeUiSourcePaths();
+  testCuratedUiAssetsAndLicenseArePresent();
 
   console.log("UI style integration regression tests passed.");
 }

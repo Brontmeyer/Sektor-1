@@ -61,6 +61,8 @@ New development can now be selected primarily from the active roadmap and TODO p
 -   ✅ Config Submenu Presentation Consistency v1
 -   ✅ Battle UI / Presentation Polish v1
 -   ✅ Asset / UI Skinning Foundation v1
+-   ✅ Large ArtIcons Atlas + UI Asset Cleanup v1
+-   ✅ Runtime Character Portrait Pipeline + Breathing Room v1
 -   ✅ UI Style Integration Prototype v1
 -   ✅ Menu Window Softening & Frame Polish v1
 -   ✅ Main Menu Information & Command Layout v1

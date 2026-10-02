@@ -1,25 +1,24 @@
 "use strict";
 
 class UIAssetManager {
-  static WINDOW_SKIN_FRAME_SIZE = 96;
-  static WINDOW_SKIN_FRAME_MARGIN = 24;
-  static ICON_SIZE = 32;
+  // ArtIcons atlas used by Sektor 1. The supplied catalog is arranged on a
+  // 12px grid with 16 columns. Some cells contain category labels rather than
+  // icons, so gameplay data deliberately owns the chosen icon indexes.
+  static ICON_SIZE = 12;
   static ICON_COLUMNS = 16;
 
   static _manifest = Object.freeze({
-    windowSkin: "js/sprites/ui/rmmz/Window.png",
-    iconSet: "js/sprites/ui/rmmz/IconSet.png",
-    buttonSet: "js/sprites/ui/rmmz/ButtonSet.png",
-    battleShadow: "js/sprites/ui/rmmz/Shadow2.png",
+    iconSet: "js/sprites/ui/icons/IconSet.png",
+    battleShadow: "js/sprites/ui/battle/Shadow2.png",
 
     // Pass 55 - UI Style Integration Prototype v1
     // Consumers request semantic roles. Actual source filenames stay here so
     // the visual skin can be swapped later without editing gameplay windows.
-    battlePanel: "js/sprites/ui/adventure/panel_grey_blue.png",
-    menuPanel: "js/sprites/ui/adventure/panel_grey_blue.png",
-    accentPanel: "js/sprites/ui/adventure/panel_grey_bolts_blue.png",
-    selectionPanel: "js/sprites/ui/adventure/button_grey.png",
-    gaugeFrame: "js/sprites/ui/adventure/progress_transparent.png",
+    battlePanel: "js/sprites/ui/panels/panel_grey_blue.png",
+    menuPanel: "js/sprites/ui/panels/panel_grey_blue.png",
+    accentPanel: "js/sprites/ui/panels/panel_grey_bolts_blue.png",
+    selectionPanel: "js/sprites/ui/buttons/button_grey.png",
+    gaugeFrame: "js/sprites/ui/gauges/progress_transparent.png",
   });
 
   static _images = new Map();
@@ -827,161 +826,48 @@ class UIAssetManager {
     return true;
   }
 
-  static drawWindowSkin(
-    context,
-    x,
-    y,
-    width,
-    height,
-    { alpha = 1, drawBackground = true, drawFrame = true } = {},
-  ) {
-    const image = this.image("windowSkin");
+  static iconGeometry() {
+    const image = this.image("iconSet");
+    const sourceWidth = Number(image?.naturalWidth || image?.width || 0);
+    const sourceHeight = Number(image?.naturalHeight || image?.height || 0);
+    const rows =
+      sourceWidth > 0 && sourceHeight > 0
+        ? Math.floor(sourceHeight / this.ICON_SIZE)
+        : 0;
+    const columns =
+      sourceWidth > 0
+        ? Math.min(this.ICON_COLUMNS, Math.floor(sourceWidth / this.ICON_SIZE))
+        : 0;
 
-    if (
-      !image ||
-      !context ||
-      typeof context.drawImage !== "function" ||
-      width <= 0 ||
-      height <= 0
-    ) {
-      return false;
-    }
-
-    const frameSize = this.WINDOW_SKIN_FRAME_SIZE;
-    const margin = Math.min(
-      this.WINDOW_SKIN_FRAME_MARGIN,
-      width / 2,
-      height / 2,
-    );
-
-    context.save?.();
-    const previousAlpha = Number.isFinite(context.globalAlpha)
-      ? context.globalAlpha
-      : 1;
-    context.globalAlpha = previousAlpha * Math.max(0, Math.min(1, alpha));
-
-    if (drawBackground) {
-      context.drawImage(
-        image,
-        0,
-        0,
-        frameSize,
-        frameSize,
-        x + margin,
-        y + margin,
-        Math.max(0, width - margin * 2),
-        Math.max(0, height - margin * 2),
-      );
-    }
-
-    if (drawFrame) {
-      const sx = frameSize;
-      const sy = 0;
-      const sourceMargin = this.WINDOW_SKIN_FRAME_MARGIN;
-      const sourceMiddle = frameSize - sourceMargin * 2;
-      const destMiddleWidth = Math.max(0, width - margin * 2);
-      const destMiddleHeight = Math.max(0, height - margin * 2);
-
-      // Corners.
-      context.drawImage(
-        image,
-        sx,
-        sy,
-        sourceMargin,
-        sourceMargin,
-        x,
-        y,
-        margin,
-        margin,
-      );
-      context.drawImage(
-        image,
-        sx + frameSize - sourceMargin,
-        sy,
-        sourceMargin,
-        sourceMargin,
-        x + width - margin,
-        y,
-        margin,
-        margin,
-      );
-      context.drawImage(
-        image,
-        sx,
-        sy + frameSize - sourceMargin,
-        sourceMargin,
-        sourceMargin,
-        x,
-        y + height - margin,
-        margin,
-        margin,
-      );
-      context.drawImage(
-        image,
-        sx + frameSize - sourceMargin,
-        sy + frameSize - sourceMargin,
-        sourceMargin,
-        sourceMargin,
-        x + width - margin,
-        y + height - margin,
-        margin,
-        margin,
-      );
-
-      // Edges.
-      context.drawImage(
-        image,
-        sx + sourceMargin,
-        sy,
-        sourceMiddle,
-        sourceMargin,
-        x + margin,
-        y,
-        destMiddleWidth,
-        margin,
-      );
-      context.drawImage(
-        image,
-        sx + sourceMargin,
-        sy + frameSize - sourceMargin,
-        sourceMiddle,
-        sourceMargin,
-        x + margin,
-        y + height - margin,
-        destMiddleWidth,
-        margin,
-      );
-      context.drawImage(
-        image,
-        sx,
-        sy + sourceMargin,
-        sourceMargin,
-        sourceMiddle,
-        x,
-        y + margin,
-        margin,
-        destMiddleHeight,
-      );
-      context.drawImage(
-        image,
-        sx + frameSize - sourceMargin,
-        sy + sourceMargin,
-        sourceMargin,
-        sourceMiddle,
-        x + width - margin,
-        y + margin,
-        margin,
-        destMiddleHeight,
-      );
-    }
-
-    context.restore?.();
-    return true;
+    return {
+      cellSize: this.ICON_SIZE,
+      columns,
+      rows,
+      capacity: columns * rows,
+    };
   }
 
-  static drawIcon(context, iconIndex, x, y, size = this.ICON_SIZE) {
+  static iconIndex(column, row) {
+    const x = Number(column);
+    const y = Number(row);
+
+    if (
+      !Number.isInteger(x) ||
+      !Number.isInteger(y) ||
+      x < 0 ||
+      x >= this.ICON_COLUMNS ||
+      y < 0
+    ) {
+      return null;
+    }
+
+    return y * this.ICON_COLUMNS + x;
+  }
+
+  static drawIcon(context, iconIndex, x, y, size = 24) {
     const image = this.image("iconSet");
     const index = Number(iconIndex);
+    const geometry = this.iconGeometry();
 
     if (
       !image ||
@@ -989,14 +875,20 @@ class UIAssetManager {
       typeof context.drawImage !== "function" ||
       !Number.isInteger(index) ||
       index < 0 ||
+      index >= geometry.capacity ||
       !Number.isFinite(size) ||
       size <= 0
     ) {
       return false;
     }
 
-    const sourceX = (index % this.ICON_COLUMNS) * this.ICON_SIZE;
-    const sourceY = Math.floor(index / this.ICON_COLUMNS) * this.ICON_SIZE;
+    const sourceX = (index % geometry.columns) * this.ICON_SIZE;
+    const sourceY = Math.floor(index / geometry.columns) * this.ICON_SIZE;
+    const previousSmoothing = context.imageSmoothingEnabled;
+
+    if ("imageSmoothingEnabled" in context) {
+      context.imageSmoothingEnabled = false;
+    }
 
     context.drawImage(
       image,
@@ -1009,6 +901,10 @@ class UIAssetManager {
       size,
       size,
     );
+
+    if ("imageSmoothingEnabled" in context) {
+      context.imageSmoothingEnabled = previousSmoothing;
+    }
 
     return true;
   }

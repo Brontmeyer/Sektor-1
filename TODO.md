@@ -150,7 +150,9 @@ Completed systems and design rules should be documented rather than duplicated h
 - [x] Implement Main Menu Information & Command Layout v1 with three active-party cards, live HP/MP/Valor/Level/Status/Next Level information, currency/location panels, and singular command labels
 - [x] Unify field-menu outer geometry through shared `MenuScreenLayout`: full-screen safe inset/gap/backdrop, aligned outer bounds, and one compact title-bar height across MAIN MENU / ROSTER / SAVE-LOAD / AREA MAP while preserving character/config internal layouts
 - [x] Implement Main Menu Refinement & Command Availability Foundation v1 with RUNES labeling, tighter party-card spacing, richer default menu color, generic command visibility/enabled states, and map-based Save restrictions; Load remains outside the final in-game main menu; development temporarily restores it for QA
-- [ ] Select/integrate canonical character portrait art for the main-menu portrait slots
+- [x] Select/integrate canonical Tyler/Sarah portrait art for shared menu, roster, shop, results, and Save/Load portrait slots
+- [ ] Produce final eight-direction field sprite sheets for Tyler and Sarah from the approved character boards, then replace the white-square fallback
+- [ ] Produce final Tyler/Sarah battle sheets using the shared living Idle / Attack / Magick / Skill / Item / Damage / Defend / Victory / Collapse contract
 - [x] Add canonical persistent play-time tracking with main-menu HH:MM:SS and Save/Load persistence
 - [x] Implement Main Menu Actor Selection & Order Foundation v1 with shared party-card focus, actor handoff, persistent front/back row state, portrait-position row language, and ROSTER hidden-by-default policy
 - [x] Pass 123: When backing out of actor-confirmed Main Menu destinations such as Magick/Skill, return focus to the actor cards so another actor can be chosen immediately; destinations with internal actor switching such as Equip/Essence keep their own navigation contract

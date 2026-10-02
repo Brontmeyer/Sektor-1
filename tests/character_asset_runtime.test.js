@@ -73,6 +73,10 @@ function testLeadActorCharacterVisualContracts() {
   assert.equal(sarah.characterVisual.effects.attack, "#e7b84d");
   assert.equal(tyler.characterVisual.effects.magick, "#4aa3ff");
   assert.equal(sarah.characterVisual.effects.magick, "#ff4f6d");
+  assert.equal(tyler.characterVisual.portraitScale, 1);
+  assert.equal(sarah.characterVisual.portraitScale, 1);
+  assert.equal(tyler.characterVisual.portraitScaleX, 1.2);
+  assert.equal(sarah.characterVisual.portraitScaleX, 1.12);
 
   for (const filename of ["Tyler.png", "Sarah.png"]) {
     assert.equal(
@@ -105,6 +109,50 @@ function testPortraitLoaderUsesSharedActorAssetPath() {
   assert.equal(drawCalls[0][6], 20);
   assert.equal(drawCalls[0][7], 96);
   assert.equal(drawCalls[0][8], 96);
+}
+
+function testPortraitScaleStillSupportsIntentionalInsets() {
+  const { CharacterAssetManager, context, drawCalls } = loadManager();
+  const actor = {
+    characterVisual: {
+      portrait: "portraits/Tyler.png",
+      portraitScale: 0.88,
+      expressions: {},
+    },
+  };
+
+  assert.equal(
+    CharacterAssetManager.drawPortrait(context, actor, 0, 0, 100, 100),
+    true,
+  );
+  assert.equal(drawCalls.length, 1);
+  assert.equal(drawCalls[0][5], 6);
+  assert.equal(drawCalls[0][6], 6);
+  assert.equal(drawCalls[0][7], 88);
+  assert.equal(drawCalls[0][8], 88);
+}
+
+
+function testPortraitAxisScaleCanFillTransparentSideGutters() {
+  const { CharacterAssetManager, context, drawCalls } = loadManager();
+  const actor = {
+    characterVisual: {
+      portrait: "portraits/Tyler.png",
+      portraitScale: 1,
+      portraitScaleX: 1.2,
+      expressions: {},
+    },
+  };
+
+  assert.equal(
+    CharacterAssetManager.drawPortrait(context, actor, 0, 0, 100, 100),
+    true,
+  );
+  assert.equal(drawCalls.length, 1);
+  assert.equal(drawCalls[0][5], -10);
+  assert.equal(drawCalls[0][6], 0);
+  assert.equal(drawCalls[0][7], 120);
+  assert.equal(drawCalls[0][8], 100);
 }
 
 function testSaveSnapshotActorsResolveDatabaseCharacterVisuals() {
@@ -141,9 +189,10 @@ function testCharacterWindowsUseRuntimePortraitsWithFallbacks() {
   const mainParty = read("js/windows/Window_MainMenuParty.js");
 
   assert.match(summary, /CharacterAssetManager\.drawPortrait/);
-  assert.match(mainParty, /CharacterAssetManager\.drawPortrait/);
+  assert.match(summary, /drawPortraitBackdrop/);
+  assert.match(summary, /UIThemePalette\.portraitFill/);
   assert.match(summary, /if \(portraitDrawn\)/);
-  assert.match(mainParty, /if \(!portraitDrawn\)/);
+  assert.match(mainParty, /Window_ActorSummary\.drawPortraitPlaceholder/);
 }
 
 function testLeadBattlersKeepLivingIdleMotionContract() {
@@ -169,6 +218,8 @@ function testApprovedMasterReferencesShipWithTheProject() {
 function run() {
   testLeadActorCharacterVisualContracts();
   testPortraitLoaderUsesSharedActorAssetPath();
+  testPortraitScaleStillSupportsIntentionalInsets();
+  testPortraitAxisScaleCanFillTransparentSideGutters();
   testSaveSnapshotActorsResolveDatabaseCharacterVisuals();
   testUnsafeCharacterAssetPathsAreRejected();
   testCharacterWindowsUseRuntimePortraitsWithFallbacks();

@@ -23,6 +23,7 @@ function createDrawContext() {
   return {
     calls,
     globalAlpha: 1,
+    imageSmoothingEnabled: true,
     save() {
       calls.push(["save"]);
     },
@@ -47,10 +48,10 @@ async function testManifestAndNonBrowserFallback() {
   const { Manager } = loadAssetManager();
   const manifest = Manager.manifest();
 
-  assert.equal(manifest.windowSkin, "js/sprites/ui/rmmz/Window.png");
-  assert.equal(manifest.iconSet, "js/sprites/ui/rmmz/IconSet.png");
-  assert.equal(manifest.buttonSet, "js/sprites/ui/rmmz/ButtonSet.png");
-  assert.equal(manifest.battleShadow, "js/sprites/ui/rmmz/Shadow2.png");
+  assert.equal(manifest.iconSet, "js/sprites/ui/icons/IconSet.png");
+  assert.equal(manifest.battleShadow, "js/sprites/ui/battle/Shadow2.png");
+  assert.equal("windowSkin" in manifest, false);
+  assert.equal("buttonSet" in manifest, false);
 
   const summary = await Manager.initialize();
   assert.equal(summary.initialized, true);
@@ -58,40 +59,55 @@ async function testManifestAndNonBrowserFallback() {
   assert.deepEqual(Array.from(summary.failed), []);
 }
 
-function testWindowSkinNineSliceAndFallback() {
-  const { Manager } = loadAssetManager();
-  const context = createDrawContext();
-
-  assert.equal(Manager.drawWindowSkin(context, 10, 20, 300, 140), false);
-
-  Manager._images.set("windowSkin", readyImage());
-  assert.equal(Manager.drawWindowSkin(context, 10, 20, 300, 140), true);
-
-  const draws = context.calls.filter((call) => call[0] === "drawImage");
-  assert.equal(draws.length, 9, "background plus eight frame slices are drawn");
-  assert.equal(draws[0][2], 0);
-  assert.equal(draws[0][3], 0);
-  assert.equal(draws[0][4], 96);
-  assert.equal(draws[0][5], 96);
-}
-
 function testIconSheetContract() {
   const { Manager } = loadAssetManager();
   const context = createDrawContext();
-  Manager._images.set("iconSet", readyImage(512, 640));
+  Manager._images.set("iconSet", readyImage(192, 2052));
+
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(Manager.iconGeometry())),
+    { cellSize: 12, columns: 16, rows: 171, capacity: 2736 },
+  );
+  assert.equal(Manager.iconIndex(1, 1), 17);
+  assert.equal(Manager.iconIndex(16, 0), null);
 
   assert.equal(Manager.drawIcon(context, 17, 40, 50, 24), true);
   const call = context.calls.find((entry) => entry[0] === "drawImage");
 
-  assert.equal(call[2], 32, "icon 17 is column 1");
-  assert.equal(call[3], 32, "icon 17 is row 1");
-  assert.equal(call[4], 32);
-  assert.equal(call[5], 32);
+  assert.equal(call[2], 12, "icon 17 is column 1");
+  assert.equal(call[3], 12, "icon 17 is row 1");
+  assert.equal(call[4], 12);
+  assert.equal(call[5], 12);
   assert.equal(call[6], 40);
   assert.equal(call[7], 50);
   assert.equal(call[8], 24);
   assert.equal(call[9], 24);
+  assert.equal(context.imageSmoothingEnabled, true);
   assert.equal(Manager.drawIcon(context, -1, 0, 0), false);
+  assert.equal(Manager.drawIcon(context, 2736, 0, 0), false);
+}
+
+function testLargeIconAtlasAndDeadUiAssets() {
+  const iconPath = path.join(projectRoot, "js/sprites/ui/icons/IconSet.png");
+  const png = fs.readFileSync(iconPath);
+
+  assert.equal(png.toString("ascii", 1, 4), "PNG");
+  assert.equal(png.readUInt32BE(16), 192);
+  assert.equal(png.readUInt32BE(20), 2052);
+
+  for (const relativePath of [
+    "js/sprites/ui/buttons/ButtonSet.png",
+    "js/sprites/ui/panels/Window.png",
+    "js/sprites/ui/panels/panel_grey_dark.png",
+    "js/sprites/ui/adventure",
+    "js/sprites/ui/rmmz",
+  ]) {
+    assert.equal(
+      fs.existsSync(path.join(projectRoot, relativePath)),
+      false,
+      `${relativePath} should stay removed while it has no runtime consumer`,
+    );
+  }
 }
 
 function testBattleShadowContract() {
@@ -140,10 +156,8 @@ function testBattleRendererUsesAssetShadowWithoutOwningFallbackRules() {
 
 function testCuratedAssetsExistInRepository() {
   const manifest = {
-    windowSkin: "js/sprites/ui/rmmz/Window.png",
-    iconSet: "js/sprites/ui/rmmz/IconSet.png",
-    buttonSet: "js/sprites/ui/rmmz/ButtonSet.png",
-    battleShadow: "js/sprites/ui/rmmz/Shadow2.png",
+    iconSet: "js/sprites/ui/icons/IconSet.png",
+    battleShadow: "js/sprites/ui/battle/Shadow2.png",
   };
 
   for (const relativePath of Object.values(manifest)) {
@@ -157,8 +171,8 @@ function testCuratedAssetsExistInRepository() {
 
 async function run() {
   await testManifestAndNonBrowserFallback();
-  testWindowSkinNineSliceAndFallback();
   testIconSheetContract();
+  testLargeIconAtlasAndDeadUiAssets();
   testBattleShadowContract();
   testBattleRendererUsesAssetShadowWithoutOwningFallbackRules();
   testCuratedAssetsExistInRepository();

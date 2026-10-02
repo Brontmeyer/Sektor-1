@@ -136,7 +136,9 @@
         "magick": "#4aa3ff",
         "skill": "#e7b84d",
         "item": "#e7b84d"
-      }
+      },
+      "portraitScale": 1,
+      "portraitScaleX": 1.2
     }
   },
   {
@@ -203,7 +205,9 @@
         "magick": "#ff4f6d",
         "skill": "#e7b84d",
         "item": "#e7b84d"
-      }
+      },
+      "portraitScale": 1,
+      "portraitScaleX": 1.12
     },
     "battleVisual": {
       "sprite": "Player_Battle.png",

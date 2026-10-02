@@ -121,6 +121,7 @@ Playable actors may also define a `characterVisual` object in `Actors.json`. Thi
 {
   "characterVisual": {
     "portrait": "portraits/Tyler.png",
+    "portraitScale": 1,
     "expressions": {},
     "effects": {
       "attack": "#e7b84d",
@@ -139,6 +140,8 @@ js/sprites/actors/portraits/
 ```
 
 `CharacterAssetManager` owns lazy portrait loading and drawing. UI consumers request the actor portrait through that manager and retain the existing initial-letter card as a non-fatal fallback when an asset is absent or still loading.
+
+`characterVisual.portraitScale` is an optional normalized presentation scale from `0.5` to `1`. Values below `1` intentionally inset art inside the square card without changing per-window geometry. Tyler and Sarah use the full `1.0` frame so their portrait canvases meet the card edges; transparent areas read against the shared slate-blue portrait backdrop instead of creating dark gutters.
 
 The approved Tyler and Sarah presentation boards live under `docs/character_refs/`. They are canonical visual references, not runtime-packed sprite sheets. The current 512×512 portraits were exported from those approved boards.
 
