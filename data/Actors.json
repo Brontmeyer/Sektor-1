@@ -60,9 +60,9 @@
     ],
     "fieldVisual": {
       "sprite": "Tyler_Field.png",
-      "frameWidth": 136,
-      "frameHeight": 168,
-      "scale": 1,
+      "frameWidth": 160,
+      "frameHeight": 192,
+      "scale": 0.76,
       "anchor": {
         "x": 0.5,
         "y": 1
@@ -72,7 +72,7 @@
         "y": 0
       },
       "sheet": {
-        "columns": 10,
+        "columns": 5,
         "rows": 8,
         "directions": {
           "down": 0,
@@ -89,16 +89,16 @@
         "idleFrame": 0,
         "walkFrames": [
           1,
+          0,
+          2,
+          0,
           3,
-          5,
-          7,
-          9,
-          7,
-          5,
-          3
+          0,
+          4,
+          0
         ],
-        "fastFrameDuration": 0.08,
-        "slowFrameDuration": 0.16,
+        "fastFrameDuration": 0.16,
+        "slowFrameDuration": 0.24,
         "minimumSpeed": 1
       }
     },

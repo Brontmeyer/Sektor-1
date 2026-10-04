@@ -5,7 +5,7 @@
   "height": 1600,
   "playerStart": {
     "x": 610,
-    "y": 350
+    "y": 600
   },
   
   "battleBackgroundKey": "devZone1",
@@ -85,27 +85,39 @@
       "height": 50
     },
     {
-      "x": 300,
+      "x": 50,
       "y": 0,
-      "width": 650,
+      "width": 2300,
+      "height": 50
+    },
+    {
+      "x": 50,
+      "y": 1550,
+      "width": 2300,
       "height": 50
     },
     {
       "x": 950,
-      "y": 0,
+      "y": 50,
       "width": 50,
-      "height": 550
+      "height": 500
     },
     {
       "x": 250,
-      "y": 0,
+      "y": 50,
       "width": 50,
-      "height": 550
+      "height": 500
     },
     {
-      "x": 400,
+      "x": 300,
       "y": 650,
-      "width": 450,
+      "width": 150,
+      "height": 50
+    },
+    {
+      "x": 800,
+      "y": 650,
+      "width": 150,
       "height": 50
     },
     {
@@ -119,6 +131,36 @@
       "y": 550,
       "width": 50,
       "height": 150
+    },
+    {
+      "x": 950,
+      "y": 650,
+      "width": 50,
+      "height": 550
+    },
+    {
+      "x": 250,
+      "y": 650,
+      "width": 50,
+      "height": 550
+    },
+    {
+      "x": 300,
+      "y": 1150,
+      "width": 650,
+      "height": 50
+    },
+    {
+      "x": 2350,
+      "y": 0,
+      "width": 50,
+      "height": 1600
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "width": 50,
+      "height": 1600
     }
   ],
 
@@ -132,6 +174,26 @@
       "targetMapId": 2,
       "targetX": 610,
       "targetY": 300
+    },
+    {
+      "_comment": "Transfer to Dev Zone 1 Outside.",
+      "x": 555,
+      "y": 1000,
+      "width": 150,
+      "height": 150,
+      "targetMapId": 1,
+      "targetX": 610,
+      "targetY": 1450
+    },
+    {
+      "_comment": "Transfer to Dev Zone 1 Inside.",
+      "x": 555,
+      "y": 1200,
+      "width": 150,
+      "height": 150,
+      "targetMapId": 1,
+      "targetX": 610,
+      "targetY": 800
     }
   ],
 
@@ -712,7 +774,7 @@
       "id": 16,
       "name": "Sarah Recruiter",
       "x": 510,
-      "y": 600,
+      "y": 670,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -768,8 +830,8 @@
       "_comment": "ID 17: Aboo recruitment fixture",
       "id": 17,
       "name": "Aboo Recruiter",
-      "x": 610,
-      "y": 600,
+      "x": 510,
+      "y": 500,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -826,7 +888,7 @@
       "id": 18,
       "name": "G Prime Recruiter",
       "x": 710,
-      "y": 600,
+      "y": 670,
       "width": 32,
       "height": 32,
       "solid": true,
@@ -882,7 +944,7 @@
       "_comment": "ID 19: Protagonist naming fixture; one-shot and nonblocking after/before use",
       "id": 19,
       "name": "Protagonist Name Tester",
-      "x": 610,
+      "x": 710,
       "y": 500,
       "width": 32,
       "height": 32,
